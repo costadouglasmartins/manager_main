@@ -197,7 +197,9 @@ class User extends Model
             Person.document 
     FROM users AS User
     INNER JOIN people AS Person ON Person.id = User.person_id
-    WHERE User.email = :email LIMIT 1");
+    WHERE User.active = 1
+    AND User.type = 'root'
+    AND User.email = :email LIMIT 1");
 		$stmt->execute(['email' => $email]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}

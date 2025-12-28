@@ -119,14 +119,13 @@ if (isset($_GET['created']))
           if (!empty($u['type']))
             {
             $label .= ' [' . $u['type'] . ']';
-            }
-        ?>
+            } ?>
         <option value="<?= $uid; ?>" <?= ($uid === (int) $selectedUserId ? 'selected' : ''); ?>><?= htmlspecialchars($label); ?></option>
       <?php endforeach; ?>
     </select>
   </div>
   <div class="col-12 col-md-4 col-lg-6 text-md-end">
-    <small class="text-muted">Marque/desmarque as abilities para o usuário selecionado.</small>
+    <small class="text-muted">Marque/desmarque as funcionalidades para o usuário selecionado.</small>
   </div>
 </form>
 
@@ -144,9 +143,9 @@ if (isset($_GET['created']))
           <table class="table table-sm table-bordered align-middle mb-0">
             <thead>
               <tr>
-                <th style="width: 90px;">Ativo</th>
-                <th>Ability</th>
-                <th>Descrição</th>
+                <th class="col-1">Ativo</th>
+                <th class="col-4">Funcionalidade</th>
+                <th class="col-7">Descrição</th>
               </tr>
             </thead>
             <tbody>
@@ -173,11 +172,11 @@ if (isset($_GET['created']))
       <button type="submit" class="btn btn-primary">
         <i class="bi bi-save me-1"></i> Salvar permissões
       </button>
-      <a class="btn btn-outline-secondary" href="<?= url('permission?user_id=' . (int) $selectedUserId); ?>">
+      <a class="btn btn-secondary" href="<?= url('permission?user_id=' . (int) $selectedUserId); ?>">
         Recarregar
       </a>
       <div class="ms-auto">
-        <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#effectivePerms" aria-expanded="false" aria-controls="effectivePerms">
+        <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#effectivePerms" aria-expanded="false" aria-controls="effectivePerms">
           Ver permissões ativas
         </button>
       </div>
