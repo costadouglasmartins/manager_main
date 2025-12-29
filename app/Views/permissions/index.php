@@ -96,16 +96,19 @@ if (isset($_GET['created']))
     </form>
   </div>
 </div>
-
+<!--
 <div class="alert alert-secondary py-2">
   <div class="small mb-0">
     As permissões são atribuídas <strong>somente por usuário</strong>. Não há perfis/grupos.
   </div>
 </div>
-
+--->
 <form method="GET" action="<?= url('permission'); ?>" class="row g-2 align-items-end mb-3">
-  <div class="col-12 col-md-8 col-lg-6">
-    <label class="form-label">Usuário</label>
+  <div class="col-12 col-md-8 col-lg-12">
+    <small class="text-muted">Marque/desmarque as funcionalidades para o usuário selecionado.</small>
+  </div>
+  <div class="col-12 col-md-8 col-lg-12">
+    <!--<label class="form-label">Usuário</label>-->
     <select name="user_id" class="form-select" onchange="this.form.submit()">
       <option value="0">Selecione um usuário...</option>
       <?php foreach ($users as $u): ?>
@@ -124,9 +127,7 @@ if (isset($_GET['created']))
       <?php endforeach; ?>
     </select>
   </div>
-  <div class="col-12 col-md-4 col-lg-6 text-md-end">
-    <small class="text-muted">Marque/desmarque as funcionalidades para o usuário selecionado.</small>
-  </div>
+  
 </form>
 
 <?php if ((int) $selectedUserId <= 0): ?>
@@ -144,7 +145,7 @@ if (isset($_GET['created']))
             <thead>
               <tr>
                 <th class="col-1">Permissão</th>
-                <th class="col-4">Funcionalidade</th>
+                <th class="col-4">Funcionalidade acesso</th>
                 <th class="col-7">Descrição</th>
               </tr>
             </thead>

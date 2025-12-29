@@ -34,32 +34,32 @@ $queryFilters = http_build_query([
     <div class="row g-3">
       <!-- Linha 1 -->
       <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label" for="id">#</label>
-        <input class="form-control" id="id" name="id" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+        <!--<label class="form-label" for="id">#</label>-->
+        <input class="form-control" id="id" name="id" placeholder="Código usuário" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label" for="username">Username</label>
-        <input class="form-control" id="username" name="username" type="text" value="<?= htmlspecialchars($filters['username'], ENT_QUOTES, 'UTF-8') ?>">
+        <!--<label class="form-label" for="username">Username</label>-->
+        <input class="form-control" id="username" name="username" placeholder="Nome de usuário" type="text" value="<?= htmlspecialchars($filters['username'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label" for="email">Email</label>
-        <input autocomplete="off" type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($filters['email'], ENT_QUOTES, 'UTF-8') ?>">
+        <!--<label class="form-label" for="email">Email</label>-->
+        <input autocomplete="off" type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?= htmlspecialchars($filters['email'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
       <!-- Linha 2 -->
       <div class="col-12 col-md-6 col-lg-4">
-        <label for="document" class="form-label">Tipo</label>
+        <!--<label for="type" class="form-label">Tipo</label>-->
         <select autocomplete="off" class="form-control" id="type" name="type">
-          <option value="">Selecione...</option>
+          <option value="">Selecione um tipo de usuário...</option>
           <option value="root" <?= ($filters['type'] === 'root' ? 'selected="selected"' : ''); ?>>ROOT</option>
           <option value="admin" <?= ($filters['type'] === 'admin' ? 'selected="selected"' : ''); ?>>ADMIN</option>
           <option value="user" <?= ($filters['type'] === 'user' ? 'selected="selected"' : ''); ?>>USUÁRIO(A)</option>
         </select>
       </div> 
       <div class="col-12 col-md-6 col-lg-8">
-        <label for="active" class="form-label">Situação</label>
+        <!--<label for="active" class="form-label">Situação</label>-->
         <select autocomplete="off" class="form-control" id="active" name="active">
-          <option value="">Selecione...</option>
+          <option value="">Selecione uma situação...</option>
           <option value="1" <?= ($filters['active'] === '1' ? 'selected="selected"' : ''); ?>>Ativa</option>
           <option value="0" <?= ($filters['active'] === '0' ? 'selected="selected"' : ''); ?>>Inativa</options>
         </select>
@@ -115,7 +115,7 @@ $queryFilters = http_build_query([
 
   <div class="col-12 col-lg-3">
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <label>&nbsp;</label>
+      <!--<label>&nbsp;</label>-->
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('user'); ?>" class="btn btn-secondary w-100">Limpar</a>
       <a href="<?= url('person/create'); ?>" class="btn btn-success w-100" target="_blank">Novo(a) usuário(a)</a>
