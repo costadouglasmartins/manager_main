@@ -106,7 +106,7 @@ class PersonController extends Controller
 		$this->requirePermission('person.edit');
 		$person = new Person();
 		$data = $person->find($id);
-		$this->view('people/edit', ['person' => $data]);
+		$this->view('people/edit', ['title' => 'Editar pessoa', 'person' => $data]);
 		}
 
 	/**

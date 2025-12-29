@@ -117,10 +117,29 @@ class Person extends Model
 	 * @param array $data
 	 */
 	public function update($id, $data)
-		{
-		$stmt = $this->db->prepare("UPDATE people SET name = :name WHERE id = :id");
-		$stmt->execute(['name' => $data['name'], 'id' => $id]);
-		}
+    {
+    $stmt = $this->db->prepare("
+        UPDATE people
+        SET
+            `name`      = :name,
+            `type`      = :type,
+            `document`  = :document,
+            `active`    = :active,
+            `birthdate` = :birthdate,
+            `modified`  = :modified
+        WHERE id = :id
+    ");
+
+    $stmt->execute([
+        'name'      => $data['name'],
+        'type'      => $data['type'],
+        'document'  => onlyDigits($data['document']),
+        'active'    => $data['active'],
+        'birthdate' => dateBrToUs($data['birthdate']),
+        'modified'  => date('Y-m-d H:i:s'),
+        'id'        => $id
+    ]);
+    }
 
 	/**
 	 * Search method 
