@@ -19,7 +19,7 @@ if (!function_exists('onlyDigits'))
 /**
  * Mask CPF and CPNJ
  */
-if (!function_exists('maskCpfCnpj'))
+if (!function_exists('  '))
 	{
 
 	function maskCpfCnpj(?string $value): string

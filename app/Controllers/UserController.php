@@ -158,7 +158,7 @@ class UserController extends Controller
 		$this->requirePermission('user.informations');
 		$user = new User();
 		$data = $user->find($id);
-		$this->view('users/informations', ['user' => $data]);
+		$this->view('users/informations', ['title' => 'Informações sobre o(a) usuário(a)', 'user' => $data]);
 		}
 	}
 
