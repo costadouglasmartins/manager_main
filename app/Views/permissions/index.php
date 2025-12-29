@@ -143,7 +143,7 @@ if (isset($_GET['created']))
           <table class="table table-sm table-bordered align-middle mb-0">
             <thead>
               <tr>
-                <th class="col-1">Ativo</th>
+                <th class="col-1">Permissão</th>
                 <th class="col-4">Funcionalidade</th>
                 <th class="col-7">Descrição</th>
               </tr>
