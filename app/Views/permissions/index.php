@@ -63,12 +63,12 @@ if (isset($_GET['created']))
 <div class="d-flex flex-wrap gap-2 mb-3">
   <form method="POST" action="<?= url('permission/sync'); ?>" class="d-inline">
     <input type="hidden" name="selected_user_id" value="<?= (int) ($selectedUserId ?? 0); ?>">
-    <button class="btn btn-outline-primary btn-sm" type="submit">
-      Sincronizar permissões automaticamente
+    <button class="btn btn-primary" type="submit">
+      Sincronizar permissões
     </button>
   </form>
 
-  <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addPermCatalog" aria-expanded="false" aria-controls="addPermCatalog">
+  <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#addPermCatalog" aria-expanded="false" aria-controls="addPermCatalog">
     Adicionar permissão manualmente
   </button>
 </div>

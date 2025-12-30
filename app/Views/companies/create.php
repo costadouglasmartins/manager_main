@@ -75,7 +75,7 @@
   </div>
   <!-- /Person -->
   <!-- User -->
-  <h5>Novo(a) usuário(a)</h5>
+  <h5>Novo(a) usuário(a) associado à pessoa</h5>
   <div class="row">
     <!-- User username -->
     <div class="col-xs-12 col-md-6 col-lg-3">

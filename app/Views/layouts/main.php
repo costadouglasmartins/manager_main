@@ -98,7 +98,6 @@
               <i class="bi bi-gear-fill"></i>&nbsp;Sistema
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-              <li><a class="dropdown-item" href="<?= url('user/edit/' . $_SESSION['manager_main']['user']['id']); ?>"><i class="bi bi-person-lines-fill"></i> Meus dados</a></li>
               <?php if (authCan('home.index')): ?>
                 <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
               <?php endif; ?>
@@ -108,7 +107,7 @@
         <ul class="navbar-nav mb-2 mb-lg-0">
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-person-circle me-2"></i>
+              <i class="bi bi-person-circle me-2"></i> Usuário(a)
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
               <!--
@@ -117,7 +116,9 @@
               <li><a class="dropdown-item text-danger" href="<?= ('permission'); ?>"><i class="bi bi-box-arrow-right me-2"></i>Permissões</a></li>
               -->
               <?php if (!empty($_SESSION['manager_main']['user'])): ?>
-                <li><a class="dropdown-item" href="<?= url('user/logout'); ?>" onclick="return confirm('Tem certeza que deseja sair?');"><i class="bi bi-box-arrow-right me-2"></i> Olá, <?= htmlspecialchars($_SESSION['manager_main']['user']['name']) ?>, encerrar sessão</a></li>
+                <li><a class="dropdown-item" href="<?= url('user/edit/' . $_SESSION['manager_main']['user']['id']); ?>"><i class="bi bi-person-lines-fill"></i> Meus dados</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="<?= url('user/logout'); ?>" onclick="return confirm('Tem certeza que deseja sair?');"><i class="bi bi-box-arrow-right me-2"></i>Olá, <?= htmlspecialchars($_SESSION['manager_main']['user']['name']) ?>, encerrar sessão?</a></li>
               <?php else: ?>
                 <li><a class="dropdown-item" href="<?= url('user/login'); ?>">Entrar</a></li>
               <?php endif; ?>
