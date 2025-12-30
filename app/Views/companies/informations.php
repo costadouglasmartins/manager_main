@@ -58,7 +58,7 @@
               <span class="badge text-bg-<?= ($person['person_active'] == 1 ? 'success' : 'secondary'); ?>"><?= ($person['person_active'] == 1 ? 'Ativo(a)' : 'Inativo(a)'); ?></span>
               <span class="text-secondary small">tipo: <?= $person['person_type']; ?></span>
             </div>
-            <div class="text-secondary small">documento: <?= maskCpfCnpj($person['person_document']); ?> • data de nascimento: <?= date('d/m/Y', strtotime($person['person_birthdate'])); ?></div>
+            <div class="text-secondary small">documento: <?= maskCpfCnpj($person['person_document']); ?>  <?= (!empty($person['person_birthdate']) && $person['person_birthdate'] !== '' ? '• data de nascimento: ' . date('d/m/Y', strtotime($person['person_birthdate'])) : '-'); ?></div>
           </div>
         </button>
       </h2>
