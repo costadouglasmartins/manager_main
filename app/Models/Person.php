@@ -135,7 +135,7 @@ class Person extends Model
         'type'      => $data['type'],
         'document'  => onlyDigits($data['document']),
         'active'    => $data['active'],
-        'birthdate' => dateBrToUs($data['birthdate']),
+        'birthdate' => (!empty($data['birthdate'] && $data['birthdate'] !== '') ? dateBrToUs($data['birthdate']) : NULL),
         'modified'  => date('Y-m-d H:i:s'),
         'id'        => $id
     ]);
