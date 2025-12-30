@@ -34,11 +34,11 @@ $queryFilters = http_build_query([
       <!-- Linha 1 -->
       <div class="col-12 col-md-6 col-lg-4">
         <!--<label class="form-label" for="id">#</label>-->
-        <input class="form-control" id="id" name="id" placeholder="Código empresa" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input autocomplete="off" class="form-control" id="id" name="id" placeholder="Código empresa" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-4">
         <!--<label class="form-label" for="name">Nome</label>-->
-        <input class="form-control" id="name" name="name" placeholder="Nome da empresa" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <input autocomplete="off" class="form-control" id="name" name="name" placeholder="Nome da empresa" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-4">
         <!--<label class="form-label" for="fantasy">Fantasia</label>-->
