@@ -1,1 +1,0 @@
--- Deprecated: permission.manage is already included in permissions.sql (user-only).
