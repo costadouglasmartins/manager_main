@@ -12,17 +12,6 @@
 <h5>Nova pessoa</h5>
 <form action="<?= url('person/store'); ?>" method="POST">
   <div class="row mb-2">
-    <!-- Company -->
-    <div class="col-xs-12 col-md-12 col-lg-12 mb-2">
-      <label for="personCompanyId" class="form-label">Empresa</label>
-      <select autocomplete="off" class="form-control" id="personCompanyId" name="person[company_id]" required="required">
-        <option value="">Selecione uma empresa...</option>
-        <?php foreach($dataListCompanies as $company): ?>
-          <option value="<?= $company['id']; ?>"><?= $company['name']; ?>
-        <?php endforeach; ?>
-      </select>
-    </div>
-    <!-- /Company -->
     <!-- Person name -->
     <div class="col-xs-12 col-md-12 col-lg-12">
       <label for="personName" class="form-label">Name:</label>

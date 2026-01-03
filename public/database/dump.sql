@@ -20,34 +20,23 @@ DROP DATABASE IF EXISTS `manager_main`;
 CREATE DATABASE IF NOT EXISTS `manager_main` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `manager_main`;
 
--- Dumping structure for table manager_main.companies
-CREATE TABLE IF NOT EXISTS `companies` (
+-- Dumping structure for table manager_main.emails
+CREATE TABLE IF NOT EXISTS `emails` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `database` varchar(45) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `observations` varchar(500) DEFAULT NULL,
+  `person_id` int DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
+  KEY `fk_emails_people1_idx` (`person_id`),
+  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.companies: ~7 rows (approximately)
-INSERT INTO `companies` (`id`, `name`, `fantasy`, `document`, `database`, `active`, `created`, `modified`) VALUES
-	(3, 'Company 1', 'This is the company one', '23452345000123', 'manager-0001', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
-	(4, 'Empresa Xpto', 'Xpto Empreendimentos', '19817234000149', 'manager-0003', 1, '2025-12-06 18:52:44', '2025-12-20 22:56:30'),
-	(7, 'Company 2', 'This is the company two', '20934528000182', 'manager-0002', 1, '2025-12-14 00:03:31', '2025-12-14 00:03:31'),
-	(9, 'Meta', 'Faceboook', '20934923452345', 'main-0002', 1, '2025-12-14 16:41:25', '2025-12-29 18:13:09'),
-	(11, 'Philips', 'Philips do Brasil', '45626567000106', 'main00000', 1, '2025-12-14 16:44:09', '2025-12-20 17:40:36'),
-	(12, 'Compania fantasia', 'Fantasia companhia', '02983428903482', 'main-0123', 1, '2025-12-14 16:51:07', '2025-12-20 22:56:23'),
-	(13, 'Alphabet', 'Google', '02183286000113', 'main-0008', 1, '2025-12-20 17:34:43', '2025-12-29 10:10:14');
+-- Dumping data for table manager_main.emails: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
   `name` varchar(255) NOT NULL,
   `type` enum('individual','company') NOT NULL,
   `document` varchar(14) NOT NULL,
@@ -56,28 +45,26 @@ CREATE TABLE IF NOT EXISTS `people` (
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`),
-  KEY `fk_people_companies1_idx` (`company_id`),
-  CONSTRAINT `fk_people_companies1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`)
+  UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~14 rows (approximately)
-INSERT INTO `people` (`id`, `company_id`, `name`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
-	(3, 3, 'Izzidoro', 'individual', '03599033986', 1, '2000-11-10', '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
-	(4, 4, 'Fulano de Tal', 'individual', '00000000000', 1, '1983-12-01', '2025-12-06 18:52:44', '2025-12-06 18:52:44'),
-	(5, 7, 'nome sobrenome', 'individual', '09238402384', 1, '1980-11-20', '2025-12-14 00:03:31', '2025-12-29 09:55:36'),
-	(6, 9, 'Keanu Reevs', 'individual', '34985239457', 1, '1970-02-01', '2025-12-14 16:41:25', '2025-12-31 09:57:50'),
-	(7, 11, 'lalalalal', 'company', '20948423582', 0, NULL, '2025-12-14 16:44:09', '2025-12-30 12:39:08'),
-	(8, 12, 'teste dois', 'company', '09823042348', 1, NULL, '2025-12-14 16:51:07', '2025-12-30 12:39:15'),
-	(9, 13, 'João Carlos da Silva', 'individual', '34822424880', 1, '1970-08-01', '2025-12-20 17:34:43', '2025-12-20 17:34:43'),
-	(10, 4, 'Beltrano Cicrano', 'individual', '11111111111', 1, '2025-12-20', '2025-12-20 16:37:26', '2025-12-20 16:37:30'),
-	(12, 4, 'Jeremias da Silva', 'individual', '00000001000', 1, '2025-12-20', '2025-12-20 16:38:28', '2025-12-20 16:38:30'),
-	(14, 4, 'Lorem Ipsum Dolor', 'individual', '04519775647', 1, '1983-11-20', '2025-12-21 11:18:33', '2025-12-21 11:18:33'),
-	(15, 4, 'asddaf', 'company', '12341251232534', 1, NULL, '2025-12-21 17:20:06', '2025-12-21 17:20:06'),
-	(17, 4, 'xxxxxx', 'company', '14253678776542', 1, NULL, '2025-12-21 17:26:30', '2025-12-21 17:26:30'),
-	(19, 13, 'Fernando da Silva', 'company', '12341234123423', 1, NULL, '2025-12-23 10:01:33', '2025-12-30 12:38:46'),
-	(20, 13, 'Rafaela de Souza', 'individual', '32454544322', 1, '1967-08-09', '2025-12-23 10:08:20', '2025-12-23 10:08:20'),
-	(21, 11, 'Sit Amet', 'individual', '92433114179', 1, '1983-04-07', '2025-12-23 22:19:08', '2025-12-29 11:18:48');
+-- Dumping data for table manager_main.people: ~15 rows (approximately)
+INSERT INTO `people` (`id`, `name`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
+	(3, 'Izzidoro', 'individual', '03599033986', 1, '2000-11-10', '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
+	(4, 'Fulano de Tal', 'individual', '00000000000', 1, '1983-12-01', '2025-12-06 18:52:44', '2025-12-06 18:52:44'),
+	(5, 'nome sobrenome', 'individual', '09238402384', 1, '1980-11-20', '2025-12-14 00:03:31', '2025-12-29 09:55:36'),
+	(6, 'Keanu Reevs', 'individual', '34985239457', 1, '1970-02-01', '2025-12-14 16:41:25', '2025-12-31 09:57:50'),
+	(7, 'lalalalal', 'company', '20948423582', 0, NULL, '2025-12-14 16:44:09', '2025-12-30 12:39:08'),
+	(8, 'teste dois', 'company', '09823042348', 1, NULL, '2025-12-14 16:51:07', '2025-12-30 12:39:15'),
+	(9, 'João Carlos da Silva', 'individual', '34822424880', 1, '1970-08-01', '2025-12-20 17:34:43', '2025-12-20 17:34:43'),
+	(10, 'Beltrano Cicrano', 'individual', '11111111111', 1, '2025-12-20', '2025-12-20 16:37:26', '2025-12-20 16:37:30'),
+	(12, 'Jeremias da Silva', 'individual', '00000001000', 1, '2025-12-20', '2025-12-20 16:38:28', '2025-12-20 16:38:30'),
+	(14, 'Lorem Ipsum Dolor', 'individual', '04519775647', 1, '1983-11-20', '2025-12-21 11:18:33', '2025-12-21 11:18:33'),
+	(15, 'asddaf', 'company', '12341251232534', 1, NULL, '2025-12-21 17:20:06', '2025-12-21 17:20:06'),
+	(17, 'xxxxxx', 'company', '14253678776542', 1, NULL, '2025-12-21 17:26:30', '2025-12-21 17:26:30'),
+	(19, 'Fernando da Silva', 'company', '12341234123423', 1, NULL, '2025-12-23 10:01:33', '2025-12-30 12:38:46'),
+	(20, 'Rafaela de Souza', 'individual', '32454544322', 1, '1967-08-09', '2025-12-23 10:08:20', '2025-12-23 10:08:20'),
+	(21, 'Sit Amet', 'individual', '92433114179', 1, '1983-04-07', '2025-12-23 22:19:08', '2025-12-29 11:18:48');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -88,16 +75,10 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=227 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~17 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~21 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
-	(1, 'company.index', 'Listar empresas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
-	(2, 'company.create', 'Exibir formulário de criação de empresa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
-	(3, 'company.store', 'Criar empresa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
-	(4, 'company.edit', 'Exibir formulário de edição de empresa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
-	(5, 'company.update', 'Atualizar empresa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
-	(6, 'company.informations', 'Visualizar detalhes da empresa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(7, 'person.index', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(9, 'person.store', 'Criar pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -113,6 +94,21 @@ INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`
 	(25, 'home.index', 'Acesso: home -> index', '2025-12-28 19:26:28', '2025-12-28 19:26:28'),
 	(36, 'user.login', 'Acesso: user -> login', '2025-12-28 19:26:28', '2025-12-28 19:26:28'),
 	(37, 'user.logout', 'Acesso: user -> logout', '2025-12-28 19:26:28', '2025-12-28 19:26:28');
+
+-- Dumping structure for table manager_main.phone_numbers
+CREATE TABLE IF NOT EXISTS `phone_numbers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `phone_number` varchar(255) NOT NULL,
+  `observations` varchar(500) DEFAULT NULL,
+  `person_id` int DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_phone_numbers_people1_idx` (`person_id`),
+  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -161,12 +157,6 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
 
 -- Dumping data for table manager_main.user_permissions: ~29 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`) VALUES
-	(1, 1, '2025-12-28 22:24:26'),
-	(1, 2, '2025-12-28 22:24:26'),
-	(1, 3, '2025-12-28 22:24:26'),
-	(1, 4, '2025-12-28 22:24:26'),
-	(1, 5, '2025-12-28 22:24:26'),
-	(1, 6, '2025-12-28 22:24:26'),
 	(1, 7, '2025-12-28 22:24:26'),
 	(1, 8, '2025-12-28 22:24:26'),
 	(1, 9, '2025-12-28 22:24:26'),
@@ -180,16 +170,8 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`) VALUES
 	(1, 17, '2025-12-28 22:24:26'),
 	(1, 18, '2025-12-28 22:24:26'),
 	(1, 25, '2025-12-28 22:24:26'),
-	(5, 1, '2025-12-28 10:35:06'),
-	(5, 4, '2025-12-28 10:35:06'),
 	(5, 7, '2025-12-28 10:35:06'),
-	(5, 14, '2025-12-28 10:35:06'),
-	(6, 1, '2025-12-28 19:09:35'),
-	(6, 2, '2025-12-28 19:09:35'),
-	(6, 3, '2025-12-28 19:09:35'),
-	(6, 4, '2025-12-28 19:09:35'),
-	(6, 5, '2025-12-28 19:09:35'),
-	(6, 6, '2025-12-28 19:09:35');
+	(5, 14, '2025-12-28 10:35:06');
 
 -- Dumping structure for table manager_main.user_type_permissions
 CREATE TABLE IF NOT EXISTS `user_type_permissions` (
@@ -203,12 +185,6 @@ CREATE TABLE IF NOT EXISTS `user_type_permissions` (
 
 -- Dumping data for table manager_main.user_type_permissions: ~18 rows (approximately)
 INSERT INTO `user_type_permissions` (`user_type`, `permission_id`, `created`) VALUES
-	('root', 1, '2025-12-28 11:49:39'),
-	('root', 2, '2025-12-28 11:49:39'),
-	('root', 3, '2025-12-28 11:49:39'),
-	('root', 4, '2025-12-28 11:49:39'),
-	('root', 5, '2025-12-28 11:49:39'),
-	('root', 6, '2025-12-28 11:49:39'),
 	('root', 7, '2025-12-28 11:49:39'),
 	('root', 8, '2025-12-28 11:49:39'),
 	('root', 9, '2025-12-28 11:49:39'),

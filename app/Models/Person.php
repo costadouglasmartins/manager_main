@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Core\Model;
-use App\Models\Company;
 use PDO;
 
 class Person extends Model
@@ -33,14 +32,11 @@ class Person extends Model
 			// Início da transação
 			$this->db->beginTransaction();
 
-			// Store company id
-			$companyId = $data['person']['company_id'];
-
 			// Save one person
 			$sqlPerson = "INSERT INTO people 
-                        (`company_id`, `name`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) 
+                        (`name`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) 
                       VALUES 
-                        (:company_id, :name, :type, :document, :active, :birthdate, :created, :modified)";
+                        ( :name, :type, :document, :active, :birthdate, :created, :modified)";
 			if (!empty($data['person']['birthdate']))
 				{
 				$data['person']['birthdate'] = dateBrToUs($data['person']['birthdate']);
@@ -51,7 +47,6 @@ class Person extends Model
 				}
 			$stmtPerson = $this->db->prepare($sqlPerson);
 			$stmtPerson->execute([
-				'company_id' => $companyId,
 				'name' => $data['person']['name'],
 				'type' => $data['person']['type'],
 				'document' => onlyDigits($data['person']['document']),
@@ -156,13 +151,6 @@ class Person extends Model
 			$params['id'] = (int) $filters['id'];
 			}
 
-		// Company id
-		if (isset($filters['company_id']) && $filters['company_id'] !== '')
-			{
-			$sql .= " AND company_id = :company_id";
-			$params['company_id'] = (int) $filters['company_id'];
-			}
-
 		// Name
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
@@ -239,13 +227,6 @@ class Person extends Model
 			{
 			$sql .= " AND id = :id";
 			$params['id'] = (int) $filters['id'];
-			}
-
-		// Filtro por company ID (igual)
-		if (!empty($filters['company_id']))
-			{
-			$sql .= " AND company_id = :company_id";
-			$params['company_id'] = (int) $filters['company_id'];
 			}
 
 		// Filtro por Nome (LIKE)

@@ -45,19 +45,6 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="menuCadastros">
               <li class="dropdown-submenu">
-                <a class="dropdown-item submenu-toggle" href="#">Empresas</a>
-                <ul class="dropdown-menu">
-                  <?php if (authCan('company.index')): ?>
-                    <li><a class="dropdown-item" href="<?= url('company'); ?>"><i class="bi bi-list-ul me-2"></i> Listar</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                  <?php endif; ?>
-                  <?php if (authCan('company.create')): ?>
-                    <li><a class="dropdown-item" href="<?= url('company/create'); ?>"><i class="bi bi-plus-circle me-2"></i> Cadastrar</a></li>
-                  <?php endif; ?>
-                </ul>
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#">Pessoas</a>
                 <ul class="dropdown-menu">
                   <?php if (authCan('person.index')): ?>

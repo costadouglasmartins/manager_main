@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Person;
-use App\Models\Company;
 
 class PersonController extends Controller
 	{
@@ -15,13 +14,12 @@ class PersonController extends Controller
 	public function index()
 		{
 		$this->requirePermission('person.index');
-		$company = new Company();
+		
 		$person = new Person();
 
 		// Filtros vindos da query string
 		$filters = [
 			'id' => isset($_GET['id']) ? trim($_GET['id']) : '',
-			'company_id' => isset($_GET['company_id']) ? trim($_GET['company_id']) : '',
 			'name' => isset($_GET['name']) ? trim($_GET['name']) : '',
 			'type' => isset($_GET['type']) ? trim($_GET['type']) : '',
 			'document' => isset($_GET['document']) ? trim($_GET['document']) : '',
@@ -42,7 +40,6 @@ class PersonController extends Controller
 
 		// Busca paginada com filtros
 		$people = $person->search($filters, $perPage, $offset);
-		$companies = $company->getAll();
 		// Total para paginação (com os mesmos filtros)
 		$total = $person->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
@@ -66,7 +63,6 @@ class PersonController extends Controller
       // padrão HTML
       $this->view('people/index', [
         'people' => $people,
-        'companies' => $companies,
         'title' => 'Lista de empresas',
         'filters' => $filters,
         'page' => $page,
@@ -81,9 +77,7 @@ class PersonController extends Controller
 	public function create()
 		{
 		$this->requirePermission('person.create');
-		$company = new Company();
-		$companies = $company->getAll();
-		$this->view('people/create', ['dataListCompanies' => $companies, 'title' => 'Nova pessoa']);
+		$this->view('people/create', ['title' => 'Nova pessoa']);
 		}
 
 	/**
