@@ -19,7 +19,6 @@ $queryFilters = http_build_query([
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="<?= url('home'); ?>">Início</a></li>
-    <li class="breadcrumb-item"><a href="<?= url('company'); ?>">Empresas</a></li>
     <li class="breadcrumb-item"><a href="<?= url('person'); ?>">Pessoas</a></li>
     <li class="breadcrumb-item active" aria-current="page">Usuários</li>
   </ol>
