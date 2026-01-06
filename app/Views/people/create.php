@@ -53,21 +53,21 @@
 
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
-						<label class="form-label" for="personName">Nome</label>
-						<input class="form-control" id="personName" name="person[name]" type="text" required />
+						<!--<label class="form-label" for="personName">Nome</label>-->
+						<input class="form-control" id="personName" name="person[name]" placeholder="Nome completo" type="text" required />
 						<div class="invalid-feedback">Informe o nome.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<label class="form-label" for="personFantasy">Fantasia</label>
-						<input class="form-control" id="personFantasy" name="person[fantasy]" type="text" required />
+						<!--<label class="form-label" for="personFantasy">Fantasia</label>-->
+						<input class="form-control" id="personFantasy" name="person[fantasy]" placeholder="Nome fantasia" type="text" required />
 						<div class="invalid-feedback">Informe a fantasia.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="personType">Tipo</label>
+						<!--<label class="form-label" for="personType">Tipo</label>-->
 						<select class="form-select" id="personType" name="person[type]" required>
-							<option value="" selected disabled>Selecione...</option>
+							<option value="" selected disabled>Selecione o tipo de pessoa...</option>
 							<option value="F">Física</option>
 							<option value="J">Jurídica</option>
 						</select>
@@ -75,14 +75,14 @@
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="personDocument">Documento</label>
-						<input class="form-control" id="personDocument" name="person[document]" type="text" required />
+						<!-- <label class="form-label" for="personDocument">Documento</label>-->
+						<input class="form-control" id="personDocument" name="person[document]" placeholder="Documento" type="text" required />
 						<div class="invalid-feedback">Informe o documento.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="personBirthdate">Data de nascimento</label>
-						<input class="form-control" id="personBirthdate" name="person[birthdate]" type="date" required />
+						<!--<label class="form-label" for="personBirthdate">Data de nascimento</label>-->
+						<input class="form-control" id="personBirthdate" name="person[birthdate]" placeholder="Data de nascimento" type="date" required />
 						<div class="invalid-feedback">Informe a data de nascimento.</div>
 					</div>
 				</div>
@@ -94,21 +94,21 @@
 
 				<div class="row g-3">
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="userUsername">Nome de usuário</label>
-						<input class="form-control" id="userUsername" name="user[username]" type="text" required />
+						<!-- <label class="form-label" for="userUsername">Nome de usuário</label>-->
+						<input class="form-control" id="userUsername" name="user[username]" placeholder="Nome de usuário" type="text" required />
 						<div class="invalid-feedback">Informe o nome de usuário.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="userEmail">E-mail</label>
-						<input class="form-control" id="userEmail" name="user[email]" type="email" required />
+						<!--<label class="form-label" for="userEmail">E-mail</label>-->
+						<input class="form-control" id="userEmail" name="user[email]" placeholder="Email" type="email" required />
 						<div class="invalid-feedback">Informe um e-mail válido.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="userType">Tipo de usuário</label>
+						<!--<label class="form-label" for="userType">Tipo de usuário</label>-->
 						<select class="form-select" id="userType" name="user[type]" required>
-							<option value="" selected disabled>Selecione...</option>
+							<option value="" selected disabled>Selecione um tipo...</option>
 							<option value="admin">Administrador</option>
 							<option value="manager">Gestor</option>
 							<option value="user">Usuário</option>
@@ -117,14 +117,14 @@
 					</div>
 
 					<div class="col-12 col-md-6">
-						<label class="form-label" for="userPassword">Senha</label>
-						<input class="form-control" id="userPassword" name="user[password]" type="password" minlength="8" required />
+						<!--<label class="form-label" for="userPassword">Senha</label>-->
+						<input class="form-control" id="userPassword" name="user[password]" placeholder="Senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">A senha deve ter pelo menos 8 caracteres.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<label class="form-label" for="userPassword2">Confirmar senha</label>
-						<input class="form-control" id="userPassword2" name="user[password_confirm]" type="password" minlength="8" required />
+						<!--<label class="form-label" for="userPassword2">Confirmar senha</label>-->
+						<input class="form-control" id="userPassword2" name="user[password_confirm]" placehoder="Confirmar senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">Confirme a senha.</div>
 					</div>
 				</div>
