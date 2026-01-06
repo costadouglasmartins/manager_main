@@ -21,7 +21,6 @@ class UserController extends Controller
 		$filters = [
 			'id'				=> isset($_GET['id'])				? trim($_GET['id'])				: '',
 			'username'	=> isset($_GET['username'])	? trim($_GET['username'])			: '',
-			'email'		  => isset($_GET['email'])	  ? trim($_GET['email'])	: '',
 			'type'	    => isset($_GET['type'])     ? trim($_GET['type']) : '',
 			'active'		=> isset($_GET['active'])		? trim($_GET['active'])		: '',
 		];

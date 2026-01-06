@@ -185,24 +185,22 @@ class User extends Model
 	 */
 	public function findByEmail(string $email): ?array
   {
-  $sql = "
-    SELECT  U.id,
-            U.username,
-            U.password,
-            U.active,
-            E.email,
-            U.type,
-            P.name,
-            P.type AS person_type,
-            P.document
-    FROM users AS U
-    INNER JOIN people AS P ON P.id = U.person_id
-    INNER JOIN emails  AS E ON E.person_id = P.id
-    WHERE U.active = 1
-      AND U.type = 'root'
-      AND E.email = :email
-    LIMIT 1
-  ";
+  $sql = "SELECT  User.id,
+                  User.username,
+                  User.password,
+                  User.active,
+                  Email.email,
+                  User.type,
+                  Person.name,
+                  Person.type AS person_type,
+                  Person.document
+          FROM users AS User
+          INNER JOIN people AS Person ON Person.id = User.person_id
+          INNER JOIN emails  AS Email ON Email.person_id = Person.id
+          WHERE User.active = 1
+            AND User.type = 'root'
+            AND Email.email = :email
+          LIMIT 1";
 
   $stmt = $this->db->prepare($sql);
   $stmt->execute([':email' => trim($email)]);

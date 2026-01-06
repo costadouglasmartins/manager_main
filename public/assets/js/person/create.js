@@ -356,11 +356,11 @@
 						e.preventDefault();
 						e.stopPropagation();
 						form.classList.add("was-validated");
+            localStorage.removeItem("signupDraftBlocks");
 						return;
 					}
 
 				e.preventDefault();
-				localStorage.removeItem("signupDraftBlocks");
 				alert("Cadastro concluído (exemplo). Aqui você enviaria ao servidor.");
 			});
 

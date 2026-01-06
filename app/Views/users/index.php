@@ -1,6 +1,6 @@
 <?php
 // Filters and pagination variables
-$filters = $filters ?? ['id' => '', 'username' => '', 'email' => '', 'type' => '', 'active' => ''];
+$filters = $filters ?? ['id' => '', 'username' => '', 'type' => '', 'active' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($users) ? count($users) : 0);
@@ -9,7 +9,6 @@ $total = $total ?? (is_array($users) ? count($users) : 0);
 $queryFilters = http_build_query([
 	'id' => $filters['id'],
 	'username' => $filters['username'],
-	'email' => $filters['email'],
 	'type' => $filters['type'],
 	'active' => $filters['active']
 	]);
@@ -40,11 +39,11 @@ $queryFilters = http_build_query([
         <!--<label class="form-label" for="username">Username</label>-->
         <input class="form-control" id="username" name="username" placeholder="Nome de usuário" type="text" value="<?= htmlspecialchars($filters['username'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
+      <!--
       <div class="col-12 col-md-6 col-lg-4">
-        <!--<label class="form-label" for="email">Email</label>-->
         <input autocomplete="off" type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?= htmlspecialchars($filters['email'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
-
+        -->
       <!-- Linha 2 -->
       <div class="col-12 col-md-6 col-lg-4">
         <!--<label for="type" class="form-label">Tipo</label>-->
@@ -129,7 +128,6 @@ $queryFilters = http_build_query([
     <tr>
       <th style="width: 1%;">#</th>
       <th>Usuário</th>
-      <th>Email</th>
       <th>Tipo</th>
       <th style="width: 1%;" class="text-nowrap text-end">Ações</th>
     </tr>
@@ -138,7 +136,6 @@ $queryFilters = http_build_query([
 				<tr>
 					<td><?= $user['id'] ?></td>
 					<td><?= $user['username'] ?></td>
-					<td><?= $user['email'] ?></td>
           <td><?= $user['type']; ?></td>
 					<td class="text-nowrap text-end">
 						<?php if (authCan('user.edit')): ?>
@@ -152,7 +149,7 @@ $queryFilters = http_build_query([
 			<?php endforeach; ?>
 		<?php else: ?>
 			<tr>
-				<td colspan="5">Nenhum registro encontrado.</td>
+				<td colspan="4">Nenhum registro encontrado.</td>
 			</tr>
 		<?php endif; ?>
   </table>
