@@ -129,41 +129,39 @@
 
 				<div class="row g-3">
 					<div class="col-12 col-md-3">
-						<input class="form-control" id="addressZipCode" name="address[zip_code]" placeholder="CEP" type="text" inputmode="numeric" required />
+						<input class="form-control" id="addressZipCode" name="address[zip_code]" placeholder="CEP" type="text" inputmode="text" required />
 						<div class="invalid-feedback">Informe o CEP.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<input autocomplete="off" class="form-control" id="addrStreet" name="address[street]" placeholder="Rua/logradouro" type="text" required />
+						<input autocomplete="off" class="form-control" id="addressStreet" name="address[street]" placeholder="Rua/logradouro" type="text" required />
 						<div class="invalid-feedback">Informe a rua.</div>
 					</div>
 
 					<div class="col-12 col-md-3">
-						<input autocomplete="off" class="form-control" id="addrNumber" name="address[number]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addressNumber" name="address[number]" placeholder="Número" type="text" required />
 						<div class="invalid-feedback">Informe o número.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="addrNeighborhood">Bairro</label>
-						<input autocomplete="off" class="form-control" id="addrNeighborhood" name="address[neighborhood]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addressNeighborhood" name="address[neighborhood]" placeholder="Bairro" type="text" required />
 						<div class="invalid-feedback">Informe o bairro.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<label class="form-label" for="addrCity">Cidade</label>
-						<input autocomplete="off" class="form-control" id="addrCity" name="address[city]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addressCity" name="address[city]" placeholder="Cidade" type="text" required />
 						<div class="invalid-feedback">Informe a cidade.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
 						<label class="form-label" for="addrState">Estado (UF)</label>
-						<input autocomplete="off" class="form-control" id="addrState" name="address[state]" type="text" maxlength="2" required />
+						<input autocomplete="off" class="form-control" id="addressState" name="address[state]" type="text" maxlength="2" required />
 						<div class="invalid-feedback">Informe a UF.</div>
 					</div>
 
 					<div class="col-12">
 						<label class="form-label" for="addrComplement">Complemento</label>
-						<input autocomplete="off" class="form-control" id="addrComplement" name="address[complement]" type="text" />
+						<input autocomplete="off" class="form-control" id="addressComplement" name="address[complement]" type="text" />
 					</div>
 				</div>
 			</section>
