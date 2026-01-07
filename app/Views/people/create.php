@@ -53,17 +53,17 @@
 
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
-						<input class="form-control" id="personName" name="person[name]" placeholder="Nome completo" type="text" required />
+						<input autocomplete="off" class="form-control" id="personName" name="person[name]" placeholder="Nome completo" type="text" required />
 						<div class="invalid-feedback">Informe o nome.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<input class="form-control" id="personFantasy" name="person[fantasy]" placeholder="Nome fantasia" type="text" required />
+						<input autocomplete="off" class="form-control" id="personFantasy" name="person[fantasy]" placeholder="Nome fantasia" type="text" required />
 						<div class="invalid-feedback">Informe a fantasia.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<select class="form-select" id="personType" name="person[type]" required>
+						<select autocomplete="off" class="form-select" id="personType" name="person[type]" required>
 							<option value="" selected disabled>Selecione o tipo de pessoa...</option>
 							<option value="root">Root</option>
 							<option value="admin">Administrador</option>
@@ -73,12 +73,12 @@
 					</div>
 
 					<div class="col-12 col-md-4">
-						<input class="form-control" id="personDocument" name="person[document]" placeholder="Documento" type="text" required />
+						<input autocomplete="off" class="form-control" id="personDocument" name="person[document]" placeholder="Documento" type="text" required />
 						<div class="invalid-feedback">Informe o documento.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<input class="form-control mask-date" id="personBirthdate" name="person[birthdate]" placeholder="Data de nascimento" type="date" required />
+						<input autocomplete="off" class="form-control mask-date" id="personBirthdate" name="person[birthdate]" placeholder="Data de nascimento" type="text" required />
 						<div class="invalid-feedback">Informe a data de nascimento.</div>
 					</div>
           <input autocomplete="off" type="hidden" value="1" name="person[active]">
@@ -92,17 +92,17 @@
 
 				<div class="row g-3">
 					<div class="col-12 col-md-4">
-						<input class="form-control" id="userUsername" name="user[username]" placeholder="Nome de usuário" type="text" required />
+						<input autocomplete="off" class="form-control" id="userUsername" name="user[username]" placeholder="Nome de usuário" type="text" required />
 						<div class="invalid-feedback">Informe o nome de usuário.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<input class="form-control" id="userEmail" name="user[email]" placeholder="Email" type="email" required />
+						<input autocomplete="off" class="form-control" id="userEmail" name="user[email]" placeholder="Email" type="email" required />
 						<div class="invalid-feedback">Informe um e-mail válido.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<select class="form-select" id="userType" name="user[type]" required>
+						<select autocomplete="off" class="form-select" id="userType" name="user[type]" required>
 							<option value="" selected disabled>Selecione um tipo...</option>
 							<option value="individual">Pessoa física</option>
 							<option value="company">Pessoa jurídica</option>
@@ -111,65 +111,63 @@
 					</div>
 
 					<div class="col-12 col-md-6">
-						<input class="form-control" id="userPassword" name="user[password]" placeholder="Senha" type="password" minlength="8" required />
+						<input autocomplete="off" class="form-control" id="userPassword" name="user[password]" placeholder="Senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">A senha deve ter pelo menos 8 caracteres.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<input class="form-control" id="userPassword2" name="user[password_confirm]" placeholder="Confirmar senha" type="password" minlength="8" required />
+						<input autocomplete="off" class="form-control" id="userPassword2" name="user[password_confirm]" placeholder="Confirmar senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">Confirme a senha.</div>
 					</div>
 				</div>
 			</section>
       <!-- /Step 2, User -->
 
-			<!-- STEP 3: Endereço -->
+			<!-- Step 3,Endereço -->
 			<section data-step="3" class="d-none">
 				<h2 class="h6 mb-3">Endereço</h2>
 
 				<div class="row g-3">
 					<div class="col-12 col-md-3">
-						<label class="form-label" for="addrCep">CEP</label>
-						<input class="form-control" id="addrCep" name="address[cep]" type="text" inputmode="numeric" required />
+						<input class="form-control" id="addressZipCode" name="address[zip_code]" placeholder="CEP" type="text" inputmode="numeric" required />
 						<div class="invalid-feedback">Informe o CEP.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<label class="form-label" for="addrStreet">Rua</label>
-						<input class="form-control" id="addrStreet" name="address[street]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addrStreet" name="address[street]" placeholder="Rua/logradouro" type="text" required />
 						<div class="invalid-feedback">Informe a rua.</div>
 					</div>
 
 					<div class="col-12 col-md-3">
-						<label class="form-label" for="addrNumber">Número</label>
-						<input class="form-control" id="addrNumber" name="address[number]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addrNumber" name="address[number]" type="text" required />
 						<div class="invalid-feedback">Informe o número.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
 						<label class="form-label" for="addrNeighborhood">Bairro</label>
-						<input class="form-control" id="addrNeighborhood" name="address[neighborhood]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addrNeighborhood" name="address[neighborhood]" type="text" required />
 						<div class="invalid-feedback">Informe o bairro.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
 						<label class="form-label" for="addrCity">Cidade</label>
-						<input class="form-control" id="addrCity" name="address[city]" type="text" required />
+						<input autocomplete="off" class="form-control" id="addrCity" name="address[city]" type="text" required />
 						<div class="invalid-feedback">Informe a cidade.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
 						<label class="form-label" for="addrState">Estado (UF)</label>
-						<input class="form-control" id="addrState" name="address[state]" type="text" maxlength="2" required />
+						<input autocomplete="off" class="form-control" id="addrState" name="address[state]" type="text" maxlength="2" required />
 						<div class="invalid-feedback">Informe a UF.</div>
 					</div>
 
 					<div class="col-12">
 						<label class="form-label" for="addrComplement">Complemento</label>
-						<input class="form-control" id="addrComplement" name="address[complement]" type="text" />
+						<input autocomplete="off" class="form-control" id="addrComplement" name="address[complement]" type="text" />
 					</div>
 				</div>
 			</section>
+      <!-- /Step 3, Endereço -->
 
 			<!-- STEP 4: Contatos -->
 			<section data-step="4" class="d-none">
