@@ -248,12 +248,12 @@
 				const target = e.target;
 				if (!(target instanceof HTMLElement))
 					{
-						return;
+          return;
 					}
 				const type = target.getAttribute("data-remove");
 				if (!type)
 					{
-						return;
+          return;
 					}
 				const block = target.closest(".border");
 				if (block)

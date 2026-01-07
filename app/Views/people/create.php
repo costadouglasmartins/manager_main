@@ -47,88 +47,81 @@
 	<div class="card shadow-sm">
 		<div class="card-body">
 
-			<!-- STEP 1: Pessoa -->
+			<!-- Step 1, Person -->
 			<section data-step="1">
 				<h2 class="h6 mb-3">Pessoa</h2>
 
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
-						<!--<label class="form-label" for="personName">Nome</label>-->
 						<input class="form-control" id="personName" name="person[name]" placeholder="Nome completo" type="text" required />
 						<div class="invalid-feedback">Informe o nome.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<!--<label class="form-label" for="personFantasy">Fantasia</label>-->
 						<input class="form-control" id="personFantasy" name="person[fantasy]" placeholder="Nome fantasia" type="text" required />
 						<div class="invalid-feedback">Informe a fantasia.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<!--<label class="form-label" for="personType">Tipo</label>-->
 						<select class="form-select" id="personType" name="person[type]" required>
 							<option value="" selected disabled>Selecione o tipo de pessoa...</option>
-							<option value="F">Física</option>
-							<option value="J">Jurídica</option>
+							<option value="root">Root</option>
+							<option value="admin">Administrador</option>
+              <option value="user">Usuário</option>
 						</select>
 						<div class="invalid-feedback">Selecione o tipo.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<!-- <label class="form-label" for="personDocument">Documento</label>-->
 						<input class="form-control" id="personDocument" name="person[document]" placeholder="Documento" type="text" required />
 						<div class="invalid-feedback">Informe o documento.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<!--<label class="form-label" for="personBirthdate">Data de nascimento</label>-->
-						<input class="form-control" id="personBirthdate" name="person[birthdate]" placeholder="Data de nascimento" type="date" required />
+						<input class="form-control mask-date" id="personBirthdate" name="person[birthdate]" placeholder="Data de nascimento" type="date" required />
 						<div class="invalid-feedback">Informe a data de nascimento.</div>
 					</div>
+          <input autocomplete="off" type="hidden" value="1" name="person[active]">
 				</div>
 			</section>
+      <!-- /Step 1, Person -->
 
-			<!-- STEP 2: Usuário -->
+			<!-- Stepe 2, User -->
 			<section data-step="2" class="d-none">
 				<h2 class="h6 mb-3">Usuário</h2>
 
 				<div class="row g-3">
 					<div class="col-12 col-md-4">
-						<!-- <label class="form-label" for="userUsername">Nome de usuário</label>-->
 						<input class="form-control" id="userUsername" name="user[username]" placeholder="Nome de usuário" type="text" required />
 						<div class="invalid-feedback">Informe o nome de usuário.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<!--<label class="form-label" for="userEmail">E-mail</label>-->
 						<input class="form-control" id="userEmail" name="user[email]" placeholder="Email" type="email" required />
 						<div class="invalid-feedback">Informe um e-mail válido.</div>
 					</div>
 
 					<div class="col-12 col-md-4">
-						<!--<label class="form-label" for="userType">Tipo de usuário</label>-->
 						<select class="form-select" id="userType" name="user[type]" required>
 							<option value="" selected disabled>Selecione um tipo...</option>
-							<option value="admin">Administrador</option>
-							<option value="manager">Gestor</option>
-							<option value="user">Usuário</option>
+							<option value="individual">Pessoa física</option>
+							<option value="company">Pessoa jurídica</option>
 						</select>
 						<div class="invalid-feedback">Selecione o tipo de usuário.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<!--<label class="form-label" for="userPassword">Senha</label>-->
 						<input class="form-control" id="userPassword" name="user[password]" placeholder="Senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">A senha deve ter pelo menos 8 caracteres.</div>
 					</div>
 
 					<div class="col-12 col-md-6">
-						<!--<label class="form-label" for="userPassword2">Confirmar senha</label>-->
-						<input class="form-control" id="userPassword2" name="user[password_confirm]" placehoder="Confirmar senha" type="password" minlength="8" required />
+						<input class="form-control" id="userPassword2" name="user[password_confirm]" placeholder="Confirmar senha" type="password" minlength="8" required />
 						<div class="invalid-feedback">Confirme a senha.</div>
 					</div>
 				</div>
 			</section>
+      <!-- /Step 2, User -->
 
 			<!-- STEP 3: Endereço -->
 			<section data-step="3" class="d-none">
@@ -276,10 +269,10 @@
 		</div>
 
 		<div class="card-footer bg-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
-			<button type="button" class="btn btn-outline-secondary" id="btnBack" disabled>Voltar</button>
+			<button type="button" class="btn btn-secondary" id="btnBack" disabled>Voltar</button>
 
 			<div class="d-flex flex-wrap gap-2">
-				<button type="button" class="btn btn-outline-secondary" id="btnSaveLater">Salvar rascunho</button>
+				<button type="button" class="btn btn-secondary" id="btnSaveLater">Salvar rascunho</button>
 				<button type="button" class="btn btn-primary" id="btnNext">Continuar</button>
 				<button type="submit" class="btn btn-success d-none" id="btnSubmit">Concluir</button>
 			</div>

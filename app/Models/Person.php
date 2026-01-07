@@ -58,6 +58,24 @@ class Person extends Model
 			// Store person id
 			$personId = $this->db->lastInsertId();
 
+      // SQL Address
+      $sqlAddress = "INSERT INTO addresses 
+                        (`street`, `number`, `observations`, `person_id` `created`, `modified`)
+                     VALUES 
+                        (:street, :number, :observations, :person_id, :created, :modified)";
+      
+      // Modify data before save
+      $stmtPerson = $this->db->prepare($sqlPerson);
+      $stmtPerson->execute([
+				'street' => $data['address']['name'],
+				'number' => $data['address']['number'],
+				'observations' => $data['address']['observations'],
+				'person_id' => intval($data['address']['person_id']),
+				'created' => date('Y-m-d H:i:s'),
+				'modified' => date('Y-m-d H:i:s')
+			]);
+      // Assign fields and values               
+      
 			// Save one user
 			$sqlUser = "INSERT INTO users
                       (`person_id`, `username`, `password`, `email`, `type`, `active`, `created`, `modified`)
