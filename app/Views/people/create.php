@@ -123,7 +123,7 @@
 			</section>
       <!-- /Step 2, User -->
 
-			<!-- Step 3,Endereço -->
+			<!-- Step 3,Address -->
 			<section data-step="3" class="d-none">
 				<h2 class="h6 mb-3">Endereço</h2>
 
@@ -165,7 +165,7 @@
 					</div>
 				</div>
 			</section>
-      <!-- /Step 3, Endereço -->
+      <!-- /Step 3, Address -->
 
 			<!-- STEP 4: Contatos -->
 			<section data-step="4" class="d-none">
