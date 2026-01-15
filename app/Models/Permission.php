@@ -142,7 +142,14 @@ class Permission extends Model
 
 	public function getUsers(): array
 		{
-		$stmt = $this->db->query("SELECT id, username, email, type FROM users ORDER BY username ASC");
+		$stmt = $this->db->query("SELECT 	User.id,
+                                      User.username,
+                                      Email.email
+                              FROM users AS User
+                              INNER JOIN people AS Person ON Person.id = User.person_id
+                              INNER JOIN emails AS Email ON Email.person_id = Person.id
+                              WHERE User.active = '1'
+                              LIMIT 1");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
