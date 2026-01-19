@@ -2,7 +2,7 @@
 $filters = $filters ?? ['id' => '', 'name' => '', 'acronym' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
-$total = $total ?? (is_array($country) ? count($country) : 0);
+$total = $total ?? (is_array($countries) ? count($countries) : 0);
 
 $queryFilters = http_build_query([
   'id' => $filters['id'],
@@ -66,8 +66,8 @@ $queryFilters = http_build_query([
       </tr>
     </thead>
     <tbody>
-      <?php if (!empty($country)): ?>
-        <?php foreach ($country as $row): ?>
+      <?php if (!empty($countries)): ?>
+        <?php foreach ($countries as $row): ?>
           <tr>
             <td style="width:1%;"><?= $row['id'] ?></td>
             <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
