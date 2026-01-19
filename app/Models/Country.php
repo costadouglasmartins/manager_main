@@ -33,75 +33,26 @@ class Country extends Model
 			$this->db->beginTransaction();
 
 			// Save one person
-			$sqlPerson = "INSERT INTO countries 
-                        (`name`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) 
+			$sql = "INSERT INTO countries 
+                        (`name`, `acronym`, `created`, `modified`) 
                       VALUES 
-                        ( :name, :type, :document, :active, :birthdate, :created, :modified)";
-			if (!empty($data['person']['birthdate']))
-				{
-				$data['person']['birthdate'] = dateBrToUs($data['person']['birthdate']);
-				}
-			else
-				{
-				$data['person']['birthdate'] = NULL;
-				}
-			$stmtPerson = $this->db->prepare($sqlPerson);
-			$stmtPerson->execute([
-				'name' => $data['person']['name'],
-				'type' => $data['person']['type'],
-				'document' => onlyDigits($data['person']['document']),
-				'active' => intval($data['person']['active']),
-				'birthdate' => $data['person']['birthdate'],
+                        ( :name, :acronym, :created, :modified)";
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute([
+				'name' => $data['name'],
+				'acronym' => $data['acronym'],
 				'created' => date('Y-m-d H:i:s'),
 				'modified' => date('Y-m-d H:i:s')
 			]);
 			// Store person id
-			$personId = $this->db->lastInsertId();
-
-      // SQL Address
-      $sqlAddress = "INSERT INTO addresses 
-                        (`street`, `number`, `observations`, `person_id` `created`, `modified`)
-                     VALUES 
-                        (:street, :number, :observations, :person_id, :created, :modified)";
-      
-      // Modify data before save
-      $stmtPerson = $this->db->prepare($sqlPerson);
-      $stmtPerson->execute([
-				'street' => $data['address']['name'],
-				'number' => $data['address']['number'],
-				'observations' => $data['address']['observations'],
-				'person_id' => intval($data['address']['person_id']),
-				'created' => date('Y-m-d H:i:s'),
-				'modified' => date('Y-m-d H:i:s')
-			]);
-      // Assign fields and values               
-      
-			// Save one user
-			$sqlUser = "INSERT INTO users
-                      (`person_id`, `username`, `password`, `email`, `type`, `active`, `created`, `modified`)
-                    VALUES
-                      (:person_id, :username, :password, :email, :type, :active, :created, :modified)";
-			$stmtUser = $this->db->prepare($sqlUser);
-			$stmtUser->execute([
-				'person_id' => $personId,
-				'username' => $data['user']['username'],
-				'password' => password_hash($data['user']['password'], PASSWORD_DEFAULT),
-				'email' => $data['user']['email'],
-				'type' => $data['user']['type'],
-				'active' => intval($data['user']['active']),
-				'created' => date('Y-m-d H:i:s'),
-				'modified' => date('Y-m-d H:i:s')
-			]);
-			// Store user id
-			$userId = $this->db->lastInsertId();
+			$countryId = $this->db->lastInsertId();
 
 			// Confirms the transaction
 			$this->db->commit();
 
 			// Retorna os IDs criados
 			return [
-				'person_id' => $personId,
-				'user_id' => $userId
+				'country_id' => $countryId,
 			];
 			}
 		catch (\Exception $e)
@@ -135,20 +86,14 @@ class Country extends Model
         UPDATE countries
         SET
             `name`      = :name,
-            `type`      = :type,
-            `document`  = :document,
-            `active`    = :active,
-            `birthdate` = :birthdate,
+            `acronym`   = :acronym,
             `modified`  = :modified
         WHERE id = :id
     ");
 
     $stmt->execute([
         'name'      => $data['name'],
-        'type'      => $data['type'],
-        'document'  => onlyDigits($data['document']),
-        'active'    => $data['active'],
-        'birthdate' => (!empty($data['birthdate'] && $data['birthdate'] !== '') ? dateBrToUs($data['birthdate']) : NULL),
+        'acronym'   => $data['acronym'],
         'modified'  => date('Y-m-d H:i:s'),
         'id'        => $id
     ]);
