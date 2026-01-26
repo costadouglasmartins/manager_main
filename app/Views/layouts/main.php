@@ -45,6 +45,19 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="menuCadastros">
               <li class="dropdown-submenu">
+                <a class="dropdown-item submenu-toggle" href="#">Países</a>
+                <ul class="dropdown-menu">
+                  <?php if (authCan('country.index')): ?>
+                    <li><a class="dropdown-item" href="<?= url('country'); ?>"><i class="bi bi-list-ul me-2"></i> Listar</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
+                  <?php if (authCan('country.create')): ?>
+                    <li><a class="dropdown-item" href="<?= url('country/create'); ?>"><i class="bi bi-plus-circle me-2"></i> Cadastrar</a></li>
+                  <?php endif; ?>
+                </ul>
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#">Pessoas</a>
                 <ul class="dropdown-menu">
                   <?php if (authCan('person.index')): ?>
