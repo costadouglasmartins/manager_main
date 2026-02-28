@@ -152,7 +152,17 @@ class User extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT * FROM users WHERE id = :id");
+		$stmt = $this->db->prepare("SELECT 	User.id,
+                                        User.username,
+                                        User.type,
+                                        User.active,
+                                        Email.email
+                                  FROM users AS User
+                                  INNER JOIN people AS Person ON Person.id = User.person_id
+                                  INNER JOIN emails AS Email ON Email.person_id = Person.id
+                                  WHERE User.active = 1 
+                                  AND User.id = :id
+                                  LIMIT 1");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -184,30 +194,30 @@ class User extends Model
 	 * @return array
 	 */
 	public function findByEmail(string $email): ?array
-  {
-  $sql = "SELECT  User.id,
-                  User.username,
-                  User.password,
-                  User.active,
-                  Email.email,
-                  User.type,
-                  Person.name,
-                  Person.type AS person_type,
-                  Person.document
-          FROM users AS User
-          INNER JOIN people AS Person ON Person.id = User.person_id
-          INNER JOIN emails  AS Email ON Email.person_id = Person.id
-          WHERE User.active = 1
-            AND User.type = 'root'
-            AND Email.email = :email
-          LIMIT 1";
+    {
+    $sql = "SELECT  User.id,
+                    User.username,
+                    User.password,
+                    User.active,
+                    Email.email,
+                    User.type,
+                    Person.name,
+                    Person.type AS person_type,
+                    Person.document
+            FROM users AS User
+            INNER JOIN people AS Person ON Person.id = User.person_id
+            INNER JOIN emails  AS Email ON Email.person_id = Person.id
+            WHERE User.active = 1
+              AND User.type = 'root'
+              AND Email.email = :email
+            LIMIT 1";
 
-  $stmt = $this->db->prepare($sql);
-  $stmt->execute([':email' => trim($email)]);
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':email' => trim($email)]);
 
-  $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-  return $row ?: null;
-  }
+    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+    return $row ?: null;
+    }
 
 	/**
 	 * Authenticate method
