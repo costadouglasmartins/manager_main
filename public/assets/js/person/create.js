@@ -192,13 +192,13 @@
 				rows.push(["Usuário / Tipo", normalizeValue(document.getElementById("userType"))]);
 
 				// Endereço
-				rows.push(["Endereço / CEP", normalizeValue(document.getElementById("addrCep"))]);
-				rows.push(["Endereço / Rua", normalizeValue(document.getElementById("addrStreet"))]);
-				rows.push(["Endereço / Número", normalizeValue(document.getElementById("addrNumber"))]);
-				rows.push(["Endereço / Bairro", normalizeValue(document.getElementById("addrNeighborhood"))]);
-				rows.push(["Endereço / Cidade", normalizeValue(document.getElementById("addrCity"))]);
-				rows.push(["Endereço / Estado", normalizeValue(document.getElementById("addrState"))]);
-				rows.push(["Endereço / Complemento", normalizeValue(document.getElementById("addrComplement"))]);
+				rows.push(["Endereço / CEP", normalizeValue(document.getElementById("addressZipCode"))]);
+				rows.push(["Endereço / Rua", normalizeValue(document.getElementById("addressStreet"))]);
+				rows.push(["Endereço / Número", normalizeValue(document.getElementById("addressNumber"))]);
+				rows.push(["Endereço / Bairro", normalizeValue(document.getElementById("addressNeighborhood"))]);
+				rows.push(["Endereço / Cidade", normalizeValue(document.getElementById("addressCity"))]);
+				rows.push(["Endereço / Estado", normalizeValue(document.getElementById("addressState"))]);
+				rows.push(["Endereço / Complemento", normalizeValue(document.getElementById("addressComplement"))]);
 
 				// Telefones
 				const phoneBlocks = Array.from(phonesContainer.querySelectorAll("[data-remove='phone']")).map((btn) => btn.closest(".border"));
@@ -235,6 +235,7 @@
 				rows.forEach((r) => {
 					const label = r[0];
 					const val = r[1] ? r[1] : "—";
+          console.log(">>>>>",r);
 					const tr = document.createElement("tr");
 					tr.innerHTML =
 					"<td class='text-body-secondary'>" + escapeHtml(label) + "</td>" +
@@ -356,11 +357,11 @@
 						e.preventDefault();
 						e.stopPropagation();
 						form.classList.add("was-validated");
+            //form.submit();
             localStorage.removeItem("signupDraftBlocks");
 						return;
 					}
-
-				e.preventDefault();
+        e.preventDefault();
 				alert("Cadastro concluído (exemplo). Aqui você enviaria ao servidor.");
 			});
 

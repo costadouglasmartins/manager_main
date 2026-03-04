@@ -275,4 +275,4 @@
 		</div>
 	</div>
 </form>
-<script src="<?= url('assets/js/person/create.js'); ?>"></script>
+<script src="<?= url('assets/js/person/create.js?v=1'); ?>"></script>
