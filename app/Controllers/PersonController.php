@@ -80,10 +80,6 @@ class PersonController extends Controller
 		$this->view('people/create', ['title' => 'Nova pessoa']);
 		}
   
-	public function create_()
-		{
-		$this->view('people/create_', ['title' => 'Nova pessoa']);
-		}
 	/**
 	 * Store method
 	 */

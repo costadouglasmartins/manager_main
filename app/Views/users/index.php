@@ -171,13 +171,21 @@ $queryFilters = http_build_query([
 				</a>
 			</li>
 
-			<?php for ($i = 1; $i <= $totalPages; $i++): ?>
-				<li class="page-item <?= $i === (int) $page ? 'active' : '' ?>">
-					<a class="page-link" href="<?= url('user?page=' . $i) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">
-						<?= $i ?>
+			<?php
+			$delta = 2;
+			$pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
+			sort($pgList);
+			$prevPg = null;
+			foreach ($pgList as $p):
+				if ($prevPg !== null && $p - $prevPg > 1): ?>
+					<li class="page-item disabled"><span class="page-link">...</span></li>
+				<?php endif; ?>
+				<li class="page-item <?= $p === (int) $page ? 'active' : '' ?>">
+					<a class="page-link" href="<?= url('user?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">
+						<?= $p ?>
 					</a>
 				</li>
-			<?php endfor; ?>
+			<?php $prevPg = $p; endforeach; ?>
 
 			<li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
 				<a class="page-link" href="<?= url('user?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">

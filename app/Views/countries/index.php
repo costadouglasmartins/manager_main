@@ -98,9 +98,17 @@ $queryFilters = http_build_query([
     <ul class="pagination">
       <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('country?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
 
-      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <li class="page-item <?= $i === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('country?page=' . $i) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $i ?></a></li>
-      <?php endfor; ?>
+      <?php
+      $delta = 2;
+      $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
+      sort($pgList);
+      $prevPg = null;
+      foreach ($pgList as $p):
+        if ($prevPg !== null && $p - $prevPg > 1): ?>
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+        <?php endif; ?>
+        <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('country?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
+      <?php $prevPg = $p; endforeach; ?>
 
       <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('country?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
     </ul>

@@ -1,0 +1,117 @@
+<?php
+$filters = $filters ?? ['id' => '', 'name' => '', 'acronym' => ''];
+$page = $page ?? 1;
+$totalPages = $totalPages ?? 1;
+$total = $total ?? (is_array($states) ? count($states) : 0);
+
+$queryFilters = http_build_query([
+  'id'      => $filters['id'],
+  'name'    => $filters['name'],
+  'acronym' => $filters['acronym'],
+]);
+?>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<?= url('home'); ?>">Início</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Estados</li>
+  </ol>
+</nav>
+
+<h5>Lista de Estados</h5>
+
+<form action="<?= url('state'); ?>" class="row g-3 mb-3" method="get">
+
+  <div class="col-12 col-lg-9">
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6 col-lg-4">
+        <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-4">
+        <input class="form-control" id="name" name="name" type="text" placeholder="Nome" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-4">
+        <input class="form-control" id="acronym" name="acronym" type="text" placeholder="Sigla" value="<?= htmlspecialchars($filters['acronym'], ENT_QUOTES, 'UTF-8') ?>">
+      </div>
+
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-3">
+    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
+      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
+      <a href="<?= url('state'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?php if (authCan('state.create')): ?>
+        <a href="<?= url('state/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
+      <?php endif; ?>
+    </div>
+  </div>
+
+</form>
+
+<hr>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Sigla</th>
+        <th>País</th>
+        <th class="text-end">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (!empty($states)): ?>
+        <?php foreach ($states as $row): ?>
+          <tr>
+            <td style="width:1%;"><?= $row['id'] ?></td>
+            <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($row['acronym'], ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($row['country_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+            <td style="width:1%;" class="text-nowrap text-end">
+              <?php if (authCan('state.edit')): ?>
+                <a href="<?= url('state/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+              <?php endif; ?>
+              <?php if (authCan('state.informations')): ?>
+                <a href="<?= url('state/informations/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr>
+          <td colspan="5" class="text-center">Nenhum registro encontrado.</td>
+        </tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
+</div>
+
+<p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
+
+<?php if ($totalPages > 1): ?>
+  <nav aria-label="Paginação de estados" class="d-flex justify-content-center">
+    <ul class="pagination">
+      <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('state?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
+
+      <?php
+      $delta = 2;
+      $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
+      sort($pgList);
+      $prevPg = null;
+      foreach ($pgList as $p):
+        if ($prevPg !== null && $p - $prevPg > 1): ?>
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+        <?php endif; ?>
+        <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('state?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
+      <?php $prevPg = $p; endforeach; ?>
+
+      <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('state?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
+    </ul>
+  </nav>
+<?php endif; ?>
