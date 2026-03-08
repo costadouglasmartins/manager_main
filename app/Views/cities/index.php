@@ -29,8 +29,9 @@ $queryFilters = http_build_query([
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <input class="form-control" id="name" name="name" type="text" placeholder="Nome" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+      <div class="col-12 col-md-6 col-lg-4 position-relative">
+        <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da cidade..." name="name" data-endpoint="<?= url('city/autocomplete'); ?>" data-results="#cityResults" data-hidden="#id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="cityResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
       <div class="col-12 col-md-6 col-lg-4">
@@ -113,3 +114,5 @@ $queryFilters = http_build_query([
     </ul>
   </nav>
 <?php endif; ?>
+
+<script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>
