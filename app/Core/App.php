@@ -13,7 +13,7 @@ class App
 		{
 		$url = $this->parseUrl();
 
-		$controllerName = isset($url[0]) ? ucfirst($url[0]) . 'Controller' : $this->controller;
+		$controllerName = isset($url[0]) ? str_replace('_', '', ucwords($url[0], '_')) . 'Controller' : $this->controller;
 		$controllerFile = __DIR__ . '/../Controllers/' . $controllerName . '.php';
 
 		if (file_exists($controllerFile))

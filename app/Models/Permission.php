@@ -101,7 +101,7 @@ class Permission extends Model
 				}
 
 			$controllerName = preg_replace('/Controller\.php$/', '', $base);
-			$module = strtolower((string) $controllerName);
+			$module = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', (string) $controllerName));
 
 			$code = @file_get_contents($file);
 			if (!is_string($code) || $code === '')
