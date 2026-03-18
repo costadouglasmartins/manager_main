@@ -124,8 +124,13 @@ class PersonController extends Controller
 		$this->requirePermission('person.informations');
 		$person = new Person();
 		$data = $person->findAllByPersonId($id);
-		$this->view('people/informations', ['title' => 'Informações sobre a pessoa',
-			'people' => $data['people']]);
+		$this->view('people/informations', [
+			'title'  => 'Informações sobre a pessoa',
+			'person' => $data['person'],
+			'user'   => $data['user'],
+			'phones' => $data['phones'],
+			'emails' => $data['emails'],
+		]);
 		}
 
 	/**

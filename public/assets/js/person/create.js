@@ -2,18 +2,18 @@
 	{
 		const form = document.getElementById("signupForm");
 
-		// Se este JS for carregado em uma página que não tem o formulário, não faz nada.
 		if (!form)
 			{
 				return;
 			}
 
+		const TOTAL_STEPS = 4;
+
 		const steps = [
-			{n: 1, title: "Etapa 1 de 5", subtitle: "Pessoa"},
-			{n: 2, title: "Etapa 2 de 5", subtitle: "Usuário"},
-			{n: 3, title: "Etapa 3 de 5", subtitle: "Endereço"},
-			{n: 4, title: "Etapa 4 de 5", subtitle: "Contatos"},
-			{n: 5, title: "Etapa 5 de 5", subtitle: "Revisão"}
+			{n: 1, title: "Etapa 1 de 4", subtitle: "Pessoa"},
+			{n: 2, title: "Etapa 2 de 4", subtitle: "Usuário"},
+			{n: 3, title: "Etapa 3 de 4", subtitle: "Contatos"},
+			{n: 4, title: "Etapa 4 de 4", subtitle: "Revisão"}
 		];
 
 		let currentStep = 1;
@@ -26,7 +26,6 @@
 		const btnBack = document.getElementById("btnBack");
 		const btnNext = document.getElementById("btnNext");
 		const btnSubmit = document.getElementById("btnSubmit");
-		const btnSaveLater = document.getElementById("btnSaveLater");
 
 		const userPassword = document.getElementById("userPassword");
 		const userPassword2 = document.getElementById("userPassword2");
@@ -41,10 +40,9 @@
 
 		const reviewBody = document.getElementById("reviewBody");
 
-		// Proteção adicional: se faltar algo essencial, evita quebrar com addEventListener em null.
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
-			"btnBack", "btnNext", "btnSubmit", "btnSaveLater",
+			"btnBack", "btnNext", "btnSubmit",
 			"phonesContainer", "emailsContainer", "phoneTemplate", "emailTemplate",
 			"btnAddPhone", "btnAddEmail", "reviewBody",
 			"userPassword", "userPassword2"
@@ -53,7 +51,6 @@
 		const missing = requiredIds.filter((id) => !document.getElementById(id));
 		if (missing.length)
 			{
-				// Opcional: log para facilitar diagnóstico
 				console.warn("create.js: elementos ausentes no DOM:", missing);
 				return;
 			}
@@ -70,9 +67,9 @@
 				const meta = steps.find((s) => s.n === currentStep);
 				stepTitle.textContent = meta.title;
 				stepSubtitle.textContent = meta.subtitle;
-				stepBadge.textContent = currentStep + "/5";
+				stepBadge.textContent = currentStep + "/" + TOTAL_STEPS;
 
-				const pct = Math.round((currentStep / 5) * 100);
+				const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
 				progressBar.style.width = pct + "%";
 
 				document.querySelectorAll("[data-step-jump]").forEach((b) => {
@@ -90,8 +87,8 @@
 				});
 
 				btnBack.disabled = currentStep === 1;
-				btnNext.classList.toggle("d-none", currentStep === 5);
-				btnSubmit.classList.toggle("d-none", currentStep !== 5);
+				btnNext.classList.toggle("d-none", currentStep === TOTAL_STEPS);
+				btnSubmit.classList.toggle("d-none", currentStep !== TOTAL_STEPS);
 			}
 
 		function getCurrentStepRequiredControls()
@@ -112,7 +109,7 @@
 					{
 						if (userPassword.value !== userPassword2.value)
 							{
-								userPassword2.setCustomValidity("Senhas diferentes");
+								userPassword2.setCustomValidity("As senhas não coincidem.");
 							}
 						else
 							{
@@ -181,24 +178,14 @@
 
 				// Pessoa
 				rows.push(["Pessoa / Nome", normalizeValue(document.getElementById("personName"))]);
-				rows.push(["Pessoa / Fantasia", normalizeValue(document.getElementById("personFantasy"))]);
+				rows.push(["Pessoa / Nome fantasia", normalizeValue(document.getElementById("personFantasy"))]);
 				rows.push(["Pessoa / Tipo", normalizeValue(document.getElementById("personType"))]);
 				rows.push(["Pessoa / Documento", normalizeValue(document.getElementById("personDocument"))]);
 				rows.push(["Pessoa / Nascimento", normalizeValue(document.getElementById("personBirthdate"))]);
 
 				// Usuário
 				rows.push(["Usuário / Username", normalizeValue(document.getElementById("userUsername"))]);
-				rows.push(["Usuário / E-mail", normalizeValue(document.getElementById("userEmail"))]);
-				rows.push(["Usuário / Tipo", normalizeValue(document.getElementById("userType"))]);
-
-				// Endereço
-				rows.push(["Endereço / CEP", normalizeValue(document.getElementById("addressZipCode"))]);
-				rows.push(["Endereço / Rua", normalizeValue(document.getElementById("addressStreet"))]);
-				rows.push(["Endereço / Número", normalizeValue(document.getElementById("addressNumber"))]);
-				rows.push(["Endereço / Bairro", normalizeValue(document.getElementById("addressNeighborhood"))]);
-				rows.push(["Endereço / Cidade", normalizeValue(document.getElementById("addressCity"))]);
-				rows.push(["Endereço / Estado", normalizeValue(document.getElementById("addressState"))]);
-				rows.push(["Endereço / Complemento", normalizeValue(document.getElementById("addressComplement"))]);
+				rows.push(["Usuário / Tipo de acesso", normalizeValue(document.getElementById("userType"))]);
 
 				// Telefones
 				const phoneBlocks = Array.from(phonesContainer.querySelectorAll("[data-remove='phone']")).map((btn) => btn.closest(".border"));
@@ -216,7 +203,7 @@
 						rows.push(["Telefones", "—"]);
 					}
 
-				// Emails adicionais
+				// E-mails
 				const emailBlocks = Array.from(emailsContainer.querySelectorAll("[data-remove='email']")).map((btn) => btn.closest(".border"));
 				if (emailBlocks.length)
 					{
@@ -229,13 +216,12 @@
 					}
 				else
 					{
-						rows.push(["E-mails adicionais", "—"]);
+						rows.push(["E-mails", "—"]);
 					}
 
 				rows.forEach((r) => {
 					const label = r[0];
 					const val = r[1] ? r[1] : "—";
-          console.log(">>>>>",r);
 					const tr = document.createElement("tr");
 					tr.innerHTML =
 					"<td class='text-body-secondary'>" + escapeHtml(label) + "</td>" +
@@ -249,12 +235,12 @@
 				const target = e.target;
 				if (!(target instanceof HTMLElement))
 					{
-          return;
+						return;
 					}
 				const type = target.getAttribute("data-remove");
 				if (!type)
 					{
-          return;
+						return;
 					}
 				const block = target.closest(".border");
 				if (block)
@@ -262,10 +248,6 @@
 						block.remove();
 					}
 			});
-
-		// Add initial rows
-		addPhoneRow();
-		addEmailRow();
 
 		btnAddPhone.addEventListener("click", function ()
 			{
@@ -293,7 +275,7 @@
 						{
 							form.classList.remove("was-validated");
 							showStep(to);
-							if (to === 5)
+							if (to === TOTAL_STEPS)
 								{
 									buildReview();
 								}
@@ -314,41 +296,13 @@
 						return;
 					}
 				form.classList.remove("was-validated");
-				const next = Math.min(5, currentStep + 1);
+				const next = Math.min(TOTAL_STEPS, currentStep + 1);
 				showStep(next);
-				if (next === 5)
+				if (next === TOTAL_STEPS)
 					{
 						buildReview();
 					}
 			});
-
-		btnSaveLater.addEventListener("click", function ()
-			{
-				const data = Object.fromEntries(new FormData(form).entries());
-				localStorage.setItem("signupDraftBlocks", JSON.stringify(data));
-				alert("Rascunho salvo localmente (exemplo).");
-			});
-
-		// Restore draft (observação: FormData não persiste arrays dinâmicos do jeito esperado)
-		const draft = localStorage.getItem("signupDraftBlocks");
-		if (draft)
-			{
-				try
-					{
-						const data = JSON.parse(draft);
-						Object.keys(data).forEach((k) => {
-							const el = form.querySelector("[name='" + k + "']");
-							if (el)
-								{
-									el.value = data[k];
-								}
-						});
-					}
-				catch (e)
-					{
-						// ignore
-					}
-			}
 
 		form.addEventListener("submit", function (e)
 			{
@@ -357,12 +311,9 @@
 						e.preventDefault();
 						e.stopPropagation();
 						form.classList.add("was-validated");
-            //form.submit();
-            localStorage.removeItem("signupDraftBlocks");
 						return;
 					}
-        e.preventDefault();
-				alert("Cadastro concluído (exemplo). Aqui você enviaria ao servidor.");
+				// Form is valid — allow native submit
 			});
 
 		showStep(1);
