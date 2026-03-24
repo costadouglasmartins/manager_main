@@ -176,13 +176,11 @@ class User extends Model
 		{
 		$stmt = $this->db->prepare("UPDATE users SET `username` = :username, 
                                                  `password` = :password,
-                                                 `email`    = :email,
                                                  `type`     = :type,
                                                  `active`   = :active
                                                  WHERE id = :id");
 		$stmt->execute(['username' => $data['username'], 
                     'password' => password_hash($data['password'], PASSWORD_DEFAULT),
-                    'email'    => $data['email'],
                     'type'     => $data['type'],
                     'active'   => $data['active'], 
                     'id'       => $id]);
@@ -210,6 +208,7 @@ class User extends Model
             WHERE User.active = 1
               AND User.type = 'root'
               AND Email.email = :email
+              AND Email.is_login = '1'
             LIMIT 1";
 
     $stmt = $this->db->prepare($sql);

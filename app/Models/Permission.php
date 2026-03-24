@@ -148,8 +148,8 @@ class Permission extends Model
                               FROM users AS User
                               INNER JOIN people AS Person ON Person.id = User.person_id
                               INNER JOIN emails AS Email ON Email.person_id = Person.id
-                              WHERE User.active = '1'
-                              LIMIT 1");
+                              WHERE User.active = '1' 
+                              AND Email.is_login = '1'");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
