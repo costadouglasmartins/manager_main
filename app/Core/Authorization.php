@@ -78,10 +78,10 @@ class Authorization
 			}
 
 		// Failsafe: allow root to access permission manager to prevent lockout.
-		if ($ability === 'permission.manage' && (($user['type'] ?? '') === 'root'))
-			{
-			return true;
-			}
+		//if ($ability === 'permission.manage' && (($user['type'] ?? '') === 'root'))
+		//	{
+		//	return true;
+		//	}
 
 		$abilities = self::abilities();
 
