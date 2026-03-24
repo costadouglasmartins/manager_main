@@ -165,8 +165,9 @@ $queryFilters = http_build_query([
 
 <!-- Pagination -->
 <?php if ($totalPages > 1): ?>
-	<nav aria-label="Paginação de pessoas" class="d-flex justify-content-center">
-		<ul class="pagination">
+	<div class="overflow-auto">
+  <nav aria-label="Paginação de pessoas">
+		<ul class="pagination pagination-sm flex-nowrap mb-0">
 			<li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
 				<a class="page-link" href="<?= url('person?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">
 					Anterior
@@ -196,6 +197,7 @@ $queryFilters = http_build_query([
 			</li>
 		</ul>
 	</nav>
+</div>
 <?php endif; ?>
 <!-- /Pagination -->
 <script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>

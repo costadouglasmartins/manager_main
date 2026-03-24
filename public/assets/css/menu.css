@@ -14,9 +14,11 @@
   margin-top: -0.25rem;
   display: none;
   position: absolute;
+  z-index: 1031; /* acima da navbar (1030) em todos os níveis */
 }
 
-.dropdown-submenu:hover > .dropdown-menu {
+/* JS controla abertura — .show é aplicado via menu.js */
+.dropdown-submenu.show > .dropdown-menu {
   display: block;
 }
 
@@ -25,6 +27,7 @@
     position: static;
     display: none;
     margin-left: 1rem;
+    z-index: auto;
   }
   .dropdown-submenu.show > .dropdown-menu {
     display: block;
@@ -40,8 +43,7 @@
   display: inline-block;
 }
 
-.dropdown-submenu.show > .submenu-toggle::after,
-.dropdown-submenu:hover > .submenu-toggle::after {
+.dropdown-submenu.show > .submenu-toggle::after {
   transform: rotate(90deg);
 }
 

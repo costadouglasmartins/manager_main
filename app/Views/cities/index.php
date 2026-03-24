@@ -94,25 +94,27 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <nav aria-label="Paginação de cidades" class="d-flex justify-content-center">
-    <ul class="pagination">
-      <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('city?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
+  <div class="overflow-auto">
+    <nav aria-label="Paginação de cidades">
+      <ul class="pagination pagination-sm flex-nowrap mb-0">
+        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('city?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
 
-      <?php
-      $delta = 2;
-      $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
-      sort($pgList);
-      $prevPg = null;
-      foreach ($pgList as $p):
-        if ($prevPg !== null && $p - $prevPg > 1): ?>
-          <li class="page-item disabled"><span class="page-link">...</span></li>
-        <?php endif; ?>
-        <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('city?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
-      <?php $prevPg = $p; endforeach; ?>
+        <?php
+        $delta = 2;
+        $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
+        sort($pgList);
+        $prevPg = null;
+        foreach ($pgList as $p):
+          if ($prevPg !== null && $p - $prevPg > 1): ?>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          <?php endif; ?>
+          <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('city?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
+        <?php $prevPg = $p; endforeach; ?>
 
-      <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('city?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
-    </ul>
-  </nav>
+        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('city?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
+      </ul>
+    </nav>
+  </div>
 <?php endif; ?>
 
 <script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>

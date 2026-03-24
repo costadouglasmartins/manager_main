@@ -102,8 +102,9 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <nav aria-label="Paginação de endereços" class="d-flex justify-content-center">
-    <ul class="pagination">
+  <div class="overflow-auto">
+  <nav aria-label="Paginação de endereços">
+    <ul class="pagination pagination-sm flex-nowrap mb-0">
       <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('address?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
 
       <?php
@@ -121,4 +122,5 @@ $queryFilters = http_build_query([
       <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('address?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
     </ul>
   </nav>
+</div>
 <?php endif; ?>
