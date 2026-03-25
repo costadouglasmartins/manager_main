@@ -95,25 +95,5 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <div class="overflow-auto">
-  <nav aria-label="Paginação de telefones">
-    <ul class="pagination pagination-sm flex-nowrap mb-0">
-      <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('phone_number?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
-
-      <?php
-      $delta = 2;
-      $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
-      sort($pgList);
-      $prevPg = null;
-      foreach ($pgList as $p):
-        if ($prevPg !== null && $p - $prevPg > 1): ?>
-          <li class="page-item disabled"><span class="page-link">...</span></li>
-        <?php endif; ?>
-        <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('phone_number?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
-      <?php $prevPg = $p; endforeach; ?>
-
-      <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('phone_number?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
-    </ul>
-  </nav>
-</div>
+  <?= paginationLinks('phone_number', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
