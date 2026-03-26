@@ -72,4 +72,4 @@
 </form>
 <!-- /Endereço -->
 
-<script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

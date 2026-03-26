@@ -26,10 +26,11 @@ class Email extends Model
 			{
 			$this->db->beginTransaction();
 
-			$sql = "INSERT INTO emails (`email`, `observations`, `person_id`, `created`) VALUES (:email, :observations, :person_id, :created)";
+			$sql = "INSERT INTO emails (`email`, `is_login`, `observations`, `person_id`, `created`) VALUES (:email, :is_login, :observations, :person_id, :created)";
 			$stmt = $this->db->prepare($sql);
 			$stmt->execute([
 				'email'        => $data['email'],
+				'is_login'     => $data['type'] ?? null,
 				'observations' => $data['observations'] ?? null,
 				'person_id'    => !empty($data['person_id']) ? (int) $data['person_id'] : null,
 				'created'      => date('Y-m-d H:i:s'),

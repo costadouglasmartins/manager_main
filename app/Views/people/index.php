@@ -36,10 +36,10 @@ $queryFilters = http_build_query([
         <input class="form-control" id="id" name="id" type="text" placeholder="Código pessoa" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6 col-lg-4 position-relative">
         <!--<label for="name" class="form-label">Pessoa</label>-->
 				<input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da pessoa..." name="name" data-endpoint="<?= url('person/autocomplete'); ?>" data-results="#personResults" data-hidden="#id" data-minlen="1" data-param="term" value="<?= $filters['name']; ?>">
-        <ul id="personResults" class="list-group mt-1" style="overflow: auto; position: absolute !important;"></ul>
+        <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
       <!-- Linha 2 -->
       <div class="col-12 col-md-6 col-lg-4">
@@ -168,4 +168,4 @@ $queryFilters = http_build_query([
 	<?= paginationLinks('person', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 <!-- /Pagination -->
-<script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

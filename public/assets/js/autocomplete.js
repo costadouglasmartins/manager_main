@@ -53,8 +53,24 @@
     function clearList()
       {
       list.innerHTML = '';
+      list.removeAttribute('style');
       activeIndex = -1;
       itemsCache = [];
+      }
+
+    function positionList()
+      {
+      const rect = input.getBoundingClientRect();
+      const maxH = window.innerHeight - rect.bottom - 8;
+
+      list.style.setProperty('position',   'fixed',                          'important');
+      list.style.setProperty('top',        rect.bottom + 'px',               'important');
+      list.style.setProperty('left',       rect.left + 'px',                 'important');
+      list.style.setProperty('width',      rect.width + 'px',                'important');
+      list.style.setProperty('max-height', Math.min(240, maxH) + 'px',       'important');
+      list.style.setProperty('overflow-y', 'auto',                           'important');
+      list.style.setProperty('overflow-x', 'hidden',                         'important');
+      list.style.setProperty('z-index',    '1050',                           'important');
       }
 
     function setActive(index)
@@ -226,6 +242,7 @@
 
       if (itemsCache.length)
         {
+        positionList();
         setActive(0);
         }
       });
@@ -268,6 +285,14 @@
       if (e.target !== input && !list.contains(e.target))
         {
         clearList();
+        }
+      });
+
+    window.addEventListener('resize', () =>
+      {
+      if (list.children.length > 0)
+        {
+        positionList();
         }
       });
     }

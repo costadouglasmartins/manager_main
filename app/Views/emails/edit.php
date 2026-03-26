@@ -18,6 +18,15 @@
       <label class="form-label" for="email">E-mail</label>
       <input autocomplete="off" class="form-control" id="email" name="email" maxlength="255" type="email" value="<?= htmlspecialchars($email['email'], ENT_QUOTES, 'UTF-8'); ?>">
     </div>
+    
+    <div class="mb-2 col-md-6 col-lg-12">
+      <label class="form-label" for="type">Utilizar para login</label>
+      <select class="form-select" id="type" name="type">
+        <option value="" <?= !$email['is_login'] ? 'selected' : ''; ?>>Selecione...</option>
+        <option value="0" <?= $email['is_login'] === 0 ? 'selected' : ''; ?>>Não</option>
+        <option value="1" <?= $email['is_login'] === 1 ? 'selected' : ''; ?>>Sim</option>
+      </select>
+    </div>
 
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="observations">Observações</label>
@@ -50,4 +59,4 @@
 </form>
 <!-- /E-mail -->
 
-<script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

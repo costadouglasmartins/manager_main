@@ -20,6 +20,15 @@
     </div>
 
     <div class="mb-2 col-md-6 col-lg-12">
+      <label class="form-label" for="type">Utilizar para login</label>
+      <select class="form-select" id="type" name="type">
+        <option value="">Selecione...</option>
+        <option value="0">Não</option>
+        <option value="1">Sim</option>
+      </select>
+    </div>
+
+    <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="observations">Observações</label>
       <input autocomplete="off" class="form-control" id="observations" name="observations" maxlength="500" type="text">
     </div>
@@ -49,4 +58,4 @@
 </form>
 <!-- /E-mail -->
 
-<script src="<?= url('assets/js/autocomplete.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
