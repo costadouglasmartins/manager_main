@@ -249,6 +249,7 @@
         </ul>
         <!-- Sistema -->
         <ul class="navbar-nav mb-2 mb-lg-0">
+        <?php if (!empty($_SESSION['manager_main']['user'])): ?>
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-gear-fill"></i>&nbsp;Sistema
@@ -259,6 +260,8 @@
               <?php endif; ?>
             </ul>
           </li>
+        <?php endif; ?>
+        </ul>
         <!-- Usuário -->
         <ul class="navbar-nav mb-2 mb-lg-0">
           <li class="nav-item dropdown me-lg-3">
