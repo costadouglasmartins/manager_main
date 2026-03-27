@@ -34,10 +34,12 @@ class Permission extends Model
 			return false;
 			}
 
-		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description) VALUES (:ability, :description)");
+		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description, created, modified) VALUES (:ability, :description, :created, :modified)");
 		$stmt->execute([
 			'ability' => $ability,
-			'description' => ($description === '' ? null : $description)
+			'description' => ($description === '' ? null : $description),
+			'created' => date('Y-m-d H:i:s'),
+			'modified' => date('Y-m-d H:i:s')
 			]);
 
 		return ($stmt->rowCount() > 0);
@@ -54,13 +56,15 @@ class Permission extends Model
 		$discovered = $this->discoverAbilitiesFromControllers($controllersDir);
 
 		$added = 0;
-		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description) VALUES (:ability, :description)");
+		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description, created, modified) VALUES (:ability, :description, :created, :modified)");
 
 		foreach ($discovered as $ability => $description)
 			{
 			$stmt->execute([
 				'ability' => $ability,
-				'description' => $description
+				'description' => $description,
+				'created' => date('Y-m-d H:i:s'),
+				'modified' => date('Y-m-d H:i:s')
 				]);
 
 			if ($stmt->rowCount() > 0)
@@ -190,8 +194,8 @@ class Permission extends Model
 			if (!empty($permissionIds))
 				{
 				$ins = $this->db->prepare("
-					INSERT INTO user_permissions (user_id, permission_id)
-					VALUES (:user_id, :permission_id)
+					INSERT INTO user_permissions (user_id, permission_id, created, modified)
+					VALUES (:user_id, :permission_id, :created, :modified)
 				");
 
 				foreach ($permissionIds as $pid)
@@ -201,7 +205,9 @@ class Permission extends Model
 						{
 						$ins->execute([
 							'user_id' => $userId,
-							'permission_id' => $pid
+							'permission_id' => $pid,
+              'created' => date('Y-m-d H:i:s'),
+              'modified' => date('Y-m-d H:i:s')
 							]);
 						}
 					}

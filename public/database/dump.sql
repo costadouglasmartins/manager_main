@@ -2,7 +2,7 @@
 -- Host:                         127.0.0.1
 -- Server version:               8.1.0 - MySQL Community Server - GPL
 -- Server OS:                    Linux
--- HeidiSQL Version:             12.15.1.1
+-- HeidiSQL Version:             12.16.1.1
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -5648,16 +5648,20 @@ CREATE TABLE IF NOT EXISTS `emails` (
   `email` varchar(255) NOT NULL,
   `observations` varchar(500) DEFAULT NULL,
   `person_id` int DEFAULT NULL,
+  `is_login` tinyint(1) NOT NULL DEFAULT '0',
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~1 rows (approximately)
-INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `created`, `modified`) VALUES
-	(1, 'costadouglasmartins@gmail.com', NULL, 3, '2026-01-06 18:00:02', NULL);
+-- Dumping data for table manager_main.emails: ~3 rows (approximately)
+INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
+	(1, 'costadouglasmartins@gmail.com', NULL, 3, 1, '2026-01-06 18:00:02', NULL),
+	(2, 'lorem@ipsum.com', NULL, 22, 0, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(3, 'lorem2@ipsum.com', NULL, 22, 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(4, 'izzidoro@yahoo.com.br', 'E-mail do yahoo Brasil', 3, 1, '2026-03-26 23:32:41', NULL);
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -5669,11 +5673,12 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~0 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
-	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56');
+	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
+	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -5688,11 +5693,12 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~1 rows (approximately)
+-- Dumping data for table manager_main.people: ~0 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
-	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22');
+	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
+	(22, 'Lorem Ipsum', 'Lorem Ipsum', 'individual', '97037381845', 1, '2017-02-01', '2026-03-18 00:22:20', '2026-03-18 00:22:20');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -5703,9 +5709,9 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=608 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1028 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~61 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~63 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -5755,19 +5761,19 @@ INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`
 	(397, 'neighborhood.informations', 'Acesso: neighborhood -> informations', NULL, NULL),
 	(398, 'neighborhood.store', 'Acesso: neighborhood -> store', NULL, NULL),
 	(399, 'neighborhood.update', 'Acesso: neighborhood -> update', NULL, NULL),
-	(407, 'phonenumber.create', 'Acesso: phonenumber -> create', NULL, NULL),
-	(408, 'phonenumber.edit', 'Acesso: phonenumber -> edit', NULL, NULL),
-	(409, 'phonenumber.index', 'Acesso: phonenumber -> index', NULL, NULL),
-	(410, 'phonenumber.informations', 'Acesso: phonenumber -> informations', NULL, NULL),
-	(411, 'phonenumber.store', 'Acesso: phonenumber -> store', NULL, NULL),
-	(412, 'phonenumber.update', 'Acesso: phonenumber -> update', NULL, NULL),
 	(413, 'state.autocomplete', 'Acesso: state -> autocomplete', NULL, NULL),
 	(414, 'state.create', 'Acesso: state -> create', NULL, NULL),
 	(415, 'state.edit', 'Acesso: state -> edit', NULL, NULL),
 	(416, 'state.index', 'Acesso: state -> index', NULL, NULL),
 	(417, 'state.informations', 'Acesso: state -> informations', NULL, NULL),
 	(418, 'state.store', 'Acesso: state -> store', NULL, NULL),
-	(419, 'state.update', 'Acesso: state -> update', NULL, NULL);
+	(419, 'state.update', 'Acesso: state -> update', NULL, NULL),
+	(769, 'phone_number.create', 'Acesso: phone_number -> create', NULL, NULL),
+	(770, 'phone_number.edit', 'Acesso: phone_number -> edit', NULL, NULL),
+	(771, 'phone_number.index', 'Acesso: phone_number -> index', NULL, NULL),
+	(772, 'phone_number.informations', 'Acesso: phone_number -> informations', NULL, NULL),
+	(773, 'phone_number.store', 'Acesso: phone_number -> store', NULL, NULL),
+	(774, 'phone_number.update', 'Acesso: phone_number -> update', NULL, NULL);
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
@@ -5780,9 +5786,12 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
+INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
+	(1, '288832010929201', NULL, 22, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(2, '489823902039220', NULL, 22, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -5799,33 +5808,33 @@ CREATE TABLE IF NOT EXISTS `states` (
 
 -- Dumping data for table manager_main.states: ~27 rows (approximately)
 INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modified`) VALUES
-	(1, 'Acre', 'AC', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(2, 'Alagoas', 'AL', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(3, 'Amazonas', 'AM', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(4, 'Amapá', 'AP', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(5, 'Bahia', 'BA', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(6, 'Ceará', 'CE', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(7, 'Distrito Federal', 'DF', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(8, 'Espírito Santo', 'ES', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(9, 'Goiás', 'GO', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(10, 'Maranhão', 'MA', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(11, 'Minas Gerais', 'MG', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(12, 'Mato Grosso do Sul', 'MS', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(13, 'Mato Grosso', 'MT', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(14, 'Pará', 'PA', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(15, 'Paraíba', 'PB', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(16, 'Pernambuco', 'PE', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(17, 'Piauí', 'PI', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(18, 'Paraná', 'PR', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(19, 'Rio de Janeiro', 'RJ', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(20, 'Rio Grande do Norte', 'RN', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(21, 'Rondônia', 'RO', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(22, 'Roraima', 'RR', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(23, 'Rio Grande do Sul', 'RS', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(24, 'Santa Catarina', 'SC', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(25, 'Sergipe', 'SE', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(26, 'São Paulo', 'SP', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
-	(27, 'Tocantins', 'TO', 0, '2026-01-08 00:00:00', '2026-01-08 00:00:00');
+	(1, 'Acre', 'AC', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(2, 'Alagoas', 'AL', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(3, 'Amazonas', 'AM', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(4, 'Amapá', 'AP', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(5, 'Bahia', 'BA', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(6, 'Ceará', 'CE', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(7, 'Distrito Federal', 'DF', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(8, 'Espírito Santo', 'ES', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(9, 'Goiás', 'GO', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(10, 'Maranhão', 'MA', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(11, 'Minas Gerais', 'MG', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(12, 'Mato Grosso do Sul', 'MS', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(13, 'Mato Grosso', 'MT', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(14, 'Pará', 'PA', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(15, 'Paraíba', 'PB', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(16, 'Pernambuco', 'PE', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(17, 'Piauí', 'PI', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(18, 'Paraná', 'PR', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(19, 'Rio de Janeiro', 'RJ', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(20, 'Rio Grande do Norte', 'RN', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(21, 'Rondônia', 'RO', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(22, 'Roraima', 'RR', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(23, 'Rio Grande do Sul', 'RS', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(24, 'Santa Catarina', 'SC', 1, '2026-01-08 00:00:00', '2026-03-27 23:23:09'),
+	(25, 'Sergipe', 'SE', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(26, 'São Paulo', 'SP', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
+	(27, 'Tocantins', 'TO', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -5841,84 +5850,90 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `username_UNIQUE` (`username`),
   KEY `fk_users_people_idx` (`person_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.users: ~1 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
-	(1, 3, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11');
+	(1, 3, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
+	(19, 22, 'user.example', '$2y$12$BgFqTyiPcakMmjQh.QYf9.xRc93bXWhs5yLFoouCsK53YhDG1RAn6', 'root', 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
   `user_id` int NOT NULL,
   `permission_id` int unsigned NOT NULL,
   `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`,`permission_id`),
   KEY `fk_up_permission` (`permission_id`),
   CONSTRAINT `fk_up_permission` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~59 rows (approximately)
-INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`) VALUES
-	(1, 7, NULL),
-	(1, 8, NULL),
-	(1, 9, NULL),
-	(1, 10, NULL),
-	(1, 11, NULL),
-	(1, 12, NULL),
-	(1, 13, NULL),
-	(1, 14, NULL),
-	(1, 15, NULL),
-	(1, 16, NULL),
-	(1, 17, NULL),
-	(1, 18, NULL),
-	(1, 25, NULL),
-	(1, 300, NULL),
-	(1, 301, NULL),
-	(1, 302, NULL),
-	(1, 303, NULL),
-	(1, 304, NULL),
-	(1, 305, NULL),
-	(1, 306, NULL),
-	(1, 366, NULL),
-	(1, 367, NULL),
-	(1, 368, NULL),
-	(1, 369, NULL),
-	(1, 370, NULL),
-	(1, 371, NULL),
-	(1, 372, NULL),
-	(1, 373, NULL),
-	(1, 374, NULL),
-	(1, 375, NULL),
-	(1, 376, NULL),
-	(1, 377, NULL),
-	(1, 378, NULL),
-	(1, 386, NULL),
-	(1, 387, NULL),
-	(1, 388, NULL),
-	(1, 389, NULL),
-	(1, 390, NULL),
-	(1, 391, NULL),
-	(1, 393, NULL),
-	(1, 394, NULL),
-	(1, 395, NULL),
-	(1, 396, NULL),
-	(1, 397, NULL),
-	(1, 398, NULL),
-	(1, 399, NULL),
-	(1, 407, NULL),
-	(1, 408, NULL),
-	(1, 409, NULL),
-	(1, 410, NULL),
-	(1, 411, NULL),
-	(1, 412, NULL),
-	(1, 413, NULL),
-	(1, 414, NULL),
-	(1, 415, NULL),
-	(1, 416, NULL),
-	(1, 417, NULL),
-	(1, 418, NULL),
-	(1, 419, NULL);
+-- Dumping data for table manager_main.user_permissions: ~63 rows (approximately)
+INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
+	(1, 7, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 8, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 9, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 10, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 11, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 12, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 13, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 14, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 15, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 16, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 17, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 18, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 25, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 300, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 301, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 302, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 303, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 304, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 305, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 306, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 366, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 367, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 368, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 369, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 370, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 371, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 372, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 373, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 374, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 375, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 376, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 377, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 378, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 386, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 387, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 388, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 389, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 390, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 391, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 393, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 394, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 395, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 396, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 397, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 398, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 399, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 413, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 414, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 415, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 416, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 417, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 418, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 419, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 769, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 770, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 771, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 772, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 773, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(1, 774, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
+	(19, 7, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
+	(19, 8, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
+	(19, 9, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
+	(19, 25, '2026-03-27 23:37:09', '2026-03-27 23:37:09');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
