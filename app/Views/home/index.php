@@ -8,4 +8,4 @@
 
 <h5>Início</h5>
 
-<? var_dump($_SESSION); ?>
+<?= $home; ?>

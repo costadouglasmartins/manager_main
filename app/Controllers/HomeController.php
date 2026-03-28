@@ -9,8 +9,8 @@ class HomeController extends Controller
 
 	public function index()
 		{
-		$this->requireAuth();
-		$this->view('home/index', ['title' => 'Início']);
+		//$this->requireAuth();
+		$this->view('home/index', ['title' => 'Início', 'home' => var_dump($_SESSION)]);
 		}
 	}
 

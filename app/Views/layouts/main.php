@@ -233,18 +233,6 @@
             </ul>
           </li>
           <!-- /Menu Exemplo -->
-
-          <!-- Menu Contato
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="menuContato" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-envelope-fill me-1"></i> Contato
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="menuContato">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-telephone me-2"></i>Telefone</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-chat-dots me-2"></i>Chat</a></li>
-            </ul>
-          </li>
-          -->
           <?php endif; ?>
         </ul>
         <!-- Sistema -->
