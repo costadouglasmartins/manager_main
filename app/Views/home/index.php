@@ -7,5 +7,3 @@
 <!-- /Breadcrumbs -->
 
 <h5>Início</h5>
-
-<?= $home; ?>
