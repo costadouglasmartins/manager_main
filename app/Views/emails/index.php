@@ -1,13 +1,14 @@
 <?php
-$filters = $filters ?? ['id' => '', 'email' => '', 'person_id' => ''];
+$filters = $filters ?? ['id' => '', 'email' => '', 'person_id' => '', 'person_name' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($emails) ? count($emails) : 0);
 
 $queryFilters = http_build_query([
-  'id'        => $filters['id'],
-  'email'     => $filters['email'],
-  'person_id' => $filters['person_id'],
+  'id'          => $filters['id'],
+  'email'       => $filters['email'],
+  'person_id'   => $filters['person_id'],
+  'person_name' => $filters['person_name'],
 ]);
 ?>
 
@@ -33,8 +34,10 @@ $queryFilters = http_build_query([
         <input class="form-control" id="email" name="email" type="text" placeholder="E-mail" value="<?= htmlspecialchars($filters['email'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <input class="form-control" id="person_id" name="person_id" type="text" placeholder="ID da pessoa" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
+      <div class="col-12 col-md-6 col-lg-4 position-relative">
+        <input type="hidden" id="person_id" name="person_id" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="person_name" name="person_name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da pessoa..." data-endpoint="<?= url('person/autocomplete'); ?>" data-results="#personResults" data-hidden="#person_id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['person_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
     </div>
@@ -97,3 +100,4 @@ $queryFilters = http_build_query([
 <?php if ($totalPages > 1): ?>
   <?= paginationLinks('email', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

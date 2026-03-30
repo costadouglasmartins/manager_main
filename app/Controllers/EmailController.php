@@ -18,9 +18,10 @@ class EmailController extends Controller
 		$email = new Email();
 
 		$filters = [
-			'id'        => isset($_GET['id'])        ? trim($_GET['id'])        : '',
-			'email'     => isset($_GET['email'])     ? trim($_GET['email'])     : '',
-			'person_id' => isset($_GET['person_id']) ? trim($_GET['person_id']) : '',
+			'id'          => isset($_GET['id'])          ? trim($_GET['id'])          : '',
+			'email'       => isset($_GET['email'])       ? trim($_GET['email'])       : '',
+			'person_id'   => isset($_GET['person_id'])   ? trim($_GET['person_id'])   : '',
+			'person_name' => isset($_GET['person_name']) ? trim($_GET['person_name']) : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
