@@ -158,34 +158,29 @@
               </li>
             </ul>
           </li>
-          <!-- Menu Exemplo (4 níveis) -->
+          <!-- Menu Exemplo (4 níveis) 
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="menuExemplo" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-layers me-1"></i> Cadastros essenciais
             </a>
             <ul class="dropdown-menu" aria-labelledby="menuExemplo">
 
-              <!-- Nível 2: item sem submenu -->
               <li><a class="dropdown-item" href="#"><i class="bi bi-house me-2"></i>Início</a></li>
 
               <li><hr class="dropdown-divider" /></li>
 
-              <!-- Nível 2 → 3 → 4: Grupo A -->
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder me-2"></i>Grupo A</a>
                 <ul class="dropdown-menu">
 
-                  <!-- Nível 3: item sem submenu -->
                   <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark me-2"></i>A — Item direto</a></li>
 
                   <li><hr class="dropdown-divider" /></li>
 
-                  <!-- Nível 3 → 4: Sub-grupo A1 -->
                   <li class="dropdown-submenu">
                     <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder2 me-2"></i>Sub-grupo A1</a>
                     <ul class="dropdown-menu">
 
-                      <!-- Nível 4: itens finais -->
                       <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A1 — Item 1</a></li>
                       <li><hr class="dropdown-divider" /></li>
                       <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A1 — Item 2</a></li>
@@ -197,12 +192,10 @@
 
                   <li><hr class="dropdown-divider" /></li>
 
-                  <!-- Nível 3 → 4: Sub-grupo A2 -->
                   <li class="dropdown-submenu">
                     <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder2 me-2"></i>Sub-grupo A2</a>
                     <ul class="dropdown-menu">
 
-                      <!-- Nível 4: itens finais -->
                       <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A2 — Item 1</a></li>
                       <li><hr class="dropdown-divider" /></li>
                       <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A2 — Item 2</a></li>
@@ -215,7 +208,6 @@
 
               <li><hr class="dropdown-divider" /></li>
 
-              <!-- Nível 2 → 3: Grupo B (sem 4° nível, para contraste) -->
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder me-2"></i>Grupo B</a>
                 <ul class="dropdown-menu">
@@ -227,12 +219,11 @@
 
               <li><hr class="dropdown-divider" /></li>
 
-              <!-- Nível 2: item sem submenu -->
               <li><a class="dropdown-item" href="#"><i class="bi bi-info-circle me-2"></i>Sobre</a></li>
 
             </ul>
           </li>
-          <!-- /Menu Exemplo -->
+          /Menu Exemplo -->
           <?php endif; ?>
         </ul>
         <!-- Sistema -->

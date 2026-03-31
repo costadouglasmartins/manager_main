@@ -316,5 +316,38 @@
 				// Form is valid — allow native submit
 			});
 
+		// CPF / CNPJ mask
+		function applyCpfCnpjMask(value)
+			{
+				const digits = value.replace(/\D/g, "").slice(0, 14);
+				if (digits.length <= 11)
+					{
+						// CPF: 000.000.000-00
+						return digits
+						.replace(/(\d{3})(\d)/, "$1.$2")
+						.replace(/(\d{3})(\d)/, "$1.$2")
+						.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+					}
+				// CNPJ: 00.000.000/0000-00
+				return digits
+				.replace(/(\d{2})(\d)/, "$1.$2")
+				.replace(/(\d{3})(\d)/, "$1.$2")
+				.replace(/(\d{3})(\d)/, "$1/$2")
+				.replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+			}
+
+		document.querySelectorAll(".mask-cpf-cnpj").forEach(function (el)
+			{
+				el.addEventListener("input", function ()
+					{
+						const pos = el.selectionStart;
+						const prev = el.value;
+						el.value = applyCpfCnpjMask(el.value);
+						// Reposition cursor when inserting in the middle
+						const diff = el.value.length - prev.length;
+						el.setSelectionRange(pos + diff, pos + diff);
+					});
+			});
+
 		showStep(1);
 	})();
