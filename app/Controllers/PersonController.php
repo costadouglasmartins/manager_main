@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Person;
+use App\Models\Neighborhood;
+use App\Models\City;
 
 class PersonController extends Controller
 	{
@@ -78,6 +80,93 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.create');
 		$this->view('people/create', ['title' => 'Nova pessoa']);
+		}
+
+	/**
+	 * Neighborhood search — used by the address autocomplete on the person create form.
+	 * Requires only person.create permission (no separate neighborhood permission needed).
+	 */
+	public function neighborhoodSearch()
+		{
+		$this->requirePermission('person.create');
+
+		$term  = trim($_GET['term'] ?? '');
+		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
+
+		$neighborhood = new Neighborhood();
+		$rows = $neighborhood->autocomplete($term, $limit);
+
+		$items = array_map(function ($r)
+			{
+			return [
+				'id'    => (int) $r['id'],
+				'label' => $r['name'],
+				'name'  => $r['name'],
+			];
+			}, $rows);
+
+		$this->json(['items' => $items]);
+		}
+
+	/**
+	 * Neighborhood create — creates a neighborhood inline during person registration.
+	 * Requires only person.create permission.
+	 */
+	public function neighborhoodCreate()
+		{
+		$this->requirePermission('person.create');
+
+		$name   = trim($_POST['name'] ?? '');
+		$cityId = (int) ($_POST['city_id'] ?? 0);
+
+		if ($name === '' || $cityId === 0)
+			{
+			$this->json(['error' => 'Nome e cidade são obrigatórios.'], 422);
+			}
+
+		$neighborhood = new Neighborhood();
+
+		try
+			{
+			$result = $neighborhood->create([
+				'name'    => $name,
+				'city_id' => $cityId,
+			]);
+			$this->json([
+				'id'   => (int) $result['neighborhood_id'],
+				'name' => $name,
+			]);
+			}
+		catch (\Exception $e)
+			{
+			$this->json(['error' => 'Erro ao cadastrar bairro: ' . $e->getMessage()], 500);
+			}
+		}
+
+	/**
+	 * City search — used by the neighborhood inline create form.
+	 * Requires only person.create permission.
+	 */
+	public function citySearch()
+		{
+		$this->requirePermission('person.create');
+
+		$term  = trim($_GET['term'] ?? '');
+		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
+
+		$city = new City();
+		$rows = $city->autocomplete($term, $limit);
+
+		$items = array_map(function ($r)
+			{
+			return [
+				'id'    => (int) $r['id'],
+				'label' => $r['name'],
+				'name'  => $r['name'],
+			];
+			}, $rows);
+
+		$this->json(['items' => $items]);
 		}
   
 	/**

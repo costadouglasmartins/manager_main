@@ -91,11 +91,38 @@ class Person extends Model
 					}
 				}
 
+			// Save addresses
+			if (!empty($data['addresses']) && is_array($data['addresses']))
+				{
+				$sqlAddress = "INSERT INTO addresses
+								(`zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`)
+							  VALUES
+								(:zip_code, :street, :number, :observations, :person_id, :neighborhood_id, :created, :modified)";
+				$stmtAddress = $this->db->prepare($sqlAddress);
+				foreach ($data['addresses'] as $address)
+					{
+					if (empty($address['street']) || empty($address['neighborhood_id']))
+						{
+						continue;
+						}
+					$stmtAddress->execute([
+						'zip_code'        => $address['zip_code'] ?? '',
+						'street'          => $address['street'],
+						'number'          => $address['number'] ?? '',
+						'observations'    => $address['observations'] ?? null,
+						'person_id'       => $personId,
+						'neighborhood_id' => (int) $address['neighborhood_id'],
+						'created'         => date('Y-m-d H:i:s'),
+						'modified'        => date('Y-m-d H:i:s'),
+					]);
+					}
+				}
+
 			// Save emails
 			if (!empty($data['emails']) && is_array($data['emails']))
 				{
-				$sqlEmail = "INSERT INTO emails (`email`, `observations`, `person_id`, `created`, `modified`)
-                             VALUES (:email, :observations, :person_id, :created, :modified)";
+				$sqlEmail = "INSERT INTO emails (`email`, `observations`, `is_login`, `person_id`, `created`, `modified`)
+                             VALUES (:email, :observations, :is_login, :person_id, :created, :modified)";
 				$stmtEmail = $this->db->prepare($sqlEmail);
 				foreach ($data['emails'] as $email)
 					{
@@ -106,6 +133,7 @@ class Person extends Model
 					$stmtEmail->execute([
 						'email'        => $email['address'],
 						'observations' => $email['description'] ?? null,
+						'is_login'     => intval($email['is_login'] ?? 0),
 						'person_id'    => $personId,
 						'created'      => date('Y-m-d H:i:s'),
 						'modified'     => date('Y-m-d H:i:s'),

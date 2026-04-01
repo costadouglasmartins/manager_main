@@ -13,14 +13,14 @@
 	<div class="card-body">
 		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 			<div>
-				<div class="fw-semibold" id="stepTitle">Etapa 1 de 4</div>
+				<div class="fw-semibold" id="stepTitle">Etapa 1 de 5</div>
 				<div class="text-body-secondary small" id="stepSubtitle">Pessoa</div>
 			</div>
-			<span class="badge text-bg-secondary" id="stepBadge">1/4</span>
+			<span class="badge text-bg-secondary" id="stepBadge">1/5</span>
 		</div>
 
 		<div class="progress mt-3" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
-			<div class="progress-bar" id="progressBar" style="width: 25%"></div>
+			<div class="progress-bar" id="progressBar" style="width: 20%"></div>
 		</div>
 
 		<div class="row g-2 mt-3">
@@ -31,10 +31,13 @@
 				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="2">2. Usuário</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="3">3. Contatos</button>
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="3">3. Endereços</button>
+			</div>
+			<div class="col-6 col-md">
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="4">4. Contatos</button>
 			</div>
 			<div class="col-12 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="4">4. Revisão</button>
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="5">5. Revisão</button>
 			</div>
 		</div>
 	</div>
@@ -125,8 +128,84 @@
 			</section>
 			<!-- /Step 2 -->
 
-			<!-- Step 3: Contatos -->
+			<!-- Step 3: Endereços -->
 			<section data-step="3" class="d-none">
+				<h2 class="h6 mb-3">Endereços</h2>
+
+				<div class="row g-3">
+					<div class="col-12">
+						<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+							<div>
+								<div class="fw-semibold">Endereços</div>
+								<div class="text-body-secondary small">Obrigatório ao menos um endereço. Você pode cadastrar mais de um.</div>
+							</div>
+							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddAddress">Adicionar endereço</button>
+						</div>
+
+						<div class="mt-2" id="addressesContainer"></div>
+
+						<template id="addressTemplate">
+							<div class="border rounded p-3 mt-2">
+								<div class="row g-2 align-items-end">
+									<div class="col-12 col-md-3">
+										<label class="form-label">CEP</label>
+										<input class="form-control mask-cep" name="addresses[][zip_code]" type="text" maxlength="9" placeholder="00000-000" />
+									</div>
+									<div class="col-12 col-md-5">
+										<label class="form-label">Logradouro</label>
+										<input class="form-control" name="addresses[][street]" type="text" maxlength="255" placeholder="Rua, Avenida, etc." />
+									</div>
+									<div class="col-12 col-md-2">
+										<label class="form-label">Número</label>
+										<input class="form-control" name="addresses[][number]" type="text" maxlength="10" placeholder="Nº" />
+									</div>
+									<div class="col-12 col-md-2 d-grid">
+										<label class="form-label">&nbsp;</label>
+										<button type="button" class="btn btn-outline-danger" data-remove="address">Remover</button>
+									</div>
+									<div class="col-12 col-md-6">
+										<label class="form-label">Observações</label>
+										<input class="form-control" name="addresses[][observations]" type="text" maxlength="255" placeholder="Complemento, referência, etc." />
+									</div>
+									<div class="col-12 col-md-6 position-relative">
+										<label class="form-label">Bairro</label>
+										<input type="hidden" class="addr-neighborhood-id" name="addresses[][neighborhood_id]" value="" />
+										<input type="text" class="form-control addr-neighborhood-input" autocomplete="off" placeholder="Digite o nome do bairro..." />
+										<ul class="list-group addr-neighborhood-results" style="display:none; position:absolute; width:100%; z-index:1050; max-height:220px; overflow-y:auto;"></ul>
+									</div>
+
+									<!-- Painel inline: cadastrar novo bairro -->
+									<div class="col-12 addr-create-panel d-none">
+										<div class="border border-warning rounded p-3 bg-warning-subtle">
+											<p class="fw-semibold small mb-2">Cadastrar novo bairro</p>
+											<div class="row g-2 align-items-end">
+												<div class="col-12 col-md-5">
+													<label class="form-label small">Nome do bairro</label>
+													<input type="text" class="form-control form-control-sm addr-new-neighborhood-name" placeholder="Ex.: Centro" />
+												</div>
+												<div class="col-12 col-md-5 position-relative">
+													<label class="form-label small">Cidade</label>
+													<input type="hidden" class="addr-new-city-id" value="" />
+													<input type="text" class="form-control form-control-sm addr-new-city-input" autocomplete="off" placeholder="Digite o nome da cidade..." />
+													<ul class="list-group addr-new-city-results" style="display:none; position:absolute; width:100%; z-index:1060; max-height:180px; overflow-y:auto;"></ul>
+												</div>
+												<div class="col-12 col-md-2 d-flex gap-2 align-items-end flex-wrap">
+													<button type="button" class="btn btn-warning btn-sm addr-btn-save-neighborhood">Salvar</button>
+													<button type="button" class="btn btn-link btn-sm p-0 text-secondary addr-btn-cancel-neighborhood">Cancelar</button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</template>
+					</div>
+				</div>
+			</section>
+			<!-- /Step 3 -->
+
+			<!-- Step 4: Contatos -->
+			<section data-step="4" class="d-none">
 				<h2 class="h6 mb-3">Contatos</h2>
 
 				<div class="row g-3">
@@ -135,7 +214,7 @@
 						<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 							<div>
 								<div class="fw-semibold">Telefones</div>
-								<div class="text-body-secondary small">Você pode cadastrar mais de um telefone.</div>
+								<div class="text-body-secondary small">Obrigatório ao menos um telefone. Você pode cadastrar mais de um.</div>
 							</div>
 							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddPhone">Adicionar telefone</button>
 						</div>
@@ -166,7 +245,7 @@
 						<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 							<div>
 								<div class="fw-semibold">E-mails</div>
-								<div class="text-body-secondary small">Você pode cadastrar mais de um e-mail.</div>
+								<div class="text-body-secondary small">Obrigatório ao menos um e-mail. Você pode cadastrar mais de um.</div>
 							</div>
 							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddEmail">Adicionar e-mail</button>
 						</div>
@@ -176,14 +255,21 @@
 						<template id="emailTemplate">
 							<div class="border rounded p-3 mt-2">
 								<div class="row g-2 align-items-end">
-									<div class="col-12 col-md-5">
+									<div class="col-12 col-md-4">
 										<label class="form-label">Endereço de e-mail</label>
 										<input class="form-control" name="emails[][address]" type="email" placeholder="exemplo@email.com" />
 										<div class="invalid-feedback">Informe um e-mail válido.</div>
 									</div>
-									<div class="col-12 col-md-6">
+									<div class="col-12 col-md-4">
 										<label class="form-label">Descrição</label>
 										<input class="form-control" name="emails[][description]" type="text" placeholder="Ex.: financeiro, pessoal, comercial" />
+									</div>
+									<div class="col-12 col-md-3">
+										<label class="form-label">E-mail de login?</label>
+										<select class="form-select" name="emails[][is_login]">
+											<option value="0" selected>Não</option>
+											<option value="1">Sim</option>
+										</select>
 									</div>
 									<div class="col-12 col-md-1 d-grid">
 										<button type="button" class="btn btn-outline-danger" data-remove="email">X</button>
@@ -194,10 +280,10 @@
 					</div>
 				</div>
 			</section>
-			<!-- /Step 3 -->
+			<!-- /Step 4 -->
 
-			<!-- Step 4: Revisão -->
-			<section data-step="4" class="d-none">
+			<!-- Step 5: Revisão -->
+			<section data-step="5" class="d-none">
 				<div class="alert alert-info mb-3" role="alert">
 					Revise seus dados antes de concluir.
 				</div>
@@ -220,7 +306,7 @@
 					<div class="invalid-feedback">Você precisa confirmar a revisão.</div>
 				</div>
 			</section>
-			<!-- /Step 4 -->
+			<!-- /Step 5 -->
 
 		</div>
 
@@ -234,4 +320,9 @@
 		</div>
 	</div>
 </form>
-<script src="<?= url('assets/js/person/create.js?v=2'); ?>"></script>
+<script>
+	const PERSON_NEIGHBORHOOD_SEARCH_URL = "<?= url('person/neighborhoodSearch'); ?>";
+	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
+	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
+</script>
+<script src="<?= url('assets/js/person/create.js?v=4'); ?>"></script>

@@ -297,6 +297,9 @@
       });
     }
 
+  // Expose for dynamic elements (e.g. cloned templates)
+  window.initAutocomplete = initAutocomplete;
+
   document.querySelectorAll('.js-autocomplete').forEach((el) =>
     {
     initAutocomplete(el);
