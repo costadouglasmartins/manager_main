@@ -149,6 +149,19 @@
               </li>
               <li><hr class="dropdown-divider" /></li>
               <li class="dropdown-submenu">
+                <a class="dropdown-item submenu-toggle" href="#">Tenants</a>
+                <ul class="dropdown-menu">
+                  <?php if (authCan('tenant.index')): ?>
+                    <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-list-ul me-2"></i> Listar</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
+                  <?php if (authCan('tenant.create')): ?>
+                    <li><a class="dropdown-item" href="<?= url('tenant/create'); ?>"><i class="bi bi-plus-circle me-2"></i> Cadastrar</a></li>
+                  <?php endif; ?>
+                </ul>
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#">Usuários</a>
                 <ul class="dropdown-menu">
                   <?php if (authCan('user.index')): ?>

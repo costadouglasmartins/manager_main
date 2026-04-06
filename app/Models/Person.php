@@ -360,6 +360,24 @@ class Person extends Model
 		}
 
 	/**
+	 * Get all for select method
+	 * Returns all active people with the fields needed to pre-fill the tenant form.
+	 * @return array
+	 */
+	public function getAllForSelect(): array
+		{
+		$stmt = $this->db->query("SELECT Person.id,
+		                                 Person.name,
+		                                 Person.fantasy,
+		                                 Person.document,
+		                                 Person.type
+		                          FROM people AS Person
+		                          WHERE Person.active = 1
+		                          ORDER BY Person.name ASC");
+		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		}
+
+	/**
 	 * Autocomplete method
 	 * @param string $term
 	 * @param int $limit

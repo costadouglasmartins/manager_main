@@ -19,7 +19,8 @@
     </div>
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="password">Senha</label>
-      <input autocomplete="off" class="form-control" type="password" id="password" name="password" required="required">
+      <input autocomplete="off" class="form-control" type="password" id="password" name="password" placeholder="Deixe em branco para manter a senha atual">
+      <small class="text-muted">Preencha apenas se quiser alterar a senha.</small>
     </div>
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="email">Email:</label><br>
@@ -34,13 +35,27 @@
         <option value="user" <?= ($user['type'] === 'user' ? 'selected="selected"' : ''); ?>>Usuário</option>
       </select>
     </div>
-    <div class="col-md-6 col-lg-12">
+    <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="active">Ativo</label>
       <select autocomplete="off" class="form-control" id="active" name="active" required="required">
         <option value="">Selecione</option>
-        <option value="1" <?= ($user['active'] === 1 ? 'selected="selected"' : '' ); ?>>Ativo</option>
-        <option value="0" <?= ($user['active'] === 0 ? 'selected="selected"' : ''); ?>>Inativo</option>
+        <option value="1" <?= ((int) $user['active'] === 1 ? 'selected="selected"' : ''); ?>>Ativo</option>
+        <option value="0" <?= ((int) $user['active'] === 0 ? 'selected="selected"' : ''); ?>>Inativo</option>
       </select>
+    </div>
+    <div class="col-md-6 col-lg-12">
+      <label class="form-label" for="tenant_id">Tenant (empresa)</label>
+      <select autocomplete="off" class="form-control" id="tenant_id" name="tenant_id">
+        <option value="">Sem tenant associado</option>
+        <?php if (!empty($tenants)): ?>
+          <?php foreach ($tenants as $tenant): ?>
+            <option value="<?= (int) $tenant['id']; ?>" <?= ((int) ($user['tenant_id'] ?? 0) === (int) $tenant['id'] ? 'selected="selected"' : ''); ?>>
+              <?= htmlspecialchars($tenant['name']); ?> (<?= htmlspecialchars($tenant['database_number']); ?>) [<?= htmlspecialchars($tenant['status']); ?>]
+            </option>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </select>
+      <small class="text-muted">Associe o usuário a um tenant para que ele consiga logar no sistema de tenants.</small>
     </div>
   </div>
   <br>

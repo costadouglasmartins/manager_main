@@ -152,17 +152,18 @@ class User extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT 	User.id,
-                                        User.username,
-                                        User.type,
-                                        User.active,
-                                        Email.email
-                                  FROM users AS User
-                                  INNER JOIN people AS Person ON Person.id = User.person_id
-                                  INNER JOIN emails AS Email ON Email.person_id = Person.id
-                                  WHERE User.active = 1 
-                                  AND User.id = :id
-                                  LIMIT 1");
+		$stmt = $this->db->prepare("SELECT User.id,
+		                                   User.username,
+		                                   User.type,
+		                                   User.active,
+		                                   User.tenant_id,
+		                                   Email.email
+		                            FROM users AS User
+		                            INNER JOIN people AS Person ON Person.id = User.person_id
+		                            INNER JOIN emails AS Email ON Email.person_id = Person.id
+		                            WHERE User.active = 1
+		                              AND User.id = :id
+		                            LIMIT 1");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -174,16 +175,48 @@ class User extends Model
 	 */
 	public function update($id, $data)
 		{
-		$stmt = $this->db->prepare("UPDATE users SET `username` = :username, 
-                                                 `password` = :password,
-                                                 `type`     = :type,
-                                                 `active`   = :active
-                                                 WHERE id = :id");
-		$stmt->execute(['username' => $data['username'], 
-                    'password' => password_hash($data['password'], PASSWORD_DEFAULT),
-                    'type'     => $data['type'],
-                    'active'   => $data['active'], 
-                    'id'       => $id]);
+		// tenant_id: null if empty/0, otherwise cast to int
+		$tenantId = (isset($data['tenant_id']) && $data['tenant_id'] !== '' && (int) $data['tenant_id'] > 0)
+			? (int) $data['tenant_id']
+			: null;
+
+		// Only update password if a new one was provided
+		$newPassword = isset($data['password']) ? trim($data['password']) : '';
+
+		if ($newPassword !== '')
+			{
+			$stmt = $this->db->prepare("UPDATE users
+			                            SET `username`  = :username,
+			                                `password`  = :password,
+			                                `type`      = :type,
+			                                `active`    = :active,
+			                                `tenant_id` = :tenant_id
+			                            WHERE id = :id");
+			$stmt->execute([
+				'username'  => $data['username'],
+				'password'  => password_hash($newPassword, PASSWORD_DEFAULT),
+				'type'      => $data['type'],
+				'active'    => $data['active'],
+				'tenant_id' => $tenantId,
+				'id'        => $id,
+				]);
+			}
+		else
+			{
+			$stmt = $this->db->prepare("UPDATE users
+			                            SET `username`  = :username,
+			                                `type`      = :type,
+			                                `active`    = :active,
+			                                `tenant_id` = :tenant_id
+			                            WHERE id = :id");
+			$stmt->execute([
+				'username'  => $data['username'],
+				'type'      => $data['type'],
+				'active'    => $data['active'],
+				'tenant_id' => $tenantId,
+				'id'        => $id,
+				]);
+			}
 		}
 
 	/**

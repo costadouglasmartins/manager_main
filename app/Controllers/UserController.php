@@ -66,7 +66,16 @@ class UserController extends Controller
 		$this->requirePermission('user.edit');
 		$user = new User();
 		$data = $user->find($id);
-		$this->view('users/edit', ['user' => $data]);
+
+		// Load all tenants for the dropdown (all statuses)
+		$tenantModel = new \App\Models\Tenant();
+		$tenants = $tenantModel->getAll();
+
+		$this->view('users/edit', [
+			'user'    => $data,
+			'tenants' => $tenants,
+      'title'   => 'Editar usuário'
+			]);
 		}
 
 	/**
