@@ -100,7 +100,9 @@ class PermissionController extends Controller
 		$backUserId = (int) ($_POST['selected_user_id'] ?? 0);
 
 		$permissionModel = new Permission();
-		$added = $permissionModel->syncFromControllers(ROOT_PATH . '/app/Controllers');
+		// Sync from the tenant (manager) app's controllers, not from manager_main
+		$tenantControllersDir = dirname(ROOT_PATH) . '/manager/app/Controllers';
+		$added = $permissionModel->syncFromControllers($tenantControllersDir);
 
 		Authorization::clearCache();
 
