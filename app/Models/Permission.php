@@ -175,6 +175,79 @@ class Permission extends Model
 		}
 
 	/**
+	 * Search users by name or email (for autocomplete).
+	 * Returns up to $limit results matching the query.
+	 *
+	 * @param string $query Search term
+	 * @param int $limit Max results
+	 * @return array
+	 */
+	public function searchUsers(string $query, int $limit = 15): array
+		{
+		$query = trim($query);
+
+		if ($query === '')
+			{
+			return [];
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT  User.id,
+			        User.username,
+			        User.type,
+			        Email.email,
+			        Person.name
+			FROM users AS User
+			INNER JOIN people AS Person ON Person.id = User.person_id
+			INNER JOIN emails AS Email ON Email.person_id = Person.id
+			WHERE User.active = '1'
+			  AND Email.is_login = '1'
+			  AND (
+			    Person.name LIKE :q
+			    OR Email.email LIKE :q2
+			    OR User.username LIKE :q3
+			  )
+			ORDER BY Person.name ASC
+			LIMIT :lim
+		");
+
+		$like = '%' . $query . '%';
+		$stmt->bindValue(':q',   $like, PDO::PARAM_STR);
+		$stmt->bindValue(':q2',  $like, PDO::PARAM_STR);
+		$stmt->bindValue(':q3',  $like, PDO::PARAM_STR);
+		$stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+		$stmt->execute();
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Find a single user by ID (for displaying selected user info).
+	 *
+	 * @param int $userId
+	 * @return array|null
+	 */
+	public function findUser(int $userId): ?array
+		{
+		$stmt = $this->db->prepare("
+			SELECT  User.id,
+			        User.username,
+			        User.type,
+			        Email.email,
+			        Person.name
+			FROM users AS User
+			INNER JOIN people AS Person ON Person.id = User.person_id
+			INNER JOIN emails AS Email ON Email.person_id = Person.id
+			WHERE User.id = :id
+			  AND Email.is_login = '1'
+			LIMIT 1
+		");
+		$stmt->execute(['id' => $userId]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
 	 * Sets the permissions for a user (full replace).
 	 */
 	public function setPermissionsForUser(int $userId, array $permissionIds): void

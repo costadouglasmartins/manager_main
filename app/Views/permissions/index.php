@@ -1,6 +1,6 @@
 <?php
 // Expected variables:
-// $permissions, $users, $selectedUserId, $userPermissionIds, $effectiveAbilities
+// $permissions, $selectedUserId, $selectedUser, $userPermissionIds, $effectiveAbilities
 
 function permGroup(string $ability): string
 	{
@@ -96,39 +96,39 @@ if (isset($_GET['created']))
     </form>
   </div>
 </div>
-<!--
-<div class="alert alert-secondary py-2">
-  <div class="small mb-0">
-    As permissões são atribuídas <strong>somente por usuário</strong>. Não há perfis/grupos.
+
+<!-- User autocomplete search -->
+<div class="mb-3">
+  <small class="text-muted d-block mb-2">Busque e selecione um usuário para editar suas permissões.</small>
+  <div class="position-relative" id="userSearchWrapper">
+    <input
+      type="text"
+      id="userSearchInput"
+      class="form-control"
+      placeholder="Digite o nome, e-mail ou username do usuário..."
+      autocomplete="off"
+    >
+    <div id="userSearchResults" class="list-group position-absolute w-100 shadow-sm" style="z-index:1050; max-height:300px; overflow-y:auto; display:none;"></div>
   </div>
 </div>
---->
-<form method="GET" action="<?= url('permission'); ?>" class="row g-2 align-items-end mb-3">
-  <div class="col-12 col-md-8 col-lg-12">
-    <small class="text-muted">Marque/desmarque as funcionalidades para o usuário selecionado.</small>
+
+<!-- Selected user card -->
+<?php if ($selectedUser): ?>
+  <div class="card mb-3 border-primary">
+    <div class="card-body py-2 px-3 d-flex align-items-center justify-content-between">
+      <div>
+        <span class="fw-semibold"><?= htmlspecialchars((string) ($selectedUser['name'] ?? $selectedUser['username'])); ?></span>
+        <span class="badge text-bg-info ms-2"><?= htmlspecialchars((string) $selectedUser['type']); ?></span>
+        <br>
+        <small class="text-muted"><?= htmlspecialchars((string) $selectedUser['email']); ?></small>
+        <?php if (!empty($selectedUser['username']) && ($selectedUser['username'] !== ($selectedUser['name'] ?? ''))): ?>
+          <small class="text-muted ms-2">(<?= htmlspecialchars($selectedUser['username']); ?>)</small>
+        <?php endif; ?>
+      </div>
+      <a href="<?= url('permission'); ?>" class="btn btn-sm btn-outline-secondary" title="Limpar seleção">&times;</a>
+    </div>
   </div>
-  <div class="col-12 col-md-8 col-lg-12">
-    <!--<label class="form-label">Usuário</label>-->
-    <select name="user_id" class="form-select" onchange="this.form.submit()">
-      <option value="0">Selecione um usuário...</option>
-      <?php foreach ($users as $u): ?>
-        <?php
-          $uid = (int) $u['id'];
-          $label = trim((string) $u['username']);
-          if (!empty($u['email']))
-            {
-            $label .= ' (' . $u['email'] . ')';
-            }
-          if (!empty($u['type']))
-            {
-            $label .= ' [' . $u['type'] . ']';
-            } ?>
-        <option value="<?= $uid; ?>" <?= ($uid === (int) $selectedUserId ? 'selected' : ''); ?>><?= htmlspecialchars($label); ?></option>
-      <?php endforeach; ?>
-    </select>
-  </div>
-  
-</form>
+<?php endif; ?>
 
 <?php if ((int) $selectedUserId <= 0): ?>
   <div class="alert alert-info mb-0">Selecione um usuário para editar permissões.</div>
@@ -201,3 +201,86 @@ if (isset($_GET['created']))
   </form>
 
 <?php endif; ?>
+
+<script>
+(function() {
+  var input       = document.getElementById('userSearchInput');
+  var resultsDiv  = document.getElementById('userSearchResults');
+  var debounceTimer = null;
+  var baseUrl     = '<?= url("permission/searchUsers"); ?>';
+  var permUrl     = '<?= url("permission"); ?>';
+
+  input.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    var q = input.value.trim();
+
+    if (q.length < 2) {
+      resultsDiv.style.display = 'none';
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    debounceTimer = setTimeout(function() {
+      fetch(baseUrl + '?q=' + encodeURIComponent(q), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(users) {
+        resultsDiv.innerHTML = '';
+
+        if (users.length === 0) {
+          resultsDiv.innerHTML = '<div class="list-group-item text-muted">Nenhum usuário encontrado.</div>';
+          resultsDiv.style.display = 'block';
+          return;
+        }
+
+        users.forEach(function(u) {
+          var item = document.createElement('a');
+          item.href = permUrl + '?user_id=' + u.id;
+          item.className = 'list-group-item list-group-item-action py-2';
+
+          var nameSpan = document.createElement('span');
+          nameSpan.className = 'fw-semibold';
+          nameSpan.textContent = u.name || u.username;
+
+          var badge = document.createElement('span');
+          badge.className = 'badge text-bg-info ms-2';
+          badge.textContent = u.type;
+
+          var emailDiv = document.createElement('div');
+          emailDiv.className = 'small text-muted';
+          emailDiv.textContent = u.email;
+
+          if (u.username && u.username !== (u.name || '')) {
+            emailDiv.textContent += ' (' + u.username + ')';
+          }
+
+          item.appendChild(nameSpan);
+          item.appendChild(badge);
+          item.appendChild(emailDiv);
+          resultsDiv.appendChild(item);
+        });
+
+        resultsDiv.style.display = 'block';
+      })
+      .catch(function() {
+        resultsDiv.style.display = 'none';
+      });
+    }, 300);
+  });
+
+  // Close results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('userSearchWrapper').contains(e.target)) {
+      resultsDiv.style.display = 'none';
+    }
+  });
+
+  // Focus: reopen if has results
+  input.addEventListener('focus', function() {
+    if (resultsDiv.innerHTML.trim() !== '') {
+      resultsDiv.style.display = 'block';
+    }
+  });
+})();
+</script>

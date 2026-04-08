@@ -29,22 +29,23 @@ class PermissionController extends Controller
 		$permissionModel = new Permission();
 
 		$permissions = $permissionModel->getAll();
-		$users = $permissionModel->getUsers();
 
 		$selectedUserId = (int) ($_GET['user_id'] ?? 0);
 
+		$selectedUser = null;
 		$userPermissionIds = [];
 		$effectiveAbilities = [];
 		if ($selectedUserId > 0)
 			{
+			$selectedUser = $permissionModel->findUser($selectedUserId);
 			$userPermissionIds = $permissionModel->getPermissionIdsByUser($selectedUserId);
 			$effectiveAbilities = $permissionModel->getAbilitiesForUser($selectedUserId);
 			}
 
 		$this->view('permissions/index', [
 			'permissions' => $permissions,
-			'users' => $users,
 			'selectedUserId' => $selectedUserId,
+			'selectedUser' => $selectedUser,
 			'userPermissionIds' => $userPermissionIds,
 			'effectiveAbilities' => $effectiveAbilities,
 			'title' => 'Permissões'
@@ -100,9 +101,10 @@ class PermissionController extends Controller
 		$backUserId = (int) ($_POST['selected_user_id'] ?? 0);
 
 		$permissionModel = new Permission();
-		// Sync from the tenant (manager) app's controllers, not from manager_main
-		$tenantControllersDir = dirname(ROOT_PATH) . '/manager/app/Controllers';
-		$added = $permissionModel->syncFromControllers($tenantControllersDir);
+
+		// Sync from both: manager_main (own) and manager (tenant) controllers
+		$added  = $permissionModel->syncFromControllers(ROOT_PATH . '/app/Controllers');
+		$added += $permissionModel->syncFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers');
 
 		Authorization::clearCache();
 
@@ -152,7 +154,23 @@ class PermissionController extends Controller
 		}
 
 
-private function normalizePermissionIds($raw): array
+	/**
+	 * AJAX endpoint: search users by name or email.
+	 * GET /permission/searchUsers?q=...
+	 */
+	public function searchUsers(): void
+		{
+		$this->requireAuth();
+
+		$q = isset($_GET['q']) ? trim($_GET['q']) : '';
+
+		$permissionModel = new Permission();
+		$results = $permissionModel->searchUsers($q, 15);
+
+		$this->json($results);
+		}
+
+	private function normalizePermissionIds($raw): array
 		{
 		if (!is_array($raw))
 			{
