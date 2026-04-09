@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               8.1.0 - MySQL Community Server - GPL
+-- Server version:               8.0.45 - MySQL Community Server - GPL
 -- Server OS:                    Linux
 -- HeidiSQL Version:             12.16.1.1
 -- --------------------------------------------------------
@@ -5637,7 +5637,7 @@ CREATE TABLE IF NOT EXISTS `countries` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.countries: ~0 rows (approximately)
+-- Dumping data for table manager_main.countries: ~2 rows (approximately)
 INSERT INTO `countries` (`id`, `name`, `acronym`, `created`, `modified`) VALUES
 	(1, 'Brasil', 'BR', '2026-01-08 18:37:48', '2026-01-19 22:15:19'),
 	(2, 'Estados Unidos da América', 'EUA', '2026-01-19 22:31:08', '2026-01-19 22:31:08');
@@ -5656,10 +5656,10 @@ CREATE TABLE IF NOT EXISTS `emails` (
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~3 rows (approximately)
+-- Dumping data for table manager_main.emails: ~4 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', NULL, 3, 1, '2026-01-06 18:00:02', NULL),
-	(2, 'lorem@ipsum.com', NULL, 22, 0, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(2, 'lorem@ipsum.com', NULL, 22, 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
 	(3, 'lorem2@ipsum.com', NULL, 22, 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
 	(4, 'izzidoro@yahoo.com.br', 'E-mail do yahoo Brasil', 3, 1, '2026-03-26 23:32:41', NULL);
 
@@ -5675,7 +5675,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~0 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~2 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14');
@@ -5695,7 +5695,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~0 rows (approximately)
+-- Dumping data for table manager_main.people: ~2 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(22, 'Lorem Ipsum', 'Lorem Ipsum', 'individual', '97037381845', 1, '2017-02-01', '2026-03-18 00:22:20', '2026-03-18 00:22:20');
@@ -5703,15 +5703,15 @@ INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `bi
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `ability` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ability` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=1028 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1703 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~63 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~72 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -5773,7 +5773,18 @@ INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`
 	(771, 'phone_number.index', 'Acesso: phone_number -> index', NULL, NULL),
 	(772, 'phone_number.informations', 'Acesso: phone_number -> informations', NULL, NULL),
 	(773, 'phone_number.store', 'Acesso: phone_number -> store', NULL, NULL),
-	(774, 'phone_number.update', 'Acesso: phone_number -> update', NULL, NULL);
+	(774, 'phone_number.update', 'Acesso: phone_number -> update', NULL, NULL),
+	(1063, 'person.citySearch', 'Acesso: person -> citySearch', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1068, 'person.neighborhoodCreate', 'Acesso: person -> neighborhoodCreate', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1069, 'person.neighborhoodSearch', 'Acesso: person -> neighborhoodSearch', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1085, 'tenant.create', 'Acesso: tenant -> create', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1086, 'tenant.edit', 'Acesso: tenant -> edit', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1087, 'tenant.index', 'Acesso: tenant -> index', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1088, 'tenant.informations', 'Acesso: tenant -> informations', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1089, 'tenant.store', 'Acesso: tenant -> store', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1090, 'tenant.update', 'Acesso: tenant -> update', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
+	(1223, 'tenant.clear', 'Acesso: tenant -> clear', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
+	(1225, 'tenant.switch', 'Acesso: tenant -> switch', '2026-04-08 23:20:05', '2026-04-08 23:20:05');
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
@@ -5836,10 +5847,30 @@ INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modifie
 	(26, 'São Paulo', 'SP', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(27, 'Tocantins', 'TO', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00');
 
+-- Dumping structure for table manager_main.tenants
+CREATE TABLE IF NOT EXISTS `tenants` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL COMMENT 'Tenant name',
+  `fantasy` varchar(255) DEFAULT NULL COMMENT 'Trade name',
+  `document` varchar(20) DEFAULT NULL COMMENT 'CPF or CNPJ',
+  `database_number` varchar(10) NOT NULL COMMENT 'Formatted database number (0001, 0002...)',
+  `status` enum('active','suspended','pending') NOT NULL DEFAULT 'pending' COMMENT 'Tenant status',
+  `observations` text COMMENT 'General observations',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tenants_database_number` (`database_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.tenants: ~0 rows (approximately)
+INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
+	(1, 'Lorem Ipsum', 'Lorem Ipsum', '97037381845', '0001', 'active', '', '2026-04-07 00:10:53', '2026-04-07 00:10:53');
+
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `person_id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL COMMENT 'Associated tenant',
   `username` varchar(45) NOT NULL,
   `password` varchar(255) NOT NULL,
   `type` enum('root','admin','user') NOT NULL,
@@ -5849,13 +5880,15 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`),
   KEY `fk_users_people_idx` (`person_id`),
-  CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
+  KEY `fk_users_tenants1_idx` (`tenant_id`),
+  CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
+  CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.users: ~1 rows (approximately)
-INSERT INTO `users` (`id`, `person_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
-	(1, 3, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
-	(19, 22, 'user.example', '$2y$12$BgFqTyiPcakMmjQh.QYf9.xRc93bXWhs5yLFoouCsK53YhDG1RAn6', 'root', 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
+-- Dumping data for table manager_main.users: ~0 rows (approximately)
+INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
+	(1, 3, NULL, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
+	(19, 22, 1, 'user.example', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'admin', 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
@@ -5869,71 +5902,85 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~63 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~77 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
-	(1, 7, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 8, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 9, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 10, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 11, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 12, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 13, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 14, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 15, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 16, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 17, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 18, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 25, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 300, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 301, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 302, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 303, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 304, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 305, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 306, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 366, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 367, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 368, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 369, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 370, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 371, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 372, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 373, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 374, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 375, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 376, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 377, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 378, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 386, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 387, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 388, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 389, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 390, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 391, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 393, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 394, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 395, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 396, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 397, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 398, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 399, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 413, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 414, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 415, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 416, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 417, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 418, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 419, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 769, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 770, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 771, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 772, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 773, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(1, 774, '2026-03-27 23:36:35', '2026-03-27 23:36:35'),
-	(19, 7, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
-	(19, 8, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
-	(19, 9, '2026-03-27 23:37:09', '2026-03-27 23:37:09'),
-	(19, 25, '2026-03-27 23:37:09', '2026-03-27 23:37:09');
+	(1, 7, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 8, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 9, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 10, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 11, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 12, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 13, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 14, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 15, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 16, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 17, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 18, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 25, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 300, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 301, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 302, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 303, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 304, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 305, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 306, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 366, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 367, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 368, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 369, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 370, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 371, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 372, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 373, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 374, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 375, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 376, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 377, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 378, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 386, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 387, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 388, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 389, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 390, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 391, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 393, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 394, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 395, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 396, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 397, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 398, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 399, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 413, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 414, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 415, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 416, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 417, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 418, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 419, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 769, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 770, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 771, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 772, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 773, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 774, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1063, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1068, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1069, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1085, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1086, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1087, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1088, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1089, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(1, 1090, '2026-04-07 00:10:03', '2026-04-07 00:10:03'),
+	(19, 7, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 8, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 9, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 14, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 15, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 16, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 17, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 18, '2026-04-09 00:26:12', '2026-04-09 00:26:12'),
+	(19, 25, '2026-04-09 00:26:12', '2026-04-09 00:26:12');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
