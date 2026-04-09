@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Person;
+use App\Models\Tenant;
 use App\Models\Neighborhood;
 use App\Models\City;
 
@@ -79,7 +80,16 @@ class PersonController extends Controller
 	public function create()
 		{
 		$this->requirePermission('person.create');
-		$this->view('people/create', ['title' => 'Nova pessoa']);
+
+		$tenantModel = new Tenant();
+		$nextDatabaseNumber = $tenantModel->nextDatabaseNumber();
+		$tenants = $tenantModel->getAll();
+
+		$this->view('people/create', [
+			'title'              => 'Nova pessoa',
+			'nextDatabaseNumber' => $nextDatabaseNumber,
+			'tenants'            => $tenants,
+		]);
 		}
 
 	/**

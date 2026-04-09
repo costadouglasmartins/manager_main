@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Services\TenantProvisioner;
 use PDO;
 
 class Person extends Model
@@ -68,6 +69,54 @@ class Person extends Model
 				'modified'  => date('Y-m-d H:i:s'),
 			]);
 			$userId = $this->db->lastInsertId();
+
+			// Handle tenant association
+			$tenantId = null;
+			$tenantMode = $data['tenant']['mode'] ?? 'none';
+
+			if ($tenantMode === 'new')
+				{
+				$tenantModel = new Tenant();
+				$databaseNumber = $tenantModel->nextDatabaseNumber();
+
+				$tenantId = $tenantModel->create([
+					'name'            => $data['tenant']['name'],
+					'fantasy'         => $data['tenant']['fantasy'] ?? null,
+					'document'        => $data['tenant']['document'] ?? null,
+					'database_number' => $databaseNumber,
+					'status'          => $data['tenant']['status'] ?? 'pending',
+					'observations'    => $data['tenant']['observations'] ?? null,
+				]);
+
+				$provisioner = new TenantProvisioner();
+				$provisioned = $provisioner->provision($databaseNumber);
+
+				if ($provisioned)
+					{
+					$tenantModel->update($tenantId, [
+						'name'         => $data['tenant']['name'],
+						'fantasy'      => $data['tenant']['fantasy'] ?? null,
+						'document'     => $data['tenant']['document'] ?? null,
+						'status'       => 'active',
+						'observations' => $data['tenant']['observations'] ?? null,
+					]);
+					}
+				}
+			elseif ($tenantMode === 'existing' && !empty($data['tenant']['existing_id']))
+				{
+				$tenantId = (int) $data['tenant']['existing_id'];
+				}
+
+			// Link user to tenant
+			if ($tenantId)
+				{
+				$stmtTenantLink = $this->db->prepare("UPDATE users SET tenant_id = :tenant_id, modified = :modified WHERE id = :id");
+				$stmtTenantLink->execute([
+					'tenant_id' => $tenantId,
+					'modified'  => date('Y-m-d H:i:s'),
+					'id'        => $userId,
+				]);
+				}
 
 			// Save phones
 			if (!empty($data['phones']) && is_array($data['phones']))
@@ -146,6 +195,7 @@ class Person extends Model
 			return [
 				'person_id' => $personId,
 				'user_id'   => $userId,
+				'tenant_id' => $tenantId,
 			];
 			}
 		catch (\Exception $e)

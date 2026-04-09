@@ -7,14 +7,15 @@
 				return;
 			}
 
-		const TOTAL_STEPS = 5;
+		const TOTAL_STEPS = 6;
 
 		const steps = [
-			{n: 1, title: "Etapa 1 de 5", subtitle: "Pessoa"},
-			{n: 2, title: "Etapa 2 de 5", subtitle: "Usuário"},
-			{n: 3, title: "Etapa 3 de 5", subtitle: "Endereços"},
-			{n: 4, title: "Etapa 4 de 5", subtitle: "Contatos"},
-			{n: 5, title: "Etapa 5 de 5", subtitle: "Revisão"}
+			{n: 1, title: "Etapa 1 de 6", subtitle: "Pessoa"},
+			{n: 2, title: "Etapa 2 de 6", subtitle: "Usuário"},
+			{n: 3, title: "Etapa 3 de 6", subtitle: "Tenant"},
+			{n: 4, title: "Etapa 4 de 6", subtitle: "Endereços"},
+			{n: 5, title: "Etapa 5 de 6", subtitle: "Contatos"},
+			{n: 6, title: "Etapa 6 de 6", subtitle: "Revisão"}
 		];
 
 		let currentStep = 1;
@@ -45,13 +46,23 @@
 
 		const reviewBody = document.getElementById("reviewBody");
 
+		// Tenant elements
+		const tenantMode            = document.getElementById("tenantMode");
+		const tenantNewFields       = document.getElementById("tenantNewFields");
+		const tenantExistingFields  = document.getElementById("tenantExistingFields");
+		const tenantCopyPerson      = document.getElementById("tenantCopyPerson");
+		const tenantName            = document.getElementById("tenantName");
+		const tenantFantasy         = document.getElementById("tenantFantasy");
+		const tenantDocument        = document.getElementById("tenantDocument");
+
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
 			"addressesContainer", "phonesContainer", "emailsContainer",
 			"addressTemplate", "phoneTemplate", "emailTemplate",
 			"btnAddAddress", "btnAddPhone", "btnAddEmail",
-			"reviewBody", "userPassword", "userPassword2"
+			"reviewBody", "userPassword", "userPassword2",
+			"tenantMode", "tenantNewFields", "tenantExistingFields"
 		];
 
 		const missing = requiredIds.filter((id) => !document.getElementById(id));
@@ -300,6 +311,82 @@
 			}
 
 		// -----------------------------------------------------------------------
+		// Tenant: alternar painéis conforme modo selecionado
+		// -----------------------------------------------------------------------
+		function updateTenantPanels()
+			{
+				const mode = tenantMode.value;
+				tenantNewFields.classList.toggle("d-none", mode !== "new");
+				tenantExistingFields.classList.toggle("d-none", mode !== "existing");
+
+				// Ao trocar para "new", copiar dados da pessoa se checkbox marcado
+				if (mode === "new" && tenantCopyPerson && tenantCopyPerson.checked)
+					{
+						copyPersonToTenant();
+					}
+
+				// Manage required: tenant name required only when creating new
+				if (tenantName)
+					{
+						if (mode === "new")
+							{
+								tenantName.setAttribute("required", "");
+							}
+						else
+							{
+								tenantName.removeAttribute("required");
+							}
+					}
+
+				// Existing tenant select required only when mode is existing
+				const tenantExistingId = document.getElementById("tenantExistingId");
+				if (tenantExistingId)
+					{
+						if (mode === "existing")
+							{
+								tenantExistingId.setAttribute("required", "");
+							}
+						else
+							{
+								tenantExistingId.removeAttribute("required");
+							}
+					}
+			}
+
+		function copyPersonToTenant()
+			{
+				const personName    = document.getElementById("personName");
+				const personFantasy = document.getElementById("personFantasy");
+				const personDoc     = document.getElementById("personDocument");
+
+				if (tenantName && personName)
+					{
+						tenantName.value = personName.value;
+					}
+				if (tenantFantasy && personFantasy)
+					{
+						tenantFantasy.value = personFantasy.value;
+					}
+				if (tenantDocument && personDoc)
+					{
+						tenantDocument.value = personDoc.value;
+					}
+			}
+
+		tenantMode.addEventListener("change", updateTenantPanels);
+
+		if (tenantCopyPerson)
+			{
+				tenantCopyPerson.addEventListener("change", function ()
+					{
+						if (this.checked && tenantMode.value === "new")
+							{
+								copyPersonToTenant();
+							}
+					});
+			}
+
+		// -----------------------------------------------------------------------
 		// Navegação de etapas
 		// -----------------------------------------------------------------------
 		function showStep(step)
@@ -356,6 +443,33 @@
 
 		function validateStep3()
 			{
+				// Validação do tenant
+				const mode = tenantMode.value;
+
+				if (mode === "new")
+					{
+						if (!tenantName || !tenantName.value.trim())
+							{
+								showAlert("Informe o nome do tenant.");
+								return false;
+							}
+					}
+
+				if (mode === "existing")
+					{
+						const tenantExistingId = document.getElementById("tenantExistingId");
+						if (!tenantExistingId || !tenantExistingId.value)
+							{
+								showAlert("Selecione um tenant existente.");
+								return false;
+							}
+					}
+
+				return true;
+			}
+
+		function validateStep4()
+			{
 				// Pelo menos um endereço com zip_code, street e number preenchidos
 				const blocks = Array.from(addressesContainer.querySelectorAll("[data-remove='address']"))
 					.map((btn) => btn.closest(".border"))
@@ -399,7 +513,7 @@
 				return true;
 			}
 
-		function validateStep4()
+		function validateStep5()
 			{
 				// Pelo menos um telefone preenchido
 				const phoneBlocks = Array.from(phonesContainer.querySelectorAll("[data-remove='phone']"))
@@ -470,6 +584,11 @@
 				if (currentStep === 4)
 					{
 						return validateStep4();
+					}
+
+				if (currentStep === 5)
+					{
+						return validateStep5();
 					}
 
 				const requiredControls = getCurrentStepRequiredControls();
@@ -600,6 +719,28 @@
 				// Usuário
 				rows.push(["Usuário / Username",       normalizeValue(document.getElementById("userUsername"))]);
 				rows.push(["Usuário / Tipo de acesso", normalizeValue(document.getElementById("userType"))]);
+
+				// Tenant
+				const tMode = tenantMode.value;
+				if (tMode === "new")
+					{
+						rows.push(["Tenant / Modo", "Criar novo"]);
+						rows.push(["Tenant / Nome", normalizeValue(document.getElementById("tenantName"))]);
+						rows.push(["Tenant / Fantasia", normalizeValue(document.getElementById("tenantFantasy"))]);
+						rows.push(["Tenant / Documento", normalizeValue(document.getElementById("tenantDocument"))]);
+						rows.push(["Tenant / Situação", normalizeValue(document.getElementById("tenantStatus"))]);
+						rows.push(["Tenant / N. Banco", normalizeValue(document.getElementById("tenantDatabaseNumber"))]);
+						rows.push(["Tenant / Observações", normalizeValue(document.getElementById("tenantObservations"))]);
+					}
+				else if (tMode === "existing")
+					{
+						rows.push(["Tenant / Modo", "Selecionar existente"]);
+						rows.push(["Tenant / Tenant", normalizeValue(document.getElementById("tenantExistingId"))]);
+					}
+				else
+					{
+						rows.push(["Tenant", "Não associado"]);
+					}
 
 				// Endereços
 				const addressBlocks = Array.from(

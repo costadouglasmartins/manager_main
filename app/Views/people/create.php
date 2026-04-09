@@ -13,10 +13,10 @@
 	<div class="card-body">
 		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 			<div>
-				<div class="fw-semibold" id="stepTitle">Etapa 1 de 5</div>
+				<div class="fw-semibold" id="stepTitle">Etapa 1 de 6</div>
 				<div class="text-body-secondary small" id="stepSubtitle">Pessoa</div>
 			</div>
-			<span class="badge text-bg-secondary" id="stepBadge">1/5</span>
+			<span class="badge text-bg-secondary" id="stepBadge">1/6</span>
 		</div>
 
 		<div class="progress mt-3" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
@@ -31,13 +31,16 @@
 				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="2">2. Usuário</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="3">3. Endereços</button>
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="3">3. Tenant</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="4">4. Contatos</button>
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="4">4. Endereços</button>
+			</div>
+			<div class="col-6 col-md">
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="5">5. Contatos</button>
 			</div>
 			<div class="col-12 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="5">5. Revisão</button>
+				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="6">6. Revisão</button>
 			</div>
 		</div>
 	</div>
@@ -128,8 +131,89 @@
 			</section>
 			<!-- /Step 2 -->
 
-			<!-- Step 3: Endereços -->
+			<!-- Step 3: Tenant -->
 			<section data-step="3" class="d-none">
+				<h2 class="h6 mb-3">Tenant</h2>
+
+				<div class="row g-3">
+					<div class="col-12">
+						<label class="form-label">Associar tenant?</label>
+						<select class="form-select" id="tenantMode" name="tenant[mode]">
+							<option value="none" selected>Não associar tenant</option>
+							<option value="new">Criar novo tenant</option>
+							<option value="existing">Selecionar tenant existente</option>
+						</select>
+					</div>
+
+					<!-- Criar novo tenant -->
+					<div class="col-12 d-none" id="tenantNewFields">
+						<div class="border rounded p-3">
+							<div class="row g-3">
+								<div class="col-12 col-md-6">
+									<label class="form-label" for="tenantName">Nome do tenant</label>
+									<input autocomplete="off" class="form-control" id="tenantName" name="tenant[name]" placeholder="Nome do tenant" type="text" />
+									<div class="invalid-feedback">Informe o nome do tenant.</div>
+								</div>
+								<div class="col-12 col-md-6">
+									<label class="form-label" for="tenantFantasy">Nome fantasia</label>
+									<input autocomplete="off" class="form-control" id="tenantFantasy" name="tenant[fantasy]" placeholder="Nome fantasia" type="text" />
+								</div>
+								<div class="col-12 col-md-4">
+									<label class="form-label" for="tenantDocument">Documento (CPF/CNPJ)</label>
+									<input autocomplete="off" class="form-control mask-cpf-cnpj" id="tenantDocument" name="tenant[document]" placeholder="CPF ou CNPJ" type="text" />
+								</div>
+								<div class="col-12 col-md-4">
+									<label class="form-label" for="tenantDatabaseNumber">N. do banco</label>
+									<input class="form-control" id="tenantDatabaseNumber" type="text" value="<?= htmlspecialchars($nextDatabaseNumber) ?>" disabled />
+									<div class="form-text">Gerado automaticamente: <code>manager_<?= htmlspecialchars($nextDatabaseNumber) ?></code></div>
+								</div>
+								<div class="col-12 col-md-4">
+									<label class="form-label" for="tenantStatus">Situação</label>
+									<select autocomplete="off" class="form-select" id="tenantStatus" name="tenant[status]">
+										<option value="pending" selected>Pendente</option>
+										<option value="active">Ativo</option>
+										<option value="suspended">Suspenso</option>
+									</select>
+								</div>
+								<div class="col-12">
+									<label class="form-label" for="tenantObservations">Observações</label>
+									<textarea class="form-control" id="tenantObservations" name="tenant[observations]" rows="2" placeholder="Observações gerais..."></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="form-check mt-2">
+							<input class="form-check-input" type="checkbox" id="tenantCopyPerson" checked />
+							<label class="form-check-label" for="tenantCopyPerson">Copiar nome, fantasia e documento da pessoa</label>
+						</div>
+					</div>
+
+					<!-- Selecionar tenant existente -->
+					<div class="col-12 d-none" id="tenantExistingFields">
+						<div class="border rounded p-3">
+							<div class="row g-3">
+								<div class="col-12">
+									<label class="form-label" for="tenantExistingId">Selecionar tenant</label>
+									<select class="form-select" id="tenantExistingId" name="tenant[existing_id]">
+										<option value="" selected disabled>Selecione um tenant...</option>
+										<?php foreach ($tenants as $t): ?>
+											<option value="<?= (int) $t['id']; ?>">
+												<?= htmlspecialchars($t['name']); ?>
+												— <?= htmlspecialchars($t['database_number']); ?>
+												(<?= htmlspecialchars($t['status']); ?>)
+											</option>
+										<?php endforeach; ?>
+									</select>
+									<div class="invalid-feedback">Selecione um tenant.</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<!-- /Step 3 -->
+
+			<!-- Step 4: Endereços -->
+			<section data-step="4" class="d-none">
 				<h2 class="h6 mb-3">Endereços</h2>
 
 				<div class="row g-3">
@@ -202,10 +286,10 @@
 					</div>
 				</div>
 			</section>
-			<!-- /Step 3 -->
+			<!-- /Step 4 -->
 
-			<!-- Step 4: Contatos -->
-			<section data-step="4" class="d-none">
+			<!-- Step 5: Contatos -->
+			<section data-step="5" class="d-none">
 				<h2 class="h6 mb-3">Contatos</h2>
 
 				<div class="row g-3">
@@ -280,10 +364,10 @@
 					</div>
 				</div>
 			</section>
-			<!-- /Step 4 -->
+			<!-- /Step 5: Contatos -->
 
-			<!-- Step 5: Revisão -->
-			<section data-step="5" class="d-none">
+			<!-- Step 6: Revisão -->
+			<section data-step="6" class="d-none">
 				<div class="alert alert-info mb-3" role="alert">
 					Revise seus dados antes de concluir.
 				</div>
@@ -306,7 +390,7 @@
 					<div class="invalid-feedback">Você precisa confirmar a revisão.</div>
 				</div>
 			</section>
-			<!-- /Step 5 -->
+			<!-- /Step 6 -->
 
 		</div>
 
@@ -325,4 +409,4 @@
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
-<script src="<?= url('assets/js/person/create.js?v=4'); ?>"></script>
+<script src="<?= url('assets/js/person/create.js?v=5'); ?>"></script>
