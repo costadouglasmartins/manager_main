@@ -409,4 +409,4 @@
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
-<script src="<?= url('assets/js/person/create.js?v=5'); ?>"></script>
+<script src="<?= url('assets/js/person/create.js?v=6'); ?>"></script>

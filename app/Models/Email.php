@@ -67,6 +67,7 @@ class Email extends Model
 			UPDATE emails
 			SET
 				`email`        = :email,
+				`is_login`     = :is_login,
 				`observations` = :observations,
 				`person_id`    = :person_id
 			WHERE id = :id
@@ -74,6 +75,7 @@ class Email extends Model
 
 		$stmt->execute([
 			'email'        => $data['email'],
+			'is_login'     => intval($data['type'] ?? 0),
 			'observations' => $data['observations'] ?? null,
 			'person_id'    => !empty($data['person_id']) ? (int) $data['person_id'] : null,
 			'id'           => $id,

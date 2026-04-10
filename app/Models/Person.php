@@ -20,6 +20,64 @@ class Person extends Model
 		}
 
 	/**
+	 * Regroups a flat form array produced by PHP's auto-indexing of name="arr[][key]".
+	 *
+	 * PHP turns  arr[][a], arr[][b], arr[][c]  into:
+	 *   [0 => ['a'=>v], 1 => ['b'=>v], 2 => ['c'=>v]]
+	 * This method re-zips them by key into:
+	 *   [0 => ['a'=>v, 'b'=>v, 'c'=>v]]
+	 *
+	 * If the array is already properly indexed (each entry has multiple keys), it is returned as-is.
+	 */
+	private function regroupFormArray(array $items): array
+		{
+		// Detect: if any entry has more than one key, assume already grouped
+		foreach ($items as $entry)
+			{
+			if (is_array($entry) && count($entry) > 1)
+				{
+				return $items;
+				}
+			}
+
+		// Collect values per key, preserving order
+		$byKey = [];
+		foreach ($items as $entry)
+			{
+			if (!is_array($entry))
+				{
+				continue;
+				}
+			foreach ($entry as $key => $value)
+				{
+				$byKey[$key][] = $value;
+				}
+			}
+
+		if (empty($byKey))
+			{
+			return [];
+			}
+
+		// Zip: the first key determines how many records there are
+		$keys  = array_keys($byKey);
+		$count = count(reset($byKey));
+		$result = [];
+
+		for ($i = 0; $i < $count; $i++)
+			{
+			$row = [];
+			foreach ($keys as $key)
+				{
+				$row[$key] = $byKey[$key][$i] ?? null;
+				}
+			$result[] = $row;
+			}
+
+		return $result;
+		}
+
+	/**
 	 * Create method - saves person, user, phones and emails in a single transaction
 	 * @param Array $data Data to save
 	 * @return array
@@ -121,6 +179,7 @@ class Person extends Model
 			// Save phones
 			if (!empty($data['phones']) && is_array($data['phones']))
 				{
+				$data['phones'] = $this->regroupFormArray($data['phones']);
 				$sqlPhone = "INSERT INTO phone_numbers (`phone_number`, `observations`, `person_id`, `created`, `modified`)
                              VALUES (:phone_number, :observations, :person_id, :created, :modified)";
 				$stmtPhone = $this->db->prepare($sqlPhone);
@@ -143,6 +202,7 @@ class Person extends Model
 			// Save addresses
 			if (!empty($data['addresses']) && is_array($data['addresses']))
 				{
+				$data['addresses'] = $this->regroupFormArray($data['addresses']);
 				$sqlAddress = "INSERT INTO addresses
 								(`zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`)
 							  VALUES
@@ -170,6 +230,7 @@ class Person extends Model
 			// Save emails
 			if (!empty($data['emails']) && is_array($data['emails']))
 				{
+				$data['emails'] = $this->regroupFormArray($data['emails']);
 				$sqlEmail = "INSERT INTO emails (`email`, `observations`, `is_login`, `person_id`, `created`, `modified`)
                              VALUES (:email, :observations, :is_login, :person_id, :created, :modified)";
 				$stmtEmail = $this->db->prepare($sqlEmail);

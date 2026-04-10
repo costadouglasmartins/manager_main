@@ -76,6 +76,8 @@
 		// Contador de endereços
 		// -----------------------------------------------------------------------
 		let addressCounter = 0;
+		let phoneCounter = 0;
+		let emailCounter = 0;
 
 		// -----------------------------------------------------------------------
 		// Mini-autocomplete genérico (reutilizado para bairro e cidade)
@@ -483,9 +485,9 @@
 
 				for (let i = 0; i < blocks.length; i++)
 					{
-						const zipCode  = blocks[i].querySelector("input[name='addresses[][zip_code]']");
-						const street   = blocks[i].querySelector("input[name='addresses[][street]']");
-						const number   = blocks[i].querySelector("input[name='addresses[][number]']");
+						const zipCode  = blocks[i].querySelector("input[name^='addresses['][name$='[zip_code]']");
+						const street   = blocks[i].querySelector("input[name^='addresses['][name$='[street]']");
+						const number   = blocks[i].querySelector("input[name^='addresses['][name$='[number]']");
 						const neighId = blocks[i].querySelector(".addr-neighborhood-id");
 
 						if (!zipCode || !zipCode.value.trim())
@@ -528,7 +530,7 @@
 
 				for (let i = 0; i < phoneBlocks.length; i++)
 					{
-						const num = phoneBlocks[i].querySelector("input[name='phones[][number]']");
+						const num = phoneBlocks[i].querySelector("input[name^='phones['][name$='[number]']");
 						if (!num || !num.value.trim())
 							{
 								showAlert("Telefone " + (i + 1) + ": informe o número.");
@@ -549,7 +551,7 @@
 
 				for (let i = 0; i < emailBlocks.length; i++)
 					{
-						const addr = emailBlocks[i].querySelector("input[name='emails[][address]']");
+						const addr = emailBlocks[i].querySelector("input[name^='emails['][name$='[address]']");
 						if (!addr || !addr.value.trim())
 							{
 								showAlert("E-mail " + (i + 1) + ": informe o endereço de e-mail.");
@@ -673,8 +675,12 @@
 		// -----------------------------------------------------------------------
 		function addAddressRow()
 			{
-				addressCounter++;
+				const idx = addressCounter++;
 				const node = addressTemplate.content.cloneNode(true);
+				node.querySelectorAll("[name]").forEach(function (el)
+					{
+						el.name = el.name.replace("addresses[]", "addresses[" + idx + "]");
+					});
 
 				// Captura referência ao bloco antes do appendChild (DocumentFragment esvazia após append)
 				const block = node.querySelector(".border");
@@ -690,13 +696,23 @@
 
 		function addPhoneRow()
 			{
+				const idx = phoneCounter++;
 				const node = phoneTemplate.content.cloneNode(true);
+				node.querySelectorAll("[name]").forEach(function (el)
+					{
+						el.name = el.name.replace("phones[]", "phones[" + idx + "]");
+					});
 				phonesContainer.appendChild(node);
 			}
 
 		function addEmailRow()
 			{
+				const idx = emailCounter++;
 				const node = emailTemplate.content.cloneNode(true);
+				node.querySelectorAll("[name]").forEach(function (el)
+					{
+						el.name = el.name.replace("emails[]", "emails[" + idx + "]");
+					});
 				emailsContainer.appendChild(node);
 			}
 
@@ -752,10 +768,10 @@
 						addressBlocks.forEach((block, i)  =>
 							{
 								const n       = i + 1;
-								const zipCode = block.querySelector("input[name='addresses[][zip_code]']");
-								const street  = block.querySelector("input[name='addresses[][street]']");
-								const number  = block.querySelector("input[name='addresses[][number]']");
-								const obs        = block.querySelector("input[name='addresses[][observations]']");
+								const zipCode = block.querySelector("input[name^='addresses['][name$='[zip_code]']");
+								const street  = block.querySelector("input[name^='addresses['][name$='[street]']");
+								const number  = block.querySelector("input[name^='addresses['][name$='[number]']");
+								const obs        = block.querySelector("input[name^='addresses['][name$='[observations]']");
 								const neighInput = block.querySelector(".addr-neighborhood-input");
 
 								rows.push(["Endereço " + n + " / CEP",         normalizeValue(zipCode)]);
@@ -779,8 +795,8 @@
 					{
 						phoneBlocks.forEach((block, i) =>
 							{
-								const number = block.querySelector("input[name='phones[][number]']");
-								const notes  = block.querySelector("input[name='phones[][notes]']");
+								const number = block.querySelector("input[name^='phones['][name$='[number]']");
+								const notes  = block.querySelector("input[name^='phones['][name$='[notes]']");
 								rows.push(["Telefone " + (i + 1) + " / Número",      normalizeValue(number)]);
 								rows.push(["Telefone " + (i + 1) + " / Observações", normalizeValue(notes)]);
 							});
@@ -799,9 +815,9 @@
 					{
 						emailBlocks.forEach((block, i) =>
 							{
-								const address  = block.querySelector("input[name='emails[][address]']");
-								const desc     = block.querySelector("input[name='emails[][description]']");
-								const isLogin  = block.querySelector("select[name='emails[][is_login]']");
+								const address  = block.querySelector("input[name^='emails['][name$='[address]']");
+								const desc     = block.querySelector("input[name^='emails['][name$='[description]']");
+								const isLogin  = block.querySelector("select[name^='emails['][name$='[is_login]']");
 								rows.push(["E-mail " + (i + 1) + " / Endereço",  normalizeValue(address)]);
 								rows.push(["E-mail " + (i + 1) + " / Descrição", normalizeValue(desc)]);
 								rows.push(["E-mail " + (i + 1) + " / Login?",    normalizeValue(isLogin)]);

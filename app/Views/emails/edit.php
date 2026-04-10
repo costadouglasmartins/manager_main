@@ -22,9 +22,8 @@
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="type">Utilizar para login</label>
       <select class="form-select" id="type" name="type">
-        <option value="" <?= !$email['is_login'] ? 'selected' : ''; ?>>Selecione...</option>
-        <option value="0" <?= $email['is_login'] === 0 ? 'selected' : ''; ?>>Não</option>
-        <option value="1" <?= $email['is_login'] === 1 ? 'selected' : ''; ?>>Sim</option>
+        <option value="0" <?= (int) $email['is_login'] === 0 ? 'selected' : ''; ?>>Não</option>
+        <option value="1" <?= (int) $email['is_login'] === 1 ? 'selected' : ''; ?>>Sim</option>
       </select>
     </div>
 
