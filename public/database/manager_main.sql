@@ -36,9 +36,12 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.addresses: ~0 rows (approximately)
+INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
+	(1, '88997-001', 'Maecenas nec sem quam', '12', 'Rua sem saída', 26, 4, '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(2, '77777-777', 'Maecenas nec sem quam', '1', '', 27, 2, '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5654,14 +5657,22 @@ CREATE TABLE IF NOT EXISTS `emails` (
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~4 rows (approximately)
+-- Dumping data for table manager_main.emails: ~12 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', NULL, 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'lorem@ipsum.com', NULL, 22, 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
 	(3, 'lorem2@ipsum.com', NULL, 22, 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
-	(4, 'izzidoro@yahoo.com.br', 'E-mail do yahoo Brasil', 3, 1, '2026-03-26 23:32:41', NULL);
+	(4, 'izzidoro@yahoo.com.br', 'E-mail do yahoo Brasil', 3, 1, '2026-03-26 23:32:41', NULL),
+	(5, 'email@exemplo.com', '', 23, 1, '2026-04-09 23:29:28', '2026-04-09 23:29:28'),
+	(6, 'email@email.com', NULL, 24, 1, '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(7, 'email2@email2.com', NULL, 24, 1, '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(8, 'email3@email3.com', NULL, 25, 1, '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(9, 'email4@email4.com', NULL, 25, 1, '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(10, 'email5@email5.com', 'aaaa', 26, 1, '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(11, 'email6@email6.com', 'lanka lanka', 27, 1, '2026-04-10 00:20:52', '2026-04-10 00:20:52'),
+	(12, 'email7@email7.com', 'lanka 1 lanka 1', 27, 1, '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -5673,12 +5684,16 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~2 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
-	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14');
+	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
+	(3, 'Pedra Branca', 4596, '2026-04-09 23:28:29', '2026-04-09 23:28:29'),
+	(4, 'Ponte do Imaruim', 4596, '2026-04-09 23:48:02', '2026-04-09 23:48:02'),
+	(5, 'Centro', 4596, '2026-04-09 23:52:01', '2026-04-09 23:52:01'),
+	(6, 'Centro', 4441, '2026-04-10 00:02:05', '2026-04-10 00:02:05');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -5693,12 +5708,17 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.people: ~2 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
-	(22, 'Lorem Ipsum', 'Lorem Ipsum', 'individual', '97037381845', 1, '2017-02-01', '2026-03-18 00:22:20', '2026-03-18 00:22:20');
+	(22, 'Lorem Ipsum', 'Lorem Ipsum', 'individual', '97037381845', 1, '2017-02-01', '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(23, 'Nam facilisis', 'Nam facilisis', 'company', '48800419000154', 1, NULL, '2026-04-09 23:29:27', '2026-04-09 23:29:27'),
+	(24, 'Etiam purus', 'Etiam purus', 'company', '91999256000100', 1, NULL, '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(25, 'Quisque tincidunt', 'Quisque tincidunt', 'company', '52623354000196', 1, NULL, '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(26, 'Vivamus imperdiet', 'Vivamus imperdiet', 'company', '48187691000100', 1, NULL, '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(27, 'Curabitur rhoncus suscipit', 'urabitur rhoncus suscipit', 'company', '73850322000101', 1, NULL, '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -5797,12 +5817,17 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(1, '288832010929201', NULL, 22, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
-	(2, '489823902039220', NULL, 22, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
+	(2, '489823902039220', NULL, 22, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(3, '48888888888', NULL, 23, '2026-04-09 23:29:28', '2026-04-09 23:29:28'),
+	(4, '48777777777', NULL, 24, '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(5, '48666666666', NULL, 25, '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(6, '47444444444', 'celular', 26, '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(7, '11111111111', 'lala', 27, '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -5860,11 +5885,16 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.tenants: ~0 rows (approximately)
 INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
-	(1, 'Lorem Ipsum', 'Lorem Ipsum', '97037381845', '0001', 'active', '', '2026-04-07 00:10:53', '2026-04-07 00:10:53');
+	(1, 'Lorem Ipsum', 'Lorem Ipsum', '97037381845', '0001', 'active', '', '2026-04-07 00:10:53', '2026-04-07 00:10:53'),
+	(2, 'Nam facilisis', 'Nam facilisis', '48.800.419/0001-54', '0002', 'active', '', '2026-04-09 23:29:27', '2026-04-09 23:29:28'),
+	(3, 'Etiam purus', 'Etiam purus', '91.999.256/0001-00', '0003', 'active', '', '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(4, 'Quisque tincidunt', 'Quisque tincidunt', '52.623.354/0001-96', '0004', 'active', '', '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(5, 'Vivamus imperdiet', 'Vivamus imperdiet', '48.187.691/0001-00', '0005', 'active', '', '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(6, 'Curabitur rhoncus suscipit', 'urabitur rhoncus suscipit', '73.850.322/0001-01', '0006', 'active', '', '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -5883,12 +5913,17 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.users: ~0 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
-	(19, 22, 1, 'user.example', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'admin', 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20');
+	(19, 22, 1, 'user.example', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'admin', 1, '2026-03-18 00:22:20', '2026-03-18 00:22:20'),
+	(20, 23, 2, 'nam.facilisis', '$2y$12$Fof2bSNgRX89uWnl4T0KoetL.oWlwB4ibVrr5YrMzR15VZadyZFNa', 'admin', 1, '2026-04-09 23:29:27', '2026-04-09 23:29:28'),
+	(21, 24, 3, 'etiam.purus', '$2y$12$3iFMu.HdJ5L0NOCMTaQs/uUUjtAHYaiihEfuP8rgbB.rzuXdC8ot6', 'admin', 1, '2026-04-09 23:49:36', '2026-04-09 23:49:36'),
+	(22, 25, 4, 'quisque.tincidunt', '$2y$12$AdmIsBYFioPeUnVChs7fiuZQd9y1a3arAH3nrj7sBFOBb18kHphAy', 'admin', 1, '2026-04-10 00:03:18', '2026-04-10 00:03:18'),
+	(23, 26, 5, 'vivamus.imperdiet', '$2y$12$rFHpMY6qvBXBsMK/BM3kXeER8UjoGfYVX4NHpsVLffC/hz1bgpj1i', 'admin', 1, '2026-04-10 00:15:44', '2026-04-10 00:15:44'),
+	(24, 27, 6, 'curabitur.suscipit', '$2y$12$UF2Ye2xn9SuOiKF3iH8noeP3kvrWl4ThgFxuHPh1uF7tIYYhMH8PC', 'admin', 1, '2026-04-10 00:20:52', '2026-04-10 00:20:52');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
