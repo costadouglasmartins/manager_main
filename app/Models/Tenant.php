@@ -225,6 +225,53 @@ class Tenant extends Model
 		                          ORDER BY Tenant.name ASC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
+
+	/**
+	 * Link user to tenant in tenant_users table
+	 * @param int $tenantId
+	 * @param int $userId
+	 * @param string $role (owner, admin, user)
+	 * @param int $active
+	 * @return void
+	 */
+	public function linkUser(int $tenantId, int $userId, string $role = 'user', int $active = 1): void
+		{
+		$stmt = $this->db->prepare("INSERT INTO tenant_users (tenant_id, user_id, role, active, created, modified)
+		                            VALUES (:tenant_id, :user_id, :role, :active, :created, :modified)");
+
+		$stmt->execute([
+			'tenant_id' => $tenantId,
+			'user_id'   => $userId,
+			'role'      => $role,
+			'active'    => $active,
+			'created'   => date('Y-m-d H:i:s'),
+			'modified'  => date('Y-m-d H:i:s'),
+		]);
+		}
+
+	/**
+	 * Get tenant users with their roles
+	 * @param int $tenantId
+	 * @return array
+	 */
+	public function getTenantUsers(int $tenantId): array
+		{
+		$stmt = $this->db->prepare("SELECT tu.user_id,
+		                                   tu.role,
+		                                   tu.active,
+		                                   tu.created,
+		                                   tu.modified,
+		                                   u.username,
+		                                   p.name
+		                            FROM tenant_users AS tu
+		                            INNER JOIN users AS u ON tu.user_id = u.id
+		                            INNER JOIN people AS p ON u.person_id = p.id
+		                            WHERE tu.tenant_id = :tenant_id
+		                            ORDER BY tu.created DESC");
+
+		$stmt->execute(['tenant_id' => $tenantId]);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
 	}
 
 ?>

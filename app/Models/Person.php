@@ -174,6 +174,10 @@ class Person extends Model
 					'modified'  => date('Y-m-d H:i:s'),
 					'id'        => $userId,
 				]);
+
+				// Link user to tenant_users with role='owner'
+				$tenantModel = new Tenant();
+				$tenantModel->linkUser($tenantId, $userId, 'owner', 1);
 				}
 
 			// Save phones
