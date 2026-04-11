@@ -272,6 +272,42 @@ class Tenant extends Model
 		$stmt->execute(['tenant_id' => $tenantId]);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
+
+	/**
+	 * Delete method - Deletes tenant_users, tenant_user_permissions, then updates users (set tenant_id to NULL) before deleting tenant
+	 * @param Integer $id Tenant id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Delete tenant_user_permissions
+			$stmt = $this->db->prepare("DELETE FROM tenant_user_permissions WHERE tenant_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete tenant_users
+			$stmt = $this->db->prepare("DELETE FROM tenant_users WHERE tenant_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Update users to set tenant_id to NULL
+			$stmt = $this->db->prepare("UPDATE users SET tenant_id = NULL WHERE tenant_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete tenant
+			$stmt = $this->db->prepare("DELETE FROM tenants WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

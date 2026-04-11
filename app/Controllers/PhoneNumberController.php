@@ -117,6 +117,25 @@ class PhoneNumberController extends Controller
 		$data = $phoneNumber->findAllByPhoneNumberId($id);
 		$this->view('phone_numbers/informations', ['title' => 'Informações sobre o telefone', 'phone_number' => $data['phone_number']]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('phone_number.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$phoneNumber = new PhoneNumber();
+			try {
+				$phoneNumber->delete($id);
+				$this->redirect('phone_number');
+			} catch (\Exception $e) {
+				$this->redirect('phone_number');
+			}
+		}
+		}
 	}
 
 ?>

@@ -175,6 +175,29 @@ class PhoneNumber extends Model
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['phone_number' => $data];
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id PhoneNumber id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			$stmt = $this->db->prepare("DELETE FROM phone_numbers WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

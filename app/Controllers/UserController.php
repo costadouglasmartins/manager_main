@@ -168,6 +168,25 @@ class UserController extends Controller
 		$data = $user->find($id);
 		$this->view('users/informations', ['title' => 'Informações sobre o(a) usuário(a)', 'user' => $data]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id User id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('user.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$user = new User();
+			try {
+				$user->delete($id);
+				$this->redirect('user');
+			} catch (\Exception $e) {
+				$this->redirect('user');
+			}
+		}
+		}
 	}
 
 ?>

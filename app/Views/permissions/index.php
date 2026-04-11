@@ -284,3 +284,34 @@ if (isset($_GET['created']))
   });
 })();
 </script>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+          <input type="hidden" name="id" id="recordId">
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
+  const recordId = e.relatedTarget.dataset.id;
+  document.getElementById('recordId').value = recordId;
+  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
+  document.getElementById('deleteForm').action = '<?= url('permission/delete') ?>/' + recordId;
+});
+</script>

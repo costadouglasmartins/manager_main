@@ -188,6 +188,25 @@ class PermissionController extends Controller
 			}
 		return array_values(array_unique($out));
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('permission.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$permission = new Permission();
+			try {
+				$permission->delete($id);
+				$this->redirect('permission');
+			} catch (\Exception $e) {
+				$this->redirect('permission');
+			}
+		}
+		}
 	}
 
 ?>

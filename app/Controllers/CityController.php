@@ -147,6 +147,25 @@ class CityController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('city.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$city = new City();
+			try {
+				$city->delete($id);
+				$this->redirect('city');
+			} catch (\Exception $e) {
+				$this->redirect('city');
+			}
+		}
+		}
 	}
 
 ?>

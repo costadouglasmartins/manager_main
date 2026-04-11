@@ -256,7 +256,7 @@ class User extends Model
 	 * @param String $email User email
 	 * @param String $password User password
 	 * @return boolean
-	 */	
+	 */
 	public function authenticate($email, $password)
 		{
 		$user = $this->findByEmail($email);
@@ -285,6 +285,42 @@ class User extends Model
 			}
 
 		return false;
+		}
+
+	/**
+	 * Delete method - Deletes user_permissions, tenant_users, tenant_user_permissions before deleting user
+	 * @param Integer $id User id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Delete user permissions
+			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE user_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete tenant_user_permissions (permissions assigned to user in tenant)
+			$stmt = $this->db->prepare("DELETE FROM tenant_user_permissions WHERE user_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete tenant users
+			$stmt = $this->db->prepare("DELETE FROM tenant_users WHERE user_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete user
+			$stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
 		}
 	}
 

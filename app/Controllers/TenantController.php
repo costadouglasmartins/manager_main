@@ -46,59 +46,6 @@ class TenantController extends Controller
 		}
 
 	/**
-	 * Create method
-	 */
-	public function create()
-		{
-		$this->requirePermission('tenant.create');
-
-		$tenant = new Tenant();
-		$nextNumber = $tenant->nextDatabaseNumber();
-
-		$personModel = new \App\Models\Person();
-		$people = $personModel->getAllForSelect();
-
-		$this->view('tenants/create', [
-			'title'      => 'Novo tenant',
-			'nextNumber' => $nextNumber,
-			'people'     => $people,
-		]);
-		}
-
-	/**
-	 * Store method
-	 */
-	public function store()
-		{
-		$this->requirePermission('tenant.store');
-
-		$tenantModel = new Tenant();
-		$databaseNumber = $tenantModel->nextDatabaseNumber();
-
-		$data = [
-			'name'            => isset($_POST['name'])         ? trim($_POST['name'])         : '',
-			'fantasy'         => isset($_POST['fantasy'])      ? trim($_POST['fantasy'])      : null,
-			'document'        => isset($_POST['document'])     ? trim($_POST['document'])     : null,
-			'database_number' => $databaseNumber,
-			'status'          => isset($_POST['status'])       ? trim($_POST['status'])       : 'pending',
-			'observations'    => isset($_POST['observations']) ? trim($_POST['observations']) : null,
-		];
-
-		$tenantId = $tenantModel->create($data);
-
-		$provisioner = new TenantProvisioner();
-		$provisioned = $provisioner->provision($databaseNumber);
-
-		if ($provisioned)
-			{
-			$data['status'] = 'active';
-			$tenantModel->update($tenantId, $data);
-			}
-
-		$this->redirect('tenant');
-		}
-
-	/**
 	 * Edit method
 	 */
 	public function edit($id)
@@ -162,6 +109,25 @@ class TenantController extends Controller
 			'title'  => 'Informacoes do tenant',
 			'tenant' => $tenant,
 		]);
+		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('tenant.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$tenant = new Tenant();
+			try {
+				$tenant->delete($id);
+				$this->redirect('tenant');
+			} catch (\Exception $e) {
+				$this->redirect('tenant');
+			}
+		}
 		}
 	}
 

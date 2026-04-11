@@ -175,6 +175,29 @@ class Email extends Model
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['email' => $data];
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Email id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			$stmt = $this->db->prepare("DELETE FROM emails WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

@@ -118,6 +118,25 @@ class AddressController extends Controller
 		$data = $address->findAllByAddressId($id);
 		$this->view('addresses/informations', ['title' => 'Informações sobre o endereço', 'address' => $data['address']]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('address.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$address = new Address();
+			try {
+				$address->delete($id);
+				$this->redirect('address');
+			} catch (\Exception $e) {
+				$this->redirect('address');
+			}
+		}
+		}
 	}
 
 ?>

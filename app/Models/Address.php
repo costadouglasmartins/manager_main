@@ -196,6 +196,29 @@ class Address extends Model
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['address' => $data];
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Address id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			$stmt = $this->db->prepare("DELETE FROM addresses WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

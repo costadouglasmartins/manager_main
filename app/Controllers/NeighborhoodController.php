@@ -147,6 +147,25 @@ class NeighborhoodController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('neighborhood.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$neighborhood = new Neighborhood();
+			try {
+				$neighborhood->delete($id);
+				$this->redirect('neighborhood');
+			} catch (\Exception $e) {
+				$this->redirect('neighborhood');
+			}
+		}
+		}
 	}
 
 ?>

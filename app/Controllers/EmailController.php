@@ -118,6 +118,25 @@ class EmailController extends Controller
 		$data = $email->findAllByEmailId($id);
 		$this->view('emails/informations', ['title' => 'Informações sobre o e-mail', 'email' => $data['email']]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('email.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$email = new Email();
+			try {
+				$email->delete($id);
+				$this->redirect('email');
+			} catch (\Exception $e) {
+				$this->redirect('email');
+			}
+		}
+		}
 	}
 
 ?>

@@ -196,6 +196,46 @@ class City extends Model
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
+
+	/**
+	 * Delete method - Deletes neighborhoods and their addresses before deleting city
+	 * @param Integer $id City id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Get all neighborhoods for this city
+			$stmt = $this->db->prepare("SELECT id FROM neighborhoods WHERE city_id = :id");
+			$stmt->execute(['id' => $id]);
+			$neighborhoods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			// Delete addresses for each neighborhood
+			foreach ($neighborhoods as $neighborhood)
+				{
+				$stmt = $this->db->prepare("DELETE FROM addresses WHERE neighborhood_id = :neighborhood_id");
+				$stmt->execute(['neighborhood_id' => $neighborhood['id']]);
+				}
+
+			// Delete neighborhoods
+			$stmt = $this->db->prepare("DELETE FROM neighborhoods WHERE city_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete city
+			$stmt = $this->db->prepare("DELETE FROM cities WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

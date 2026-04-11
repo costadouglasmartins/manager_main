@@ -261,6 +261,25 @@ class PersonController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('person.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$person = new Person();
+			try {
+				$person->delete($id);
+				$this->redirect('person');
+			} catch (\Exception $e) {
+				$this->redirect('person');
+			}
+		}
+		}
 	}
 
 ?>

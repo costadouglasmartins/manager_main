@@ -80,6 +80,11 @@ $queryFilters = http_build_query([
               <?php if (authCan('phone_number.informations')): ?>
                 <a href="<?= url('phone_number/informations/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
               <?php endif; ?>
+              <?php if (authCan('phone_number.delete')): ?>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $row['id'] ?>" data-name="<?= htmlspecialchars($row['phone_number'], ENT_QUOTES, 'UTF-8') ?>">
+                  <i class="bi bi-trash"></i>
+                </button>
+              <?php endif; ?>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -97,3 +102,34 @@ $queryFilters = http_build_query([
 <?php if ($totalPages > 1): ?>
   <?= paginationLinks('phone_number', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+          <input type="hidden" name="id" id="recordId">
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
+  const recordId = e.relatedTarget.dataset.id;
+  document.getElementById('recordId').value = recordId;
+  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
+  document.getElementById('deleteForm').action = '<?= url('phone_number/delete') ?>/' + recordId;
+});
+</script>

@@ -148,6 +148,25 @@ class StateController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('state.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$state = new State();
+			try {
+				$state->delete($id);
+				$this->redirect('state');
+			} catch (\Exception $e) {
+				$this->redirect('state');
+			}
+		}
+		}
 	}
 
 ?>

@@ -332,6 +332,34 @@ class Permission extends Model
 		{
 		return $this->getAbilitiesForUser($userId);
 		}
+
+	/**
+	 * Delete method - Deletes user_permissions before deleting permission
+	 * @param Integer $id Permission id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Delete user permissions
+			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE permission_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete permission
+			$stmt = $this->db->prepare("DELETE FROM permissions WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

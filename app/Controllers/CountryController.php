@@ -154,6 +154,25 @@ class CountryController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Delete method
+	 * @param Integer $id Record id
+	 */
+	public function delete($id)
+		{
+		$this->requirePermission('country.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			$country = new Country();
+			try {
+				$country->delete($id);
+				$this->redirect('country');
+			} catch (\Exception $e) {
+				$this->redirect('country');
+			}
+		}
+		}
 	}
 
 ?>

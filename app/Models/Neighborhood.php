@@ -193,6 +193,34 @@ class Neighborhood extends Model
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
+
+	/**
+	 * Delete method - Deletes neighborhood and dependent addresses
+	 * @param Integer $id Neighborhood id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Delete dependent addresses
+			$stmt = $this->db->prepare("DELETE FROM addresses WHERE neighborhood_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete neighborhood
+			$stmt = $this->db->prepare("DELETE FROM neighborhoods WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>

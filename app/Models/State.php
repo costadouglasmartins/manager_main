@@ -204,6 +204,56 @@ class State extends Model
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
+
+	/**
+	 * Delete method - Deletes cities, neighborhoods, and addresses before deleting state
+	 * @param Integer $id State id
+	 * @throws \Exception
+	 */
+	public function delete($id): void
+		{
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Get all cities for this state
+			$stmt = $this->db->prepare("SELECT id FROM cities WHERE state_id = :id");
+			$stmt->execute(['id' => $id]);
+			$cities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			// For each city, delete its neighborhoods and addresses
+			foreach ($cities as $city)
+				{
+				$stmt = $this->db->prepare("SELECT id FROM neighborhoods WHERE city_id = :city_id");
+				$stmt->execute(['city_id' => $city['id']]);
+				$neighborhoods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+				foreach ($neighborhoods as $neighborhood)
+					{
+					$stmt = $this->db->prepare("DELETE FROM addresses WHERE neighborhood_id = :neighborhood_id");
+					$stmt->execute(['neighborhood_id' => $neighborhood['id']]);
+					}
+
+				$stmt = $this->db->prepare("DELETE FROM neighborhoods WHERE city_id = :city_id");
+				$stmt->execute(['city_id' => $city['id']]);
+				}
+
+			// Delete cities
+			$stmt = $this->db->prepare("DELETE FROM cities WHERE state_id = :id");
+			$stmt->execute(['id' => $id]);
+
+			// Delete state
+			$stmt = $this->db->prepare("DELETE FROM states WHERE id = :id");
+			$stmt->execute(['id' => $id]);
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
 	}
 
 ?>
