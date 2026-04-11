@@ -171,7 +171,7 @@
               </li>
             </ul>
           </li>
-          <!-- Menu Exemplo (4 níveis) 
+          <!-- Menu Exemplo (4 níveis) -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="menuExemplo" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-layers me-1"></i> Cadastros essenciais
@@ -236,7 +236,7 @@
 
             </ul>
           </li>
-          /Menu Exemplo -->
+          <!-- Menu Exemplo -->
           <?php endif; ?>
         </ul>
         <!-- Sistema -->
