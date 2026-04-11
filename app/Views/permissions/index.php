@@ -68,6 +68,10 @@ if (isset($_GET['created']))
     </button>
   </form>
 
+  <a href="<?= url('permission/orphaned'); ?>" class="btn btn-warning">
+    Permissões órfãs
+  </a>
+
   <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#addPermCatalog" aria-expanded="false" aria-controls="addPermCatalog">
     Adicionar permissão manualmente
   </button>

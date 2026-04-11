@@ -5721,7 +5721,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=2252 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.permissions: ~72 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
@@ -5789,15 +5789,12 @@ INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`
 	(1063, 'person.citySearch', 'Acesso: person -> citySearch', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1068, 'person.neighborhoodCreate', 'Acesso: person -> neighborhoodCreate', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1069, 'person.neighborhoodSearch', 'Acesso: person -> neighborhoodSearch', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
-	(1085, 'tenant.create', 'Acesso: tenant -> create', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1086, 'tenant.edit', 'Acesso: tenant -> edit', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1087, 'tenant.index', 'Acesso: tenant -> index', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1088, 'tenant.informations', 'Acesso: tenant -> informations', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
-	(1089, 'tenant.store', 'Acesso: tenant -> store', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1090, 'tenant.update', 'Acesso: tenant -> update', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1223, 'tenant.clear', 'Acesso: tenant -> clear', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
 	(1225, 'tenant.switch', 'Acesso: tenant -> switch', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
-	(1966, 'tenant.select', 'Acesso: tenant -> select', '2026-04-10 02:17:44', '2026-04-10 02:17:44'),
 	(2110, 'address.delete', 'Acesso: address -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2118, 'city.delete', 'Acesso: city -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2126, 'country.delete', 'Acesso: country -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
@@ -5897,24 +5894,6 @@ INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `
 	(7, 'Izzidoro da Silva', 'Izzidoro da Silva', '79.016.347/0001-82', '0007', 'active', '', '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(8, 'Fulano de Tal', 'Fulano de Tal', '51.746.554/0001-73', '0008', 'active', '', '2026-04-10 23:37:51', '2026-04-10 23:37:51');
 
--- Dumping structure for table manager_main.tenant_permissions
-CREATE TABLE IF NOT EXISTS `tenant_permissions` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `ability` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_tenant_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for table manager_main.tenant_permissions: ~4 rows (approximately)
-INSERT INTO `tenant_permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
-	(1, 'dashboard.view', 'Visualizar dashboard do tenant', '2026-04-10 02:11:07', '2026-04-10 02:11:07'),
-	(2, 'customer.index', 'Listar clientes do tenant', '2026-04-10 02:11:07', '2026-04-10 02:11:07'),
-	(3, 'customer.create', 'Criar clientes do tenant', '2026-04-10 02:11:07', '2026-04-10 02:11:07'),
-	(4, 'customer.update', 'Atualizar clientes do tenant', '2026-04-10 02:11:07', '2026-04-10 02:11:07');
-
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
   `tenant_id` int NOT NULL,
@@ -5929,26 +5908,11 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~0 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~2 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `active`, `created`, `modified`) VALUES
 	(6, 24, 'owner', 1, '2026-04-10 22:08:28', '2026-04-10 22:08:28'),
 	(7, 25, 'owner', 1, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(8, 26, 'owner', 1, '2026-04-10 23:37:51', '2026-04-10 23:37:51');
-
--- Dumping structure for table manager_main.tenant_user_permissions
-CREATE TABLE IF NOT EXISTS `tenant_user_permissions` (
-  `tenant_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `permission_id` int unsigned NOT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`tenant_id`,`user_id`,`permission_id`),
-  KEY `idx_tenant_user_permissions_permission` (`permission_id`),
-  CONSTRAINT `fk_tenant_user_permissions_permission` FOREIGN KEY (`permission_id`) REFERENCES `tenant_permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_tenant_user_permissions_tenant_user` FOREIGN KEY (`tenant_id`, `user_id`) REFERENCES `tenant_users` (`tenant_id`, `user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for table manager_main.tenant_user_permissions: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -6052,11 +6016,9 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(1, 1063, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1068, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1069, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
-	(1, 1085, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1086, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1087, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1088, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
-	(1, 1089, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1090, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1223, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 1225, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),

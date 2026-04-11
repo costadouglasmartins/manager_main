@@ -21,6 +21,34 @@ class Permission extends Model
 		}
 
 	/**
+	 * Retorna todas as permissions EXCETO algumas específicas (ex: permission.manage).
+	 * Útil para não exibir permissões administrativas/internas na interface.
+	 *
+	 * @param array $excludeAbilities Array de abilities a excluir
+	 * @return array
+	 */
+	public function getAllExcept(array $excludeAbilities = []): array
+		{
+		$all = $this->getAll();
+
+		if (empty($excludeAbilities))
+			{
+			return $all;
+			}
+
+		$filtered = [];
+		foreach ($all as $perm)
+			{
+			if (!in_array($perm['ability'], $excludeAbilities, true))
+				{
+				$filtered[] = $perm;
+				}
+			}
+
+		return $filtered;
+		}
+
+	/**
 	 * Creates a permission in the catalog.
 	 * Returns true if inserted, false if it already existed or ability is invalid.
 	 */
@@ -331,6 +359,252 @@ class Permission extends Model
 	public function getEffectiveAbilitiesForUser(int $userId): array
 		{
 		return $this->getAbilitiesForUser($userId);
+		}
+
+	/**
+	 * Retorna permissões que estão no banco mas não existem mais nos controllers.
+	 * Estas são permissões "órfãs" que podem ser removidas com segurança.
+	 *
+	 * @return array Array com permissões órfãs: [['id' => 1, 'ability' => 'report.index', ...], ...]
+	 */
+	public function getOrphanedPermissions(): array
+		{
+		// Descobrir todas as abilities que existem no código
+		$currentAbilities = [];
+		$currentAbilities += $this->discoverAbilitiesFromControllers(ROOT_PATH . '/app/Controllers');
+		$currentAbilities += $this->discoverAbilitiesFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers');
+
+		// Pegar todas as permissions do banco
+		$stmt = $this->db->query("SELECT id, ability, description, created, modified FROM permissions ORDER BY ability ASC");
+		$allPermissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+		// Filtrar apenas as que não existem mais no código
+		$orphaned = [];
+		foreach ($allPermissions as $perm)
+			{
+			if (!isset($currentAbilities[$perm['ability']]))
+				{
+				$orphaned[] = $perm;
+				}
+			}
+
+		return $orphaned;
+		}
+
+	/**
+	 * Retorna permissões órfãs EXCETO algumas específicas.
+	 * Útil para não exibir permissões administrativas/internas na interface.
+	 *
+	 * @param array $excludeAbilities Array de abilities a excluir
+	 * @return array
+	 */
+	public function getOrphanedPermissionsExcept(array $excludeAbilities = []): array
+		{
+		$orphaned = $this->getOrphanedPermissions();
+
+		if (empty($excludeAbilities))
+			{
+			return $orphaned;
+			}
+
+		$filtered = [];
+		foreach ($orphaned as $perm)
+			{
+			if (!in_array($perm['ability'], $excludeAbilities, true))
+				{
+				$filtered[] = $perm;
+				}
+			}
+
+		return $filtered;
+		}
+
+	/**
+	 * Retorna estatísticas das permissões órfãs.
+	 * Útil para exibir na interface quantos usuários têm essas permissões.
+	 *
+	 * @return array Formato: [
+	 *   'total_orphaned' => 2,
+	 *   'permissions' => [
+	 *     1 => ['ability' => 'report.index', 'user_count' => 3],
+	 *     5 => ['ability' => 'dashboard.old', 'user_count' => 0]
+	 *   ]
+	 * ]
+	 */
+	public function getOrphanedPermissionStats(): array
+		{
+		$orphaned = $this->getOrphanedPermissions();
+
+		$stats = [
+			'total_orphaned' => count($orphaned),
+			'permissions' => []
+		];
+
+		foreach ($orphaned as $perm)
+			{
+			$permId = (int) $perm['id'];
+
+			// Contar quantos usuários têm essa permission
+			$stmt = $this->db->prepare("
+				SELECT COUNT(*) as cnt
+				FROM user_permissions
+				WHERE permission_id = :pid
+			");
+			$stmt->execute(['pid' => $permId]);
+			$row = $stmt->fetch(PDO::FETCH_ASSOC);
+			$userCount = (int) ($row['cnt'] ?? 0);
+
+			$stats['permissions'][$permId] = [
+				'ability' => $perm['ability'],
+				'description' => $perm['description'],
+				'user_count' => $userCount
+			];
+			}
+
+		return $stats;
+		}
+
+	/**
+	 * Retorna estatísticas das permissões órfãs EXCETO algumas específicas.
+	 * Útil para não exibir permissões administrativas/internas na interface.
+	 *
+	 * @param array $excludeAbilities Array de abilities a excluir
+	 * @return array Mesmo formato que getOrphanedPermissionStats()
+	 */
+	public function getOrphanedPermissionStatsExcept(array $excludeAbilities = []): array
+		{
+		$orphaned = $this->getOrphanedPermissionsExcept($excludeAbilities);
+
+		$stats = [
+			'total_orphaned' => count($orphaned),
+			'permissions' => []
+		];
+
+		foreach ($orphaned as $perm)
+			{
+			$permId = (int) $perm['id'];
+
+			// Contar quantos usuários têm essa permission
+			$stmt = $this->db->prepare("
+				SELECT COUNT(*) as cnt
+				FROM user_permissions
+				WHERE permission_id = :pid
+			");
+			$stmt->execute(['pid' => $permId]);
+			$row = $stmt->fetch(PDO::FETCH_ASSOC);
+			$userCount = (int) ($row['cnt'] ?? 0);
+
+			$stats['permissions'][$permId] = [
+				'ability' => $perm['ability'],
+				'description' => $perm['description'],
+				'user_count' => $userCount
+			];
+			}
+
+		return $stats;
+		}
+
+	/**
+	 * Retorna lista de usuários que possuem uma permissão específica.
+	 * Útil para verificar quem será afetado antes de deletar.
+	 *
+	 * @param int $permissionId ID da permission
+	 * @return array Array com usuários: [['id' => 1, 'username' => 'joao', 'name' => 'João Silva', 'email' => 'joao@...'], ...]
+	 */
+	public function getUsersWithPermission(int $permissionId): array
+		{
+		if ($permissionId <= 0)
+			{
+			return [];
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT DISTINCT
+				u.id,
+				u.username,
+				p.name,
+				e.email
+			FROM user_permissions up
+			INNER JOIN users u ON u.id = up.user_id
+			INNER JOIN people p ON p.id = u.person_id
+			INNER JOIN emails e ON e.person_id = p.id
+			WHERE up.permission_id = :pid
+			  AND e.is_login = '1'
+			ORDER BY p.name ASC
+		");
+		$stmt->execute(['pid' => $permissionId]);
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Deleta uma permissão órfã e remove de todos os usuários.
+	 * Usa transação para garantir integridade.
+	 *
+	 * FLUXO:
+	 * 1. Verifica se é realmente órfã
+	 * 2. Obtém lista de usuários afetados
+	 * 3. Remove de user_permissions (cascata automática)
+	 * 4. Deleta a permission
+	 *
+	 * @param int $permissionId ID da permission a deletar
+	 * @return array ['success' => bool, 'users_affected' => count, 'users' => [...]]
+	 * @throws \Exception
+	 */
+	public function deleteOrphanedPermission(int $permissionId): array
+		{
+		if ($permissionId <= 0)
+			{
+			return ['success' => false, 'users_affected' => 0, 'users' => []];
+			}
+
+		try
+			{
+			$this->db->beginTransaction();
+
+			// Verificar se a permission é realmente órfã
+			$orphaned = $this->getOrphanedPermissions();
+			$isOrphaned = false;
+			foreach ($orphaned as $perm)
+				{
+				if ((int) $perm['id'] === $permissionId)
+					{
+					$isOrphaned = true;
+					break;
+					}
+				}
+
+			if (!$isOrphaned)
+				{
+				$this->db->rollBack();
+				return ['success' => false, 'users_affected' => 0, 'users' => []];
+				}
+
+			// Obter usuários que têm essa permission (ANTES de deletar)
+			$affectedUsers = $this->getUsersWithPermission($permissionId);
+			$usersCount = count($affectedUsers);
+
+			// Deletar de user_permissions (remove de todos os usuários)
+			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE permission_id = :id");
+			$stmt->execute(['id' => $permissionId]);
+
+			// Deletar a permission
+			$stmt = $this->db->prepare("DELETE FROM permissions WHERE id = :id");
+			$stmt->execute(['id' => $permissionId]);
+
+			$this->db->commit();
+
+			return [
+				'success' => true,
+				'users_affected' => $usersCount,
+				'users' => $affectedUsers
+			];
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
 		}
 
 	/**

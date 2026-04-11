@@ -170,6 +170,83 @@ class PermissionController extends Controller
 		$this->json($results);
 		}
 
+	/**
+	 * Exibe relatório de permissões órfãs
+	 * GET /permission/orphaned
+	 */
+	public function orphaned(): void
+		{
+		if (method_exists($this, 'requirePermission'))
+			{
+			$this->requirePermission('permission.manage');
+			}
+		else
+			{
+			$this->requireAuth();
+			if (!Authorization::can('permission.manage'))
+				{
+				header('HTTP/1.1 403 Forbidden');
+				echo '403';
+				exit;
+				}
+			}
+
+		$permissionModel = new Permission();
+		// Obter apenas permissions órfãs EXCETO permission.manage (que é admin/interna)
+		$stats = $permissionModel->getOrphanedPermissionStatsExcept(['permission.manage']);
+		$orphaned = $permissionModel->getOrphanedPermissionsExcept(['permission.manage']);
+
+		$this->view('permissions/orphaned', [
+			'orphaned' => $orphaned,
+			'stats' => $stats,
+			'title' => 'Permissões Órfãs'
+			]);
+		}
+
+	/**
+	 * Deleta uma permissão órfã e remove de todos os usuários
+	 * POST /permission/deleteOrphaned/{id}
+	 *
+	 * FLUXO:
+	 * 1. Verifica permissão de acesso
+	 * 2. Chama deleteOrphanedPermission() que:
+	 *    - Verifica se é realmente órfã
+	 *    - Obtém lista de usuários que terão permissão removida
+	 *    - Remove de user_permissions
+	 *    - Deleta a permission
+	 * 3. Redireciona com feedback de quantos usuários foram afetados
+	 *
+	 * @param int $id Permission ID
+	 */
+	public function deleteOrphaned($id): void
+		{
+		$this->requirePermission('permission.manage');
+
+		if ($_SERVER['REQUEST_METHOD'] === 'POST')
+			{
+			$permissionModel = new Permission();
+
+			try
+				{
+				$result = $permissionModel->deleteOrphanedPermission((int) $id);
+
+				if ($result['success'])
+					{
+					$qs = 'permission/orphaned?deleted=1&users_affected=' . $result['users_affected'];
+					$this->redirect($qs);
+					}
+				else
+					{
+					$this->redirect('permission/orphaned?deleted=0&error=not_orphaned');
+					}
+				}
+			catch (\Exception $e)
+				{
+				$this->redirect('permission/orphaned?deleted=0&error=exception');
+				}
+			}
+		}
+
 	private function normalizePermissionIds($raw): array
 		{
 		if (!is_array($raw))

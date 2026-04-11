@@ -274,7 +274,7 @@ class Tenant extends Model
 		}
 
 	/**
-	 * Delete method - Deletes tenant_users, tenant_user_permissions, then updates users (set tenant_id to NULL) before deleting tenant
+	 * Delete method - Deletes tenant_users, then updates users (set tenant_id to NULL) before deleting tenant
 	 * @param Integer $id Tenant id
 	 * @throws \Exception
 	 */
@@ -283,10 +283,6 @@ class Tenant extends Model
 		try
 			{
 			$this->db->beginTransaction();
-
-			// Delete tenant_user_permissions
-			$stmt = $this->db->prepare("DELETE FROM tenant_user_permissions WHERE tenant_id = :id");
-			$stmt->execute(['id' => $id]);
 
 			// Delete tenant_users
 			$stmt = $this->db->prepare("DELETE FROM tenant_users WHERE tenant_id = :id");

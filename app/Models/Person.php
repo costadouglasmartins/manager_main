@@ -521,7 +521,7 @@ class Person extends Model
 		}
 
 	/**
-	 * Delete method - Deletes tenant_user_permissions, tenant_users, user_permissions for all users of person, then users, addresses, emails, phone_numbers before deleting person
+	 * Delete method - Deletes tenant_users, user_permissions for all users of person, then users, addresses, emails, phone_numbers before deleting person
 	 * @param Integer $id Person id
 	 * @throws \Exception
 	 */
@@ -536,17 +536,13 @@ class Person extends Model
 			$stmt->execute(['id' => $id]);
 			$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-			// For each user, delete their tenant_user_permissions, tenant_users, and user_permissions
+			// For each user, delete their tenant_users, and user_permissions
 			foreach ($users as $user)
 				{
 				$userId = $user['id'];
 
 				// Delete user_permissions (no dependencies)
 				$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE user_id = :user_id");
-				$stmt->execute(['user_id' => $userId]);
-
-				// Delete tenant_user_permissions (depends on tenant_users, so must come before)
-				$stmt = $this->db->prepare("DELETE FROM tenant_user_permissions WHERE user_id = :user_id");
 				$stmt->execute(['user_id' => $userId]);
 
 				// Delete tenant_users (references tenant_id and user_id)

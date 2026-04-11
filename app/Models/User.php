@@ -288,7 +288,7 @@ class User extends Model
 		}
 
 	/**
-	 * Delete method - Deletes user_permissions, tenant_users, tenant_user_permissions before deleting user
+	 * Delete method - Deletes user_permissions, tenant_users before deleting user
 	 * @param Integer $id User id
 	 * @throws \Exception
 	 */
@@ -300,10 +300,6 @@ class User extends Model
 
 			// Delete user permissions
 			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE user_id = :id");
-			$stmt->execute(['id' => $id]);
-
-			// Delete tenant_user_permissions (permissions assigned to user in tenant)
-			$stmt = $this->db->prepare("DELETE FROM tenant_user_permissions WHERE user_id = :id");
 			$stmt->execute(['id' => $id]);
 
 			// Delete tenant users
