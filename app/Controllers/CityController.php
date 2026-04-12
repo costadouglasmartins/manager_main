@@ -138,6 +138,10 @@ class CityController extends Controller
 				{
 				$label = (string) ($r['id'] ?? '');
 				}
+			if (!empty($r['state_acronym']))
+				{
+				$label .= ' — ' . $r['state_acronym'];
+				}
 			return [
 				'id'    => isset($r['id']) ? (int) $r['id'] : null,
 				'label' => $label,

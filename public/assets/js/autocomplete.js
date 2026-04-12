@@ -106,7 +106,7 @@
         }
 
       const item = itemsCache[index];
-      input.value = item.label ?? '';
+      input.value = item.name ?? item.label ?? '';
 
       if (hidden)
         {

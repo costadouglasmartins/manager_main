@@ -189,7 +189,12 @@ class City extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT id, `name` FROM cities WHERE `name` LIKE :t ORDER BY `name` ASC LIMIT {$limit}";
+		$sql = "SELECT c.id, c.`name`, s.acronym AS state_acronym
+			FROM cities c
+			LEFT JOIN states s ON s.id = c.state_id
+			WHERE c.`name` LIKE :t
+			ORDER BY c.`name` ASC
+			LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute([':t' => '%' . $term . '%']);

@@ -18,10 +18,11 @@ class AddressController extends Controller
 		$address = new Address();
 
 		$filters = [
-			'id'        => isset($_GET['id'])        ? trim($_GET['id'])        : '',
-			'street'    => isset($_GET['street'])    ? trim($_GET['street'])    : '',
-			'zip_code'  => isset($_GET['zip_code'])  ? trim($_GET['zip_code'])  : '',
-			'person_id' => isset($_GET['person_id']) ? trim($_GET['person_id']) : '',
+			'id'          => isset($_GET['id'])          ? trim($_GET['id'])          : '',
+			'street'      => isset($_GET['street'])      ? trim($_GET['street'])      : '',
+			'zip_code'    => isset($_GET['zip_code'])    ? trim($_GET['zip_code'])    : '',
+			'person_id'   => isset($_GET['person_id'])   ? trim($_GET['person_id'])   : '',
+			'person_name' => isset($_GET['person_name']) ? trim($_GET['person_name']) : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;

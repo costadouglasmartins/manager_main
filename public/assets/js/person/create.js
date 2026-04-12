@@ -111,7 +111,7 @@
 										e.preventDefault();
 										onSelect(item);
 										clearList();
-										inputEl.value = item.label;
+										inputEl.value = item.name || item.label;
 									});
 								listEl.appendChild(li);
 							});

@@ -1,14 +1,15 @@
 <?php
-$filters = $filters ?? ['id' => '', 'street' => '', 'zip_code' => '', 'person_id' => ''];
+$filters = $filters ?? ['id' => '', 'street' => '', 'zip_code' => '', 'person_id' => '', 'person_name' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($addresses) ? count($addresses) : 0);
 
 $queryFilters = http_build_query([
-  'id'        => $filters['id'],
-  'street'    => $filters['street'],
-  'zip_code'  => $filters['zip_code'],
-  'person_id' => $filters['person_id'],
+  'id'          => $filters['id'],
+  'street'      => $filters['street'],
+  'zip_code'    => $filters['zip_code'],
+  'person_id'   => $filters['person_id'],
+  'person_name' => $filters['person_name'],
 ]);
 ?>
 
@@ -38,8 +39,17 @@ $queryFilters = http_build_query([
         <input class="form-control" id="street" name="street" type="text" placeholder="Logradouro" value="<?= htmlspecialchars($filters['street'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-3">
-        <input class="form-control" id="person_id" name="person_id" type="text" placeholder="ID da pessoa" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
+      <div class="col-12 col-md-6 col-lg-3 position-relative">
+        <input type="hidden" id="person_id" name="person_id" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="person_name" name="person_name" type="text" class="form-control js-autocomplete" autocomplete="off"
+          placeholder="Digite o nome da pessoa..."
+          data-endpoint="<?= url('person/autocomplete'); ?>"
+          data-results="#personResults"
+          data-hidden="#person_id"
+          data-minlen="1"
+          data-param="term"
+          value="<?= htmlspecialchars($filters['person_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
     </div>
@@ -160,3 +170,5 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
   document.getElementById('deleteForm').action = '<?= url('address/delete') ?>/' + recordId;
 });
 </script>
+
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

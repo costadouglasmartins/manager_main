@@ -108,9 +108,14 @@ class PersonController extends Controller
 
 		$items = array_map(function ($r)
 			{
+			$label = $r['name'];
+			if (!empty($r['city_name']))
+				{
+				$label .= ' — ' . $r['city_name'];
+				}
 			return [
 				'id'    => (int) $r['id'],
-				'label' => $r['name'],
+				'label' => $label,
 				'name'  => $r['name'],
 			];
 			}, $rows);
@@ -169,9 +174,14 @@ class PersonController extends Controller
 
 		$items = array_map(function ($r)
 			{
+			$label = $r['name'];
+			if (!empty($r['state_acronym']))
+				{
+				$label .= ' — ' . $r['state_acronym'];
+				}
 			return [
 				'id'    => (int) $r['id'],
-				'label' => $r['name'],
+				'label' => $label,
 				'name'  => $r['name'],
 			];
 			}, $rows);

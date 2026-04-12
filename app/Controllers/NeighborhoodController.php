@@ -138,6 +138,10 @@ class NeighborhoodController extends Controller
 				{
 				$label = (string) ($r['id'] ?? '');
 				}
+			if (!empty($r['city_name']))
+				{
+				$label .= ' — ' . $r['city_name'];
+				}
 			return [
 				'id'    => isset($r['id']) ? (int) $r['id'] : null,
 				'label' => $label,

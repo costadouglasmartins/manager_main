@@ -21,6 +21,7 @@ class PhoneNumberController extends Controller
 			'id'           => isset($_GET['id'])           ? trim($_GET['id'])           : '',
 			'phone_number' => isset($_GET['phone_number']) ? trim($_GET['phone_number']) : '',
 			'person_id'    => isset($_GET['person_id'])    ? trim($_GET['person_id'])    : '',
+			'person_name'  => isset($_GET['person_name'])  ? trim($_GET['person_name'])  : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;

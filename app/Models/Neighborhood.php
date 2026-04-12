@@ -186,7 +186,12 @@ class Neighborhood extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT id, `name` FROM neighborhoods WHERE `name` LIKE :t ORDER BY `name` ASC LIMIT {$limit}";
+		$sql = "SELECT n.id, n.`name`, c.`name` AS city_name
+			FROM neighborhoods n
+			LEFT JOIN cities c ON c.id = n.city_id
+			WHERE n.`name` LIKE :t
+			ORDER BY n.`name` ASC
+			LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute([':t' => '%' . $term . '%']);
