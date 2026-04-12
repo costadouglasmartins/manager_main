@@ -45,27 +45,29 @@
               </a>
               <ul class="dropdown-menu" aria-labelledby="menuExemplo">
 
-                <li><a class="dropdown-item" href="#"><i class="bi bi-house me-2"></i>Início</a></li>
+                <li><a class="dropdown-item" href="<?= url('/'); ?>"><i class="bi bi-house me-2"></i>Início</a></li>
 
                 <li><hr class="dropdown-divider" /></li>
 
                 <li class="dropdown-submenu">
-                  <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder me-2"></i>Grupo A</a>
+                  <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-people-fill me-2"></i>Pessoas</a>
                   <ul class="dropdown-menu">
 
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark me-2"></i>A — Item direto</a></li>
+                    <li><a class="dropdown-item" href="<?= url('person/create'); ?>"><i class="bi bi-person-fill-add me-2"></i>Cadastrar</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" href="<?= url('person'); ?>"><i class="bi bi-person-lines-fill me-2"></i>Listar</a></li>
 
                     <li><hr class="dropdown-divider" /></li>
 
                     <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder2 me-2"></i>Sub-grupo A1</a>
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-asterisk me-2"></i>Associações</a>
                       <ul class="dropdown-menu">
 
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A1 — Item 1</a></li>
+                        <li><a class="dropdown-item" href="<?= url('email'); ?>"><i class="bi bi-envelope-paper-fill me-2"></i>E-mails</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A1 — Item 2</a></li>
+                        <li><a class="dropdown-item" href="<?= url('address'); ?>"><i class="bi bi-signpost-split-fill me-2"></i>Endereços</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A1 — Item 3</a></li>
+                        <li><a class="dropdown-item" href="<?= url('phone_number'); ?>"><i class="bi bi-telephone-fill me-2"></i>Telefones</a></li>
 
                       </ul>
                     </li>
@@ -73,7 +75,7 @@
                     <li><hr class="dropdown-divider" /></li>
 
                     <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-folder2 me-2"></i>Sub-grupo A2</a>
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-stack me-2"></i>Relatórios</a>
                       <ul class="dropdown-menu">
 
                         <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text me-2"></i>A2 — Item 1</a></li>
