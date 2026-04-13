@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.addresses: ~5 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
@@ -44,7 +44,8 @@ INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `
 	(3, '11111-111', 'Rua lorem ipsum', '888', 'Lipsum lorem odo', 28, 7, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(4, '22222-222', 'Avenida das Camélias', '67', 'sem complemento', 29, 3, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(5, '88330-040', 'Avenida Brasil', '249', 'Apartamento 203', 30, 1, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(6, '88102-090', 'Rua Antônio Scherer', '100', 'Sem complemento', 31, 8, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(6, '88102-090', 'Rua Antônio Scherer', '100', 'Sem complemento', 31, 8, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(7, '66666-666', 'Rua do Fulano de Tal', '13029', 'Teste teste teste.', 32, 7, '2026-04-13 22:31:24', '2026-04-13 22:31:24');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5660,7 +5661,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.emails: ~7 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
@@ -5670,7 +5671,8 @@ INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `c
 	(13, 'izzidoro@izzidoro.com', 'E-mail pessoal', 28, 1, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(14, 'fulano@detal.com', 'principal', 29, 1, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(15, 'endereco@email.com', 'principal', 30, 1, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(16, 'donec@lorem.com', 'principal', 31, 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(16, 'donec@lorem.com', 'principal', 31, 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(17, 'usuario@teste.com', 'email login', 32, 1, '2026-04-13 22:31:24', '2026-04-13 22:31:24');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -5708,7 +5710,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.people: ~6 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
@@ -5717,19 +5719,20 @@ INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `bi
 	(28, 'Izzidoro da Silva', 'Izzidoro da Silva', 'company', '79016347000182', 1, NULL, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(29, 'Fulano de Tal', 'Fulano de Tal', 'company', '51746554000173', 1, NULL, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(30, 'Vestibulum Tempus', 'Vestibulum Tempus', 'company', '29432851000195', 1, NULL, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(31, 'Donec id mi at lorem', 'Donec id mi at lorem', 'company', '16192685000155', 1, NULL, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(31, 'Donec id mi at lorem', 'Donec id mi at lorem', 'company', '16192685000155', 1, NULL, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(32, 'Usuário Teste', 'Usuário Testa LTDA.', 'company', '63106736000169', 1, NULL, '2026-04-13 22:31:24', '2026-04-13 22:31:24');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `ability` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `system` enum('manager_main','manager') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manager_main' COMMENT 'Sistema ao qual a permissão pertence (manager_main = central, manager = tenant-facing)',
+  `system` enum('manager_main','manager') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manager_main',
   `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=3113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3405 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.permissions: ~86 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
@@ -5801,8 +5804,8 @@ INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, 
 	(1087, 'tenant.index', 'manager_main', 'Acesso: tenant -> index', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1088, 'tenant.informations', 'manager_main', 'Acesso: tenant -> informations', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
 	(1090, 'tenant.update', 'manager_main', 'Acesso: tenant -> update', '2026-04-07 00:09:23', '2026-04-07 00:09:23'),
-	(1223, 'tenant.clear', 'manager_main', 'Acesso: tenant -> clear', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
-	(1225, 'tenant.switch', 'manager_main', 'Acesso: tenant -> switch', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
+	(1223, 'tenant.clear', 'manager', 'Acesso: tenant -> clear', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
+	(1225, 'tenant.switch', 'manager', 'Acesso: tenant -> switch', '2026-04-08 23:20:05', '2026-04-08 23:20:05'),
 	(2110, 'address.delete', 'manager_main', 'Acesso: address -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2118, 'city.delete', 'manager_main', 'Acesso: city -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2126, 'country.delete', 'manager_main', 'Acesso: country -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
@@ -5815,7 +5818,71 @@ INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, 
 	(2179, 'user.delete', 'manager_main', 'Acesso: user -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(3110, 'tenant.addUser', 'manager_main', 'Acesso: tenant -> addUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
 	(3111, 'tenant.updateUser', 'manager_main', 'Acesso: tenant -> updateUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
-	(3112, 'tenant.removeUser', 'manager_main', 'Acesso: tenant -> removeUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31');
+	(3112, 'tenant.removeUser', 'manager_main', 'Acesso: tenant -> removeUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(3193, 'address.create', 'manager', 'Acesso: address -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3194, 'address.edit', 'manager', 'Acesso: address -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3195, 'address.index', 'manager', 'Acesso: address -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3196, 'address.informations', 'manager', 'Acesso: address -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3197, 'address.store', 'manager', 'Acesso: address -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3198, 'address.update', 'manager', 'Acesso: address -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3199, 'city.autocomplete', 'manager', 'Acesso: city -> autocomplete', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3200, 'city.create', 'manager', 'Acesso: city -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3201, 'city.edit', 'manager', 'Acesso: city -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3202, 'city.index', 'manager', 'Acesso: city -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3203, 'city.informations', 'manager', 'Acesso: city -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3204, 'city.store', 'manager', 'Acesso: city -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3205, 'city.update', 'manager', 'Acesso: city -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3206, 'country.autocomplete', 'manager', 'Acesso: country -> autocomplete', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3207, 'country.create', 'manager', 'Acesso: country -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3208, 'country.edit', 'manager', 'Acesso: country -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3209, 'country.index', 'manager', 'Acesso: country -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3210, 'country.informations', 'manager', 'Acesso: country -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3211, 'country.store', 'manager', 'Acesso: country -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3212, 'country.update', 'manager', 'Acesso: country -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3213, 'email.create', 'manager', 'Acesso: email -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3214, 'email.edit', 'manager', 'Acesso: email -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3215, 'email.index', 'manager', 'Acesso: email -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3216, 'email.informations', 'manager', 'Acesso: email -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3217, 'email.store', 'manager', 'Acesso: email -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3218, 'email.update', 'manager', 'Acesso: email -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3219, 'home.index', 'manager', 'Acesso: home -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3220, 'neighborhood.autocomplete', 'manager', 'Acesso: neighborhood -> autocomplete', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3221, 'neighborhood.create', 'manager', 'Acesso: neighborhood -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3222, 'neighborhood.edit', 'manager', 'Acesso: neighborhood -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3223, 'neighborhood.index', 'manager', 'Acesso: neighborhood -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3224, 'neighborhood.informations', 'manager', 'Acesso: neighborhood -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3225, 'neighborhood.store', 'manager', 'Acesso: neighborhood -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3226, 'neighborhood.update', 'manager', 'Acesso: neighborhood -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3227, 'person.autocomplete', 'manager', 'Acesso: person -> autocomplete', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3228, 'person.citySearch', 'manager', 'Acesso: person -> citySearch', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3229, 'person.create', 'manager', 'Acesso: person -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3230, 'person.edit', 'manager', 'Acesso: person -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3231, 'person.index', 'manager', 'Acesso: person -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3232, 'person.informations', 'manager', 'Acesso: person -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3233, 'person.neighborhoodCreate', 'manager', 'Acesso: person -> neighborhoodCreate', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3234, 'person.neighborhoodSearch', 'manager', 'Acesso: person -> neighborhoodSearch', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3235, 'person.store', 'manager', 'Acesso: person -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3236, 'person.update', 'manager', 'Acesso: person -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3237, 'phone_number.create', 'manager', 'Acesso: phone_number -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3238, 'phone_number.edit', 'manager', 'Acesso: phone_number -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3239, 'phone_number.index', 'manager', 'Acesso: phone_number -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3240, 'phone_number.informations', 'manager', 'Acesso: phone_number -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3241, 'phone_number.store', 'manager', 'Acesso: phone_number -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3242, 'phone_number.update', 'manager', 'Acesso: phone_number -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3243, 'state.autocomplete', 'manager', 'Acesso: state -> autocomplete', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3244, 'state.create', 'manager', 'Acesso: state -> create', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3245, 'state.edit', 'manager', 'Acesso: state -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3246, 'state.index', 'manager', 'Acesso: state -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3247, 'state.informations', 'manager', 'Acesso: state -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3248, 'state.store', 'manager', 'Acesso: state -> store', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3249, 'state.update', 'manager', 'Acesso: state -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3251, 'tenant.index', 'manager', 'Acesso: tenant -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3253, 'user.edit', 'manager', 'Acesso: user -> edit', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3254, 'user.index', 'manager', 'Acesso: user -> index', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3255, 'user.informations', 'manager', 'Acesso: user -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3256, 'user.login', 'manager', 'Acesso: user -> login', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3257, 'user.logout', 'manager', 'Acesso: user -> logout', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3258, 'user.update', 'manager', 'Acesso: user -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13');
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
@@ -5828,7 +5895,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.phone_numbers: ~5 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
@@ -5836,7 +5903,8 @@ INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, 
 	(8, '11111111111', 'Linha', 28, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(9, '99999999999', 'telefone', 29, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(10, '48991518195', 'Celular', 30, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(11, '44444444444', 'celular', 31, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(11, '44444444444', 'celular', 31, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(12, '55555555555', 'aaaa', 32, '2026-04-13 22:31:24', '2026-04-13 22:31:24');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -5907,7 +5975,7 @@ INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `
 	(7, 'Izzidoro da Silva', 'Izzidoro da Silva', '79.016.347/0001-82', '0007', 'active', '', '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(8, 'Fulano de Tal', 'Fulano de Tal', '51.746.554/0001-73', '0008', 'active', '', '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(9, 'Vestibulum Tempus', 'Vestibulum Tempus', '29.432.851/0001-95', '0009', 'active', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin dapibus congue tellus non aliquam. Pellentesque blandit vehicula odio. Nam quis velit lorem. Phasellus eu elit diam. Donec id mi at lorem vestibulum consequat et quis est. Sed tristique diam sed tristique lacinia. Ut turpis est, egestas et convallis eu, consectetur id mi. Donec turpis libero, vehicula at lectus vel, egestas finibus lectus. Cras et felis eu arcu scelerisque euismod a at arcu. In a hendrerit diam. Vivamus id condimentum lectus. Mauris condimentum leo cursus arcu consectetur tempor. Etiam suscipit ante at congue tempor.', '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(10, 'Donec id mi at lorem', 'Donec id mi at lorem', '16.192.685/0001-55', '0010', 'active', '', '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(10, 'Donec id mi at lorem', 'Donec id mi at lorem', '16.192.685/0001-55', '0010', 'active', '', '2026-04-12 10:35:50', '2026-04-13 22:32:00');
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
@@ -5929,7 +5997,8 @@ INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `active`, `created`,
 	(7, 25, 'owner', 1, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(8, 26, 'owner', 1, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(9, 27, 'owner', 1, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(10, 28, 'owner', 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(10, 28, 'owner', 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(10, 29, 'user', 1, '2026-04-13 22:31:50', '2026-04-13 22:31:50');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -5948,7 +6017,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.users: ~6 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
@@ -5957,7 +6026,8 @@ INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `ty
 	(25, 28, 7, 'izzidoro', '$2y$12$vLqvjV3F27BRhGXUwas2G.NufXf6IeZXhauOZ7BAT3nhVDDp6t30.', 'admin', 1, '2026-04-10 23:15:39', '2026-04-10 23:15:39'),
 	(26, 29, 8, 'fulano.tal', '$2y$12$0fiUGveB8iWPzS2DKgxFP.Q4KklL.ziRDA6Euq9QWIfSsSMqCtjlS', 'admin', 1, '2026-04-10 23:37:51', '2026-04-10 23:37:51'),
 	(27, 30, 9, 'vestibulum.tempus', '$2y$12$Imnk7bHPR74yxYlaYbkKo.8gpx8.e//8Zce/q4ivdoE0.KWDkKOl2', 'admin', 1, '2026-04-12 10:18:19', '2026-04-12 10:18:19'),
-	(28, 31, 10, 'donec.lorem', '$2y$12$vx57XoxBgN8hrTOY5HScJOssqgPzAe2WLaZJDr58U.8/CAGMtqCsS', 'admin', 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50');
+	(28, 31, 10, 'donec.lorem', '$2y$12$vx57XoxBgN8hrTOY5HScJOssqgPzAe2WLaZJDr58U.8/CAGMtqCsS', 'admin', 1, '2026-04-12 10:35:50', '2026-04-12 10:35:50'),
+	(29, 32, NULL, 'usuario.teste', '$2y$12$XjofLIQUQguOiyxAaQQstOICnKa05C9nmex.yYwwxfIMME6VATpAa', 'user', 1, '2026-04-13 22:31:24', '2026-04-13 22:31:24');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
@@ -6053,7 +6123,64 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(1, 2179, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 3110, '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
 	(1, 3111, '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
-	(1, 3112, '2026-04-13 22:18:31', '2026-04-13 22:18:31');
+	(1, 3112, '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(29, 3193, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3194, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3195, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3196, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3197, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3198, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3199, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3200, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3201, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3202, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3203, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3204, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3205, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3206, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3207, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3208, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3209, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3210, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3211, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3212, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3213, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3214, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3215, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3216, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3217, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3218, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3219, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3220, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3221, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3222, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3223, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3224, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3225, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3226, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3227, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3228, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3229, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3230, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3231, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3232, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3233, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3234, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3235, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3236, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3237, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3238, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3239, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3240, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3241, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3242, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3243, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3244, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3245, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3246, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3247, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3248, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(29, 3249, '2026-04-13 23:13:57', '2026-04-13 23:13:57');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
