@@ -228,6 +228,7 @@ class Tenant extends Model
 
 	/**
 	 * Link user to tenant in tenant_users table
+	 * Uses INSERT ... ON DUPLICATE KEY UPDATE so repeated calls update the role/active instead of failing.
 	 * @param int $tenantId
 	 * @param int $userId
 	 * @param string $role (owner, admin, user)
@@ -237,7 +238,10 @@ class Tenant extends Model
 	public function linkUser(int $tenantId, int $userId, string $role = 'user', int $active = 1): void
 		{
 		$stmt = $this->db->prepare("INSERT INTO tenant_users (tenant_id, user_id, role, active, created, modified)
-		                            VALUES (:tenant_id, :user_id, :role, :active, :created, :modified)");
+		                            VALUES (:tenant_id, :user_id, :role, :active, :created, :modified)
+		                            ON DUPLICATE KEY UPDATE role = VALUES(role),
+		                                                    active = VALUES(active),
+		                                                    modified = VALUES(modified)");
 
 		$stmt->execute([
 			'tenant_id' => $tenantId,
@@ -250,27 +254,145 @@ class Tenant extends Model
 		}
 
 	/**
+	 * Unlink user from tenant
+	 * @param int $tenantId
+	 * @param int $userId
+	 * @return void
+	 */
+	public function unlinkUser(int $tenantId, int $userId): void
+		{
+		$stmt = $this->db->prepare("DELETE FROM tenant_users
+		                            WHERE tenant_id = :tenant_id
+		                              AND user_id   = :user_id");
+
+		$stmt->execute([
+			'tenant_id' => $tenantId,
+			'user_id'   => $userId,
+		]);
+		}
+
+	/**
+	 * Update tenant user link (role / active)
+	 * @param int $tenantId
+	 * @param int $userId
+	 * @param string $role
+	 * @param int $active
+	 * @return void
+	 */
+	public function updateUserLink(int $tenantId, int $userId, string $role, int $active): void
+		{
+		$stmt = $this->db->prepare("UPDATE tenant_users
+		                            SET role     = :role,
+		                                active   = :active,
+		                                modified = :modified
+		                            WHERE tenant_id = :tenant_id
+		                              AND user_id   = :user_id");
+
+		$stmt->execute([
+			'role'      => $role,
+			'active'    => $active,
+			'modified'  => date('Y-m-d H:i:s'),
+			'tenant_id' => $tenantId,
+			'user_id'   => $userId,
+		]);
+		}
+
+	/**
 	 * Get tenant users with their roles
 	 * @param int $tenantId
 	 * @return array
 	 */
 	public function getTenantUsers(int $tenantId): array
 		{
-		$stmt = $this->db->prepare("SELECT tu.user_id,
-		                                   tu.role,
-		                                   tu.active,
-		                                   tu.created,
-		                                   tu.modified,
-		                                   u.username,
-		                                   p.name
-		                            FROM tenant_users AS tu
-		                            INNER JOIN users AS u ON tu.user_id = u.id
-		                            INNER JOIN people AS p ON u.person_id = p.id
-		                            WHERE tu.tenant_id = :tenant_id
-		                            ORDER BY tu.created DESC");
+		$stmt = $this->db->prepare("SELECT TenantUser.user_id,
+		                                   TenantUser.role,
+		                                   TenantUser.active,
+		                                   TenantUser.created,
+		                                   TenantUser.modified,
+		                                   User.username,
+		                                   User.type AS user_type,
+		                                   User.active AS user_active,
+		                                   Person.name,
+		                                   (SELECT Email.email
+		                                      FROM emails AS Email
+		                                      WHERE Email.person_id = Person.id
+		                                        AND Email.is_login = 1
+		                                      ORDER BY Email.id ASC
+		                                      LIMIT 1) AS email
+		                            FROM tenant_users AS TenantUser
+		                            INNER JOIN users AS User ON TenantUser.user_id = User.id
+		                            INNER JOIN people AS Person ON User.person_id = Person.id
+		                            WHERE TenantUser.tenant_id = :tenant_id
+		                            ORDER BY TenantUser.role = 'owner' DESC,
+		                                     TenantUser.role = 'admin' DESC,
+		                                     Person.name ASC");
 
 		$stmt->execute(['tenant_id' => $tenantId]);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Get users that are NOT yet linked to the given tenant
+	 * Useful to populate the "add user" dropdown in the tenant edit page.
+	 * @param int $tenantId
+	 * @return array
+	 */
+	public function getAvailableUsers(int $tenantId): array
+		{
+		$stmt = $this->db->prepare("SELECT User.id,
+		                                   User.username,
+		                                   User.type,
+		                                   User.active,
+		                                   Person.name
+		                            FROM users AS User
+		                            INNER JOIN people AS Person ON User.person_id = Person.id
+		                            WHERE User.active = 1
+		                              AND User.id NOT IN (
+		                                SELECT TenantUser.user_id
+		                                FROM tenant_users AS TenantUser
+		                                WHERE TenantUser.tenant_id = :tenant_id
+		                              )
+		                            ORDER BY Person.name ASC");
+
+		$stmt->execute(['tenant_id' => $tenantId]);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Check if a tenant_users record exists
+	 * @param int $tenantId
+	 * @param int $userId
+	 * @return bool
+	 */
+	public function hasUser(int $tenantId, int $userId): bool
+		{
+		$stmt = $this->db->prepare("SELECT 1 FROM tenant_users
+		                            WHERE tenant_id = :tenant_id
+		                              AND user_id   = :user_id
+		                            LIMIT 1");
+
+		$stmt->execute([
+			'tenant_id' => $tenantId,
+			'user_id'   => $userId,
+		]);
+
+		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
+	 * Count owners of a tenant
+	 * Useful to prevent removing the last owner.
+	 * @param int $tenantId
+	 * @return int
+	 */
+	public function countOwners(int $tenantId): int
+		{
+		$stmt = $this->db->prepare("SELECT COUNT(*) FROM tenant_users
+		                            WHERE tenant_id = :tenant_id
+		                              AND role = 'owner'");
+
+		$stmt->execute(['tenant_id' => $tenantId]);
+		return (int) $stmt->fetchColumn();
 		}
 
 	/**

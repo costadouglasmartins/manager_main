@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5572 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 571 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -5684,7 +5684,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~8 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~6 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -5728,9 +5728,9 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_ability` (`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=3110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~80 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~86 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -5811,7 +5811,10 @@ INSERT INTO `permissions` (`id`, `ability`, `description`, `created`, `modified`
 	(2160, 'phone_number.delete', 'Acesso: phone_number -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2168, 'state.delete', 'Acesso: state -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
 	(2174, 'tenant.delete', 'Acesso: tenant -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
-	(2179, 'user.delete', 'Acesso: user -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42');
+	(2179, 'user.delete', 'Acesso: user -> delete', '2026-04-11 00:34:42', '2026-04-11 00:34:42'),
+	(3110, 'tenant.addUser', 'Acesso: tenant -> addUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(3111, 'tenant.updateUser', 'Acesso: tenant -> updateUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(3112, 'tenant.removeUser', 'Acesso: tenant -> removeUser', '2026-04-13 22:18:31', '2026-04-13 22:18:31');
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
@@ -5892,7 +5895,7 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~10 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~8 rows (approximately)
 INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, 'Lorem Ipsum', 'Lorem Ipsum', '97037381845', '0001', 'active', '', '2026-04-07 00:10:53', '2026-04-07 00:10:53'),
 	(2, 'Nam facilisis', 'Nam facilisis', '48.800.419/0001-54', '0002', 'active', '', '2026-04-09 23:29:27', '2026-04-09 23:29:28'),
@@ -5967,7 +5970,7 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~78 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~83 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 8, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
@@ -6046,7 +6049,10 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(1, 2160, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 2168, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
 	(1, 2174, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
-	(1, 2179, '2026-04-11 00:35:45', '2026-04-11 00:35:45');
+	(1, 2179, '2026-04-11 00:35:45', '2026-04-11 00:35:45'),
+	(1, 3110, '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(1, 3111, '2026-04-13 22:18:31', '2026-04-13 22:18:31'),
+	(1, 3112, '2026-04-13 22:18:31', '2026-04-13 22:18:31');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
