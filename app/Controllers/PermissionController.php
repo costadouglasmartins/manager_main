@@ -102,9 +102,10 @@ class PermissionController extends Controller
 
 		$permissionModel = new Permission();
 
-		// Sync from both: manager_main (own) and manager (tenant) controllers
-		$added  = $permissionModel->syncFromControllers(ROOT_PATH . '/app/Controllers');
-		$added += $permissionModel->syncFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers');
+		// Sync from both: manager_main (own) and manager (tenant) controllers.
+		// Cada chamada registra o sistema de origem das abilities descobertas.
+		$added  = $permissionModel->syncFromControllers(ROOT_PATH . '/app/Controllers', 'manager_main');
+		$added += $permissionModel->syncFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers', 'manager');
 
 		Authorization::clearCache();
 
@@ -138,9 +139,10 @@ class PermissionController extends Controller
 
 		$ability = (string) ($_POST['ability'] ?? '');
 		$description = (string) ($_POST['description'] ?? '');
+		$system = Permission::normalizeSystem($_POST['system'] ?? null);
 
 		$permissionModel = new Permission();
-		$ok = $permissionModel->createPermission($ability, $description);
+		$ok = $permissionModel->createPermission($ability, $description, $system);
 
 		Authorization::clearCache();
 

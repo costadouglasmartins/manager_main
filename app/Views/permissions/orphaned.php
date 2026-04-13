@@ -1,6 +1,11 @@
 <?php
 // Expected variables: $orphaned, $stats, $title
 
+function permSystemBadgeClassOrphaned(string $system): string
+	{
+	return $system === 'manager' ? 'text-bg-success' : 'text-bg-primary';
+	}
+
 $deleted = null;
 if (isset($_GET['deleted'])) {
 	$deleted = (int) $_GET['deleted'];
@@ -67,6 +72,7 @@ if (isset($_GET['error'])) {
       <table class="table table-sm table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
+            <th>Sistema</th>
             <th>Ability</th>
             <th>Descrição</th>
             <th class="text-center">Usuários afetados</th>
@@ -78,8 +84,12 @@ if (isset($_GET['error'])) {
             <?php
               $permId = (int) $perm['id'];
               $userCount = $stats['permissions'][$permId]['user_count'] ?? 0;
+              $psys = (string) ($perm['system'] ?? 'manager_main');
             ?>
             <tr class="<?= ($userCount > 0 ? 'table-warning' : ''); ?>">
+              <td>
+                <span class="badge <?= permSystemBadgeClassOrphaned($psys); ?>"><?= htmlspecialchars($psys); ?></span>
+              </td>
               <td><code><?= htmlspecialchars($perm['ability']); ?></code></td>
               <td><?= htmlspecialchars((string) ($perm['description'] ?? '—')); ?></td>
               <td class="text-center">

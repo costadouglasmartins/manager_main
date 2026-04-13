@@ -14,9 +14,28 @@ use PDO;
  */
 class Permission extends Model
 	{
+	/**
+	 * Valores válidos para a coluna `permissions.system`.
+	 */
+	public const SYSTEMS = ['manager_main', 'manager'];
+	public const DEFAULT_SYSTEM = 'manager_main';
+
+	/**
+	 * Garante que o valor recebido está no enum de sistemas suportados.
+	 */
+	public static function normalizeSystem(?string $system): string
+		{
+		$system = (string) $system;
+		if (in_array($system, self::SYSTEMS, true))
+			{
+			return $system;
+			}
+		return self::DEFAULT_SYSTEM;
+		}
+
 	public function getAll(): array
 		{
-		$stmt = $this->db->query("SELECT id, ability, description FROM permissions ORDER BY ability ASC");
+		$stmt = $this->db->query("SELECT id, ability, `system`, description FROM permissions ORDER BY `system` ASC, ability ASC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -51,20 +70,26 @@ class Permission extends Model
 	/**
 	 * Creates a permission in the catalog.
 	 * Returns true if inserted, false if it already existed or ability is invalid.
+	 *
+	 * @param string $ability     Ability name (ex: "report.index")
+	 * @param string $description Optional description
+	 * @param string $system      Sistema de origem ('manager_main' ou 'manager')
 	 */
-	public function createPermission(string $ability, string $description = ''): bool
+	public function createPermission(string $ability, string $description = '', string $system = self::DEFAULT_SYSTEM): bool
 		{
 		$ability = trim($ability);
 		$description = trim($description);
+		$system = self::normalizeSystem($system);
 
 		if ($ability === '')
 			{
 			return false;
 			}
 
-		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description, created, modified) VALUES (:ability, :description, :created, :modified)");
+		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, `system`, description, created, modified) VALUES (:ability, :system, :description, :created, :modified)");
 		$stmt->execute([
 			'ability' => $ability,
+			'system' => $system,
 			'description' => ($description === '' ? null : $description),
 			'created' => date('Y-m-d H:i:s'),
 			'modified' => date('Y-m-d H:i:s')
@@ -78,18 +103,23 @@ class Permission extends Model
 	 * It will INSERT missing abilities into permissions table (INSERT IGNORE).
 	 *
 	 * Returns the count of new permissions inserted.
+	 *
+	 * @param string $controllersDir Diretório a ser varrido (.../app/Controllers)
+	 * @param string $system         Sistema ao qual as abilities descobertas pertencem
 	 */
-	public function syncFromControllers(string $controllersDir): int
+	public function syncFromControllers(string $controllersDir, string $system = self::DEFAULT_SYSTEM): int
 		{
+		$system = self::normalizeSystem($system);
 		$discovered = $this->discoverAbilitiesFromControllers($controllersDir);
 
 		$added = 0;
-		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, description, created, modified) VALUES (:ability, :description, :created, :modified)");
+		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, `system`, description, created, modified) VALUES (:ability, :system, :description, :created, :modified)");
 
 		foreach ($discovered as $ability => $description)
 			{
 			$stmt->execute([
 				'ability' => $ability,
+				'system' => $system,
 				'description' => $description,
 				'created' => date('Y-m-d H:i:s'),
 				'modified' => date('Y-m-d H:i:s')
@@ -252,6 +282,11 @@ class Permission extends Model
 	/**
 	 * Find a single user by ID (for displaying selected user info).
 	 *
+	 * Retorna também `tenant_id` (para derivar o sistema de origem do usuário)
+	 * e um campo computado `origin_system`:
+	 *   - tenant_id IS NULL  -> 'manager_main'
+	 *   - tenant_id IS NOT NULL -> 'manager'
+	 *
 	 * @param int $userId
 	 * @return array|null
 	 */
@@ -261,6 +296,7 @@ class Permission extends Model
 			SELECT  User.id,
 			        User.username,
 			        User.type,
+			        User.tenant_id,
 			        Email.email,
 			        Person.name
 			FROM users AS User
@@ -272,7 +308,14 @@ class Permission extends Model
 		");
 		$stmt->execute(['id' => $userId]);
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		return $row ?: null;
+
+		if (!$row)
+			{
+			return null;
+			}
+
+		$row['origin_system'] = (empty($row['tenant_id']) ? 'manager_main' : 'manager');
+		return $row;
 		}
 
 	/**
@@ -362,27 +405,36 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna permissões que estão no banco mas não existem mais nos controllers.
-	 * Estas são permissões "órfãs" que podem ser removidas com segurança.
+	 * Retorna permissões que estão no banco mas não existem mais nos controllers
+	 * do sistema ao qual pertencem (match por `system` + `ability`).
 	 *
-	 * @return array Array com permissões órfãs: [['id' => 1, 'ability' => 'report.index', ...], ...]
+	 * Ex.: uma ability marcada como `system='manager'` só é considerada viva
+	 * se existir em `manager/app/Controllers`. Se o mesmo nome existir em
+	 * `manager_main/app/Controllers`, continua sendo órfã para o sistema
+	 * `manager` (pois cada sistema tem seu próprio conjunto).
+	 *
+	 * @return array Array com permissões órfãs: [['id' => 1, 'ability' => 'report.index', 'system' => 'manager', ...], ...]
 	 */
 	public function getOrphanedPermissions(): array
 		{
-		// Descobrir todas as abilities que existem no código
-		$currentAbilities = [];
-		$currentAbilities += $this->discoverAbilitiesFromControllers(ROOT_PATH . '/app/Controllers');
-		$currentAbilities += $this->discoverAbilitiesFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers');
+		// Descobrir abilities de cada sistema separadamente
+		$discovered = [
+			'manager_main' => $this->discoverAbilitiesFromControllers(ROOT_PATH . '/app/Controllers'),
+			'manager'      => $this->discoverAbilitiesFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers'),
+		];
 
 		// Pegar todas as permissions do banco
-		$stmt = $this->db->query("SELECT id, ability, description, created, modified FROM permissions ORDER BY ability ASC");
+		$stmt = $this->db->query("SELECT id, ability, `system`, description, created, modified FROM permissions ORDER BY `system` ASC, ability ASC");
 		$allPermissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-		// Filtrar apenas as que não existem mais no código
+		// Filtrar apenas as que não existem mais no sistema correspondente
 		$orphaned = [];
 		foreach ($allPermissions as $perm)
 			{
-			if (!isset($currentAbilities[$perm['ability']]))
+			$sys = (string) ($perm['system'] ?? self::DEFAULT_SYSTEM);
+			$set = $discovered[$sys] ?? [];
+
+			if (!isset($set[$perm['ability']]))
 				{
 				$orphaned[] = $perm;
 				}
@@ -456,6 +508,7 @@ class Permission extends Model
 
 			$stats['permissions'][$permId] = [
 				'ability' => $perm['ability'],
+				'system' => $perm['system'] ?? self::DEFAULT_SYSTEM,
 				'description' => $perm['description'],
 				'user_count' => $userCount
 			];
@@ -496,6 +549,7 @@ class Permission extends Model
 
 			$stats['permissions'][$permId] = [
 				'ability' => $perm['ability'],
+				'system' => $perm['system'] ?? self::DEFAULT_SYSTEM,
 				'description' => $perm['description'],
 				'user_count' => $userCount
 			];

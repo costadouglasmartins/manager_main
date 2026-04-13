@@ -12,18 +12,47 @@ function permGroup(string $ability): string
 	return substr($ability, 0, $pos);
 	}
 
-$groups = [];
+function permSystemBadgeClass(string $system): string
+	{
+	return $system === 'manager' ? 'text-bg-success' : 'text-bg-primary';
+	}
+
+// Organiza: [system][module] => [rows]
+$bySystem = [
+	'manager_main' => [],
+	'manager'      => [],
+];
+
 foreach ($permissions as $p)
 	{
 	$ability = (string) $p['ability'];
-	$group = permGroup($ability);
-	if (!isset($groups[$group]))
+	$system  = (string) ($p['system'] ?? 'manager_main');
+	if (!isset($bySystem[$system]))
 		{
-		$groups[$group] = [];
+		$bySystem[$system] = [];
 		}
-	$groups[$group][] = $p;
+
+	$group = permGroup($ability);
+	if (!isset($bySystem[$system][$group]))
+		{
+		$bySystem[$system][$group] = [];
+		}
+
+	$bySystem[$system][$group][] = $p;
 	}
-ksort($groups);
+
+foreach ($bySystem as $sys => $_groups)
+	{
+	ksort($bySystem[$sys]);
+	}
+
+// Deriva o sistema de origem do usuário selecionado (manager_main se central, manager se pertence a tenant).
+$userOriginSystem = null;
+if (!empty($selectedUser))
+	{
+	$userOriginSystem = $selectedUser['origin_system']
+		?? (empty($selectedUser['tenant_id']) ? 'manager_main' : 'manager');
+	}
 
 $syncCount = null;
 if (isset($_GET['synced']))
@@ -81,11 +110,18 @@ if (isset($_GET['created']))
   <div class="border rounded p-3">
     <form method="POST" action="<?= url('permission/create'); ?>" class="row g-2 align-items-end">
       <input type="hidden" name="selected_user_id" value="<?= (int) ($selectedUserId ?? 0); ?>">
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-3">
+        <label class="form-label">Sistema</label>
+        <select class="form-select form-select-sm" name="system" required>
+          <option value="manager_main">manager_main</option>
+          <option value="manager">manager</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3">
         <label class="form-label">Nova ability</label>
         <input class="form-control form-control-sm" name="ability" placeholder="ex.: report.index" required>
       </div>
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-4">
         <label class="form-label">Descrição</label>
         <input class="form-control form-control-sm" name="description" placeholder="Opcional">
       </div>
@@ -123,6 +159,9 @@ if (isset($_GET['created']))
       <div>
         <span class="fw-semibold"><?= htmlspecialchars((string) ($selectedUser['name'] ?? $selectedUser['username'])); ?></span>
         <span class="badge text-bg-info ms-2"><?= htmlspecialchars((string) $selectedUser['type']); ?></span>
+        <span class="badge <?= permSystemBadgeClass((string) $userOriginSystem); ?> ms-1" title="Sistema de origem do usuário">
+          <?= htmlspecialchars((string) $userOriginSystem); ?>
+        </span>
         <br>
         <small class="text-muted"><?= htmlspecialchars((string) $selectedUser['email']); ?></small>
         <?php if (!empty($selectedUser['username']) && ($selectedUser['username'] !== ($selectedUser['name'] ?? ''))): ?>
@@ -138,39 +177,77 @@ if (isset($_GET['created']))
   <div class="alert alert-info mb-0">Selecione um usuário para editar permissões.</div>
 <?php else: ?>
 
+  <?php
+  // Toggle de filtro por sistema.
+  // Se o usuário é do manager_main, por padrão o bloco "manager" fica oculto (e vice-versa).
+  // O checkbox abaixo permite ao operador exibir também as permissões do outro sistema.
+  $otherSystem = ($userOriginSystem === 'manager') ? 'manager_main' : 'manager';
+  ?>
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" role="switch" id="toggleOtherSystem">
+    <label class="form-check-label" for="toggleOtherSystem">
+      Mostrar também permissões do sistema
+      <span class="badge <?= permSystemBadgeClass($otherSystem); ?>"><?= htmlspecialchars($otherSystem); ?></span>
+    </label>
+  </div>
+
   <form method="POST" action="<?= url('permission/saveUser'); ?>">
     <input type="hidden" name="user_id" value="<?= (int) $selectedUserId; ?>">
 
-    <?php foreach ($groups as $groupName => $items): ?>
-      <div class="mb-3">
-        <div class="fw-semibold mb-2 text-capitalize"><?= htmlspecialchars($groupName); ?></div>
-        <div class="table-responsive">
-          <table class="table table-sm table-bordered align-middle mb-0">
-            <thead>
-              <tr>
-                <th class="col-1">Permissão</th>
-                <th class="col-4">Funcionalidade acesso</th>
-                <th class="col-7">Descrição</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($items as $p): ?>
-                <?php
-                  $pid = (int) $p['id'];
-                  $checked = in_array($pid, $userPermissionIds, true);
-                ?>
-                <tr>
-                  <td class="text-center">
-                    <input class="form-check-input" type="checkbox" name="permission_ids[]" value="<?= $pid; ?>" <?= ($checked ? 'checked' : ''); ?>>
-                  </td>
-                  <td><code><?= htmlspecialchars($p['ability']); ?></code></td>
-                  <td><?= htmlspecialchars((string) ($p['description'] ?? '')); ?></td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <?php foreach ($bySystem as $systemName => $groups): ?>
+      <?php
+        if (empty($groups))
+          {
+          continue;
+          }
+
+        // Oculta por padrão o bloco do "outro" sistema; o toggle acima mostra.
+        $isOtherSystem = ($systemName !== $userOriginSystem);
+        $sectionStyle = $isOtherSystem ? 'display:none;' : '';
+      ?>
+      <section class="mb-4 perm-system-block" data-system="<?= htmlspecialchars($systemName); ?>" style="<?= $sectionStyle; ?>">
+        <h6 class="mb-3 d-flex align-items-center gap-2">
+          Sistema:
+          <span class="badge <?= permSystemBadgeClass($systemName); ?>"><?= htmlspecialchars($systemName); ?></span>
+        </h6>
+
+        <?php foreach ($groups as $groupName => $items): ?>
+          <div class="mb-3">
+            <div class="fw-semibold mb-2 text-capitalize"><?= htmlspecialchars($groupName); ?></div>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th class="col-1">Permissão</th>
+                    <th class="col-2">Sistema</th>
+                    <th class="col-3">Funcionalidade acesso</th>
+                    <th class="col-6">Descrição</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($items as $p): ?>
+                    <?php
+                      $pid = (int) $p['id'];
+                      $checked = in_array($pid, $userPermissionIds, true);
+                      $psys = (string) ($p['system'] ?? 'manager_main');
+                    ?>
+                    <tr>
+                      <td class="text-center">
+                        <input class="form-check-input" type="checkbox" name="permission_ids[]" value="<?= $pid; ?>" <?= ($checked ? 'checked' : ''); ?>>
+                      </td>
+                      <td>
+                        <span class="badge <?= permSystemBadgeClass($psys); ?>"><?= htmlspecialchars($psys); ?></span>
+                      </td>
+                      <td><code><?= htmlspecialchars($p['ability']); ?></code></td>
+                      <td><?= htmlspecialchars((string) ($p['description'] ?? '')); ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </section>
     <?php endforeach; ?>
 
     <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -286,6 +363,23 @@ if (isset($_GET['created']))
       resultsDiv.style.display = 'block';
     }
   });
+
+  // Toggle para exibir/ocultar o bloco do "outro" sistema
+  var toggle = document.getElementById('toggleOtherSystem');
+  if (toggle) {
+    var userOrigin = <?= json_encode((string) ($userOriginSystem ?? '')); ?>;
+    toggle.addEventListener('change', function() {
+      var blocks = document.querySelectorAll('.perm-system-block');
+      blocks.forEach(function(block) {
+        var sys = block.getAttribute('data-system');
+        if (sys === userOrigin) {
+          block.style.display = '';
+          return;
+        }
+        block.style.display = toggle.checked ? '' : 'none';
+      });
+    });
+  }
 })();
 </script>
 
