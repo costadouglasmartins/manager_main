@@ -206,9 +206,15 @@ if (isset($_GET['created']))
         $sectionStyle = $isOtherSystem ? 'display:none;' : '';
       ?>
       <section class="mb-4 perm-system-block" data-system="<?= htmlspecialchars($systemName); ?>" style="<?= $sectionStyle; ?>">
-        <h6 class="mb-3 d-flex align-items-center gap-2">
+        <h6 class="mb-3 d-flex flex-wrap align-items-center gap-2">
           Sistema:
           <span class="badge <?= permSystemBadgeClass($systemName); ?>"><?= htmlspecialchars($systemName); ?></span>
+          <span class="form-check ms-auto mb-0">
+            <input class="form-check-input system-toggle-checkbox" type="checkbox" id="toggle-system-<?= htmlspecialchars($systemName); ?>" data-system-toggle="<?= htmlspecialchars($systemName); ?>"> 
+            <label class="form-check-label small" for="toggle-system-<?= htmlspecialchars($systemName); ?>">
+              Marcar/desmarcar todas
+            </label>
+          </span>
         </h6>
 
         <?php foreach ($groups as $groupName => $items): ?>
@@ -233,7 +239,7 @@ if (isset($_GET['created']))
                     ?>
                     <tr>
                       <td class="text-center">
-                        <input class="form-check-input" type="checkbox" name="permission_ids[]" value="<?= $pid; ?>" <?= ($checked ? 'checked' : ''); ?>>
+                        <input class="form-check-input permission-checkbox" type="checkbox" name="permission_ids[]" value="<?= $pid; ?>" data-permission-system="<?= htmlspecialchars($systemName); ?>" <?= ($checked ? 'checked' : ''); ?>>
                       </td>
                       <td>
                         <span class="badge <?= permSystemBadgeClass($psys); ?>"><?= htmlspecialchars($psys); ?></span>
@@ -380,36 +386,57 @@ if (isset($_GET['created']))
       });
     });
   }
+
+  function getSystemPermissionCheckboxes(systemName) {
+    return document.querySelectorAll('.permission-checkbox[data-permission-system="' + systemName + '"]');
+  }
+
+  function syncSystemToggle(systemName) {
+    var toggleCheckbox = document.querySelector('.system-toggle-checkbox[data-system-toggle="' + systemName + '"]');
+    if (!toggleCheckbox) {
+      return;
+    }
+
+    var permissionCheckboxes = getSystemPermissionCheckboxes(systemName);
+    if (permissionCheckboxes.length === 0) {
+      toggleCheckbox.checked = false;
+      toggleCheckbox.indeterminate = false;
+      toggleCheckbox.disabled = true;
+      return;
+    }
+
+    var checkedCount = 0;
+    permissionCheckboxes.forEach(function(checkbox) {
+      if (checkbox.checked) {
+        checkedCount += 1;
+      }
+    });
+
+    toggleCheckbox.disabled = false;
+    toggleCheckbox.checked = checkedCount === permissionCheckboxes.length;
+    toggleCheckbox.indeterminate = checkedCount > 0 && checkedCount < permissionCheckboxes.length;
+  }
+
+  var systemToggleCheckboxes = document.querySelectorAll('.system-toggle-checkbox');
+  systemToggleCheckboxes.forEach(function(systemToggle) {
+    var systemName = systemToggle.getAttribute('data-system-toggle');
+
+    syncSystemToggle(systemName);
+
+    systemToggle.addEventListener('change', function() {
+      var permissionCheckboxes = getSystemPermissionCheckboxes(systemName);
+      permissionCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = systemToggle.checked;
+      });
+      systemToggle.indeterminate = false;
+    });
+  });
+
+  var permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
+  permissionCheckboxes.forEach(function(permissionCheckbox) {
+    permissionCheckbox.addEventListener('change', function() {
+      syncSystemToggle(permissionCheckbox.getAttribute('data-permission-system'));
+    });
+  });
 })();
-</script>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
-          <input type="hidden" name="id" id="recordId">
-          <button type="submit" class="btn btn-danger">Excluir</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const recordId = e.relatedTarget.dataset.id;
-  document.getElementById('recordId').value = recordId;
-  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
-  document.getElementById('deleteForm').action = '<?= url('permission/delete') ?>/' + recordId;
-});
 </script>
