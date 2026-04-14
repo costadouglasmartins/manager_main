@@ -444,7 +444,7 @@ class Person extends Model
 		}
 
 	/**
-	 * Find all by person id - returns person, user, phones and emails
+	 * Find all by person id - returns person, user, phones, emails, addresses and tenants
 	 * @param Integer $id Person id
 	 * @return array
 	 */
@@ -454,7 +454,7 @@ class Person extends Model
 		$personStmt->execute(['id' => $id]);
 		$person = $personStmt->fetch(PDO::FETCH_ASSOC);
 
-		$userStmt = $this->db->prepare("SELECT id, person_id, username, type, active, created, modified FROM users WHERE person_id = :id");
+		$userStmt = $this->db->prepare("SELECT id, person_id, tenant_id, username, type, active, created, modified FROM users WHERE person_id = :id");
 		$userStmt->execute(['id' => $id]);
 		$user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -466,11 +466,50 @@ class Person extends Model
 		$emailsStmt->execute(['id' => $id]);
 		$emails = $emailsStmt->fetchAll(PDO::FETCH_ASSOC);
 
+		$addressesStmt = $this->db->prepare("SELECT Address.id,
+		                                            Address.zip_code,
+		                                            Address.street,
+		                                            Address.number,
+		                                            Address.observations,
+		                                            Address.neighborhood_id,
+		                                            Neighborhood.name AS neighborhood_name,
+		                                            City.name AS city_name,
+		                                            State.name AS state_name
+		                                     FROM addresses AS Address
+		                                     LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
+		                                     LEFT JOIN cities AS City ON City.id = Neighborhood.city_id
+		                                     LEFT JOIN states AS State ON State.id = City.state_id
+		                                     WHERE Address.person_id = :id
+		                                     ORDER BY Address.id ASC");
+		$addressesStmt->execute(['id' => $id]);
+		$addresses = $addressesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+		$tenants = [];
+		if (!empty($user['id']))
+			{
+			$tenantsStmt = $this->db->prepare("SELECT Tenant.id,
+			                                          Tenant.name,
+			                                          Tenant.fantasy,
+			                                          Tenant.document,
+			                                          Tenant.database_number,
+			                                          Tenant.status,
+			                                          TenantUser.role,
+			                                          TenantUser.active
+			                                   FROM tenant_users AS TenantUser
+			                                   INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id
+			                                   WHERE TenantUser.user_id = :user_id
+			                                   ORDER BY Tenant.name ASC");
+			$tenantsStmt->execute(['user_id' => $user['id']]);
+			$tenants = $tenantsStmt->fetchAll(PDO::FETCH_ASSOC);
+			}
+
 		return [
-			'person' => $person,
-			'user'   => $user,
-			'phones' => $phones,
-			'emails' => $emails,
+			'person'    => $person,
+			'user'      => $user,
+			'phones'    => $phones,
+			'emails'    => $emails,
+			'addresses' => $addresses,
+			'tenants'   => $tenants,
 		];
 		}
 

@@ -94,6 +94,112 @@
 <?php endif; ?>
 <!-- /Usuário -->
 
+<!-- Tenants -->
+<?php if (!empty($tenants)): ?>
+<div class="card shadow-sm mb-3">
+  <div class="card-header fw-semibold">Tenants vinculados</div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>Banco</th>
+          <th>Perfil</th>
+          <th>Situação do vínculo</th>
+          <th>Situação do tenant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($tenants as $tenant): ?>
+          <tr>
+            <td class="text-muted" style="width: 1%;"><?= (int) $tenant['id']; ?></td>
+            <td>
+              <?= htmlspecialchars($tenant['name']); ?>
+              <?php if (!empty($tenant['fantasy'])): ?>
+                <div class="small text-muted"><?= htmlspecialchars($tenant['fantasy']); ?></div>
+              <?php endif; ?>
+            </td>
+            <td><code>manager_<?= htmlspecialchars($tenant['database_number']); ?></code></td>
+            <td>
+              <?php
+              $tenantRoles = ['owner' => 'Owner', 'admin' => 'Administrador', 'user' => 'Usuário'];
+              echo htmlspecialchars($tenantRoles[$tenant['role']] ?? $tenant['role']);
+              ?>
+            </td>
+            <td>
+              <?php if ((int) $tenant['active'] === 1): ?>
+                <span class="badge text-bg-success">Ativo</span>
+              <?php else: ?>
+                <span class="badge text-bg-secondary">Inativo</span>
+              <?php endif; ?>
+            </td>
+            <td>
+              <?php if (($tenant['status'] ?? '') === 'active'): ?>
+                <span class="badge text-bg-success">Ativo</span>
+              <?php elseif (($tenant['status'] ?? '') === 'suspended'): ?>
+                <span class="badge text-bg-danger">Suspenso</span>
+              <?php else: ?>
+                <span class="badge text-bg-warning">Pendente</span>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+<?php endif; ?>
+<!-- /Tenants -->
+
+<!-- Endereços -->
+<div class="card shadow-sm mb-3">
+  <div class="card-header fw-semibold">Endereços</div>
+  <?php if (!empty($addresses)): ?>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>CEP</th>
+            <th>Logradouro</th>
+            <th>Número</th>
+            <th>Bairro</th>
+            <th>Cidade/UF</th>
+            <th>Observações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($addresses as $address): ?>
+            <tr>
+              <td class="text-muted" style="width: 1%;"><?= (int) $address['id']; ?></td>
+              <td><?= htmlspecialchars($address['zip_code'] ?: '—'); ?></td>
+              <td><?= htmlspecialchars($address['street']); ?></td>
+              <td><?= htmlspecialchars($address['number'] ?: '—'); ?></td>
+              <td><?= htmlspecialchars($address['neighborhood_name'] ?? '—'); ?></td>
+              <td>
+                <?php
+                $cityState = trim(
+                  implode(' / ', array_filter([
+                    $address['city_name'] ?? '',
+                    $address['state_name'] ?? '',
+                  ]))
+                );
+                ?>
+                <?= htmlspecialchars($cityState !== '' ? $cityState : '—'); ?>
+              </td>
+              <td><?= htmlspecialchars($address['observations'] ?? '—'); ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php else: ?>
+    <div class="card-body text-muted">Nenhum endereço cadastrado.</div>
+  <?php endif; ?>
+</div>
+<!-- /Endereços -->
+
 <!-- Telefones -->
 <div class="card shadow-sm mb-3">
   <div class="card-header fw-semibold">Telefones</div>

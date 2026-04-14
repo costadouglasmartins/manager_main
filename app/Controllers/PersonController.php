@@ -234,11 +234,13 @@ class PersonController extends Controller
 		$person = new Person();
 		$data = $person->findAllByPersonId($id);
 		$this->view('people/informations', [
-			'title'  => 'Informações sobre a pessoa',
-			'person' => $data['person'],
-			'user'   => $data['user'],
-			'phones' => $data['phones'],
-			'emails' => $data['emails'],
+			'title'     => 'Informações sobre a pessoa',
+			'person'    => $data['person'],
+			'user'      => $data['user'],
+			'phones'    => $data['phones'],
+			'emails'    => $data['emails'],
+			'addresses' => $data['addresses'],
+			'tenants'   => $data['tenants'],
 		]);
 		}
 
