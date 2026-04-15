@@ -197,4 +197,17 @@ if (!function_exists('authCan'))
 		return \App\Core\Authorization::can($ability);
 		}
 	}
+
+if (!function_exists('authIsRoot'))
+	{
+	function authIsRoot(): bool
+		{
+		if (!class_exists('App\\Core\\Authorization'))
+			{
+			return false;
+			}
+
+		return \App\Core\Authorization::isRoot();
+		}
+	}
 ?>

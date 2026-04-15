@@ -25,6 +25,15 @@ class Authorization
 		}
 
 	/**
+	 * Checks if current authenticated user is root.
+	 */
+	public static function isRoot(): bool
+		{
+		$user = self::user();
+		return (($user['type'] ?? '') === 'root');
+		}
+
+	/**
 	 * Clears the permissions cache for the current session.
 	 */
 	public static function clearCache(): void

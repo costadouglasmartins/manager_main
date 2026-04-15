@@ -5732,7 +5732,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=3405 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3407 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.permissions: ~86 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
@@ -5882,7 +5882,9 @@ INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, 
 	(3255, 'user.informations', 'manager', 'Acesso: user -> informations', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
 	(3256, 'user.login', 'manager', 'Acesso: user -> login', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
 	(3257, 'user.logout', 'manager', 'Acesso: user -> logout', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
-	(3258, 'user.update', 'manager', 'Acesso: user -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13');
+	(3258, 'user.update', 'manager', 'Acesso: user -> update', '2026-04-13 23:10:13', '2026-04-13 23:10:13'),
+	(3405, 'database_manager.index', 'manager_main', 'Acesso: database_manager -> index', '2026-04-14 00:00:00', '2026-04-14 00:00:00'),
+	(3406, 'database_manager.execute', 'manager_main', 'Acesso: database_manager -> execute', '2026-04-14 00:00:00', '2026-04-14 00:00:00');
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
@@ -6180,7 +6182,9 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(29, 3246, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
 	(29, 3247, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
 	(29, 3248, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
-	(29, 3249, '2026-04-13 23:13:57', '2026-04-13 23:13:57');
+	(29, 3249, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(1, 3405, '2026-04-14 00:00:00', '2026-04-14 00:00:00'),
+	(1, 3406, '2026-04-14 00:00:00', '2026-04-14 00:00:00');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
