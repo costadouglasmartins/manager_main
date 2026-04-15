@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="<?= url('assets/images/bootstrap-icons.min.css'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/main.css?v=2'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=1'); ?>">
-  <?= $pageStyles ?? '' ?>
   <link rel="apple-touch-icon" sizes="180x180" href="<?= url('assets/images/apple-touch-icon.png'); ?>">
   <link rel="icon" type="image/png" sizes="32x32" href="<?= url('assets/images/favicon-32x32.png'); ?>">
   <link rel="icon" type="image/png" sizes="16x16" href="<?= url('assets/images/favicon-16x16.png'); ?>">
@@ -230,6 +229,5 @@
   <script src="<?= url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
   <script src="<?= url('assets/js/menu.js?v=1'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=1'); ?>"></script>
-  <?= $pageScripts ?? '' ?>
 </body>
 </html>
