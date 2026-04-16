@@ -134,35 +134,36 @@ class Person extends Model
 
 			if ($tenantMode === 'new')
 				{
-				$tenantModel = new Tenant();
-				$databaseNumber = $tenantModel->nextDatabaseNumber();
+					$tenantModel = new Tenant();
+					$databaseNumber = $tenantModel->nextDatabaseNumber();
+					$tenantStatus = 'active';
 
-				$tenantId = $tenantModel->create([
-					'name'            => $data['tenant']['name'],
-					'fantasy'         => $data['tenant']['fantasy'] ?? null,
-					'document'        => $data['tenant']['document'] ?? null,
-					'database_number' => $databaseNumber,
-					'status'          => $data['tenant']['status'] ?? 'pending',
-					'observations'    => $data['tenant']['observations'] ?? null,
-				]);
-
-				$provisioner = new TenantProvisioner();
-				$provisioned = $provisioner->provision($databaseNumber);
-
-				if ($provisioned)
-					{
-					$tenantModel->update($tenantId, [
-						'name'         => $data['tenant']['name'],
-						'fantasy'      => $data['tenant']['fantasy'] ?? null,
-						'document'     => $data['tenant']['document'] ?? null,
-						'status'       => 'active',
-						'observations' => $data['tenant']['observations'] ?? null,
+					$tenantId = $tenantModel->create([
+						'name'            => $data['tenant']['name'],
+						'fantasy'         => $data['tenant']['fantasy'] ?? null,
+						'document'        => $data['tenant']['document'] ?? null,
+						'database_number' => $databaseNumber,
+						'status'          => 'pending',
+						'observations'    => $data['tenant']['observations'] ?? null,
 					]);
+
+					$provisioner = new TenantProvisioner();
+					$provisioned = $provisioner->provision($databaseNumber);
+
+					if ($provisioned)
+						{
+						$tenantModel->update($tenantId, [
+							'name'         => $data['tenant']['name'],
+							'fantasy'      => $data['tenant']['fantasy'] ?? null,
+							'document'     => $data['tenant']['document'] ?? null,
+							'status'       => $tenantStatus,
+							'observations' => $data['tenant']['observations'] ?? null,
+						]);
+						}
 					}
-				}
 			elseif ($tenantMode === 'existing' && !empty($data['tenant']['existing_id']))
 				{
-				$tenantId = (int) $data['tenant']['existing_id'];
+					$tenantId = (int) $data['tenant']['existing_id'];
 				}
 
 			// Link user to tenant

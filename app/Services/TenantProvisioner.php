@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use PDO;
-use PDOException;
 
 /**
  * TenantProvisioner - Creates tenant databases.
@@ -32,27 +31,35 @@ class TenantProvisioner
 
 		try
 			{
-			$pdo = new PDO($dsn, $this->dbUser, $this->dbPassword);
-			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$pdo = $this->createConnection($dsn);
 
 			$pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` DEFAULT CHARACTER SET utf8mb3");
 			$pdo->exec("USE `{$dbName}`");
 
 			$templateFile = ROOT_PATH . '/public/database/tenant_template.sql';
-			if (file_exists($templateFile))
+			if (!file_exists($templateFile))
 				{
-				$sql = file_get_contents($templateFile);
-				if ($sql !== false && trim($sql) !== '')
-					{
-					$pdo->exec($sql);
-					}
+				throw new \RuntimeException('Template file not found: ' . $templateFile);
 				}
+
+			$sql = file_get_contents($templateFile);
+			if ($sql === false)
+				{
+				throw new \RuntimeException('Unable to read template file: ' . $templateFile);
+				}
+
+			if (trim($sql) === '')
+				{
+				throw new \RuntimeException('Template file is empty: ' . $templateFile);
+				}
+
+			$pdo->exec($sql);
 
 			return true;
 			}
-		catch (PDOException $e)
+		catch (\Throwable $e)
 			{
-			error_log('TenantProvisioner::provision error: ' . $e->getMessage());
+			error_log(sprintf('TenantProvisioner::provision error for %s: %s', $dbName, $e->getMessage()));
 			return false;
 			}
 		}
@@ -69,18 +76,31 @@ class TenantProvisioner
 
 		try
 			{
-			$pdo = new PDO($dsn, $this->dbUser, $this->dbPassword);
-			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$pdo = $this->createConnection($dsn);
 
 			$stmt = $pdo->prepare("SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = :dbname");
 			$stmt->execute(['dbname' => $dbName]);
 
 			return $stmt->fetchColumn() !== false;
 			}
-		catch (PDOException $e)
+		catch (\Throwable $e)
 			{
 			return false;
 			}
+		}
+
+	private function createConnection(string $dsn): PDO
+		{
+		$options = [
+			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+		];
+
+		if (defined('PDO::MYSQL_ATTR_MULTI_STATEMENTS'))
+			{
+			$options[PDO::MYSQL_ATTR_MULTI_STATEMENTS] = true;
+			}
+
+		return new PDO($dsn, $this->dbUser, $this->dbPassword, $options);
 		}
 	}
 

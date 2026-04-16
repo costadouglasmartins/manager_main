@@ -170,9 +170,7 @@
 								<div class="col-12 col-md-4">
 									<label class="form-label" for="tenantStatus">Situação</label>
 									<select autocomplete="off" class="form-select" id="tenantStatus" name="tenant[status]">
-										<option value="pending" selected>Pendente</option>
-										<option value="active">Ativo</option>
-										<option value="suspended">Suspenso</option>
+										<option value="active" selected>Ativo</option>
 									</select>
 								</div>
 								<div class="col-12">
