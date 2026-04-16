@@ -15,941 +15,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
--- Dumping database structure for manager_0001
-DROP DATABASE IF EXISTS `manager_0001`;
-CREATE DATABASE IF NOT EXISTS `manager_0001` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0001`;
-
--- Dumping structure for table manager_0001.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0001.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0001.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0001.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0001.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0001.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0001.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0001.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0001.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0001.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Lorem Ipsum', '2026-04-07 00:10:53');
-
-
--- Dumping database structure for manager_0002
-DROP DATABASE IF EXISTS `manager_0002`;
-CREATE DATABASE IF NOT EXISTS `manager_0002` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0002`;
-
--- Dumping structure for table manager_0002.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0002.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0002.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0002.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0002.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0002.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0002.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0002.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0002.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0002.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Nam facilisis', '2026-04-09 23:29:28');
-
-
--- Dumping database structure for manager_0003
-DROP DATABASE IF EXISTS `manager_0003`;
-CREATE DATABASE IF NOT EXISTS `manager_0003` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0003`;
-
--- Dumping structure for table manager_0003.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0003.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0003.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0003.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0003.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0003.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0003.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0003.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0003.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0003.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Etiam purus', '2026-04-09 23:49:36');
-
-
--- Dumping database structure for manager_0004
-DROP DATABASE IF EXISTS `manager_0004`;
-CREATE DATABASE IF NOT EXISTS `manager_0004` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0004`;
-
--- Dumping structure for table manager_0004.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0004.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0004.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0004.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0004.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0004.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0004.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0004.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0004.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0004.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Quisque tincidunt', '2026-04-10 00:03:18');
-
-
--- Dumping database structure for manager_0005
-DROP DATABASE IF EXISTS `manager_0005`;
-CREATE DATABASE IF NOT EXISTS `manager_0005` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0005`;
-
--- Dumping structure for table manager_0005.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0005.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0005.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0005.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0005.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0005.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0005.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0005.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0005.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0005.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Vivamus imperdiet', '2026-04-10 00:15:44');
-
-
--- Dumping database structure for manager_0006
-DROP DATABASE IF EXISTS `manager_0006`;
-CREATE DATABASE IF NOT EXISTS `manager_0006` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0006`;
-
--- Dumping structure for table manager_0006.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0006.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0006.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0006.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0006.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0006.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0006.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0006.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0006.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0006.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Curabitur rhoncus suscipit', '2026-04-10 00:20:52');
-
-
--- Dumping database structure for manager_0007
-DROP DATABASE IF EXISTS `manager_0007`;
-CREATE DATABASE IF NOT EXISTS `manager_0007` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0007`;
-
--- Dumping structure for table manager_0007.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0007.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0007.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0007.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0007.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0007.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0007.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0007.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0007.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0007.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Initial tenant schema', '2026-04-10 23:19:25');
-
-
--- Dumping database structure for manager_0008
-DROP DATABASE IF EXISTS `manager_0008`;
-CREATE DATABASE IF NOT EXISTS `manager_0008` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0008`;
-
--- Dumping structure for table manager_0008.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0008.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0008.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0008.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0008.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0008.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0008.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0008.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0008.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0008.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Initial tenant schema', '2026-04-10 23:37:51');
-
-
--- Dumping database structure for manager_0009
-DROP DATABASE IF EXISTS `manager_0009`;
-CREATE DATABASE IF NOT EXISTS `manager_0009` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0009`;
-
--- Dumping structure for table manager_0009.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0009.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0009.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0009.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0009.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0009.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0009.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0009.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0009.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0009.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Initial tenant schema', '2026-04-12 10:18:19');
-
-
--- Dumping database structure for manager_0010
-DROP DATABASE IF EXISTS `manager_0010`;
-CREATE DATABASE IF NOT EXISTS `manager_0010` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0010`;
-
--- Dumping structure for table manager_0010.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0010.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0010.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0010.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0010.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0010.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0010.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0010.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0010.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0010.schema_versions: ~0 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(1, '1.00.00', 'Initial tenant schema', '2026-04-12 10:35:50');
-
-
--- Dumping database structure for manager_0011
-DROP DATABASE IF EXISTS `manager_0011`;
-CREATE DATABASE IF NOT EXISTS `manager_0011` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `manager_0011`;
-
--- Dumping structure for table manager_0011.addresses
-CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addresses_people1_idx` (`person_id`),
-  CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0011.addresses: ~0 rows (approximately)
-
--- Dumping structure for table manager_0011.emails
-CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_emails_people1_idx` (`person_id`),
-  CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0011.emails: ~0 rows (approximately)
-
--- Dumping structure for table manager_0011.people
-CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
-  `active` tinyint(1) NOT NULL,
-  `birthdate` date DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `modified` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0011.people: ~0 rows (approximately)
-
--- Dumping structure for table manager_0011.phone_numbers
-CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_phone_numbers_people1_idx` (`person_id`),
-  CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0011.phone_numbers: ~0 rows (approximately)
-
--- Dumping structure for table manager_0011.schema_versions
-CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `applied_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
-
--- Dumping data for table manager_0011.schema_versions: ~1 rows (approximately)
-INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(2, '1.0.0', 'Initial tenant schema', '2026-04-16 00:07:59');
-
-
 -- Dumping database structure for manager_main
 DROP DATABASE IF EXISTS `manager_main`;
 CREATE DATABASE IF NOT EXISTS `manager_main` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
@@ -996,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5572 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 571 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -6620,7 +5685,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~10 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6629,11 +5694,11 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(3, 'Pedra Branca', 4596, '2026-04-09 23:28:29', '2026-04-09 23:28:29'),
 	(4, 'Ponte do Imaruim', 4596, '2026-04-09 23:48:02', '2026-04-09 23:48:02'),
 	(5, 'Centro', 4596, '2026-04-09 23:52:01', '2026-04-09 23:52:01'),
-	(6, 'Centro', 4441, '2026-04-10 00:02:05', '2026-04-10 00:02:05'),
 	(7, 'Centro', 4666, '2026-04-10 23:14:50', '2026-04-10 23:14:50'),
 	(8, 'Kobrasol', 4666, '2026-04-12 10:31:29', '2026-04-12 10:31:29'),
 	(9, 'Barra da Tijuca', 3662, '2026-04-15 23:50:01', '2026-04-15 23:50:01'),
-	(10, 'Centro', 4503, '2026-04-16 00:06:59', '2026-04-16 00:06:59');
+	(10, 'Centro', 4503, '2026-04-16 00:06:59', '2026-04-16 00:06:59'),
+	(11, 'Pagani', 4596, '2026-04-16 00:58:24', '2026-04-16 00:58:24');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -6673,7 +5738,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3701 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~147 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~149 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6986,7 +6051,7 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~203 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~269 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-04-15 00:11:24', '2026-04-15 00:11:24'),
 	(1, 8, '2026-04-15 00:11:24', '2026-04-15 00:11:24'),
@@ -7190,7 +6255,73 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(29, 3246, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
 	(29, 3247, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
 	(29, 3248, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
-	(29, 3249, '2026-04-13 23:13:57', '2026-04-13 23:13:57');
+	(29, 3249, '2026-04-13 23:13:57', '2026-04-13 23:13:57'),
+	(32, 1223, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 1225, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3193, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3194, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3195, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3196, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3197, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3198, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3199, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3200, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3201, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3202, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3203, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3204, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3205, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3206, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3207, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3208, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3209, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3210, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3211, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3212, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3213, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3214, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3215, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3216, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3217, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3218, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3219, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3220, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3221, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3222, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3223, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3224, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3225, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3226, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3227, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3228, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3229, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3230, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3231, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3232, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3233, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3234, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3235, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3236, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3237, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3238, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3239, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3240, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3241, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3242, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3243, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3244, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3245, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3246, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3247, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3248, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3249, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3251, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3253, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3254, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3255, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3256, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3257, '2026-04-16 00:33:53', '2026-04-16 00:33:53'),
+	(32, 3258, '2026-04-16 00:33:53', '2026-04-16 00:33:53');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
