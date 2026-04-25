@@ -290,6 +290,53 @@ class Person extends Model
 	 */
 	public function update($id, $data)
 		{
+		$personId = (int) $id;
+		$personData = (isset($data['person']) && is_array($data['person'])) ? $data['person'] : $data;
+
+		try
+			{
+			$this->db->beginTransaction();
+
+			$this->updatePersonRecord($personId, $personData);
+
+			$userId = $this->upsertPersonUser($personId, $data['user'] ?? null);
+
+			if ($userId !== null && !empty($data['tenant_links']) && is_array($data['tenant_links']))
+				{
+				$this->saveTenantLinks($userId, $data['tenant_links']);
+				}
+
+			if ($userId !== null && isset($data['user']['tenant_id']) && (int) $data['user']['tenant_id'] > 0)
+				{
+				$this->ensurePrimaryTenantLink($userId, (int) $data['user']['tenant_id']);
+				}
+
+			if (!empty($data['addresses']) && is_array($data['addresses']))
+				{
+				$this->saveAddresses($personId, $data['addresses']);
+				}
+
+			if (!empty($data['phones']) && is_array($data['phones']))
+				{
+				$this->savePhones($personId, $data['phones']);
+				}
+
+			if (!empty($data['emails']) && is_array($data['emails']))
+				{
+				$this->saveEmails($personId, $data['emails']);
+				}
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
+
+	private function updatePersonRecord(int $personId, array $data): void
+		{
 		$stmt = $this->db->prepare("
 			UPDATE people
 			SET
@@ -304,15 +351,358 @@ class Person extends Model
 		");
 
 		$stmt->execute([
-			'name'      => $data['name'],
+			'name'      => trim((string) ($data['name'] ?? '')),
 			'fantasy'   => $data['fantasy'] ?? '',
-			'type'      => $data['type'],
-			'document'  => onlyDigits($data['document']),
-			'active'    => $data['active'],
+			'type'      => $data['type'] ?? 'individual',
+			'document'  => onlyDigits($data['document'] ?? ''),
+			'active'    => (int) ($data['active'] ?? 0),
 			'birthdate' => (!empty($data['birthdate']) ? dateBrToUs($data['birthdate']) : null),
 			'modified'  => date('Y-m-d H:i:s'),
-			'id'        => $id,
+			'id'        => $personId,
 		]);
+		}
+
+	private function upsertPersonUser(int $personId, $data): ?int
+		{
+		if (!is_array($data))
+			{
+			return null;
+			}
+
+		$userId = (int) ($data['id'] ?? 0);
+		$username = trim((string) ($data['username'] ?? ''));
+		$password = trim((string) ($data['password'] ?? ''));
+		$passwordConfirm = trim((string) ($data['password_confirm'] ?? ''));
+
+		if ($username === '' && $userId === 0)
+			{
+			return null;
+			}
+
+		if ($password !== '' && $password !== $passwordConfirm)
+			{
+			throw new \InvalidArgumentException('A confirmação de senha não confere.');
+			}
+
+		$type = $data['type'] ?? 'user';
+		if (!in_array($type, ['root', 'admin', 'user'], true))
+			{
+			$type = 'user';
+			}
+
+		$active = (int) ($data['active'] ?? 1);
+		$tenantId = (isset($data['tenant_id']) && $data['tenant_id'] !== '' && (int) $data['tenant_id'] > 0)
+			? (int) $data['tenant_id']
+			: null;
+
+		if ($userId > 0)
+			{
+			if ($username === '')
+				{
+				throw new \InvalidArgumentException('Informe o nome de usuário.');
+				}
+
+			$params = [
+				'username'  => $username,
+				'type'      => $type,
+				'active'    => $active,
+				'tenant_id' => $tenantId,
+				'modified'  => date('Y-m-d H:i:s'),
+				'id'        => $userId,
+				'person_id' => $personId,
+			];
+
+			$passwordSql = '';
+			if ($password !== '')
+				{
+				$passwordSql = ", `password` = :password";
+				$params['password'] = password_hash($password, PASSWORD_DEFAULT);
+				}
+
+			$stmt = $this->db->prepare("UPDATE users
+			                            SET `username`  = :username,
+			                                `type`      = :type,
+			                                `active`    = :active,
+			                                `tenant_id` = :tenant_id,
+			                                `modified`  = :modified
+			                                {$passwordSql}
+			                            WHERE id = :id
+			                              AND person_id = :person_id");
+			$stmt->execute($params);
+			return $userId;
+			}
+
+		if ($password === '')
+			{
+			throw new \InvalidArgumentException('Informe uma senha para criar o usuário.');
+			}
+
+		$stmt = $this->db->prepare("INSERT INTO users
+		                            (`person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`)
+		                            VALUES
+		                            (:person_id, :tenant_id, :username, :password, :type, :active, :created, :modified)");
+		$stmt->execute([
+			'person_id' => $personId,
+			'tenant_id' => $tenantId,
+			'username'  => $username,
+			'password'  => password_hash($password, PASSWORD_DEFAULT),
+			'type'      => $type,
+			'active'    => $active,
+			'created'   => date('Y-m-d H:i:s'),
+			'modified'  => date('Y-m-d H:i:s'),
+		]);
+
+		return (int) $this->db->lastInsertId();
+		}
+
+	private function ensurePrimaryTenantLink(int $userId, int $tenantId): void
+		{
+		$tenantModel = new Tenant();
+		if (!$tenantModel->hasUser($tenantId, $userId))
+			{
+			$tenantModel->linkUser($tenantId, $userId, 'user', 1);
+			}
+		}
+
+	private function saveTenantLinks(int $userId, array $links): void
+		{
+		$links = $this->regroupFormArray($links);
+		$tenantModel = new Tenant();
+
+		foreach ($links as $link)
+			{
+			if (!is_array($link))
+				{
+				continue;
+				}
+
+			$tenantId = (int) ($link['tenant_id'] ?? 0);
+			if ($tenantId <= 0)
+				{
+				continue;
+				}
+
+			if ($this->isDeleteRequested($link))
+				{
+				$tenantModel->unlinkUser($tenantId, $userId);
+				continue;
+				}
+
+			if (isset($link['name']) && trim((string) $link['name']) !== '')
+				{
+				$tenantModel->update($tenantId, [
+					'name'         => trim((string) $link['name']),
+					'fantasy'      => $link['fantasy'] ?? null,
+					'document'     => $link['document'] ?? null,
+					'status'       => $link['status'] ?? 'pending',
+					'observations' => $link['observations'] ?? null,
+				]);
+				}
+
+			$role = $link['role'] ?? 'user';
+			if (!in_array($role, ['owner', 'admin', 'user'], true))
+				{
+				$role = 'user';
+				}
+
+			$active = (int) ($link['active'] ?? 1);
+			if ($tenantModel->hasUser($tenantId, $userId))
+				{
+				$tenantModel->updateUserLink($tenantId, $userId, $role, $active);
+				}
+			else
+				{
+				$tenantModel->linkUser($tenantId, $userId, $role, $active);
+				}
+			}
+		}
+
+	private function saveAddresses(int $personId, array $addresses): void
+		{
+		$addresses = $this->regroupFormArray($addresses);
+
+		foreach ($addresses as $address)
+			{
+			if (!is_array($address))
+				{
+				continue;
+				}
+
+			$addressId = (int) ($address['id'] ?? 0);
+
+			if ($this->isDeleteRequested($address))
+				{
+				if ($addressId > 0)
+					{
+					$stmt = $this->db->prepare("DELETE FROM addresses WHERE id = :id AND person_id = :person_id");
+					$stmt->execute(['id' => $addressId, 'person_id' => $personId]);
+					}
+				continue;
+				}
+
+			$street = trim((string) ($address['street'] ?? ''));
+			$neighborhoodId = (int) ($address['neighborhood_id'] ?? 0);
+			if ($street === '' || $neighborhoodId <= 0)
+				{
+				continue;
+				}
+
+			$params = [
+				'zip_code'        => $address['zip_code'] ?? '',
+				'street'          => $street,
+				'number'          => $address['number'] ?? '',
+				'observations'    => $address['observations'] ?? null,
+				'person_id'       => $personId,
+				'neighborhood_id' => $neighborhoodId,
+				'modified'        => date('Y-m-d H:i:s'),
+			];
+
+			if ($addressId > 0)
+				{
+				$params['id'] = $addressId;
+				$stmt = $this->db->prepare("UPDATE addresses
+				                            SET `zip_code`        = :zip_code,
+				                                `street`          = :street,
+				                                `number`          = :number,
+				                                `observations`    = :observations,
+				                                `neighborhood_id` = :neighborhood_id,
+				                                `modified`        = :modified
+				                            WHERE id = :id
+				                              AND person_id = :person_id");
+				$stmt->execute($params);
+				continue;
+				}
+
+			$params['created'] = date('Y-m-d H:i:s');
+			$stmt = $this->db->prepare("INSERT INTO addresses
+			                            (`zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`)
+			                            VALUES
+			                            (:zip_code, :street, :number, :observations, :person_id, :neighborhood_id, :created, :modified)");
+			$stmt->execute($params);
+			}
+		}
+
+	private function savePhones(int $personId, array $phones): void
+		{
+		$phones = $this->regroupFormArray($phones);
+
+		foreach ($phones as $phone)
+			{
+			if (!is_array($phone))
+				{
+				continue;
+				}
+
+			$phoneId = (int) ($phone['id'] ?? 0);
+
+			if ($this->isDeleteRequested($phone))
+				{
+				if ($phoneId > 0)
+					{
+					$stmt = $this->db->prepare("DELETE FROM phone_numbers WHERE id = :id AND person_id = :person_id");
+					$stmt->execute(['id' => $phoneId, 'person_id' => $personId]);
+					}
+				continue;
+				}
+
+			$number = onlyDigits($phone['number'] ?? ($phone['phone_number'] ?? ''));
+			if ($number === '')
+				{
+				continue;
+				}
+
+			$params = [
+				'phone_number' => $number,
+				'observations' => $phone['notes'] ?? ($phone['observations'] ?? null),
+				'person_id'    => $personId,
+				'modified'     => date('Y-m-d H:i:s'),
+			];
+
+			if ($phoneId > 0)
+				{
+				$params['id'] = $phoneId;
+				$stmt = $this->db->prepare("UPDATE phone_numbers
+				                            SET `phone_number` = :phone_number,
+				                                `observations` = :observations,
+				                                `modified`     = :modified
+				                            WHERE id = :id
+				                              AND person_id = :person_id");
+				$stmt->execute($params);
+				continue;
+				}
+
+			$params['created'] = date('Y-m-d H:i:s');
+			$stmt = $this->db->prepare("INSERT INTO phone_numbers
+			                            (`phone_number`, `observations`, `person_id`, `created`, `modified`)
+			                            VALUES
+			                            (:phone_number, :observations, :person_id, :created, :modified)");
+			$stmt->execute($params);
+			}
+		}
+
+	private function saveEmails(int $personId, array $emails): void
+		{
+		$emails = $this->regroupFormArray($emails);
+
+		foreach ($emails as $email)
+			{
+			if (!is_array($email))
+				{
+				continue;
+				}
+
+			$emailId = (int) ($email['id'] ?? 0);
+
+			if ($this->isDeleteRequested($email))
+				{
+				if ($emailId > 0)
+					{
+					$stmt = $this->db->prepare("DELETE FROM emails WHERE id = :id AND person_id = :person_id");
+					$stmt->execute(['id' => $emailId, 'person_id' => $personId]);
+					}
+				continue;
+				}
+
+			$emailAddress = trim((string) ($email['address'] ?? ($email['email'] ?? '')));
+			if ($emailAddress === '')
+				{
+				continue;
+				}
+
+			$params = [
+				'email'        => $emailAddress,
+				'observations' => $email['description'] ?? ($email['observations'] ?? null),
+				'is_login'     => (int) ($email['is_login'] ?? 0),
+				'person_id'    => $personId,
+				'modified'     => date('Y-m-d H:i:s'),
+			];
+
+			if ($emailId > 0)
+				{
+				$params['id'] = $emailId;
+				$stmt = $this->db->prepare("UPDATE emails
+				                            SET `email`        = :email,
+				                                `observations` = :observations,
+				                                `is_login`     = :is_login,
+				                                `modified`     = :modified
+				                            WHERE id = :id
+				                              AND person_id = :person_id");
+				$stmt->execute($params);
+				continue;
+				}
+
+			$params['created'] = date('Y-m-d H:i:s');
+			$stmt = $this->db->prepare("INSERT INTO emails
+			                            (`email`, `observations`, `is_login`, `person_id`, `created`, `modified`)
+			                            VALUES
+			                            (:email, :observations, :is_login, :person_id, :created, :modified)");
+			$stmt->execute($params);
+			}
+		}
+
+	private function isDeleteRequested(array $row): bool
+		{
+		return isset($row['_delete']) && (string) $row['_delete'] === '1';
 		}
 
 	/**
@@ -494,6 +884,7 @@ class Person extends Model
 			                                          Tenant.document,
 			                                          Tenant.database_number,
 			                                          Tenant.status,
+			                                          Tenant.observations,
 			                                          TenantUser.role,
 			                                          TenantUser.active
 			                                   FROM tenant_users AS TenantUser

@@ -3,7 +3,7 @@
 -- This SQL is executed automatically when provisioning
 -- a new tenant (manager_0001, manager_0002, ...).
 -- --------------------------------------------------------
-
+/*
 CREATE TABLE IF NOT EXISTS `people` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
-
+*/
 CREATE TABLE IF NOT EXISTS `schema_versions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',

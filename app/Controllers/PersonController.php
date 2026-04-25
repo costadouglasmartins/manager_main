@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Authorization;
 use App\Models\Person;
 use App\Models\Tenant;
 use App\Models\Neighborhood;
@@ -10,6 +11,32 @@ use App\Models\City;
 
 class PersonController extends Controller
 	{
+
+	private function requireAnyPermission(array $abilities): void
+		{
+		$this->requireAuth();
+
+		foreach ($abilities as $ability)
+			{
+			if (Authorization::can($ability))
+				{
+				return;
+				}
+			}
+
+		if ($this->wantsJson())
+			{
+			$this->json([
+				'error'     => 'forbidden',
+				'message'   => 'You do not have permission to access this resource',
+				'abilities' => $abilities,
+			], 403);
+			}
+
+		http_response_code(403);
+		$this->view('errors/403', ['title' => 'Acesso negado', 'ability' => implode(', ', $abilities)]);
+		exit;
+		}
 
 	/**
 	 * Index method
@@ -98,7 +125,7 @@ class PersonController extends Controller
 	 */
 	public function neighborhoodSearch()
 		{
-		$this->requirePermission('person.create');
+		$this->requireAnyPermission(['person.create', 'person.edit']);
 
 		$term  = trim($_GET['term'] ?? '');
 		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
@@ -129,7 +156,7 @@ class PersonController extends Controller
 	 */
 	public function neighborhoodCreate()
 		{
-		$this->requirePermission('person.create');
+		$this->requireAnyPermission(['person.create', 'person.edit']);
 
 		$name   = trim($_POST['name'] ?? '');
 		$cityId = (int) ($_POST['city_id'] ?? 0);
@@ -164,7 +191,7 @@ class PersonController extends Controller
 	 */
 	public function citySearch()
 		{
-		$this->requirePermission('person.create');
+		$this->requireAnyPermission(['person.create', 'person.edit']);
 
 		$term  = trim($_GET['term'] ?? '');
 		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
@@ -208,8 +235,21 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.edit');
 		$person = new Person();
-		$data = $person->find($id);
-		$this->view('people/edit', ['title' => 'Editar pessoa', 'person' => $data]);
+		$data = $person->findAllByPersonId($id);
+
+		$tenantModel = new Tenant();
+		$allTenants = $tenantModel->getAll();
+
+		$this->view('people/edit', [
+			'title'      => 'Editar pessoa',
+			'person'     => $data['person'],
+			'user'       => $data['user'],
+			'phones'     => $data['phones'],
+			'emails'     => $data['emails'],
+			'addresses'  => $data['addresses'],
+			'tenants'    => $data['tenants'],
+			'allTenants' => $allTenants,
+		]);
 		}
 
 	/**
