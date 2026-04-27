@@ -9,9 +9,21 @@ use App\Models\Tenant;
 use App\Models\Neighborhood;
 use App\Models\City;
 
+/**
+ * Handles person management screens and supporting JSON endpoints.
+ */
 class PersonController extends Controller
 	{
 
+	/**
+	 * Requires authentication and at least one of the provided permissions.
+	 *
+	 * Returns a JSON 403 response for JSON requests or renders the HTML 403 page
+	 * for regular requests.
+	 *
+	 * @param array<int, string> $abilities Accepted permission abilities.
+	 * @return void
+	 */
 	private function requireAnyPermission(array $abilities): void
 		{
 		$this->requireAuth();
@@ -39,7 +51,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Index method
+	 * Displays the paginated person list.
+	 *
+	 * Reads filters from the query string, searches people, calculates
+	 * pagination totals and returns either JSON or the HTML list view.
+	 *
+	 * @return void
 	 */
 	public function index()
 		{
@@ -47,7 +64,7 @@ class PersonController extends Controller
 		
 		$person = new Person();
 
-		// Filtros vindos da query string
+		// Filters from the query string
 		$filters = [
 			'id' => isset($_GET['id']) ? trim($_GET['id']) : '',
 			'name' => isset($_GET['name']) ? trim($_GET['name']) : '',
@@ -57,20 +74,20 @@ class PersonController extends Controller
 			'active' => isset($_GET['active']) ? trim($_GET['active']) : '',
 		];
 
-		// Página atual (?page=2)
+		// Current page (?page=2)
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 		if ($page < 1)
 			{
 			$page = 1;
 			}
 
-		// Registros por página
+		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
 
-		// Busca paginada com filtros
+		// Paginated search with filters
 		$people = $person->search($filters, $perPage, $offset);
-		// Total para paginação (com os mesmos filtros)
+		// Total for pagination using the same filters
 		$total = $person->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -90,7 +107,7 @@ class PersonController extends Controller
 			]);
 			}
 
-      // padrão HTML
+      // Default HTML response
       $this->view('people/index', [
         'people' => $people,
         'title' => 'Lista de empresas',
@@ -102,7 +119,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Created method
+	 * Displays the person creation form.
+	 *
+	 * Loads tenant data needed by the form, including the next database number
+	 * suggestion for a newly provisioned tenant.
+	 *
+	 * @return void
 	 */
 	public function create()
 		{
@@ -120,8 +142,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Neighborhood search — used by the address autocomplete on the person create form.
-	 * Requires only person.create permission (no separate neighborhood permission needed).
+	 * Searches neighborhoods for person form address autocomplete.
+	 *
+	 * Requires either person creation or edit permission because it is used
+	 * inline by both forms.
+	 *
+	 * @return void
 	 */
 	public function neighborhoodSearch()
 		{
@@ -151,8 +177,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Neighborhood create — creates a neighborhood inline during person registration.
-	 * Requires only person.create permission.
+	 * Creates a neighborhood inline from the person form.
+	 *
+	 * Validates the posted neighborhood name and city ID, creates the record and
+	 * returns the new item as JSON.
+	 *
+	 * @return void
 	 */
 	public function neighborhoodCreate()
 		{
@@ -186,8 +216,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * City search — used by the neighborhood inline create form.
-	 * Requires only person.create permission.
+	 * Searches cities for the inline neighborhood creation form.
+	 *
+	 * Requires either person creation or edit permission and returns city options
+	 * formatted for autocomplete controls.
+	 *
+	 * @return void
 	 */
 	public function citySearch()
 		{
@@ -217,7 +251,12 @@ class PersonController extends Controller
 		}
   
 	/**
-	 * Store method
+	 * Persists a new person from posted form data.
+	 *
+	 * Delegates creation to the person model and redirects back to the person
+	 * list after a successful save.
+	 *
+	 * @return void
 	 */
 	public function store()
 		{
@@ -228,8 +267,13 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Edit method
-	 * @param Integer $id Person id
+	 * Displays the person edit form.
+	 *
+	 * Loads the person, user, phones, emails, addresses, tenant links and the
+	 * full tenant list used by the form.
+	 *
+	 * @param int|string $id Person ID.
+	 * @return void
 	 */
 	public function edit($id)
 		{
@@ -253,8 +297,13 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Update method
-	 * @param Integer $id Person id
+	 * Updates an existing person from posted form data.
+	 *
+	 * Delegates the full update flow to the person model and redirects back to
+	 * the person list after saving.
+	 *
+	 * @param int|string $id Person ID.
+	 * @return void
 	 */
 	public function update($id)
 		{
@@ -265,8 +314,13 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Information method
-	 * @param Integer $id Person id
+	 * Displays read-only person information.
+	 *
+	 * Loads the same aggregate person data used by the edit screen and renders
+	 * the information view.
+	 *
+	 * @param int|string $id Person ID.
+	 * @return void
 	 */
 	public function informations($id)
 		{
@@ -285,7 +339,12 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Autocomplete method
+	 * Searches people by name for autocomplete controls.
+	 *
+	 * Reads the search term and optional limit from the query string, then
+	 * returns normalized JSON items.
+	 *
+	 * @return void
 	 */
 	public function autocomplete()
 		{
@@ -315,8 +374,13 @@ class PersonController extends Controller
 		}
 
 	/**
-	 * Delete method
-	 * @param Integer $id Record id
+	 * Deletes a person through a POST request.
+	 *
+	 * Ignores non-POST requests. On POST, delegates deletion to the person model
+	 * and redirects back to the person list regardless of deletion outcome.
+	 *
+	 * @param int|string $id Person ID.
+	 * @return void
 	 */
 	public function delete($id)
 		{
@@ -333,5 +397,4 @@ class PersonController extends Controller
 		}
 		}
 	}
-
 ?>
