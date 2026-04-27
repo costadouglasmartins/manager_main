@@ -16,7 +16,8 @@
 
     <div class="mb-2 col-md-6 col-lg-4">
       <label class="form-label" for="zip_code">CEP</label>
-      <input autocomplete="off" class="form-control" id="zip_code" name="zip_code" maxlength="45" type="text">
+      <input autocomplete="off" class="form-control mask-cep" id="zip_code" name="zip_code" maxlength="9" placeholder="00000-000" type="text" data-viacep="zip" data-viacep-endpoint="<?= url('address/lookupZipCode'); ?>" data-viacep-street="#street" data-viacep-neighborhood="#neighborhoodName" data-viacep-neighborhood-id="#neighborhood_id" data-viacep-status="#zipCodeFeedback">
+      <div id="zipCodeFeedback" class="form-text"></div>
     </div>
 
     <div class="mb-2 col-md-6 col-lg-6">
@@ -71,5 +72,7 @@
   </div>
 </form>
 <!-- /Endereço -->
-
+<script src="<?= url('assets/js/masks.js?v=2'); ?>"></script>
 <script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/viacep.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/addresses/create.js?v=1'); ?>"></script>

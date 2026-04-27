@@ -92,6 +92,51 @@ class Address extends Model
 		}
 
 	/**
+	 * Finds a neighborhood by ViaCEP address parts.
+	 *
+	 * The lookup matches neighborhood name, city name and state acronym so the
+	 * address form can fill the hidden `neighborhood_id` when local data already
+	 * contains the returned location.
+	 *
+	 * @param string $neighborhood Neighborhood name.
+	 * @param string $city City name.
+	 * @param string $stateAcronym State acronym.
+	 * @return array<string, mixed>|null
+	 */
+	public function findNeighborhoodByLocation(string $neighborhood, string $city, string $stateAcronym): ?array
+		{
+		$neighborhood = trim($neighborhood);
+		$city = trim($city);
+		$stateAcronym = strtoupper(trim($stateAcronym));
+
+		if ($neighborhood === '' || $city === '' || $stateAcronym === '')
+			{
+			return null;
+			}
+
+		$stmt = $this->db->prepare("SELECT n.id,
+		                                   n.name,
+		                                   c.name AS city_name,
+		                                   s.acronym AS state_acronym
+		                            FROM neighborhoods AS n
+		                            INNER JOIN cities AS c ON c.id = n.city_id
+		                            INNER JOIN states AS s ON s.id = c.state_id
+		                            WHERE n.name = :neighborhood
+		                              AND c.name = :city
+		                              AND UPPER(s.acronym) = :state_acronym
+		                            ORDER BY n.id ASC
+		                            LIMIT 1");
+		$stmt->execute([
+			'neighborhood'  => $neighborhood,
+			'city'          => $city,
+			'state_acronym' => $stateAcronym,
+		]);
+
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
 	 * Search method
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0): array

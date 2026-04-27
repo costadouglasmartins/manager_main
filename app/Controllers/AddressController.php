@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Helpers\ViaCepHelper;
 use App\Models\Address;
 
 class AddressController extends Controller
@@ -74,6 +75,47 @@ class AddressController extends Controller
 		}
 
 	/**
+	 * Looks up an address by Brazilian ZIP code.
+	 *
+	 * This endpoint wraps ViaCEP in the application backend and returns a
+	 * normalized JSON payload. When the returned neighborhood/city/state already
+	 * exists locally, the response includes the matching `neighborhood_id`.
+	 *
+	 * @return void
+	 */
+	public function lookupZipCode(): void
+		{
+		$this->requireAuth();
+
+		$zipCode = (string) ($_GET['zip_code'] ?? ($_GET['cep'] ?? ''));
+		$result = ViaCepHelper::lookup($zipCode);
+
+		if (empty($result['success']))
+			{
+			$this->json([
+				'error'   => $result['error'] ?? 'zip_code_lookup_failed',
+				'message' => $result['message'] ?? 'Não foi possível consultar o CEP.',
+			], (int) ($result['status'] ?? 502));
+			}
+
+		$data = $result['data'];
+
+		$address = new Address();
+		$neighborhood = $address->findNeighborhoodByLocation(
+			(string) ($data['neighborhood'] ?? ''),
+			(string) ($data['city'] ?? ''),
+			(string) ($data['state'] ?? '')
+		);
+
+		$data['neighborhood_id'] = $neighborhood ? (int) $neighborhood['id'] : null;
+		$data['neighborhood_label'] = $neighborhood
+			? $neighborhood['name'] . ' - ' . $neighborhood['city_name']
+			: (string) ($data['neighborhood'] ?? '');
+
+		$this->json(['data' => $data]);
+		}
+
+	/**
 	 * Store method
 	 */
 	public function store()
@@ -139,5 +181,4 @@ class AddressController extends Controller
 		}
 		}
 	}
-
 ?>
