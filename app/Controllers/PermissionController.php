@@ -6,8 +6,23 @@ use App\Core\Controller;
 use App\Core\Authorization;
 use App\Models\Permission;
 
+/**
+ * Handles the user permission management screens and actions.
+ *
+ * This controller manages permission catalog synchronization, manual catalog
+ * creation, user permission assignment, user lookup for the permission screen
+ * and orphaned permission reporting/removal.
+ */
 class PermissionController extends Controller
 	{
+	/**
+	 * Displays the permission management screen.
+	 *
+	 * Loads the permission catalog and, when a `user_id` is provided, loads the
+	 * selected user with their assigned and effective abilities.
+	 *
+	 * @return void
+	 */
 	public function index(): void
 		{
 		// User-only permissions: allow only users that can manage permissions (or root failsafe).
@@ -52,6 +67,14 @@ class PermissionController extends Controller
 			]);
 		}
 
+	/**
+	 * Saves the selected permissions for a user.
+	 *
+	 * Normalizes the posted permission IDs, replaces the user's permission set,
+	 * clears the authorization cache and redirects back to the selected user.
+	 *
+	 * @return void
+	 */
 	public function saveUser(): void
 		{
 		if (method_exists($this, 'requirePermission'))
@@ -80,7 +103,15 @@ class PermissionController extends Controller
 		$this->redirect('permission?user_id=' . (int) $userId);
 		}
 
-	
+	/**
+	 * Synchronizes the permission catalog from controller actions.
+	 *
+	 * Scans both the manager_main and tenant manager controllers, inserts any
+	 * missing abilities into the catalog, clears authorization cache and
+	 * redirects back with the number of newly added permissions.
+	 *
+	 * @return void
+	 */
 	public function sync(): void
 		{
 		if (method_exists($this, 'requirePermission'))
@@ -103,7 +134,7 @@ class PermissionController extends Controller
 		$permissionModel = new Permission();
 
 		// Sync from both: manager_main (own) and manager (tenant) controllers.
-		// Cada chamada registra o sistema de origem das abilities descobertas.
+		// Each call records the source system for the discovered abilities.
 		$added  = $permissionModel->syncFromControllers(ROOT_PATH . '/app/Controllers', 'manager_main');
 		$added += $permissionModel->syncFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers', 'manager');
 
@@ -118,6 +149,14 @@ class PermissionController extends Controller
 		$this->redirect($qs);
 		}
 
+	/**
+	 * Creates a permission manually in the catalog.
+	 *
+	 * Reads the posted ability, description and source system, attempts to add
+	 * the catalog entry, clears authorization cache and redirects with feedback.
+	 *
+	 * @return void
+	 */
 	public function create(): void
 		{
 		if (method_exists($this, 'requirePermission'))
@@ -157,8 +196,11 @@ class PermissionController extends Controller
 
 
 	/**
-	 * AJAX endpoint: search users by name or email.
-	 * GET /permission/searchUsers?q=...
+	 * Searches users by name, email or username for the permission screen.
+	 *
+	 * Route: `GET /permission/searchUsers?q=...`
+	 *
+	 * @return void
 	 */
 	public function searchUsers(): void
 		{
@@ -173,8 +215,13 @@ class PermissionController extends Controller
 		}
 
 	/**
-	 * Exibe relatório de permissões órfãs
-	 * GET /permission/orphaned
+	 * Displays the orphaned permission report.
+	 *
+	 * Route: `GET /permission/orphaned`
+	 *
+	 * Excludes the internal `permission.manage` ability from the report.
+	 *
+	 * @return void
 	 */
 	public function orphaned(): void
 		{
@@ -194,7 +241,7 @@ class PermissionController extends Controller
 			}
 
 		$permissionModel = new Permission();
-		// Obter apenas permissions órfãs EXCETO permission.manage (que é admin/interna)
+		// Load orphaned permissions except the internal administration ability.
 		$stats = $permissionModel->getOrphanedPermissionStatsExcept(['permission.manage']);
 		$orphaned = $permissionModel->getOrphanedPermissionsExcept(['permission.manage']);
 
@@ -206,19 +253,16 @@ class PermissionController extends Controller
 		}
 
 	/**
-	 * Deleta uma permissão órfã e remove de todos os usuários
-	 * POST /permission/deleteOrphaned/{id}
+	 * Deletes an orphaned permission and removes it from every user.
 	 *
-	 * FLUXO:
-	 * 1. Verifica permissão de acesso
-	 * 2. Chama deleteOrphanedPermission() que:
-	 *    - Verifica se é realmente órfã
-	 *    - Obtém lista de usuários que terão permissão removida
-	 *    - Remove de user_permissions
-	 *    - Deleta a permission
-	 * 3. Redireciona com feedback de quantos usuários foram afetados
+	 * Route: `POST /permission/deleteOrphaned/{id}`
 	 *
-	 * @param int $id Permission ID
+	 * The model verifies that the permission is truly orphaned, removes related
+	 * `user_permissions` rows, deletes the catalog entry and reports how many
+	 * users were affected.
+	 *
+	 * @param int|string $id Permission ID.
+	 * @return void
 	 */
 	public function deleteOrphaned($id): void
 		{
@@ -249,6 +293,15 @@ class PermissionController extends Controller
 			}
 		}
 
+	/**
+	 * Normalizes posted permission IDs.
+	 *
+	 * Keeps only positive integer IDs and removes duplicates while preserving the
+	 * first occurrence order.
+	 *
+	 * @param mixed $raw Raw posted `permission_ids` value.
+	 * @return array<int, int>
+	 */
 	private function normalizePermissionIds($raw): array
 		{
 		if (!is_array($raw))

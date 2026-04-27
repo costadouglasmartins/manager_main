@@ -8,6 +8,9 @@ use PDO;
 /**
  * User-only permissions model (no groups/roles).
  *
+ * The permission catalog is split by source system so the central manager and
+ * tenant manager can keep separate ability sets even when action names match.
+ *
  * Tables:
  * - permissions (catalog)
  * - user_permissions (pivot: user_id x permission_id)
@@ -15,13 +18,20 @@ use PDO;
 class Permission extends Model
 	{
 	/**
-	 * Valores válidos para a coluna `permissions.system`.
+	 * Supported values for the `permissions.system` column.
 	 */
 	public const SYSTEMS = ['manager_main', 'manager'];
+
+	/**
+	 * Fallback source system used when an incoming value is missing or invalid.
+	 */
 	public const DEFAULT_SYSTEM = 'manager_main';
 
 	/**
-	 * Garante que o valor recebido está no enum de sistemas suportados.
+	 * Normalizes a source system value to one of the supported systems.
+	 *
+	 * @param string|null $system Incoming source system.
+	 * @return string Supported source system.
 	 */
 	public static function normalizeSystem(?string $system): string
 		{
@@ -33,6 +43,11 @@ class Permission extends Model
 		return self::DEFAULT_SYSTEM;
 		}
 
+	/**
+	 * Returns every permission in the catalog ordered by system and ability.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
 	public function getAll(): array
 		{
 		$stmt = $this->db->query("SELECT id, ability, `system`, description FROM permissions ORDER BY `system` ASC, ability ASC");
@@ -40,11 +55,12 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna todas as permissions EXCETO algumas específicas (ex: permission.manage).
-	 * Útil para não exibir permissões administrativas/internas na interface.
+	 * Returns all permissions except the provided abilities.
 	 *
-	 * @param array $excludeAbilities Array de abilities a excluir
-	 * @return array
+	 * Useful for hiding administrative or internal permissions from the UI.
+	 *
+	 * @param array<int, string> $excludeAbilities Abilities to exclude.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function getAllExcept(array $excludeAbilities = []): array
 		{
@@ -69,11 +85,13 @@ class Permission extends Model
 
 	/**
 	 * Creates a permission in the catalog.
+	 *
 	 * Returns true if inserted, false if it already existed or ability is invalid.
 	 *
 	 * @param string $ability     Ability name (ex: "report.index")
 	 * @param string $description Optional description
-	 * @param string $system      Sistema de origem ('manager_main' ou 'manager')
+	 * @param string $system      Source system (`manager_main` or `manager`).
+	 * @return bool
 	 */
 	public function createPermission(string $ability, string $description = '', string $system = self::DEFAULT_SYSTEM): bool
 		{
@@ -104,8 +122,9 @@ class Permission extends Model
 	 *
 	 * Returns the count of new permissions inserted.
 	 *
-	 * @param string $controllersDir Diretório a ser varrido (.../app/Controllers)
-	 * @param string $system         Sistema ao qual as abilities descobertas pertencem
+	 * @param string $controllersDir Controllers directory to scan.
+	 * @param string $system         Source system assigned to discovered abilities.
+	 * @return int Number of inserted permissions.
 	 */
 	public function syncFromControllers(string $controllersDir, string $system = self::DEFAULT_SYSTEM): int
 		{
@@ -139,6 +158,9 @@ class Permission extends Model
 	 * Ability format: <module>.<action>
 	 * - module: controller name lowercased without "Controller"
 	 * - action: public method name
+	 *
+	 * @param string $controllersDir Controllers directory to scan.
+	 * @return array<string, string> Map of ability names to descriptions.
 	 */
 	private function discoverAbilitiesFromControllers(string $controllersDir): array
 		{
@@ -201,7 +223,11 @@ class Permission extends Model
 		return $abilities;
 		}
 
-
+	/**
+	 * Returns active users with their login email.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
 	public function getUsers(): array
 		{
 		$stmt = $this->db->query("SELECT 	User.id,
@@ -215,6 +241,12 @@ class Permission extends Model
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
+	/**
+	 * Returns permission IDs currently assigned to a user.
+	 *
+	 * @param int $userId User ID.
+	 * @return array<int, int>
+	 */
 	public function getPermissionIdsByUser(int $userId): array
 		{
 		$stmt = $this->db->prepare("
@@ -238,7 +270,7 @@ class Permission extends Model
 	 *
 	 * @param string $query Search term
 	 * @param int $limit Max results
-	 * @return array
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function searchUsers(string $query, int $limit = 15): array
 		{
@@ -282,13 +314,13 @@ class Permission extends Model
 	/**
 	 * Find a single user by ID (for displaying selected user info).
 	 *
-	 * Retorna também `tenant_id` (para derivar o sistema de origem do usuário)
-	 * e um campo computado `origin_system`:
+	 * Also returns `tenant_id` to derive the user's source system and adds the
+	 * computed `origin_system` field:
 	 *   - tenant_id IS NULL  -> 'manager_main'
 	 *   - tenant_id IS NOT NULL -> 'manager'
 	 *
-	 * @param int $userId
-	 * @return array|null
+	 * @param int $userId User ID.
+	 * @return array<string, mixed>|null
 	 */
 	public function findUser(int $userId): ?array
 		{
@@ -320,6 +352,11 @@ class Permission extends Model
 
 	/**
 	 * Sets the permissions for a user (full replace).
+	 *
+	 * @param int $userId User ID.
+	 * @param array<int, int|string> $permissionIds Permission IDs to assign.
+	 * @return void
+	 * @throws \Throwable If the transaction fails.
 	 */
 	public function setPermissionsForUser(int $userId, array $permissionIds): void
 		{
@@ -368,6 +405,10 @@ class Permission extends Model
 
 	/**
 	 * Backwards-compatible alias (older controller name).
+	 *
+	 * @param int $userId User ID.
+	 * @param array<int, int|string> $permissionIds Permission IDs to assign.
+	 * @return void
 	 */
 	public function setExtraPermissionsForUser(int $userId, array $permissionIds): void
 		{
@@ -376,6 +417,9 @@ class Permission extends Model
 
 	/**
 	 * Returns the user's abilities (strings) based only on user_permissions.
+	 *
+	 * @param int $userId User ID.
+	 * @return array<int, string>
 	 */
 	public function getAbilitiesForUser(int $userId): array
 		{
@@ -398,6 +442,9 @@ class Permission extends Model
 
 	/**
 	 * Backwards-compatible alias used by Authorization in earlier versions.
+	 *
+	 * @param int $userId User ID.
+	 * @return array<int, string>
 	 */
 	public function getEffectiveAbilitiesForUser(int $userId): array
 		{
@@ -405,29 +452,28 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna permissões que estão no banco mas não existem mais nos controllers
-	 * do sistema ao qual pertencem (match por `system` + `ability`).
+	 * Returns permissions stored in the database but no longer present in controllers.
 	 *
-	 * Ex.: uma ability marcada como `system='manager'` só é considerada viva
-	 * se existir em `manager/app/Controllers`. Se o mesmo nome existir em
-	 * `manager_main/app/Controllers`, continua sendo órfã para o sistema
-	 * `manager` (pois cada sistema tem seu próprio conjunto).
+	 * Matching is done by `system` and `ability`. For example, an ability marked
+	 * as `system='manager'` is considered alive only when it exists in
+	 * `manager/app/Controllers`; the same ability name in `manager_main` does not
+	 * make the `manager` permission valid because each system owns its catalog.
 	 *
-	 * @return array Array com permissões órfãs: [['id' => 1, 'ability' => 'report.index', 'system' => 'manager', ...], ...]
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function getOrphanedPermissions(): array
 		{
-		// Descobrir abilities de cada sistema separadamente
+		// Discover abilities for each source system separately.
 		$discovered = [
 			'manager_main' => $this->discoverAbilitiesFromControllers(ROOT_PATH . '/app/Controllers'),
 			'manager'      => $this->discoverAbilitiesFromControllers(dirname(ROOT_PATH) . '/manager/app/Controllers'),
 		];
 
-		// Pegar todas as permissions do banco
+		// Load every permission stored in the catalog.
 		$stmt = $this->db->query("SELECT id, ability, `system`, description, created, modified FROM permissions ORDER BY `system` ASC, ability ASC");
 		$allPermissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-		// Filtrar apenas as que não existem mais no sistema correspondente
+		// Keep only permissions that no longer exist in their own source system.
 		$orphaned = [];
 		foreach ($allPermissions as $perm)
 			{
@@ -444,11 +490,12 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna permissões órfãs EXCETO algumas específicas.
-	 * Útil para não exibir permissões administrativas/internas na interface.
+	 * Returns orphaned permissions except the provided abilities.
 	 *
-	 * @param array $excludeAbilities Array de abilities a excluir
-	 * @return array
+	 * Useful for hiding administrative or internal permissions from the UI.
+	 *
+	 * @param array<int, string> $excludeAbilities Abilities to exclude.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function getOrphanedPermissionsExcept(array $excludeAbilities = []): array
 		{
@@ -472,10 +519,12 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna estatísticas das permissões órfãs.
-	 * Útil para exibir na interface quantos usuários têm essas permissões.
+	 * Returns statistics for orphaned permissions.
 	 *
-	 * @return array Formato: [
+	 * Used by the UI to show how many users still have each orphaned permission.
+	 *
+	 * @return array{total_orphaned: int, permissions: array<int, array<string, mixed>>} Format:
+	 * [
 	 *   'total_orphaned' => 2,
 	 *   'permissions' => [
 	 *     1 => ['ability' => 'report.index', 'user_count' => 3],
@@ -496,7 +545,7 @@ class Permission extends Model
 			{
 			$permId = (int) $perm['id'];
 
-			// Contar quantos usuários têm essa permission
+			// Count how many users still have this permission.
 			$stmt = $this->db->prepare("
 				SELECT COUNT(*) as cnt
 				FROM user_permissions
@@ -518,11 +567,12 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna estatísticas das permissões órfãs EXCETO algumas específicas.
-	 * Útil para não exibir permissões administrativas/internas na interface.
+	 * Returns orphaned permission statistics except the provided abilities.
 	 *
-	 * @param array $excludeAbilities Array de abilities a excluir
-	 * @return array Mesmo formato que getOrphanedPermissionStats()
+	 * Useful for hiding administrative or internal permissions from the UI.
+	 *
+	 * @param array<int, string> $excludeAbilities Abilities to exclude.
+	 * @return array{total_orphaned: int, permissions: array<int, array<string, mixed>>} Same format as getOrphanedPermissionStats().
 	 */
 	public function getOrphanedPermissionStatsExcept(array $excludeAbilities = []): array
 		{
@@ -537,7 +587,7 @@ class Permission extends Model
 			{
 			$permId = (int) $perm['id'];
 
-			// Contar quantos usuários têm essa permission
+			// Count how many users still have this permission.
 			$stmt = $this->db->prepare("
 				SELECT COUNT(*) as cnt
 				FROM user_permissions
@@ -559,11 +609,13 @@ class Permission extends Model
 		}
 
 	/**
-	 * Retorna lista de usuários que possuem uma permissão específica.
-	 * Útil para verificar quem será afetado antes de deletar.
+	 * Returns users that currently have a specific permission.
 	 *
-	 * @param int $permissionId ID da permission
-	 * @return array Array com usuários: [['id' => 1, 'username' => 'joao', 'name' => 'João Silva', 'email' => 'joao@...'], ...]
+	 * Useful for previewing who will be affected before deleting an orphaned
+	 * permission.
+	 *
+	 * @param int $permissionId Permission ID.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function getUsersWithPermission(int $permissionId): array
 		{
@@ -592,18 +644,15 @@ class Permission extends Model
 		}
 
 	/**
-	 * Deleta uma permissão órfã e remove de todos os usuários.
-	 * Usa transação para garantir integridade.
+	 * Deletes an orphaned permission and removes it from every user.
 	 *
-	 * FLUXO:
-	 * 1. Verifica se é realmente órfã
-	 * 2. Obtém lista de usuários afetados
-	 * 3. Remove de user_permissions (cascata automática)
-	 * 4. Deleta a permission
+	 * Uses a transaction to verify the permission is truly orphaned, capture the
+	 * affected users, remove `user_permissions` rows and delete the catalog entry
+	 * as a single operation.
 	 *
-	 * @param int $permissionId ID da permission a deletar
-	 * @return array ['success' => bool, 'users_affected' => count, 'users' => [...]]
-	 * @throws \Exception
+	 * @param int $permissionId Permission ID to delete.
+	 * @return array{success: bool, users_affected: int, users: array<int, array<string, mixed>>}
+	 * @throws \Exception If the transaction fails.
 	 */
 	public function deleteOrphanedPermission(int $permissionId): array
 		{
@@ -616,7 +665,7 @@ class Permission extends Model
 			{
 			$this->db->beginTransaction();
 
-			// Verificar se a permission é realmente órfã
+			// Verify that the permission is still orphaned before deleting it.
 			$orphaned = $this->getOrphanedPermissions();
 			$isOrphaned = false;
 			foreach ($orphaned as $perm)
@@ -634,15 +683,15 @@ class Permission extends Model
 				return ['success' => false, 'users_affected' => 0, 'users' => []];
 				}
 
-			// Obter usuários que têm essa permission (ANTES de deletar)
+			// Capture affected users before removing the permission.
 			$affectedUsers = $this->getUsersWithPermission($permissionId);
 			$usersCount = count($affectedUsers);
 
-			// Deletar de user_permissions (remove de todos os usuários)
+			// Remove the permission from every user.
 			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE permission_id = :id");
 			$stmt->execute(['id' => $permissionId]);
 
-			// Deletar a permission
+			// Delete the catalog entry.
 			$stmt = $this->db->prepare("DELETE FROM permissions WHERE id = :id");
 			$stmt->execute(['id' => $permissionId]);
 
@@ -662,9 +711,11 @@ class Permission extends Model
 		}
 
 	/**
-	 * Delete method - Deletes user_permissions before deleting permission
-	 * @param Integer $id Permission id
-	 * @throws \Exception
+	 * Deletes a permission and its user assignments.
+	 *
+	 * @param int|string $id Permission ID.
+	 * @return void
+	 * @throws \Exception If the transaction fails.
 	 */
 	public function delete($id): void
 		{
