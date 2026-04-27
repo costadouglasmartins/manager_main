@@ -36,11 +36,12 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~0 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~1 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
-	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-27 22:53:18');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5660,7 +5661,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
 
 -- Dumping data for table manager_main.emails: ~1 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
-	(1, 'costadouglasmartins@gmail.com', NULL, 3, 1, '2026-01-06 18:00:02', NULL),
+	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(27, 'lorem@ipsum.com', 'principal', 42, 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
 
 -- Dumping structure for table manager_main.neighborhoods

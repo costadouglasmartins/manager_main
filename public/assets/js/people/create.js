@@ -29,6 +29,8 @@
 		const btnNext   = document.getElementById("btnNext");
 		const btnSubmit = document.getElementById("btnSubmit");
 
+		const personName = document.getElementById("personName");
+		const userUsername = document.getElementById("userUsername");
 		const userPassword  = document.getElementById("userPassword");
 		const userPassword2 = document.getElementById("userPassword2");
 
@@ -58,6 +60,7 @@
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
+			"personName", "userUsername",
 			"addressesContainer", "phonesContainer", "emailsContainer",
 			"addressTemplate", "phoneTemplate", "emailTemplate",
 			"btnAddAddress", "btnAddPhone", "btnAddEmail",
@@ -71,6 +74,55 @@
 				console.warn("create.js: elementos ausentes no DOM:", missing);
 				return;
 			}
+
+		// -----------------------------------------------------------------------
+		// Username suggestion
+		// -----------------------------------------------------------------------
+		let lastSuggestedUsername = "";
+		let usernameEditedManually = false;
+
+		function buildUsernameSuggestion(fullName)
+			{
+				const parts = String(fullName || "")
+					.normalize("NFD")
+					.replace(/[\u0300-\u036f]/g, "")
+					.toLowerCase()
+					.replace(/[^a-z0-9\s]+/g, " ")
+					.trim()
+					.split(/\s+/)
+					.filter(Boolean);
+
+				if (parts.length === 0)
+					{
+						return "";
+					}
+
+				const firstName = parts[0];
+				const lastName = parts.length > 1 ? parts[parts.length - 1] : "";
+
+				return lastName && lastName !== firstName
+					? firstName + "." + lastName
+					: firstName;
+			}
+
+		function updateUsernameSuggestion()
+			{
+				if (usernameEditedManually)
+					{
+						return;
+					}
+
+				lastSuggestedUsername = buildUsernameSuggestion(personName.value);
+				userUsername.value = lastSuggestedUsername;
+			}
+
+		userUsername.addEventListener("input", function ()
+			{
+				usernameEditedManually = userUsername.value.trim() !== "" && userUsername.value !== lastSuggestedUsername;
+			});
+
+		personName.addEventListener("input", updateUsernameSuggestion);
+		personName.addEventListener("blur", updateUsernameSuggestion);
 
 		// -----------------------------------------------------------------------
 		// Contador de endereços
