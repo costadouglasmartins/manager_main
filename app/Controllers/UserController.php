@@ -17,7 +17,7 @@ class UserController extends Controller
 
 		$user = new User();
 
-		// Filtros vindos da query string
+		// Filters from query string
 		$filters = [
 			'id'				=> isset($_GET['id'])				? trim($_GET['id'])				: '',
 			'username'	=> isset($_GET['username'])	? trim($_GET['username'])			: '',
@@ -25,21 +25,21 @@ class UserController extends Controller
 			'active'		=> isset($_GET['active'])		? trim($_GET['active'])		: '',
 		];
 
-		// Página atual (?page=2)
+		// Current page (?page=2)
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 		if ($page < 1)
 			{
 			$page = 1;
 			}
 
-		// Registros por página
+		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
 
-		// Busca paginada com filtros
+		// Paginated search with filters
 		$users = $user->search($filters, $perPage, $offset);
 
-		// Total para paginação (com os mesmos filtros)
+		// Total records for pagination with the same filters
 		$total = $user->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -95,14 +95,14 @@ class UserController extends Controller
 	 */
 	public function login()
 		{
-		// Se já logado, redireciona para home
+		// Redirect to home when user is already logged in
 		if (!empty($_SESSION['manager_main']['user']))
 			{
 			$this->redirect('/');
 			exit;
 			}
 
-		// Se for POST, processa tentativa de login
+		// Process login attempt on POST requests
 		if ($_SERVER['REQUEST_METHOD'] === 'POST')
 			{
 			$email = isset($_POST['email']) ? trim($_POST['email']) : '';
@@ -132,7 +132,7 @@ class UserController extends Controller
 				}
 			}
 
-		// GET: mostra formulário de login
+		// Render login form on GET requests
 		$this->view('users/login', ['title' => 'Login']);
 		}
 
@@ -142,7 +142,7 @@ class UserController extends Controller
 	public function logout()
 		{
 		\App\Core\Authorization::clearCache();
-		// Destroi sessão e redireciona
+		// Destroy session and redirect
 		$_SESSION = [];
 		if (ini_get("session.use_cookies"))
 			{

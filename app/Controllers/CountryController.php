@@ -17,27 +17,27 @@ class CountryController extends Controller
 		
 		$country = new Country();
 
-		// Filtros vindos da query string
+		// Filters from query string
 		$filters = [
 			'id' => isset($_GET['id']) ? trim($_GET['id']) : '',
 			'name' => isset($_GET['name']) ? trim($_GET['name']) : '',
       'acronym' => isset($_GET['acronym']) ? trim($_GET['acronym']) : '',
 		];
 
-		// Página atual (?page=2)
+		// Current page (?page=2)
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 		if ($page < 1)
 			{
 			$page = 1;
 			}
 
-		// Registros por página
+		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
 
-		// Busca paginada com filtros
+		// Paginated search with filters
 		$countries = $country->search($filters, $perPage, $offset);
-		// Total para paginação (com os mesmos filtros)
+		// Total records for pagination with the same filters
 		$total = $country->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -57,7 +57,7 @@ class CountryController extends Controller
 			]);
 			}
 
-      // padrão HTML
+		// Default HTML response
       $this->view('countries/index', [
         'countries' => $countries,
         'title' => 'Lista de países',

@@ -67,7 +67,7 @@ if (!function_exists('maskPhoneBr'))
 			return '';
 			}
 		$len = strlen($digits);
-		// 0800 xxx xxxx (11 dígitos começando com 0800)
+		// 0800 xxx xxxx (11 digits starting with 0800)
 		if ($len === 11 && substr($digits, 0, 4) === '0800')
 			{
 			return preg_replace(
@@ -76,7 +76,7 @@ if (!function_exists('maskPhoneBr'))
 				$digits
 			);
 			}
-		// Celular com DDD: (11) 91234-5678 (11 dígitos)
+		// Mobile with area code: (11) 91234-5678 (11 digits)
 		if ($len === 11)
 			{
 			return preg_replace(
@@ -85,7 +85,7 @@ if (!function_exists('maskPhoneBr'))
 				$digits
 			);
 			}
-		// Fixo com DDD: (11) 1234-5678 (10 dígitos)
+		// Landline with area code: (11) 1234-5678 (10 digits)
 		if ($len === 10)
 			{
 			return preg_replace(
@@ -94,7 +94,7 @@ if (!function_exists('maskPhoneBr'))
 				$digits
 			);
 			}
-		// Sem DDD (8 dígitos fixo): 1234-5678
+		// No area code (8-digit landline): 1234-5678
 		if ($len === 8)
 			{
 			return preg_replace(
@@ -103,7 +103,7 @@ if (!function_exists('maskPhoneBr'))
 				$digits
 			);
 			}
-		// Sem DDD (9 dígitos celular): 91234-5678
+		// No area code (9-digit mobile): 91234-5678
 		if ($len === 9)
 			{
 			return preg_replace(
@@ -112,7 +112,7 @@ if (!function_exists('maskPhoneBr'))
 				$digits
 			);
 			}
-		// Qualquer outro formato: devolve o original
+		// Any other format: return original input
 		return $value ?? '';
 		}
 
@@ -149,7 +149,7 @@ if (!function_exists('maskDateBr'))
 			return null;
 			}
 
-		// Valida estritamente YYYY-MM-DD
+		// Strictly validate YYYY-MM-DD
 		$dt = DateTimeImmutable::createFromFormat('!Y-m-d', $s);
 		$errors = DateTimeImmutable::getLastErrors();
 

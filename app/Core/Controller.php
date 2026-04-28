@@ -8,9 +8,11 @@ class Controller
 	{
 
 	/**
-	 * View method
-	 * @param String $view View name
-	 * @param Array $data Data array
+	 * Render a view and optionally wrap it with the main layout.
+	 *
+	 * @param string $view View path relative to `app/Views` without extension.
+	 * @param array<string, mixed> $data Variables extracted into the view scope.
+	 * @param bool $useLayout Whether to render the default layout.
 	 */
 	protected function view(string $view, array $data = [], bool $useLayout = true): void
 		{
@@ -35,16 +37,16 @@ class Controller
 			return;
 			}
 
-		// sem layout
+		// Render content without layout wrapper.
 		echo $content;
 		}
 
 	/**
-	 * Json method
-	 * @param type $data
-	 * @param int $status
-	 * @param array $headers
-	 * @return void
+	 * Send a JSON response and terminate the request.
+	 *
+	 * @param mixed $data Response payload.
+	 * @param int $status HTTP status code.
+	 * @param array<string, string> $headers Additional response headers.
 	 */
 	protected function json($data, int $status = 200, array $headers = []): void
 		{
@@ -64,8 +66,7 @@ class Controller
 		}
 
 	/**
-	 * Wats json method
-	 * @return bool
+	 * Determine whether the current request expects JSON output.
 	 */
 	protected function wantsJson(): bool
 		{
@@ -90,8 +91,9 @@ class Controller
 		}
 
 	/**
-	 * Is authenticated method
-	 * @return boolean 
+	 * Check whether the current session has an authenticated user.
+	 *
+	 * @return bool
 	 */
 	protected function isAuthenticated()
 		{
@@ -99,8 +101,9 @@ class Controller
 		}
 
 	/**
-	 * Redirect method
-	 * @param String $path 
+	 * Redirect to an application route and terminate execution.
+	 *
+	 * @param string $path Relative application route.
 	 */
 	protected function redirect(string $path)
 		{
@@ -109,14 +112,14 @@ class Controller
 		}
 
 	/**
-	 * Required auth method
+	 * Require authentication for the current request.
 	 */
 	protected function requireAuth(): void
 		{
 		if (!$this->isAuthenticated())
 			{
 
-			// Se a requisição espera JSON, devolva JSON (não HTML via redirect)
+			// Return JSON when the request expects an API response.
 			if ($this->wantsJson())
 				{
 				$this->json([
@@ -125,7 +128,7 @@ class Controller
 					], 401);
 				}
 
-			// Caso contrário, fluxo normal (HTML)
+			// Fallback to regular HTML flow.
 			$this->redirect('user/login');
 			exit;
 			}
@@ -153,7 +156,7 @@ class Controller
 			}
 
 		http_response_code(403);
-		$this->view('errors/403', ['title' => 'Acesso negado', 'ability' => $ability]);
+		$this->view('errors/403', ['title' => 'Access denied', 'ability' => $ability]);
 		exit;
 		}
 	}

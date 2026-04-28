@@ -60,14 +60,14 @@ class User extends Model
 
 		$stmt = $this->db->prepare($sql);
 
-		// Bind dos filtros
+		// Bind filters
 		foreach ($params as $key => $value)
 			{
 			$paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
 			$stmt->bindValue(':' . $key, $value, $paramType);
 			}
 
-		// Bind da paginação
+		// Bind pagination
 		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 		$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
@@ -84,28 +84,28 @@ class User extends Model
 		$sql = "SELECT COUNT(*) AS total FROM users WHERE 1=1";
 		$params = [];
 
-		// Filtro por ID (igual)
+		// Filter by ID (exact)
 		if (!empty($filters['id']))
 			{
 			$sql .= " AND id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
-		// Filtro por Username (LIKE)
+		// Filter by username (LIKE)
 		if (!empty($filters['username']))
 			{
 			$sql .= " AND username LIKE :username";
 			$params['username'] = '%' . $filters['username'] . '%';
 			}
 
-		// Filtro por Fantasia (LIKE)
+		// Filter by display name (LIKE)
 		if (!empty($filters['email']))
 			{
 			$sql .= " AND email LIKE :email";
 			$params['email'] = '%' . $filters['email'] . '%';
 			}
 
-    // Filtro por Fantasia (LIKE)
+		// Filter by type (LIKE)
 		if (!empty($filters['type']))
 			{
 			$sql .= " AND `type` = :type";
@@ -272,14 +272,14 @@ class User extends Model
 
 		if (password_verify($password, $user['password']))
 			{
-			// Opcional: rehash if needed
+			// Optional: rehash if needed
 			if (password_needs_rehash($user['password'], PASSWORD_DEFAULT))
 				{
 				$newHash = password_hash($password, PASSWORD_DEFAULT);
 				$stmt = $this->db->prepare("UPDATE users SET password = :password WHERE id = :id");
 				$stmt->execute(['password' => $newHash, 'id' => $user['id']]);
 				}
-			// Remover senha antes de retornar
+			// Remove password before returning
 			unset($user['password']);
 			return $user;
 			}

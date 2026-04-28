@@ -9,6 +9,9 @@ use App\Services\DatabaseManagerService;
 class DatabaseManagerController extends Controller
 	{
 
+	/**
+	 * Show database management dashboard and latest execution report.
+	 */
 	public function index(): void
 		{
 		$this->authorizeDatabaseManager('database_manager.index');
@@ -27,6 +30,9 @@ class DatabaseManagerController extends Controller
 		]);
 		}
 
+	/**
+	 * Execute an SQL script against selected tenant databases.
+	 */
 	public function execute(): void
 		{
 		$this->authorizeDatabaseManager('database_manager.execute');
@@ -78,7 +84,7 @@ class DatabaseManagerController extends Controller
 			{
 			$this->pushStreamEvent([
 				'type' => 'validation_error',
-				'message' => 'Nenhum banco encontrado para os filtros selecionados.',
+				'message' => 'No databases were found for the selected filters.',
 			]);
 			return;
 			}
@@ -147,6 +153,9 @@ class DatabaseManagerController extends Controller
 		]);
 		}
 
+	/**
+	 * Execute SQL in synchronous mode and store the final report in session.
+	 */
 	private function executeSynchronously(
 		DatabaseManagerService $service,
 		string $scope,
@@ -160,7 +169,7 @@ class DatabaseManagerController extends Controller
 			{
 			$this->storeReport([
 				'type' => 'warning',
-				'title' => 'Execução não iniciada',
+				'title' => 'Execution not started',
 				'message' => $validationError,
 				'results' => [],
 				'success_count' => 0,
@@ -178,7 +187,7 @@ class DatabaseManagerController extends Controller
 			{
 			$this->storeReport([
 				'type' => 'warning',
-				'title' => 'Execução não iniciada',
+				'title' => 'Execution not started',
 				'message' => $e->getMessage(),
 				'results' => [],
 				'success_count' => 0,
@@ -192,8 +201,8 @@ class DatabaseManagerController extends Controller
 			{
 			$this->storeReport([
 				'type' => 'warning',
-				'title' => 'Nenhum alvo encontrado',
-				'message' => 'Nenhum banco encontrado para os filtros selecionados.',
+				'title' => 'No targets found',
+				'message' => 'No databases were found for the selected filters.',
 				'results' => [],
 				'success_count' => 0,
 				'error_count' => 0,
@@ -231,9 +240,9 @@ class DatabaseManagerController extends Controller
 
 		$this->storeReport([
 			'type' => ($errorCount > 0 ? 'warning' : 'success'),
-			'title' => 'Execução concluída',
+			'title' => 'Execution completed',
 			'message' => sprintf(
-				'%d banco(s) processados, %d com sucesso e %d com erro.',
+				'%d database(s) processed, %d succeeded and %d failed.',
 				count($targets),
 				$successCount,
 				$errorCount
@@ -246,6 +255,11 @@ class DatabaseManagerController extends Controller
 		$this->redirect('database_manager');
 		}
 
+	/**
+	 * Ensure the current user can access database manager features.
+	 *
+	 * @param string $ability Required ability for the action.
+	 */
 	private function authorizeDatabaseManager(string $ability): void
 		{
 		$this->requireAuth();
@@ -265,10 +279,13 @@ class DatabaseManagerController extends Controller
 			}
 
 		http_response_code(403);
-		$this->view('errors/403', ['title' => 'Acesso negado', 'ability' => $ability]);
+		$this->view('errors/403', ['title' => 'Access denied', 'ability' => $ability]);
 		exit;
 		}
 
+	/**
+	 * Configure response headers and buffers for NDJSON streaming.
+	 */
 	private function prepareStream(): void
 		{
 		ignore_user_abort(true);
@@ -289,6 +306,11 @@ class DatabaseManagerController extends Controller
 		header('X-Accel-Buffering: no');
 		}
 
+	/**
+	 * Push one NDJSON event to the response stream.
+	 *
+	 * @param array<string, mixed> $payload
+	 */
 	private function pushStreamEvent(array $payload): void
 		{
 		echo json_encode(
@@ -300,6 +322,11 @@ class DatabaseManagerController extends Controller
 		flush();
 		}
 
+	/**
+	 * Persist an execution report for display after redirect.
+	 *
+	 * @param array<string, mixed> $report
+	 */
 	private function storeReport(array $report): void
 		{
 		$_SESSION['manager_main']['database_manager_report'] = $report;

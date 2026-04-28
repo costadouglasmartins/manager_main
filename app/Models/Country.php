@@ -29,7 +29,7 @@ class Country extends Model
 
 		try
 			{
-			// Início da transação
+			// Start transaction
 			$this->db->beginTransaction();
 
 			// Save one person
@@ -50,7 +50,7 @@ class Country extends Model
 			// Confirms the transaction
 			$this->db->commit();
 
-			// Retorna os IDs criados
+			// Return created IDs
 			return [
 				'country_id' => $countryId,
 			];
@@ -132,14 +132,14 @@ class Country extends Model
 
 		$stmt = $this->db->prepare($sql);
 
-		// Bind dos filtros
+		// Bind filters
 		foreach ($params as $key => $value)
 			{
 			$paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
 			$stmt->bindValue(':' . $key, $value, $paramType);
 			}
 
-		// Bind da paginação
+		// Bind pagination
 		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 		$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
@@ -158,21 +158,21 @@ class Country extends Model
 		$sql = "SELECT COUNT(*) AS total FROM countries WHERE 1=1";
 		$params = [];
 
-		// Filtro por ID (igual)
+		// Filter by ID (exact)
 		if (!empty($filters['id']))
 			{
 			$sql .= " AND id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
-		// Filtro por Nome (LIKE)
+		// Filter by name (LIKE)
 		if (!empty($filters['name']))
 			{
 			$sql .= " AND name LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
-		// Filtro por Tipo
+		// Filter by type
 		if (!empty($filters['acronym']))
 			{
 			$sql .= " AND `acronym` = :acronym";
