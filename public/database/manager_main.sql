@@ -36,12 +36,12 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~1 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~0 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
-	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-27 22:53:18');
+	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-28 00:05:35');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -6098,6 +6098,28 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(39, 3231, '2026-04-24 21:18:59', '2026-04-24 21:18:59'),
 	(39, 3232, '2026-04-24 21:18:59', '2026-04-24 21:18:59'),
 	(39, 3701, '2026-04-24 21:18:59', '2026-04-24 21:18:59');
+
+-- Dumping structure for table manager_main.user_remember_tokens
+CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `selector` char(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created` datetime NOT NULL,
+  `last_used` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `selector_UNIQUE` (`selector`),
+  KEY `idx_user_remember_tokens_user` (`user_id`),
+  KEY `idx_user_remember_tokens_expires` (`expires_at`),
+  CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_main.user_remember_tokens: ~1 rows (approximately)
+INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
+	(2, 1, 'd07fc7616a2afa106fa9c4a4f21a44a1', '4ab0f320c9ad4475c8851d63c1584fadf2fc41f73327806c4c3cf5b0ce016dff', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-29 21:56:47', '2026-04-29 21:56:34', '2026-04-29 21:56:47');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

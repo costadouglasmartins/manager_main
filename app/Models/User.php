@@ -288,6 +288,155 @@ class User extends Model
 		}
 
 	/**
+	 * Find an active user and return the fields needed for the session.
+	 * @param Integer $id User id
+	 * @return array|null
+	 */
+	public function findSessionUserById(int $id): ?array
+		{
+		$sql = "SELECT  User.id,
+		                User.username,
+		                User.active,
+		                Email.email,
+		                User.type,
+		                Person.name
+		        FROM users AS User
+		        INNER JOIN people AS Person ON Person.id = User.person_id
+		        INNER JOIN emails AS Email ON Email.person_id = Person.id
+		        WHERE User.active = 1
+		          AND User.type = 'root'
+		          AND User.id = :id
+		          AND Email.is_login = '1'
+		        LIMIT 1";
+
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['id' => $id]);
+
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
+	 * Create a persistent login token for a user.
+	 */
+	public function createRememberToken(int $userId, string $selector, string $tokenHash, string $expiresAt, ?string $userAgent, ?string $ipAddress): void
+		{
+		$this->ensureRememberTokenTable();
+
+		$stmt = $this->db->prepare("INSERT INTO user_remember_tokens
+		                            (`user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`)
+		                            VALUES
+		                            (:user_id, :selector, :token_hash, :user_agent, :ip_address, :expires_at, NOW(), NULL)");
+		$stmt->execute([
+			'user_id'    => $userId,
+			'selector'   => $selector,
+			'token_hash' => $tokenHash,
+			'user_agent' => $userAgent,
+			'ip_address' => $ipAddress,
+			'expires_at' => $expiresAt
+			]);
+		}
+
+	/**
+	 * Find a persistent login token by selector.
+	 */
+	public function findRememberTokenBySelector(string $selector): ?array
+		{
+		$this->ensureRememberTokenTable();
+
+		$stmt = $this->db->prepare("SELECT id, user_id, selector, token_hash, expires_at
+		                            FROM user_remember_tokens
+		                            WHERE selector = :selector
+		                            LIMIT 1");
+		$stmt->execute(['selector' => $selector]);
+
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
+	 * Rotate a persistent login token after it restores a session.
+	 */
+	public function rotateRememberToken(int $tokenId, int $userId, string $selector, string $tokenHash, string $expiresAt, ?string $userAgent, ?string $ipAddress): void
+		{
+		$this->ensureRememberTokenTable();
+
+		$stmt = $this->db->prepare("UPDATE user_remember_tokens
+		                            SET `selector` = :selector,
+		                                `token_hash` = :token_hash,
+		                                `user_agent` = :user_agent,
+		                                `ip_address` = :ip_address,
+		                                `expires_at` = :expires_at,
+		                                `last_used` = NOW()
+		                            WHERE id = :id
+		                              AND user_id = :user_id");
+		$stmt->execute([
+			'selector'   => $selector,
+			'token_hash' => $tokenHash,
+			'user_agent' => $userAgent,
+			'ip_address' => $ipAddress,
+			'expires_at' => $expiresAt,
+			'id'         => $tokenId,
+			'user_id'    => $userId
+			]);
+		}
+
+	/**
+	 * Delete a persistent login token by selector.
+	 */
+	public function deleteRememberTokenBySelector(string $selector): void
+		{
+		$this->ensureRememberTokenTable();
+
+		$stmt = $this->db->prepare("DELETE FROM user_remember_tokens WHERE selector = :selector");
+		$stmt->execute(['selector' => $selector]);
+		}
+
+	/**
+	 * Delete a persistent login token by id.
+	 */
+	public function deleteRememberTokenById(int $id): void
+		{
+		$this->ensureRememberTokenTable();
+
+		$stmt = $this->db->prepare("DELETE FROM user_remember_tokens WHERE id = :id");
+		$stmt->execute(['id' => $id]);
+		}
+
+	/**
+	 * Delete expired persistent login tokens.
+	 */
+	public function deleteExpiredRememberTokens(): void
+		{
+		$this->ensureRememberTokenTable();
+
+		$this->db->exec("DELETE FROM user_remember_tokens WHERE expires_at < NOW()");
+		}
+
+	/**
+	 * Ensure the persistent login token table exists.
+	 */
+	private function ensureRememberTokenTable(): void
+		{
+		$this->db->exec("CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
+		  `id` int NOT NULL AUTO_INCREMENT,
+		  `user_id` int NOT NULL,
+		  `selector` char(32) NOT NULL,
+		  `token_hash` char(64) NOT NULL,
+		  `user_agent` varchar(255) DEFAULT NULL,
+		  `ip_address` varchar(45) DEFAULT NULL,
+		  `expires_at` datetime NOT NULL,
+		  `created` datetime NOT NULL,
+		  `last_used` datetime DEFAULT NULL,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `selector_UNIQUE` (`selector`),
+		  KEY `idx_user_remember_tokens_user` (`user_id`),
+		  KEY `idx_user_remember_tokens_expires` (`expires_at`),
+		  CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+		}
+
+	/**
 	 * Delete method - Deletes user_permissions, tenant_users before deleting user
 	 * @param Integer $id User id
 	 * @throws \Exception

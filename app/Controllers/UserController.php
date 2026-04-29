@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\RememberLogin;
 use App\Models\User;
 
 class UserController extends Controller
@@ -114,13 +115,17 @@ class UserController extends Controller
 			if ($user)
 				{
 				\App\Core\Authorization::clearCache();
-				$_SESSION['manager_main']['user'] = [
-					'id'				=> $user['id'],
-					'username'	=> $user['username'],
-					'email'			=> $user['email'],
-					'type'			=> $user['type'],
-					'name'			=> $user['name']
-				];
+				RememberLogin::storeUserInSession($user);
+
+				if (!empty($_POST['remember_me']))
+					{
+					RememberLogin::rememberUser($user);
+					}
+				else
+					{
+					RememberLogin::forgetCurrentDevice();
+					}
+
 				$this->redirect('/');
 				exit;
 				}
@@ -142,6 +147,7 @@ class UserController extends Controller
 	public function logout()
 		{
 		\App\Core\Authorization::clearCache();
+		RememberLogin::forgetCurrentDevice();
 		// Destroy session and redirect
 		$_SESSION = [];
 		if (ini_get("session.use_cookies"))

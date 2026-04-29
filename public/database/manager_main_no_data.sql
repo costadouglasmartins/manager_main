@@ -211,6 +211,26 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- Data exporting was unselected.
 
+-- Dumping structure for table manager_main.user_remember_tokens
+CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `selector` char(32) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created` datetime NOT NULL,
+  `last_used` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `selector_UNIQUE` (`selector`),
+  KEY `idx_user_remember_tokens_user` (`user_id`),
+  KEY `idx_user_remember_tokens_expires` (`expires_at`),
+  CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Data exporting was unselected.
+
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
   `user_id` int NOT NULL,

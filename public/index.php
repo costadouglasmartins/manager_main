@@ -60,6 +60,6 @@ spl_autoload_register(function ($class)
     }
   });
 
-use App\Core\App;
+\App\Core\RememberLogin::attemptFromCookie();
 
-new App();
+new \App\Core\App();
