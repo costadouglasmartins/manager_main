@@ -166,6 +166,63 @@
               </ul>
             </li>
             <!-- /Four levels menu -->
+            <?php if (authCan('financial_operation_category.index') || authCan('financial_operation.index') || authCan('financial_operation_payment.index')): ?>
+              <!-- Finance menu -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="financeMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-cash-coin me-1"></i> Financeiro
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="financeMenu">
+                  <?php if (authCan('financial_operation_category.index')): ?>
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Categorias</a>
+                      <ul class="dropdown-menu">
+                        <?php if (authCan('financial_operation_category.create')): ?>
+                          <li><a class="dropdown-item" href="<?= url('financial_operation_category/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                          <li><hr class="dropdown-divider" /></li>
+                        <?php endif; ?>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation_category'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                      </ul>
+                    </li>
+                  <?php endif; ?>
+
+                  <?php if (authCan('financial_operation_category.index') && (authCan('financial_operation.index') || authCan('financial_operation_payment.index'))): ?>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
+
+                  <?php if (authCan('financial_operation.index')): ?>
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-receipt me-2"></i>Operações financeiras</a>
+                      <ul class="dropdown-menu">
+                        <?php if (authCan('financial_operation.create')): ?>
+                          <li><a class="dropdown-item" href="<?= url('financial_operation/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                          <li><hr class="dropdown-divider" /></li>
+                        <?php endif; ?>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                      </ul>
+                    </li>
+                  <?php endif; ?>
+
+                  <?php if (authCan('financial_operation.index') && authCan('financial_operation_payment.index')): ?>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
+
+                  <?php if (authCan('financial_operation_payment.index')): ?>
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-credit-card me-2"></i>Pagamentos</a>
+                      <ul class="dropdown-menu">
+                        <?php if (authCan('financial_operation_payment.create')): ?>
+                          <li><a class="dropdown-item" href="<?= url('financial_operation_payment/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                          <li><hr class="dropdown-divider" /></li>
+                        <?php endif; ?>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation_payment'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                      </ul>
+                    </li>
+                  <?php endif; ?>
+                </ul>
+              </li>
+              <!-- /Finance menu -->
+            <?php endif; ?>
           <?php endif; ?>
         </ul>
         <!-- Sistema -->
