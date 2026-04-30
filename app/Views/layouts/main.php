@@ -199,6 +199,8 @@
                           <li><hr class="dropdown-divider" /></li>
                         <?php endif; ?>
                         <li><a class="dropdown-item" href="<?= url('financial_operation'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation/sheet'); ?>"><i class="bi bi-table me-2"></i>Planilha anual</a></li>
                       </ul>
                     </li>
                   <?php endif; ?>

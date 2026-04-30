@@ -39,8 +39,15 @@ $queryFilters = http_build_query([
         <select class="form-select" id="financial_operation_category_id" name="financial_operation_category_id">
           <option value="">Categoria</option>
           <?php foreach ($categories as $category): ?>
+            <?php
+            $categoryOptionLabel = trim((string) ($category['name'] ?? ''));
+            if (!empty($category['description']))
+              {
+              $categoryOptionLabel .= ' - ' . trim((string) $category['description']);
+              }
+            ?>
             <option value="<?= (int) $category['id'] ?>" <?= (string) $filters['financial_operation_category_id'] === (string) $category['id'] ? 'selected' : '' ?>>
-              <?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?>
+              <?= htmlspecialchars($categoryOptionLabel, ENT_QUOTES, 'UTF-8') ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -72,6 +79,9 @@ $queryFilters = http_build_query([
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('financial_operation'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?php if (authCan('financial_operation.index')): ?>
+        <a href="<?= url('financial_operation/sheet'); ?>" class="btn btn-outline-primary w-100">Planilha anual</a>
+      <?php endif; ?>
       <?php if (authCan('financial_operation.create')): ?>
         <a href="<?= url('financial_operation/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>
@@ -100,11 +110,16 @@ $queryFilters = http_build_query([
         <?php foreach ($financial_operations as $row): ?>
           <?php
           $userLabel = trim(($row['user_name'] ?? '') . ' ' . (!empty($row['username']) ? '(' . $row['username'] . ')' : ''));
+          $categoryLabel = trim((string) ($row['category_name'] ?? ''));
+          if (!empty($row['category_description']))
+            {
+            $categoryLabel .= ' - ' . trim((string) $row['category_description']);
+            }
           $created = !empty($row['created']) ? date('d/m/Y H:i', strtotime($row['created'])) : '';
           ?>
           <tr>
             <td style="width:1%;"><?= (int) $row['id'] ?></td>
-            <td><?= htmlspecialchars($row['category_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($types[$row['type']] ?? $row['type'], ENT_QUOTES, 'UTF-8') ?></td>
             <td>R$ <?= number_format((float) $row['total_value'], 2, ',', '.') ?></td>

@@ -1,0 +1,345 @@
+.financial-sheet-page {
+  --sheet-grid: var(--bs-border-color);
+  --sheet-grid-soft: rgba(var(--bs-secondary-rgb), 0.18);
+  --sheet-panel-bg: var(--bs-body-bg);
+  --sheet-muted-bg: var(--bs-tertiary-bg);
+  --sheet-sticky-bg: var(--bs-body-bg);
+  --sheet-header-bg: var(--bs-dark);
+  --sheet-header-text: #fff;
+  --sheet-income-bg: rgba(var(--bs-success-rgb), 0.1);
+  --sheet-income-text: var(--bs-success-text-emphasis);
+  --sheet-expense-bg: rgba(var(--bs-danger-rgb), 0.1);
+  --sheet-expense-text: var(--bs-danger-text-emphasis);
+  --sheet-balance-bg: rgba(var(--bs-warning-rgb), 0.18);
+  --sheet-balance-text: var(--bs-warning-text-emphasis);
+  --sheet-shadow: 0 0.5rem 1.5rem rgba(33, 37, 41, 0.08);
+  font-family: inherit;
+}
+
+[data-bs-theme="dark"] .financial-sheet-page {
+  --sheet-header-bg: #111820;
+  --sheet-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.28);
+}
+
+.financial-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--sheet-panel-bg);
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.financial-sheet-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+.financial-sheet-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  color: var(--bs-primary-text-emphasis);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.financial-sheet-kicker {
+  display: block;
+  color: var(--bs-secondary-color);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.financial-sheet-title h5,
+.financial-sheet-board-header h6 {
+  margin: 0;
+  font-weight: 800;
+}
+
+.financial-sheet-actions,
+.financial-sheet-year-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.financial-sheet-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.financial-sheet-year-filter label {
+  margin: 0;
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.financial-sheet-year-filter .form-select {
+  width: 96px;
+}
+
+.financial-sheet-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.financial-sheet-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-left: 4px solid var(--bs-secondary);
+  border-radius: 8px;
+  background: var(--sheet-panel-bg);
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.financial-sheet-metric span {
+  color: var(--bs-secondary-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.financial-sheet-metric strong {
+  overflow: hidden;
+  color: var(--bs-emphasis-color);
+  font-size: 1.05rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.financial-sheet-metric-income {
+  border-left-color: var(--bs-success);
+}
+
+.financial-sheet-metric-expense,
+.financial-sheet-metric-negative {
+  border-left-color: var(--bs-danger);
+}
+
+.financial-sheet-metric-balance {
+  border-left-color: var(--bs-primary);
+}
+
+.financial-sheet-metric-percent {
+  border-left-color: var(--bs-warning);
+}
+
+.financial-sheet-board {
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--sheet-panel-bg);
+  box-shadow: var(--sheet-shadow);
+}
+
+.financial-sheet-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  background: var(--sheet-muted-bg);
+}
+
+.financial-sheet-board-header span {
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.financial-sheet-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 290px);
+}
+
+.financial-sheet-table {
+  min-width: 1380px;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--bs-body-color);
+  background: var(--sheet-panel-bg);
+}
+
+.financial-sheet-label-col {
+  width: 330px;
+}
+
+.financial-sheet-month-col {
+  width: 94px;
+}
+
+.financial-sheet-total-col {
+  width: 112px;
+}
+
+.financial-sheet-table th,
+.financial-sheet-table td {
+  height: 36px;
+  padding: 0.45rem 0.55rem;
+  border-right: 1px solid var(--sheet-grid-soft);
+  border-bottom: 1px solid var(--sheet-grid-soft);
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
+.financial-sheet-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  color: var(--sheet-header-text);
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  background: var(--sheet-header-bg);
+}
+
+.financial-sheet-table thead th:first-child,
+.financial-sheet-data-row th,
+.financial-sheet-total-row th {
+  position: sticky;
+  left: 0;
+}
+
+.financial-sheet-table thead th:first-child {
+  z-index: 5;
+}
+
+.financial-sheet-data-row th,
+.financial-sheet-total-row th {
+  z-index: 2;
+  overflow: hidden;
+  color: var(--bs-emphasis-color);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--sheet-sticky-bg);
+}
+
+.financial-sheet-data-row td,
+.financial-sheet-total-row td {
+  text-align: right;
+  background: var(--sheet-panel-bg);
+}
+
+.financial-sheet-data-row:nth-of-type(even) td {
+  background: var(--sheet-muted-bg);
+}
+
+.financial-sheet-section-row th {
+  height: 38px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.financial-sheet-section-income th,
+.financial-sheet-income-total th,
+.financial-sheet-income-total td {
+  color: var(--sheet-income-text);
+  background: var(--sheet-income-bg);
+}
+
+.financial-sheet-section-expense th,
+.financial-sheet-expense-total th,
+.financial-sheet-expense-total td {
+  color: var(--sheet-expense-text);
+  background: var(--sheet-expense-bg);
+}
+
+.financial-sheet-section-balance th,
+.financial-sheet-balance-row th,
+.financial-sheet-balance-row td,
+.financial-sheet-percent-row th {
+  color: var(--sheet-balance-text);
+  background: var(--sheet-balance-bg);
+}
+
+.financial-sheet-total-row th,
+.financial-sheet-total-row td {
+  font-weight: 800;
+}
+
+.financial-sheet-percent-row td {
+  color: var(--bs-emphasis-color);
+  background: var(--sheet-muted-bg);
+}
+
+.financial-sheet-income-data th {
+  border-left: 3px solid var(--bs-success);
+}
+
+.financial-sheet-expense-data th {
+  border-left: 3px solid var(--bs-danger);
+}
+
+.financial-sheet-empty-row th,
+.financial-sheet-empty-row td {
+  color: var(--bs-secondary-color);
+  font-style: italic;
+}
+
+.financial-sheet-negative {
+  color: var(--bs-danger-text-emphasis) !important;
+}
+
+.financial-sheet-cell-selected {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
+@media (max-width: 991.98px) {
+  .financial-sheet-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .financial-sheet-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .financial-sheet-actions .btn,
+  .financial-sheet-year-filter {
+    flex: 1 1 100%;
+  }
+
+  .financial-sheet-year-filter .form-select {
+    flex: 1 1 auto;
+    width: auto;
+  }
+
+  .financial-sheet-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .financial-sheet-scroll {
+    max-height: calc(100vh - 420px);
+  }
+}

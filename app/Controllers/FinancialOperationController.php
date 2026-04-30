@@ -77,13 +77,47 @@ class FinancialOperationController extends Controller
 		{
 		$this->requirePermission('financial_operation.create');
 
-		$financialOperation = new FinancialOperation();
 		$category = new FinancialOperationCategory();
 		$this->view('financial_operations/create', [
-			'title'      => 'Nova operação financeira',
-			'categories' => $category->getAll(),
-			'types'      => FinancialOperation::typeOptions(),
-			'users'      => $financialOperation->getUserOptions(),
+			'title'        => 'Nova operação financeira',
+			'categories'   => $category->getAll(),
+			'types'        => FinancialOperation::typeOptions(),
+			'paymentTypes' => FinancialOperationPayment::typeOptions(),
+			'sessionUser'  => $_SESSION['manager_main']['user'] ?? [],
+		]);
+		}
+
+	/**
+	 * Annual sheet method.
+	 */
+	public function sheet()
+		{
+		$this->requirePermission('financial_operation.index');
+
+		$minYear = 2026;
+		$maxYear = $minYear + 5;
+		$year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
+		if ($year < $minYear)
+			{
+			$year = $minYear;
+			}
+		if ($year > $maxYear)
+			{
+			$year = $maxYear;
+			}
+
+		$financialOperation = new FinancialOperation();
+		$sheet = $financialOperation->getAnnualSheet($year);
+
+		if ($this->wantsJson())
+			{
+			$this->json($sheet);
+			}
+
+		$this->view('financial_operations/sheet', [
+			'title'       => 'Planilha financeira anual',
+			'sheet'       => $sheet,
+			'yearOptions' => range($minYear, $maxYear),
 		]);
 		}
 
@@ -94,7 +128,9 @@ class FinancialOperationController extends Controller
 		{
 		$this->requirePermission('financial_operation.store');
 		$financialOperation = new FinancialOperation();
-		$financialOperation->create($_POST);
+		$data = $_POST;
+		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+		$financialOperation->create($data);
 		$this->redirect('financial_operation');
 		}
 
@@ -116,7 +152,8 @@ class FinancialOperationController extends Controller
 			'financial_operation' => $data,
 			'categories'          => $category->getAll(),
 			'types'               => FinancialOperation::typeOptions(),
-			'users'               => $financialOperation->getUserOptions(),
+			'paymentTypes'        => FinancialOperationPayment::typeOptions(),
+			'sessionUser'         => $_SESSION['manager_main']['user'] ?? [],
 		]);
 		}
 
@@ -129,7 +166,9 @@ class FinancialOperationController extends Controller
 		{
 		$this->requirePermission('financial_operation.update');
 		$financialOperation = new FinancialOperation();
-		$financialOperation->update($id, $_POST);
+		$data = $_POST;
+		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+		$financialOperation->update($id, $data);
 		$this->redirect('financial_operation');
 		}
 
