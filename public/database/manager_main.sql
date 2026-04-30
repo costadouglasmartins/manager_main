@@ -5682,7 +5682,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
 
 -- Dumping data for table manager_main.financial_operations: ~0 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `type`, `total_value`, `user_id`, `created`, `modified`) VALUES
-	(1, 0, 'CREDIT', 5000.00, 39, '2026-04-29 23:22:14', '2026-04-29 23:22:14');
+	(1, 16, 'CREDIT', 5000.00, 39, '2026-04-29 23:22:14', '2026-04-30 21:39:37');
 
 -- Dumping structure for table manager_main.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -5692,7 +5692,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~0 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
@@ -5702,7 +5702,15 @@ INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `cre
 	(5, 'Moradia', 'Taxa de lixo', '2026-04-29 23:50:50', '2026-04-29 23:50:50'),
 	(6, 'Moradia', 'Condomínio', '2026-04-29 23:51:14', '2026-04-29 23:51:14'),
 	(7, 'Moradia', 'Gás', '2026-04-29 23:51:28', '2026-04-29 23:51:28'),
-	(8, 'Moradia', 'Água', '2026-04-29 23:51:42', '2026-04-29 23:51:42');
+	(8, 'Moradia', 'Água', '2026-04-29 23:51:42', '2026-04-29 23:51:42'),
+	(9, 'Ajuda financeira', 'Pensão Mãe', '2026-04-30 21:20:05', '2026-04-30 21:20:05'),
+	(10, 'Cartão de crédito', 'NuBank', '2026-04-30 21:20:34', '2026-04-30 21:20:34'),
+	(11, 'Moradia', 'Telefone', '2026-04-30 21:20:57', '2026-04-30 21:20:57'),
+	(12, 'Moradia', 'Internet', '2026-04-30 21:21:14', '2026-04-30 21:21:14'),
+	(13, 'Transporte', 'Combustível', '2026-04-30 21:21:39', '2026-04-30 21:21:39'),
+	(14, 'Transporte', 'Seguro carro Mãe', '2026-04-30 21:22:49', '2026-04-30 21:22:49'),
+	(15, 'Transporte', 'Troca de óleo', '2026-04-30 21:23:08', '2026-04-30 21:23:08'),
+	(16, 'Renda', 'Salário mensal', '2026-04-30 21:39:20', '2026-04-30 21:39:20');
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -5717,11 +5725,12 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   PRIMARY KEY (`id`),
   KEY `fk_financial_operations_payments_financial_operations1_idx` (`financial_operation_id`),
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_payments: ~0 rows (approximately)
 INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `type`, `value`, `payment_date`, `due_date`, `created`, `modified`) VALUES
-	(1, 1, 'CASH', 1000.00, NULL, '2026-01-10', '2026-04-29 23:23:49', '2026-04-29 23:23:49');
+	(1, 1, 'CASH', 1000.00, '2026-01-10 23:43:00', '2026-01-10', '2026-04-29 23:23:49', '2026-04-30 21:38:14'),
+	(2, 1, 'CARD', 300.00, '2026-02-09 14:33:00', '2026-02-10', '2026-04-30 21:37:41', '2026-04-30 21:38:43');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6220,11 +6229,11 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   KEY `idx_user_remember_tokens_user` (`user_id`),
   KEY `idx_user_remember_tokens_expires` (`expires_at`),
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.user_remember_tokens: ~0 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(6, 1, 'b1f2a914f46026b82a62e0047fd8bdf2', '913d71d0832d2ca38d6e4ac3ea5f00e6c41c9d5592fe9d1d90b1063627a09918', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-29 23:48:36', '2026-04-29 23:48:36', NULL);
+	(7, 1, 'a78ef0bccbfc14622eacc2be39dfb205', '4b7fa0f52f6c60c4729e8af0fcf764610a1b3a7c7acd64c7cd6a31b8682c7f7f', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-30 21:18:12', '2026-04-30 21:18:12', NULL);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

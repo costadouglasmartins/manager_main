@@ -88,6 +88,23 @@ class FinancialOperationPayment extends Model
 		}
 
 	/**
+	 * Finds payments linked to a financial operation.
+	 *
+	 * @param int|string $financialOperationId Financial operation ID.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function findByFinancialOperationId($financialOperationId): array
+		{
+		$stmt = $this->db->prepare($this->baseSelect() . "
+			WHERE fop.financial_operation_id = :financial_operation_id
+			ORDER BY fop.due_date ASC, fop.id ASC
+		");
+		$stmt->execute(['financial_operation_id' => $financialOperationId]);
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
 	 * Update method
 	 *
 	 * @param int|string $id Payment ID.

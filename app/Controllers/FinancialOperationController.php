@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\FinancialOperation;
 use App\Models\FinancialOperationCategory;
+use App\Models\FinancialOperationPayment;
 
 class FinancialOperationController extends Controller
 	{
@@ -141,11 +142,14 @@ class FinancialOperationController extends Controller
 		{
 		$this->requirePermission('financial_operation.informations');
 		$financialOperation = new FinancialOperation();
+		$payment = new FinancialOperationPayment();
 		$data = $financialOperation->findAllByFinancialOperationId($id);
 		$this->view('financial_operations/informations', [
-			'title'               => 'Informações sobre a operação financeira',
-			'financial_operation' => $data['financial_operation'],
-			'types'               => FinancialOperation::typeOptions(),
+			'title'                         => 'Informações sobre a operação financeira',
+			'financial_operation'           => $data['financial_operation'],
+			'financial_operation_payments'  => $payment->findByFinancialOperationId($id),
+			'types'                         => FinancialOperation::typeOptions(),
+			'paymentTypes'                  => FinancialOperationPayment::typeOptions(),
 		]);
 		}
 
