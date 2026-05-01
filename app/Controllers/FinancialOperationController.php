@@ -107,6 +107,7 @@ class FinancialOperationController extends Controller
 			}
 
 		$financialOperation = new FinancialOperation();
+		$category = new FinancialOperationCategory();
 		$sheet = $financialOperation->getAnnualSheet($year);
 
 		if ($this->wantsJson())
@@ -118,7 +119,95 @@ class FinancialOperationController extends Controller
 			'title'       => 'Planilha financeira anual',
 			'sheet'       => $sheet,
 			'yearOptions' => range($minYear, $maxYear),
+			'categories'  => $category->getAll(),
+			'types'       => FinancialOperation::typeOptions(),
+			'paymentTypes' => FinancialOperationPayment::typeOptions(),
+			'sessionUser' => $_SESSION['manager_main']['user'] ?? [],
 		]);
+		}
+
+	/**
+	 * Returns operations represented by an annual sheet cell.
+	 */
+	public function sheetOperations()
+		{
+		$this->requirePermission('financial_operation.edit');
+
+		$year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
+		$type = isset($_GET['type']) ? (string) $_GET['type'] : '';
+		$categoryId = isset($_GET['category_id']) ? (int) $_GET['category_id'] : 0;
+		$month = isset($_GET['month']) && $_GET['month'] !== '' ? (int) $_GET['month'] : null;
+
+		if (!array_key_exists($type, FinancialOperation::typeOptions()) || $categoryId <= 0)
+			{
+			$this->json([
+				'error' => 'invalid_filters',
+				'message' => 'Invalid annual sheet filters.',
+			], 422);
+			}
+
+		if ($month !== null && ($month < 1 || $month > 12))
+			{
+			$this->json([
+				'error' => 'invalid_month',
+				'message' => 'Invalid annual sheet month.',
+			], 422);
+			}
+
+		$financialOperation = new FinancialOperation();
+		$this->json([
+			'data' => $financialOperation->findAnnualSheetEntries($year, $type, $categoryId, $month),
+		]);
+		}
+
+	/**
+	 * Updates an operation from the annual sheet modal.
+	 *
+	 * @param int|string $id Financial operation ID.
+	 */
+	public function sheetUpdateOperation($id)
+		{
+		$this->requirePermission('financial_operation.update');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->json([
+				'error' => 'method_not_allowed',
+				'message' => 'Method not allowed.',
+			], 405);
+			}
+
+		if ((int) ($_POST['payment_id'] ?? 0) > 0)
+			{
+			$this->requirePermission('financial_operation_payment.update');
+			}
+
+		$financialOperation = new FinancialOperation();
+		$data = $_POST;
+		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+
+		try
+			{
+			$financialOperation->updateFromSheetEntry($id, $data);
+			$this->json([
+				'success' => true,
+				'message' => 'Financial operation updated.',
+			]);
+			}
+		catch (\InvalidArgumentException $e)
+			{
+			$this->json([
+				'error' => 'validation_error',
+				'message' => $e->getMessage(),
+			], 422);
+			}
+		catch (\Exception $e)
+			{
+			$this->json([
+				'error' => 'update_failed',
+				'message' => 'Unable to update the financial operation.',
+			], 500);
+			}
 		}
 
 	/**

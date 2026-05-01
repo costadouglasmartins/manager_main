@@ -222,6 +222,84 @@ class FinancialOperation extends Model
 		}
 
 	/**
+	 * Updates an operation and, when present, the payment selected in the annual sheet.
+	 *
+	 * @param int|string $id Financial operation ID.
+	 * @param array<string, mixed> $data Data to save.
+	 * @return void
+	 */
+	public function updateFromSheetEntry($id, array $data): void
+		{
+		$userId = (int) ($data['user_id'] ?? 0);
+		if ($userId <= 0)
+			{
+			throw new \InvalidArgumentException('Authenticated user is required to update a financial operation.');
+			}
+
+		$categoryId = (int) ($data['financial_operation_category_id'] ?? 0);
+		if ($categoryId <= 0)
+			{
+			throw new \InvalidArgumentException('Financial operation category is required.');
+			}
+
+		$operationType = (string) ($data['type'] ?? '');
+		if (!array_key_exists($operationType, self::typeOptions()))
+			{
+			throw new \InvalidArgumentException('Financial operation type is invalid.');
+			}
+
+		try
+			{
+			$this->db->beginTransaction();
+
+			$paymentId = (int) ($data['payment_id'] ?? 0);
+			$installments = $this->buildMonthlyInstallments($data);
+			$totalValue = !empty($installments)
+				? $this->calculateInstallmentTotal($installments)
+				: $this->normalizeMoney($data['total_value'] ?? '0');
+
+			$stmt = $this->db->prepare("
+				UPDATE financial_operations
+				SET
+					`financial_operation_category_id` = :financial_operation_category_id,
+					`type`                            = :type,
+					`total_value`                     = :total_value,
+					`user_id`                         = :user_id,
+					`modified`                        = :modified
+				WHERE id = :id
+			");
+			$stmt->execute([
+				'financial_operation_category_id' => $categoryId,
+				'type'                            => $operationType,
+				'total_value'                     => $totalValue,
+				'user_id'                         => $userId,
+				'modified'                        => date('Y-m-d H:i:s'),
+				'id'                              => $id,
+			]);
+
+			if (!empty($installments))
+				{
+				$this->replaceInstallments((int) $id, $installments);
+				$this->db->commit();
+				return;
+				}
+
+			if ($paymentId > 0)
+				{
+				$this->updateSheetPayment((int) $id, $paymentId, $data);
+				$this->syncOperationTotalFromPayments((int) $id);
+				}
+
+			$this->db->commit();
+			}
+		catch (\Exception $e)
+			{
+			$this->db->rollBack();
+			throw $e;
+			}
+		}
+
+	/**
 	 * Search method
 	 *
 	 * @param array<string, mixed> $filters Search filters.
@@ -360,9 +438,10 @@ class FinancialOperation extends Model
 			if (!isset($targetRows[$key]))
 				{
 				$targetRows[$key] = [
-					'label'  => $this->buildSheetCategoryLabel($row),
-					'months' => $this->emptyMonthCents(),
-					'total'  => 0,
+					'category_id' => (int) ($row['category_id'] ?? 0),
+					'label'       => $this->buildSheetCategoryLabel($row),
+					'months'      => $this->emptyMonthCents(),
+					'total'       => 0,
 				];
 				}
 
@@ -400,6 +479,118 @@ class FinancialOperation extends Model
 				'total'  => $incomeTotalCents > 0 ? ($expenseTotalCents / $incomeTotalCents) * 100 : null,
 			],
 		];
+		}
+
+	/**
+	 * Finds the operations represented by an annual sheet cell.
+	 *
+	 * @param int $year Reference year.
+	 * @param string $type Operation type.
+	 * @param int $categoryId Category ID.
+	 * @param int|null $month Optional month number.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function findAnnualSheetEntries(int $year, string $type, int $categoryId, ?int $month = null): array
+		{
+		$year = max(2000, min(2100, $year));
+		$categoryId = max(0, $categoryId);
+		$month = $month !== null && $month >= 1 && $month <= 12 ? $month : null;
+
+		if (!array_key_exists($type, self::typeOptions()) || $categoryId <= 0)
+			{
+			return [];
+			}
+
+		$paymentMonthFilter = $month !== null ? ' AND MONTH(fop.due_date) = :payment_month' : '';
+		$operationMonthFilter = $month !== null ? ' AND MONTH(COALESCE(fo.created, fo.modified)) = :operation_month' : '';
+
+		$stmt = $this->db->prepare("
+			SELECT fo.id AS operation_id,
+			       fo.financial_operation_category_id AS category_id,
+			       fo.type AS operation_type,
+			       fo.total_value AS operation_total_value,
+			       fo.user_id,
+			       fo.created AS operation_created,
+			       fo.modified AS operation_modified,
+			       Category.name AS category_name,
+			       Category.description AS category_description,
+			       User.username,
+			       Person.name AS user_name,
+			       fop.id AS payment_id,
+			       fop.type AS payment_type,
+			       fop.value AS payment_value,
+			       fop.payment_date,
+			       fop.due_date,
+			       fop.due_date AS sheet_date,
+			       'payment' AS entry_source
+			FROM financial_operations AS fo
+			INNER JOIN financial_operations_payments AS fop ON fop.financial_operation_id = fo.id
+			LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
+			INNER JOIN users AS User ON User.id = fo.user_id
+			LEFT JOIN people AS Person ON Person.id = User.person_id
+			WHERE fop.due_date IS NOT NULL
+			  AND YEAR(fop.due_date) = :payment_year
+			  AND fo.type = :payment_type_filter
+			  AND fo.financial_operation_category_id = :payment_category_id
+			  {$paymentMonthFilter}
+
+			UNION ALL
+
+			SELECT fo.id AS operation_id,
+			       fo.financial_operation_category_id AS category_id,
+			       fo.type AS operation_type,
+			       fo.total_value AS operation_total_value,
+			       fo.user_id,
+			       fo.created AS operation_created,
+			       fo.modified AS operation_modified,
+			       Category.name AS category_name,
+			       Category.description AS category_description,
+			       User.username,
+			       Person.name AS user_name,
+			       NULL AS payment_id,
+			       NULL AS payment_type,
+			       NULL AS payment_value,
+			       NULL AS payment_date,
+			       NULL AS due_date,
+			       DATE(COALESCE(fo.created, fo.modified)) AS sheet_date,
+			       'operation' AS entry_source
+			FROM financial_operations AS fo
+			LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
+			INNER JOIN users AS User ON User.id = fo.user_id
+			LEFT JOIN people AS Person ON Person.id = User.person_id
+			WHERE NOT EXISTS (
+			        SELECT 1
+			        FROM financial_operations_payments AS fop
+			        WHERE fop.financial_operation_id = fo.id
+			      )
+			  AND COALESCE(fo.created, fo.modified) IS NOT NULL
+			  AND YEAR(COALESCE(fo.created, fo.modified)) = :operation_year
+			  AND fo.type = :operation_type_filter
+			  AND fo.financial_operation_category_id = :operation_category_id
+			  {$operationMonthFilter}
+			ORDER BY sheet_date ASC, operation_id ASC, payment_id ASC
+		");
+
+		$params = [
+			'payment_year'           => $year,
+			'payment_type_filter'    => $type,
+			'payment_category_id'    => $categoryId,
+			'operation_year'         => $year,
+			'operation_type_filter'  => $type,
+			'operation_category_id'  => $categoryId,
+		];
+		if ($month !== null)
+			{
+			$params['payment_month'] = $month;
+			$params['operation_month'] = $month;
+			}
+
+		$stmt->execute($params);
+
+		return array_map(
+			fn ($row) => $this->formatAnnualSheetEntry($row),
+			$stmt->fetchAll(PDO::FETCH_ASSOC)
+		);
 		}
 
 	/**
@@ -550,6 +741,130 @@ class FinancialOperation extends Model
 		$stmt->execute(['id' => $financialOperationId]);
 
 		$this->insertInstallments($financialOperationId, $installments);
+		}
+
+	/**
+	 * Updates one payment selected from the annual sheet modal.
+	 *
+	 * @param int $financialOperationId Financial operation ID.
+	 * @param int $paymentId Payment ID.
+	 * @param array<string, mixed> $data Data to save.
+	 * @return void
+	 */
+	private function updateSheetPayment(int $financialOperationId, int $paymentId, array $data): void
+		{
+		$stmt = $this->db->prepare("
+			SELECT COUNT(*)
+			FROM financial_operations_payments
+			WHERE id = :id
+			  AND financial_operation_id = :financial_operation_id
+		");
+		$stmt->execute([
+			'id'                     => $paymentId,
+			'financial_operation_id' => $financialOperationId,
+		]);
+		if ((int) $stmt->fetchColumn() < 1)
+			{
+			throw new \InvalidArgumentException('Payment was not found for this financial operation.');
+			}
+
+		$paymentType = (string) ($data['payment_type'] ?? '');
+		if (!array_key_exists($paymentType, FinancialOperationPayment::typeOptions()))
+			{
+			throw new \InvalidArgumentException('Payment type is invalid.');
+			}
+
+		$dueDate = $this->normalizeDate($data['due_date'] ?? null);
+		if ($dueDate === null)
+			{
+			throw new \InvalidArgumentException('Payment due date is required.');
+			}
+
+		$stmt = $this->db->prepare("
+			UPDATE financial_operations_payments
+			SET
+				`type`         = :type,
+				`value`        = :value,
+				`payment_date` = :payment_date,
+				`due_date`     = :due_date,
+				`modified`     = :modified
+			WHERE id = :id
+			  AND financial_operation_id = :financial_operation_id
+		");
+		$stmt->execute([
+			'type'                   => $paymentType,
+			'value'                  => $this->normalizeMoney($data['payment_value'] ?? '0'),
+			'payment_date'           => $this->normalizeDateTime($data['payment_date'] ?? null),
+			'due_date'               => $dueDate,
+			'modified'               => date('Y-m-d H:i:s'),
+			'id'                     => $paymentId,
+			'financial_operation_id' => $financialOperationId,
+		]);
+		}
+
+	/**
+	 * Synchronizes operation total with its saved payments.
+	 *
+	 * @param int $financialOperationId Financial operation ID.
+	 * @return void
+	 */
+	private function syncOperationTotalFromPayments(int $financialOperationId): void
+		{
+		$stmt = $this->db->prepare("
+			SELECT COALESCE(SUM(value), 0)
+			FROM financial_operations_payments
+			WHERE financial_operation_id = :financial_operation_id
+		");
+		$stmt->execute(['financial_operation_id' => $financialOperationId]);
+		$total = number_format((float) $stmt->fetchColumn(), 2, '.', '');
+
+		$stmt = $this->db->prepare("
+			UPDATE financial_operations
+			SET total_value = :total_value,
+			    modified = :modified
+			WHERE id = :id
+		");
+		$stmt->execute([
+			'total_value' => $total,
+			'modified'    => date('Y-m-d H:i:s'),
+			'id'          => $financialOperationId,
+		]);
+		}
+
+	/**
+	 * Formats an annual sheet entry for JSON responses.
+	 *
+	 * @param array<string, mixed> $row Database row.
+	 * @return array<string, mixed>
+	 */
+	private function formatAnnualSheetEntry(array $row): array
+		{
+		$paymentDate = $row['payment_date'] ?? null;
+		$paymentDateInput = '';
+		if (!empty($paymentDate))
+			{
+			$paymentDateInput = date('Y-m-d\TH:i', strtotime((string) $paymentDate));
+			}
+
+		return [
+			'operation_id'                    => (int) ($row['operation_id'] ?? 0),
+			'financial_operation_category_id' => (int) ($row['category_id'] ?? 0),
+			'category_name'                   => (string) ($row['category_name'] ?? ''),
+			'category_description'            => (string) ($row['category_description'] ?? ''),
+			'operation_type'                  => (string) ($row['operation_type'] ?? ''),
+			'operation_total_value'           => number_format((float) ($row['operation_total_value'] ?? 0), 2, '.', ''),
+			'user_id'                         => (int) ($row['user_id'] ?? 0),
+			'username'                        => (string) ($row['username'] ?? ''),
+			'user_name'                       => (string) ($row['user_name'] ?? ''),
+			'payment_id'                      => isset($row['payment_id']) ? (int) $row['payment_id'] : null,
+			'payment_type'                    => $row['payment_type'] !== null ? (string) $row['payment_type'] : '',
+			'payment_value'                   => $row['payment_value'] !== null ? number_format((float) $row['payment_value'], 2, '.', '') : '',
+			'payment_date'                    => $paymentDate !== null ? (string) $paymentDate : '',
+			'payment_date_input'              => $paymentDateInput,
+			'due_date'                        => $row['due_date'] !== null ? (string) $row['due_date'] : '',
+			'sheet_date'                      => (string) ($row['sheet_date'] ?? ''),
+			'entry_source'                    => (string) ($row['entry_source'] ?? ''),
+		];
 		}
 
 	/**
@@ -845,6 +1160,35 @@ class FinancialOperation extends Model
 		$value = str_replace(',', '.', $value);
 
 		return number_format((float) $value, 2, '.', '');
+		}
+
+	/**
+	 * Normalizes date input to `Y-m-d`.
+	 *
+	 * @param mixed $value Raw date value.
+	 * @return string|null
+	 */
+	private function normalizeDate($value): ?string
+		{
+		$value = trim((string) $value);
+		return $value === '' ? null : $value;
+		}
+
+	/**
+	 * Normalizes datetime-local input to `Y-m-d H:i:s`.
+	 *
+	 * @param mixed $value Raw datetime value.
+	 * @return string|null
+	 */
+	private function normalizeDateTime($value): ?string
+		{
+		$value = trim((string) $value);
+		if ($value === '')
+			{
+			return null;
+			}
+
+		return str_replace('T', ' ', $value) . (strlen($value) === 16 ? ':00' : '');
 		}
 
 	/**

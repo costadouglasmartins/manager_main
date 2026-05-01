@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~2 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~0 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-28 00:05:35');
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5572 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 571 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -5659,7 +5659,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~2 rows (approximately)
+-- Dumping data for table manager_main.emails: ~1 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(27, 'lorem@ipsum.com', 'principal', 42, 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
@@ -5678,22 +5678,24 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   KEY `fk_financial_operations_financial_operations_categories1_idx` (`financial_operation_category_id`),
   CONSTRAINT `fk_financial_operations_financial_operations_categories1` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`),
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations: ~12 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `type`, `total_value`, `user_id`, `created`, `modified`) VALUES
-	(1, 16, 'CREDIT', 60000.00, 1, '2026-04-29 23:22:14', '2026-04-30 22:18:37'),
-	(2, 9, 'DEBIT', 9240.00, 1, '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
+	(1, 16, 'CREDIT', 54920.05, 1, '2026-04-29 23:22:14', '2026-05-01 21:24:41'),
+	(2, 9, 'DEBIT', 9236.50, 1, '2026-04-30 22:12:47', '2026-05-01 21:26:23'),
 	(3, 1, 'DEBIT', 14753.16, 1, '2026-04-30 22:36:49', '2026-04-30 22:36:49'),
 	(4, 6, 'DEBIT', 2990.04, 1, '2026-04-30 22:38:54', '2026-04-30 22:38:54'),
-	(5, 3, 'DEBIT', 2400.00, 1, '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
-	(6, 7, 'DEBIT', 120.00, 1, '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
-	(7, 12, 'DEBIT', 1680.00, 1, '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
+	(5, 3, 'DEBIT', 2338.49, 1, '2026-04-30 22:40:57', '2026-05-01 21:36:16'),
+	(6, 7, 'DEBIT', 113.99, 1, '2026-04-30 22:42:35', '2026-05-01 21:37:08'),
+	(7, 12, 'DEBIT', 1670.99, 1, '2026-04-30 22:46:14', '2026-05-01 21:39:29'),
 	(8, 4, 'DEBIT', 663.48, 1, '2026-04-30 22:47:30', '2026-04-30 22:47:30'),
 	(9, 5, 'DEBIT', 496.08, 1, '2026-04-30 22:53:31', '2026-04-30 22:53:31'),
 	(10, 11, 'DEBIT', 576.00, 1, '2026-04-30 22:55:05', '2026-04-30 22:55:05'),
-	(11, 8, 'DEBIT', 1080.00, 1, '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
-	(12, 10, 'DEBIT', 36000.00, 1, '2026-04-30 22:58:22', '2026-04-30 22:58:22');
+	(11, 8, 'DEBIT', 1083.19, 1, '2026-04-30 22:56:14', '2026-05-01 21:40:04'),
+	(12, 10, 'DEBIT', 35914.01, 1, '2026-04-30 22:58:22', '2026-05-01 21:35:42'),
+	(13, 18, 'CREDIT', 127.67, 1, '2026-05-01 21:34:20', '2026-05-01 21:34:20'),
+	(14, 14, 'DEBIT', 1437.43, 1, '2026-05-01 21:42:35', '2026-05-01 21:43:19');
 
 -- Dumping structure for table manager_main.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -5703,7 +5705,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~16 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
@@ -5722,7 +5724,8 @@ INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `cre
 	(14, 'Transporte', 'Seguro carro Mãe', '2026-04-30 21:22:49', '2026-04-30 21:22:49'),
 	(15, 'Transporte', 'Troca de óleo', '2026-04-30 21:23:08', '2026-04-30 21:23:08'),
 	(16, 'Renda', 'Salário mensal', '2026-04-30 21:39:20', '2026-04-30 21:39:20'),
-	(17, 'Moradia', 'Taxa de lixo', '2026-04-30 22:51:49', '2026-04-30 22:51:49');
+	(17, 'Moradia', 'Taxa de lixo', '2026-04-30 22:51:49', '2026-04-30 22:51:49'),
+	(18, 'Renda', 'Saldo mês anterior', '2026-05-01 21:33:22', '2026-05-01 21:33:22');
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -5737,7 +5740,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   PRIMARY KEY (`id`),
   KEY `fk_financial_operations_payments_financial_operations1_idx` (`financial_operation_id`),
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_payments: ~144 rows (approximately)
 INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `type`, `value`, `payment_date`, `due_date`, `created`, `modified`) VALUES
@@ -5745,7 +5748,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(4, 2, 'CASH', 770.00, NULL, '2026-02-02', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(5, 2, 'CASH', 770.00, NULL, '2026-03-02', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(6, 2, 'CASH', 770.00, NULL, '2026-04-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
-	(7, 2, 'CASH', 770.00, NULL, '2026-05-04', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
+	(7, 2, 'CASH', 766.50, '2026-05-01 07:01:00', '2026-05-04', '2026-04-30 22:12:47', '2026-05-01 21:26:23'),
 	(8, 2, 'CASH', 770.00, NULL, '2026-06-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(9, 2, 'CASH', 770.00, NULL, '2026-07-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(10, 2, 'CASH', 770.00, NULL, '2026-08-03', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
@@ -5753,11 +5756,11 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(12, 2, 'CASH', 770.00, NULL, '2026-10-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(13, 2, 'CASH', 770.00, NULL, '2026-11-03', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
 	(14, 2, 'CASH', 770.00, NULL, '2026-12-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
-	(15, 1, 'CASH', 5000.00, NULL, '2026-01-02', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
-	(16, 1, 'CASH', 5000.00, NULL, '2026-02-02', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
-	(17, 1, 'CASH', 5000.00, NULL, '2026-03-02', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
-	(18, 1, 'CASH', 5000.00, NULL, '2026-04-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
-	(19, 1, 'CASH', 5000.00, NULL, '2026-05-04', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
+	(15, 1, 'CASH', 0.00, '2026-01-01 06:50:00', '2026-01-02', '2026-04-30 22:18:37', '2026-05-01 21:20:56'),
+	(16, 1, 'CASH', 2496.45, '2026-02-01 06:50:00', '2026-02-02', '2026-04-30 22:18:37', '2026-05-01 21:20:29'),
+	(17, 1, 'CASH', 5791.24, '2026-03-01 06:10:00', '2026-03-02', '2026-04-30 22:18:37', '2026-05-01 21:22:10'),
+	(18, 1, 'CASH', 5791.24, '2026-04-01 06:19:00', '2026-04-01', '2026-04-30 22:18:37', '2026-05-01 21:23:13'),
+	(19, 1, 'CASH', 5841.12, '2026-05-01 06:13:00', '2026-05-04', '2026-04-30 22:18:37', '2026-05-01 21:24:41'),
 	(20, 1, 'CASH', 5000.00, NULL, '2026-06-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
 	(21, 1, 'CASH', 5000.00, NULL, '2026-07-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
 	(22, 1, 'CASH', 5000.00, NULL, '2026-08-03', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
@@ -5793,7 +5796,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(52, 5, 'CASH', 200.00, NULL, '2026-02-11', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
 	(53, 5, 'CASH', 200.00, NULL, '2026-03-11', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
 	(54, 5, 'CASH', 200.00, NULL, '2026-04-13', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
-	(55, 5, 'CASH', 200.00, NULL, '2026-05-11', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
+	(55, 5, 'CASH', 138.49, NULL, '2026-05-11', '2026-04-30 22:40:57', '2026-05-01 21:36:16'),
 	(56, 5, 'CASH', 200.00, NULL, '2026-06-11', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
 	(57, 5, 'CASH', 200.00, NULL, '2026-07-13', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
 	(58, 5, 'CASH', 200.00, NULL, '2026-08-11', '2026-04-30 22:40:57', '2026-04-30 22:40:57'),
@@ -5805,7 +5808,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(64, 6, 'CASH', 10.00, NULL, '2026-02-09', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
 	(65, 6, 'CASH', 10.00, NULL, '2026-03-09', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
 	(66, 6, 'CASH', 10.00, NULL, '2026-04-09', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
-	(67, 6, 'CASH', 10.00, NULL, '2026-05-11', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
+	(67, 6, 'CASH', 3.99, '2026-05-01 07:10:00', '2026-05-11', '2026-04-30 22:42:35', '2026-05-01 21:37:08'),
 	(68, 6, 'CASH', 10.00, NULL, '2026-06-09', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
 	(69, 6, 'CASH', 10.00, NULL, '2026-07-09', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
 	(70, 6, 'CASH', 10.00, NULL, '2026-08-10', '2026-04-30 22:42:35', '2026-04-30 22:42:35'),
@@ -5817,7 +5820,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(76, 7, 'CASH', 140.00, NULL, '2026-02-18', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
 	(77, 7, 'CASH', 140.00, NULL, '2026-03-17', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
 	(78, 7, 'CASH', 140.00, NULL, '2026-04-17', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
-	(79, 7, 'CASH', 140.00, NULL, '2026-05-18', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
+	(79, 7, 'CASH', 130.99, NULL, '2026-05-18', '2026-04-30 22:46:14', '2026-05-01 21:39:29'),
 	(80, 7, 'CASH', 140.00, NULL, '2026-06-17', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
 	(81, 7, 'CASH', 140.00, NULL, '2026-07-17', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
 	(82, 7, 'CASH', 140.00, NULL, '2026-08-17', '2026-04-30 22:46:14', '2026-04-30 22:46:14'),
@@ -5865,7 +5868,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(124, 11, 'CASH', 90.00, NULL, '2026-02-09', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
 	(125, 11, 'CASH', 90.00, NULL, '2026-03-09', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
 	(126, 11, 'CASH', 90.00, NULL, '2026-04-09', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
-	(127, 11, 'CASH', 90.00, NULL, '2026-05-11', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
+	(127, 11, 'CASH', 93.19, NULL, '2026-05-11', '2026-04-30 22:56:14', '2026-05-01 21:40:04'),
 	(128, 11, 'CASH', 90.00, NULL, '2026-06-09', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
 	(129, 11, 'CASH', 90.00, NULL, '2026-07-09', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
 	(130, 11, 'CASH', 90.00, NULL, '2026-08-10', '2026-04-30 22:56:14', '2026-04-30 22:56:14'),
@@ -5877,14 +5880,23 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(136, 12, 'CASH', 3000.00, NULL, '2026-02-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(137, 12, 'CASH', 3000.00, NULL, '2026-03-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(138, 12, 'CASH', 3000.00, NULL, '2026-04-06', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
-	(139, 12, 'CASH', 3000.00, NULL, '2026-05-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
+	(139, 12, 'CASH', 2914.01, '2026-05-01 07:03:00', '2026-05-05', '2026-04-30 22:58:22', '2026-05-01 21:35:42'),
 	(140, 12, 'CASH', 3000.00, NULL, '2026-06-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(141, 12, 'CASH', 3000.00, NULL, '2026-07-06', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(142, 12, 'CASH', 3000.00, NULL, '2026-08-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(143, 12, 'CASH', 3000.00, NULL, '2026-09-08', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(144, 12, 'CASH', 3000.00, NULL, '2026-10-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
 	(145, 12, 'CASH', 3000.00, NULL, '2026-11-05', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
-	(146, 12, 'CASH', 3000.00, NULL, '2026-12-07', '2026-04-30 22:58:22', '2026-04-30 22:58:22');
+	(146, 12, 'CASH', 3000.00, NULL, '2026-12-07', '2026-04-30 22:58:22', '2026-04-30 22:58:22'),
+	(147, 13, 'CASH', 127.67, NULL, '2026-05-04', '2026-05-01 21:34:20', '2026-05-01 21:34:20'),
+	(148, 14, 'CASH', 177.43, NULL, '2026-05-11', '2026-05-01 21:42:35', '2026-05-01 21:43:19'),
+	(149, 14, 'CASH', 180.00, NULL, '2026-06-11', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(150, 14, 'CASH', 180.00, NULL, '2026-07-13', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(151, 14, 'CASH', 180.00, NULL, '2026-08-11', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(152, 14, 'CASH', 180.00, NULL, '2026-09-11', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(153, 14, 'CASH', 180.00, NULL, '2026-10-13', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(154, 14, 'CASH', 180.00, NULL, '2026-11-11', '2026-05-01 21:42:35', '2026-05-01 21:42:35'),
+	(155, 14, 'CASH', 180.00, NULL, '2026-12-11', '2026-05-01 21:42:35', '2026-05-01 21:42:35');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -5926,7 +5938,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~2 rows (approximately)
+-- Dumping data for table manager_main.people: ~1 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(42, 'Lorem Ipsums', 'Lorem Ipsum LTDAs', 'company', '67839081000199', 1, NULL, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
@@ -5943,7 +5955,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4864 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~173 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~169 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6132,7 +6144,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~1 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(22, '88888888888', 'celular', 42, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
 
@@ -6389,7 +6401,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 
 -- Dumping data for table manager_main.user_remember_tokens: ~1 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(8, 1, 'ae34f6493a93f22e5227825f7bbc6944', '8934c37a6a569a6b0faa842ce8bba3cb08209615fea230ba7ee67127a28760aa', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-30 22:33:57', '2026-04-30 22:33:57', NULL);
+	(8, 1, '96e79c74e00c61fce7fc9b4e649e0f4e', 'ee695e3fa028bc35925613c495259d4804320029a0ed282acb90ceb962809f26', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-31 20:53:22', '2026-04-30 22:33:57', '2026-05-01 20:53:22');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

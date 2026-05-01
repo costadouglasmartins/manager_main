@@ -171,8 +171,8 @@
 
 .financial-sheet-scroll {
   overflow-x: hidden;
-  overflow-y: auto;
-  max-height: calc(100vh - 290px);
+  overflow-y: visible;
+  max-height: none;
 }
 
 .financial-sheet-table {
@@ -319,9 +319,109 @@
   outline-offset: -2px;
 }
 
+.financial-sheet-entry-button {
+  display: block;
+  width: 100%;
+  min-height: 1.4rem;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: right;
+  background: transparent;
+}
+
+.financial-sheet-entry-button:hover,
+.financial-sheet-entry-button:focus {
+  color: var(--bs-primary-text-emphasis);
+  text-decoration: underline;
+}
+
+.financial-sheet-entry-button:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.financial-sheet-modal-subtitle {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.financial-sheet-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.financial-sheet-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.financial-sheet-entry-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 4rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  color: var(--bs-body-color);
+  text-align: left;
+  background: var(--bs-body-bg);
+}
+
+.financial-sheet-entry-option strong,
+.financial-sheet-entry-option span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.financial-sheet-entry-option span {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+}
+
+.financial-sheet-entry-option:hover,
+.financial-sheet-entry-option:focus {
+  border-color: var(--bs-primary);
+}
+
+.financial-sheet-entry-option.active {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text-emphasis);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.financial-sheet-entry-form {
+  min-width: 0;
+}
+
+.financial-sheet-form-section + .financial-sheet-form-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.financial-sheet-form-section h6 {
+  margin: 0 0 0.75rem;
+  font-weight: 800;
+}
+
 @media (max-width: 991.98px) {
   .financial-sheet-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .financial-sheet-modal-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -345,7 +445,4 @@
     grid-template-columns: 1fr;
   }
 
-  .financial-sheet-scroll {
-    max-height: calc(100vh - 420px);
-  }
 }
