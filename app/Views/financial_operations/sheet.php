@@ -45,7 +45,7 @@ if ($expensePercentageLabel !== '-')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=2'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -112,8 +112,8 @@ if ($expensePercentageLabel !== '-')
       <span><?= count($months); ?> meses</span>
     </div>
 
-    <div class="financial-sheet-scroll">
-      <table class="financial-sheet-table">
+    <div class="financial-sheet-scroll overflow-x-hidden">
+      <table class="financial-sheet-table table table-sm align-middle mb-0 w-100 small">
         <colgroup>
           <col class="financial-sheet-label-col">
           <?php foreach ($months as $_monthNumber => $_monthLabel): ?>
@@ -123,12 +123,13 @@ if ($expensePercentageLabel !== '-')
         </colgroup>
         <thead>
           <tr>
-            <th>Categoria</th>
+            <th><span class="d-block text-truncate" title="Categoria">Categoria</span></th>
             <?php foreach ($months as $monthLabel): ?>
               <?php $monthHeader = function_exists('mb_strtoupper') ? mb_strtoupper($monthLabel, 'UTF-8') : strtoupper($monthLabel); ?>
-              <th><?= htmlspecialchars($monthHeader, ENT_QUOTES, 'UTF-8'); ?></th>
+              <?php $monthTitle = htmlspecialchars($monthHeader, ENT_QUOTES, 'UTF-8'); ?>
+              <th><span class="d-block text-truncate" title="<?= $monthTitle; ?>"><?= $monthTitle; ?></span></th>
             <?php endforeach; ?>
-            <th>Total</th>
+            <th><span class="d-block text-truncate" title="Total">Total</span></th>
           </tr>
         </thead>
         <tbody>
@@ -138,8 +139,9 @@ if ($expensePercentageLabel !== '-')
 
           <?php if (!empty($incomeRows)): ?>
             <?php foreach ($incomeRows as $row): ?>
+              <?php $rowLabel = htmlspecialchars((string) ($row['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
               <tr class="financial-sheet-data-row financial-sheet-income-data">
-                <th scope="row"><?= htmlspecialchars($row['label'], ENT_QUOTES, 'UTF-8'); ?></th>
+                <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
                   <td><?= financialSheetMoney((int) ($row['months'][$monthNumber] ?? 0), true); ?></td>
                 <?php endforeach; ?>
@@ -148,7 +150,7 @@ if ($expensePercentageLabel !== '-')
             <?php endforeach; ?>
           <?php else: ?>
             <tr class="financial-sheet-data-row financial-sheet-empty-row">
-              <th scope="row">Nenhuma receita lançada</th>
+              <th scope="row" title="Nenhuma receita lançada"><span class="d-block text-truncate">Nenhuma receita lançada</span></th>
               <?php foreach ($months as $_monthNumber => $_monthLabel): ?>
                 <td></td>
               <?php endforeach; ?>
@@ -157,7 +159,7 @@ if ($expensePercentageLabel !== '-')
           <?php endif; ?>
 
           <tr class="financial-sheet-total-row financial-sheet-income-total">
-            <th scope="row">Subtotal receitas</th>
+            <th scope="row" title="Subtotal receitas"><span class="d-block text-truncate">Subtotal receitas</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
               <td><?= financialSheetMoney((int) ($incomeTotals['months'][$monthNumber] ?? 0)); ?></td>
             <?php endforeach; ?>
@@ -170,8 +172,9 @@ if ($expensePercentageLabel !== '-')
 
           <?php if (!empty($expenseRows)): ?>
             <?php foreach ($expenseRows as $row): ?>
+              <?php $rowLabel = htmlspecialchars((string) ($row['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
               <tr class="financial-sheet-data-row financial-sheet-expense-data">
-                <th scope="row"><?= htmlspecialchars($row['label'], ENT_QUOTES, 'UTF-8'); ?></th>
+                <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
                   <td><?= financialSheetMoney((int) ($row['months'][$monthNumber] ?? 0), true); ?></td>
                 <?php endforeach; ?>
@@ -180,7 +183,7 @@ if ($expensePercentageLabel !== '-')
             <?php endforeach; ?>
           <?php else: ?>
             <tr class="financial-sheet-data-row financial-sheet-empty-row">
-              <th scope="row">Nenhuma despesa lançada</th>
+              <th scope="row" title="Nenhuma despesa lançada"><span class="d-block text-truncate">Nenhuma despesa lançada</span></th>
               <?php foreach ($months as $_monthNumber => $_monthLabel): ?>
                 <td></td>
               <?php endforeach; ?>
@@ -189,7 +192,7 @@ if ($expensePercentageLabel !== '-')
           <?php endif; ?>
 
           <tr class="financial-sheet-total-row financial-sheet-expense-total">
-            <th scope="row">Subtotal despesas</th>
+            <th scope="row" title="Subtotal despesas"><span class="d-block text-truncate">Subtotal despesas</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
               <td><?= financialSheetMoney((int) ($expenseTotals['months'][$monthNumber] ?? 0)); ?></td>
             <?php endforeach; ?>
@@ -201,7 +204,7 @@ if ($expensePercentageLabel !== '-')
           </tr>
 
           <tr class="financial-sheet-total-row financial-sheet-balance-row">
-            <th scope="row">Subtotal saldos (R$)</th>
+            <th scope="row" title="Subtotal saldos (R$)"><span class="d-block text-truncate">Subtotal saldos (R$)</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
               <?php $monthBalance = (int) ($balanceTotals['months'][$monthNumber] ?? 0); ?>
               <td class="<?= $monthBalance < 0 ? 'financial-sheet-negative' : ''; ?>"><?= financialSheetMoney($monthBalance); ?></td>
@@ -210,7 +213,7 @@ if ($expensePercentageLabel !== '-')
           </tr>
 
           <tr class="financial-sheet-total-row financial-sheet-percent-row">
-            <th scope="row">Percentual despesas (%)</th>
+            <th scope="row" title="Percentual despesas (%)"><span class="d-block text-truncate">Percentual despesas (%)</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
               <td><?= financialSheetPercent($expensePercentages['months'][$monthNumber] ?? null); ?></td>
             <?php endforeach; ?>

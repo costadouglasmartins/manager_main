@@ -170,12 +170,12 @@
 }
 
 .financial-sheet-scroll {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   max-height: calc(100vh - 290px);
 }
 
 .financial-sheet-table {
-  min-width: 1380px;
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
@@ -185,24 +185,24 @@
 }
 
 .financial-sheet-label-col {
-  width: 330px;
+  width: 18%;
 }
 
 .financial-sheet-month-col {
-  width: 94px;
+  width: auto;
 }
 
 .financial-sheet-total-col {
-  width: 112px;
+  width: 9%;
 }
 
 .financial-sheet-table th,
 .financial-sheet-table td {
   height: 36px;
-  padding: 0.45rem 0.55rem;
+  padding: 0.35rem 0.3rem;
   border-right: 1px solid var(--sheet-grid-soft);
   border-bottom: 1px solid var(--sheet-grid-soft);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   line-height: 1.2;
 }
 
@@ -212,8 +212,11 @@
   z-index: 4;
   color: var(--sheet-header-text);
   font-weight: 800;
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
   background: var(--sheet-header-bg);
 }
 
@@ -241,7 +244,10 @@
 
 .financial-sheet-data-row td,
 .financial-sheet-total-row td {
+  overflow: hidden;
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: var(--sheet-panel-bg);
 }
 
