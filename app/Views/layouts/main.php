@@ -175,7 +175,7 @@
                 <ul class="dropdown-menu" aria-labelledby="financeMenu">
                   <?php if (authCan('financial_operation_category.index')): ?>
                     <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Categorias</a>
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Operações financeiras categorias</a>
                       <ul class="dropdown-menu">
                         <?php if (authCan('financial_operation_category.create')): ?>
                           <li><a class="dropdown-item" href="<?= url('financial_operation_category/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
@@ -218,6 +218,18 @@
                           <li><hr class="dropdown-divider" /></li>
                         <?php endif; ?>
                         <li><a class="dropdown-item" href="<?= url('financial_operation_payment'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                      </ul>
+                    </li>
+                  <?php endif; ?>
+
+                  <?php if (authCan('financial_operation.index')): ?>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-stack me-2"></i>Relatórios</a>
+                      <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?= url('financial_operation/accountsReceivable'); ?>"><i class="bi bi-arrow-down-circle me-2"></i>Contas a receber</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation/accountsPayable'); ?>"><i class="bi bi-arrow-up-circle me-2"></i>Contas a pagar</a></li>
                       </ul>
                     </li>
                   <?php endif; ?>

@@ -89,7 +89,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=4'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=5'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -159,7 +159,7 @@ if ($sessionUserLabel === '')
       <span><?= count($months); ?> meses</span>
     </div>
 
-    <div class="financial-sheet-scroll overflow-x-hidden">
+    <div class="overflow-x-hidden">
       <table class="financial-sheet-table table table-sm align-middle mb-0 w-100 small">
         <colgroup>
           <col class="financial-sheet-label-col">

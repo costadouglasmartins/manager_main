@@ -168,13 +168,13 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-
+/*
 .financial-sheet-scroll {
   overflow-x: hidden;
   overflow-y: visible;
   max-height: none;
 }
-
+*/
 .financial-sheet-table {
   width: 100%;
   table-layout: fixed;

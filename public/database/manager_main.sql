@@ -5682,7 +5682,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
 
 -- Dumping data for table manager_main.financial_operations: ~12 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `type`, `total_value`, `user_id`, `created`, `modified`) VALUES
-	(1, 16, 'CREDIT', 54920.05, 1, '2026-04-29 23:22:14', '2026-05-01 21:24:41'),
+	(1, 16, 'CREDIT', 55420.05, 1, '2026-04-29 23:22:14', '2026-05-02 11:13:46'),
 	(2, 9, 'DEBIT', 9236.50, 1, '2026-04-30 22:12:47', '2026-05-01 21:26:23'),
 	(3, 1, 'DEBIT', 14753.16, 1, '2026-04-30 22:36:49', '2026-04-30 22:36:49'),
 	(4, 6, 'DEBIT', 2990.04, 1, '2026-04-30 22:38:54', '2026-04-30 22:38:54'),
@@ -5761,7 +5761,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 	(17, 1, 'CASH', 5791.24, '2026-03-01 06:10:00', '2026-03-02', '2026-04-30 22:18:37', '2026-05-01 21:22:10'),
 	(18, 1, 'CASH', 5791.24, '2026-04-01 06:19:00', '2026-04-01', '2026-04-30 22:18:37', '2026-05-01 21:23:13'),
 	(19, 1, 'CASH', 5841.12, '2026-05-01 06:13:00', '2026-05-04', '2026-04-30 22:18:37', '2026-05-01 21:24:41'),
-	(20, 1, 'CASH', 5000.00, NULL, '2026-06-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
+	(20, 1, 'CASH', 5500.00, NULL, '2026-06-01', '2026-04-30 22:18:37', '2026-05-02 11:13:46'),
 	(21, 1, 'CASH', 5000.00, NULL, '2026-07-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
 	(22, 1, 'CASH', 5000.00, NULL, '2026-08-03', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
 	(23, 1, 'CASH', 5000.00, NULL, '2026-09-01', '2026-04-30 22:18:37', '2026-04-30 22:18:37'),
@@ -5955,7 +5955,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4864 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~169 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~168 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6399,9 +6399,9 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_remember_tokens: ~1 rows (approximately)
+-- Dumping data for table manager_main.user_remember_tokens: ~0 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(8, 1, '96e79c74e00c61fce7fc9b4e649e0f4e', 'ee695e3fa028bc35925613c495259d4804320029a0ed282acb90ceb962809f26', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-05-31 20:53:22', '2026-04-30 22:33:57', '2026-05-01 20:53:22');
+	(8, 1, '27a7a046968a662590f86eeab4509a13', 'b73a524479baaab613de868bb7bceee202aa919cf3824dbcbf261dd383e2f9b0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-01 11:07:20', '2026-04-30 22:33:57', '2026-05-02 11:07:20');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

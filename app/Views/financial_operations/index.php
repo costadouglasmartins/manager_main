@@ -79,9 +79,6 @@ $queryFilters = http_build_query([
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('financial_operation'); ?>" class="btn btn-secondary w-100">Limpar</a>
-      <?php if (authCan('financial_operation.index')): ?>
-        <a href="<?= url('financial_operation/sheet'); ?>" class="btn btn-outline-primary w-100">Planilha anual</a>
-      <?php endif; ?>
       <?php if (authCan('financial_operation.create')): ?>
         <a href="<?= url('financial_operation/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>
