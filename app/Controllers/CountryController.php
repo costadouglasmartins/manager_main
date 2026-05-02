@@ -34,9 +34,10 @@ class CountryController extends Controller
 		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(Country::sortableColumns(), 'id', 'desc');
 
 		// Paginated search with filters
-		$countries = $country->search($filters, $perPage, $offset);
+		$countries = $country->search($filters, $perPage, $offset, $sort);
 		// Total records for pagination with the same filters
 		$total = $country->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
@@ -53,6 +54,7 @@ class CountryController extends Controller
 				'perPage' => $perPage,
 				'total' => $total,
 				'totalPages' => $totalPages,
+				'sort' => $sort,
 				'data' => $countries,
 			]);
 			}
@@ -65,6 +67,7 @@ class CountryController extends Controller
         'page' => $page,
         'totalPages' => $totalPages,
         'total' => $total,
+        'sort' => $sort,
       ]);
 		}
 

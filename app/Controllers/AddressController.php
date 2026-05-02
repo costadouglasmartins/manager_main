@@ -34,8 +34,9 @@ class AddressController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(Address::sortableColumns(), 'id', 'desc');
 
-		$addresses = $address->search($filters, $perPage, $offset);
+		$addresses = $address->search($filters, $perPage, $offset, $sort);
 		$total = $address->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -51,6 +52,7 @@ class AddressController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $addresses,
 			]);
 			}
@@ -62,6 +64,7 @@ class AddressController extends Controller
 			'page'       => $page,
 			'totalPages' => $totalPages,
 			'total'      => $total,
+			'sort'       => $sort,
 		]);
 		}
 

@@ -84,9 +84,10 @@ class PersonController extends Controller
 		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(Person::sortableColumns(), 'id', 'desc');
 
 		// Paginated search with filters
-		$people = $person->search($filters, $perPage, $offset);
+		$people = $person->search($filters, $perPage, $offset, $sort);
 		// Total for pagination using the same filters
 		$total = $person->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
@@ -103,6 +104,7 @@ class PersonController extends Controller
 				'perPage' => $perPage,
 				'total' => $total,
 				'totalPages' => $totalPages,
+				'sort' => $sort,
 				'data' => $people,
 			]);
 			}
@@ -115,6 +117,7 @@ class PersonController extends Controller
         'page' => $page,
         'totalPages' => $totalPages,
         'total' => $total,
+        'sort' => $sort,
       ]);
 		}
 

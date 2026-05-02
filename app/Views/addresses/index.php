@@ -3,6 +3,7 @@ $filters = $filters ?? ['id' => '', 'street' => '', 'zip_code' => '', 'person_id
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($addresses) ? count($addresses) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
   'id'          => $filters['id'],
@@ -11,6 +12,7 @@ $queryFilters = http_build_query([
   'person_id'   => $filters['person_id'],
   'person_name' => $filters['person_name'],
 ]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <nav aria-label="breadcrumb">
@@ -23,6 +25,7 @@ $queryFilters = http_build_query([
 <h5>Lista de Endereços</h5>
 
 <form action="<?= url('address'); ?>" class="row g-3 mb-3" method="get">
+  <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -73,11 +76,11 @@ $queryFilters = http_build_query([
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        <th>#</th>
-        <th>CEP</th>
-        <th>Logradouro</th>
-        <th>Número</th>
-        <th>Pessoa</th>
+        <?= sortableTh('address', 'id', '#', $sort, $queryFilters) ?>
+        <?= sortableTh('address', 'zip_code', 'CEP', $sort, $queryFilters) ?>
+        <?= sortableTh('address', 'street', 'Logradouro', $sort, $queryFilters) ?>
+        <?= sortableTh('address', 'number', 'Número', $sort, $queryFilters) ?>
+        <?= sortableTh('address', 'person_name', 'Pessoa', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -117,27 +120,7 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <div class="overflow-auto">
-  <nav aria-label="Paginação de endereços">
-    <ul class="pagination pagination-sm flex-nowrap mb-0">
-      <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('address?page=' . max(1, $page - 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Anterior</a></li>
-
-      <?php
-      $delta = 2;
-      $pgList = array_unique(array_merge([1], range(max(2, $page - $delta), min($totalPages - 1, $page + $delta)), $totalPages > 1 ? [$totalPages] : []));
-      sort($pgList);
-      $prevPg = null;
-      foreach ($pgList as $p):
-        if ($prevPg !== null && $p - $prevPg > 1): ?>
-          <li class="page-item disabled"><span class="page-link">...</span></li>
-        <?php endif; ?>
-        <li class="page-item <?= $p === (int) $page ? 'active' : '' ?>"><a class="page-link" href="<?= url('address?page=' . $p) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>"><?= $p ?></a></li>
-      <?php $prevPg = $p; endforeach; ?>
-
-      <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>"><a class="page-link" href="<?= url('address?page=' . min($totalPages, $page + 1)) ?><?= $queryFilters ? '&' . $queryFilters : '' ?>">Próxima</a></li>
-    </ul>
-  </nav>
-</div>
+  <?= paginationLinks('address', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->

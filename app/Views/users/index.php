@@ -4,6 +4,7 @@ $filters = $filters ?? ['id' => '', 'username' => '', 'type' => '', 'active' => 
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($users) ? count($users) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 // Create an array of filters to use on pagination
 $queryFilters = http_build_query([
@@ -12,6 +13,7 @@ $queryFilters = http_build_query([
 	'type' => $filters['type'],
 	'active' => $filters['active']
 	]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <!-- Breadcrumbs -->
@@ -28,6 +30,7 @@ $queryFilters = http_build_query([
 
 <!-- Search form -->
 <form action="<?= url('user'); ?>" class="row g-3 mb-3">
+  <?= sortHiddenInputs($sort) ?>
   <div class="col-12 col-lg-9">
     <div class="row g-3">
       <!-- Linha 1 -->
@@ -126,9 +129,9 @@ $queryFilters = http_build_query([
 <div class="table-responsive">
   <table class="table table-striped table-hover">
     <tr>
-      <th style="width: 1%;">#</th>
-      <th>Usuário</th>
-      <th>Tipo</th>
+      <?= sortableTh('user', 'id', '#', $sort, $queryFilters, 'style="width: 1%;"') ?>
+      <?= sortableTh('user', 'username', 'Usuário', $sort, $queryFilters) ?>
+      <?= sortableTh('user', 'type', 'Tipo', $sort, $queryFilters) ?>
       <th style="width: 1%;" class="text-nowrap text-end">Ações</th>
     </tr>
 		<?php if (!empty($users)): ?>
@@ -168,7 +171,7 @@ $queryFilters = http_build_query([
 
 <!-- Pagination -->
 <?php if ($totalPages > 1): ?>
-	<?= paginationLinks('user', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
+	<?= paginationLinks('user', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 <!-- /Pagination -->
 

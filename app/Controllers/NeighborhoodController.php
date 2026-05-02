@@ -31,8 +31,9 @@ class NeighborhoodController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(Neighborhood::sortableColumns(), 'id', 'desc');
 
-		$neighborhoods = $neighborhood->search($filters, $perPage, $offset);
+		$neighborhoods = $neighborhood->search($filters, $perPage, $offset, $sort);
 		$total = $neighborhood->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -48,6 +49,7 @@ class NeighborhoodController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $neighborhoods,
 			]);
 			}
@@ -59,6 +61,7 @@ class NeighborhoodController extends Controller
 			'page'          => $page,
 			'totalPages'    => $totalPages,
 			'total'         => $total,
+			'sort'          => $sort,
 		]);
 		}
 

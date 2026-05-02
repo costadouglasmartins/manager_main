@@ -36,9 +36,10 @@ class UserController extends Controller
 		// Records per page
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(User::sortableColumns(), 'id', 'desc');
 
 		// Paginated search with filters
-		$users = $user->search($filters, $perPage, $offset);
+		$users = $user->search($filters, $perPage, $offset, $sort);
 
 		// Total records for pagination with the same filters
 		$total = $user->count($filters);
@@ -55,6 +56,7 @@ class UserController extends Controller
 			'page'				=> $page,
 			'totalPages'	=> $totalPages,
 			'total'				=> $total,
+			'sort'				=> $sort,
 		]);
 		}
 

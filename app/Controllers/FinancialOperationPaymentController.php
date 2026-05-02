@@ -33,8 +33,9 @@ class FinancialOperationPaymentController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(FinancialOperationPayment::sortableColumns(), 'id', 'desc');
 
-		$payments = $payment->search($filters, $perPage, $offset);
+		$payments = $payment->search($filters, $perPage, $offset, $sort);
 		$total = $payment->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -50,6 +51,7 @@ class FinancialOperationPaymentController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $payments,
 			]);
 			}
@@ -63,6 +65,7 @@ class FinancialOperationPaymentController extends Controller
 			'page'                          => $page,
 			'totalPages'                    => $totalPages,
 			'total'                         => $total,
+			'sort'                          => $sort,
 		]);
 		}
 

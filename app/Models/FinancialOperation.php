@@ -8,6 +8,23 @@ use PDO;
 class FinancialOperation extends Model
 	{
 	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'             => 'fo.id',
+			'category_name'  => 'Category.`name`',
+			'user_name'      => 'Person.`name`',
+			'type'           => 'fo.`type`',
+			'total_value'    => 'fo.`total_value`',
+			'created'        => 'fo.`created`',
+		];
+		}
+
+	/**
 	 * Returns the operation type labels.
 	 *
 	 * @return array<string, string>
@@ -307,7 +324,7 @@ class FinancialOperation extends Model
 	 * @param int $offset Query offset.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT fo.*,
 		               Category.name AS category_name,
@@ -323,7 +340,8 @@ class FinancialOperation extends Model
 
 		$this->applyFilters($sql, $params, $filters);
 
-		$sql .= " ORDER BY fo.id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 		$this->bindParams($stmt, $params);

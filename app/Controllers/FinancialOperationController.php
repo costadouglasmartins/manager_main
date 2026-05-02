@@ -37,8 +37,9 @@ class FinancialOperationController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(FinancialOperation::sortableColumns(), 'id', 'desc');
 
-		$financialOperations = $financialOperation->search($filters, $perPage, $offset);
+		$financialOperations = $financialOperation->search($filters, $perPage, $offset, $sort);
 		$total = $financialOperation->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -54,6 +55,7 @@ class FinancialOperationController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $financialOperations,
 			]);
 			}
@@ -67,6 +69,7 @@ class FinancialOperationController extends Controller
 			'page'                 => $page,
 			'totalPages'           => $totalPages,
 			'total'                => $total,
+			'sort'                 => $sort,
 		]);
 		}
 

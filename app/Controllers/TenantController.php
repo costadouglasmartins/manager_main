@@ -30,7 +30,8 @@ class TenantController extends Controller
 
 		$perPage    = 10;
 		$offset     = ($page - 1) * $perPage;
-		$tenants    = $tenant->search($filters, $perPage, $offset);
+		$sort       = sortRequest(Tenant::sortableColumns(), 'id', 'desc');
+		$tenants    = $tenant->search($filters, $perPage, $offset, $sort);
 		$total      = $tenant->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1) { $totalPages = 1; }
@@ -42,6 +43,7 @@ class TenantController extends Controller
 			'page'       => $page,
 			'totalPages' => $totalPages,
 			'total'      => $total,
+			'sort'       => $sort,
 		]);
 		}
 

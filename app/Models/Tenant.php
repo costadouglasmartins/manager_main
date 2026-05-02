@@ -7,11 +7,25 @@ use PDO;
 
 class Tenant extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'              => 'Tenant.id',
+			'name'            => 'Tenant.`name`',
+			'database_number' => 'Tenant.`database_number`',
+			'status'          => 'Tenant.`status`',
+		];
+		}
 
 	/**
 	 * Search method
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT Tenant.id,
 		               Tenant.name,
@@ -50,7 +64,8 @@ class Tenant extends Model
 			$params['status'] = $filters['status'];
 			}
 
-		$sql .= " ORDER BY Tenant.id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

@@ -7,6 +7,20 @@ use PDO;
 
 class PhoneNumber extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'           => 'ph.id',
+			'phone_number' => 'ph.`phone_number`',
+			'person_name'  => 'p.`name`',
+			'observations' => 'ph.`observations`',
+		];
+		}
 
 	/**
 	 * Get all method
@@ -85,7 +99,7 @@ class PhoneNumber extends Model
 	/**
 	 * Search method
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT ph.*, p.name AS person_name FROM phone_numbers ph LEFT JOIN people p ON p.id = ph.person_id WHERE 1=1";
 		$params = [];
@@ -108,7 +122,8 @@ class PhoneNumber extends Model
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
-		$sql .= " ORDER BY ph.id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

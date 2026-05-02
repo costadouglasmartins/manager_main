@@ -7,6 +7,19 @@ use PDO;
 
 class Country extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'      => 'id',
+			'name'    => '`name`',
+			'acronym' => '`acronym`',
+		];
+		}
 
 	/**
 	 * Get all method
@@ -102,7 +115,7 @@ class Country extends Model
 	/**
 	 * Search method 
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT * FROM countries WHERE 1=1";
 		$params = [];
@@ -128,7 +141,8 @@ class Country extends Model
 			$params['acronym'] = $filters['acronym'];
 			}
 
-		$sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

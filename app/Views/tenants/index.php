@@ -3,6 +3,7 @@ $filters = $filters ?? ['id' => '', 'name' => '', 'database_number' => '', 'stat
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($tenants) ? count($tenants) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
 	'id'              => $filters['id'],
@@ -10,6 +11,7 @@ $queryFilters = http_build_query([
 	'database_number' => $filters['database_number'],
 	'status'          => $filters['status'],
 	]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <!-- Breadcrumbs -->
@@ -25,6 +27,7 @@ $queryFilters = http_build_query([
 
 <!-- Search form -->
 <form action="<?= url('tenant'); ?>" class="row g-3 mb-3">
+  <?= sortHiddenInputs($sort) ?>
   <div class="col-12 col-lg-9">
     <div class="row g-3">
       <div class="col-12 col-md-6 col-lg-3">
@@ -63,10 +66,10 @@ $queryFilters = http_build_query([
 <div class="table-responsive">
   <table class="table table-striped table-hover">
     <tr>
-      <th style="width: 1%;">#</th>
-      <th>Nome</th>
-      <th>Banco</th>
-      <th>Situacao</th>
+      <?= sortableTh('tenant', 'id', '#', $sort, $queryFilters, 'style="width: 1%;"') ?>
+      <?= sortableTh('tenant', 'name', 'Nome', $sort, $queryFilters) ?>
+      <?= sortableTh('tenant', 'database_number', 'Banco', $sort, $queryFilters) ?>
+      <?= sortableTh('tenant', 'status', 'Situacao', $sort, $queryFilters) ?>
       <th style="width: 1%;" class="text-nowrap text-end">Acoes</th>
     </tr>
     <?php if (!empty($tenants)): ?>
@@ -110,7 +113,7 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <?= paginationLinks('tenant', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Proxima') ?>
+  <?= paginationLinks('tenant', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Proxima') ?>
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->

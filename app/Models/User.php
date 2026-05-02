@@ -7,11 +7,24 @@ use PDO;
 
 class User extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'       => 'id',
+			'username' => '`username`',
+			'type'     => '`type`',
+		];
+		}
 
   /**
 	 * Search method
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT * FROM users WHERE 1=1";
 		$params = [];
@@ -56,7 +69,8 @@ class User extends Model
 				}
 			}
 
-		$sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

@@ -8,6 +8,20 @@ use PDO;
 class FinancialOperationCategory extends Model
 	{
 	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'          => 'id',
+			'name'        => '`name`',
+			'description' => '`description`',
+		];
+		}
+
+	/**
 	 * Get all method.
 	 *
 	 * @return array<int, array<string, mixed>>
@@ -103,14 +117,15 @@ class FinancialOperationCategory extends Model
 	 * @param int $offset Query offset.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT * FROM financial_operations_categories WHERE 1=1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
 
-		$sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 		$this->bindParams($stmt, $params);

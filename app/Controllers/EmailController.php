@@ -32,8 +32,9 @@ class EmailController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(Email::sortableColumns(), 'id', 'desc');
 
-		$emails = $email->search($filters, $perPage, $offset);
+		$emails = $email->search($filters, $perPage, $offset, $sort);
 		$total = $email->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -49,6 +50,7 @@ class EmailController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $emails,
 			]);
 			}
@@ -60,6 +62,7 @@ class EmailController extends Controller
 			'page'       => $page,
 			'totalPages' => $totalPages,
 			'total'      => $total,
+			'sort'       => $sort,
 		]);
 		}
 

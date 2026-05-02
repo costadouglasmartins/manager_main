@@ -31,8 +31,9 @@ class StateController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(State::sortableColumns(), 'id', 'desc');
 
-		$states = $state->search($filters, $perPage, $offset);
+		$states = $state->search($filters, $perPage, $offset, $sort);
 		$total = $state->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -48,6 +49,7 @@ class StateController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $states,
 			]);
 			}
@@ -59,6 +61,7 @@ class StateController extends Controller
 			'page'       => $page,
 			'totalPages' => $totalPages,
 			'total'      => $total,
+			'sort'       => $sort,
 		]);
 		}
 

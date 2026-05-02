@@ -7,6 +7,19 @@ use PDO;
 
 class Neighborhood extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'        => 'n.id',
+			'name'      => 'n.`name`',
+			'city_name' => 'c.`name`',
+		];
+		}
 
 	/**
 	 * Get all method
@@ -82,7 +95,7 @@ class Neighborhood extends Model
 	/**
 	 * Search method
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = "SELECT n.*, c.name AS city_name FROM neighborhoods n LEFT JOIN cities c ON c.id = n.city_id WHERE 1=1";
 		$params = [];
@@ -105,7 +118,8 @@ class Neighborhood extends Model
 			$params['city_id'] = (int) $filters['city_id'];
 			}
 
-		$sql .= " ORDER BY n.id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

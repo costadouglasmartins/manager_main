@@ -3,6 +3,7 @@ $filters = $filters ?? ['id' => '', 'phone_number' => '', 'person_id' => '', 'pe
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($phone_numbers) ? count($phone_numbers) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
   'id'           => $filters['id'],
@@ -10,6 +11,7 @@ $queryFilters = http_build_query([
   'person_id'    => $filters['person_id'],
   'person_name'  => $filters['person_name'],
 ]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <nav aria-label="breadcrumb">
@@ -22,6 +24,7 @@ $queryFilters = http_build_query([
 <h5>Lista de Telefones</h5>
 
 <form action="<?= url('phone_number'); ?>" class="row g-3 mb-3" method="get">
+  <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -68,10 +71,10 @@ $queryFilters = http_build_query([
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        <th>#</th>
-        <th>Telefone</th>
-        <th>Pessoa</th>
-        <th>Observações</th>
+        <?= sortableTh('phone_number', 'id', '#', $sort, $queryFilters) ?>
+        <?= sortableTh('phone_number', 'phone_number', 'Telefone', $sort, $queryFilters) ?>
+        <?= sortableTh('phone_number', 'person_name', 'Pessoa', $sort, $queryFilters) ?>
+        <?= sortableTh('phone_number', 'observations', 'Observações', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -110,7 +113,7 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <?= paginationLinks('phone_number', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
+  <?= paginationLinks('phone_number', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->

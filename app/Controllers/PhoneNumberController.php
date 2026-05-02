@@ -32,8 +32,9 @@ class PhoneNumberController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(PhoneNumber::sortableColumns(), 'id', 'desc');
 
-		$phoneNumbers = $phoneNumber->search($filters, $perPage, $offset);
+		$phoneNumbers = $phoneNumber->search($filters, $perPage, $offset, $sort);
 		$total = $phoneNumber->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -49,6 +50,7 @@ class PhoneNumberController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $phoneNumbers,
 			]);
 			}
@@ -60,6 +62,7 @@ class PhoneNumberController extends Controller
 			'page'          => $page,
 			'totalPages'    => $totalPages,
 			'total'         => $total,
+			'sort'          => $sort,
 		]);
 		}
 

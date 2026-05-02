@@ -8,6 +8,23 @@ use PDO;
 class FinancialOperationPayment extends Model
 	{
 	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'                     => 'fop.id',
+			'financial_operation_id' => 'fop.financial_operation_id',
+			'type'                   => 'fop.`type`',
+			'value'                  => 'fop.`value`',
+			'payment_date'           => 'fop.`payment_date`',
+			'due_date'               => 'fop.`due_date`',
+		];
+		}
+
+	/**
 	 * Returns the payment type labels.
 	 *
 	 * @return array<string, string>
@@ -144,14 +161,15 @@ class FinancialOperationPayment extends Model
 	 * @param int $offset Query offset.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		$sql = $this->baseSelect() . " WHERE 1=1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
 
-		$sql .= " ORDER BY fop.id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 		$this->bindParams($stmt, $params);

@@ -31,8 +31,9 @@ class CityController extends Controller
 
 		$perPage = 10;
 		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest(City::sortableColumns(), 'id', 'desc');
 
-		$cities = $city->search($filters, $perPage, $offset);
+		$cities = $city->search($filters, $perPage, $offset, $sort);
 		$total = $city->count($filters);
 		$totalPages = (int) ceil($total / $perPage);
 		if ($totalPages < 1)
@@ -48,6 +49,7 @@ class CityController extends Controller
 				'perPage'    => $perPage,
 				'total'      => $total,
 				'totalPages' => $totalPages,
+				'sort'       => $sort,
 				'data'       => $cities,
 			]);
 			}
@@ -59,6 +61,7 @@ class CityController extends Controller
 			'page'       => $page,
 			'totalPages' => $totalPages,
 			'total'      => $total,
+			'sort'       => $sort,
 		]);
 		}
 

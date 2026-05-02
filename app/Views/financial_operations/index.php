@@ -5,6 +5,7 @@ $types = $types ?? [];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($financial_operations) ? count($financial_operations) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
   'id'                              => $filters['id'],
@@ -15,6 +16,7 @@ $queryFilters = http_build_query([
   'type'                            => $filters['type'],
   'total_value'                     => $filters['total_value'],
 ]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <nav aria-label="breadcrumb">
@@ -27,6 +29,7 @@ $queryFilters = http_build_query([
 <h5>Lista de Operações Financeiras</h5>
 
 <form action="<?= url('financial_operation'); ?>" class="row g-3 mb-3" method="get">
+  <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -93,12 +96,12 @@ $queryFilters = http_build_query([
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        <th>#</th>
-        <th>Categoria</th>
-        <th>Usuário</th>
-        <th>Tipo</th>
-        <th>Valor total</th>
-        <th>Criado</th>
+        <?= sortableTh('financial_operation', 'id', '#', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'category_name', 'Categoria', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'user_name', 'Usuário', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'type', 'Tipo', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'total_value', 'Valor total', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'created', 'Criado', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -148,7 +151,7 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= (int) $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <?= paginationLinks('financial_operation', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
+  <?= paginationLinks('financial_operation', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 
 <div class="modal fade" id="deleteModal" tabindex="-1">

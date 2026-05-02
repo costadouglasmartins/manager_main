@@ -16,6 +16,21 @@ use PDO;
  */
 class Person extends Model
 	{
+	/**
+	 * Returns sortable columns for list queries.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function sortableColumns(): array
+		{
+		return [
+			'id'        => 'id',
+			'name'      => '`name`',
+			'document'  => '`document`',
+			'birthdate' => '`birthdate`',
+			'type'      => '`type`',
+		];
+		}
 
 	/**
 	 * Returns all registered people.
@@ -840,7 +855,7 @@ class Person extends Model
 	 * @param int $offset Pagination start position.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function search(array $filters = [], int $limit = 10, int $offset = 0): array
+	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		// Start with a neutral predicate so optional filters can be appended.
 		$sql = "SELECT * FROM people WHERE 1=1";
@@ -892,7 +907,8 @@ class Person extends Model
 			$params['birthdate'] = dateBrToUs($filters['birthdate']);
 			}
 
-		$sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
+		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 

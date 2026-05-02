@@ -3,12 +3,14 @@ $filters = $filters ?? ['id' => '', 'name' => '', 'acronym' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($states) ? count($states) : 0);
+$sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
   'id'      => $filters['id'],
   'name'    => $filters['name'],
   'acronym' => $filters['acronym'],
 ]);
+$paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
 
 <nav aria-label="breadcrumb">
@@ -21,6 +23,7 @@ $queryFilters = http_build_query([
 <h5>Lista de Estados</h5>
 
 <form action="<?= url('state'); ?>" class="row g-3 mb-3" method="get">
+  <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -58,10 +61,10 @@ $queryFilters = http_build_query([
   <table class="table table-striped table-hover">
     <thead>
       <tr>
-        <th>#</th>
-        <th>Nome</th>
-        <th>Sigla</th>
-        <th>País</th>
+        <?= sortableTh('state', 'id', '#', $sort, $queryFilters) ?>
+        <?= sortableTh('state', 'name', 'Nome', $sort, $queryFilters) ?>
+        <?= sortableTh('state', 'acronym', 'Sigla', $sort, $queryFilters) ?>
+        <?= sortableTh('state', 'country_name', 'País', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -100,7 +103,7 @@ $queryFilters = http_build_query([
 <p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
-  <?= paginationLinks('state', $page, $totalPages, $queryFilters, 2, 'Anterior', 'Próxima') ?>
+  <?= paginationLinks('state', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->
