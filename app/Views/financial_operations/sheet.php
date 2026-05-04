@@ -108,7 +108,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=6'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=11'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -178,8 +178,8 @@ if ($sessionUserLabel === '')
       <span><?= count($months); ?> meses</span>
     </div>
 
-    <div class="overflow-x-hidden">
-      <table class="financial-sheet-table table table-sm align-middle mb-0 w-100 small">
+    <div class="table-responsive">
+      <table class="table financial-sheet-table table-sm align-middle mb-0 small">
         <colgroup>
           <col class="financial-sheet-label-col">
           <?php foreach ($months as $_monthNumber => $_monthLabel): ?>

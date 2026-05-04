@@ -168,16 +168,15 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-/*
-.financial-sheet-scroll {
-  overflow-x: hidden;
+.financial-sheet-board .table-responsive {
+  overflow-x: auto;
   overflow-y: visible;
-  max-height: none;
 }
-*/
+
 .financial-sheet-table {
-  width: 100%;
-  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   color: var(--bs-body-color);
@@ -185,7 +184,7 @@
 }
 
 .financial-sheet-label-col {
-  width: 18%;
+  width: auto;
 }
 
 .financial-sheet-month-col {
@@ -193,7 +192,7 @@
 }
 
 .financial-sheet-total-col {
-  width: 9%;
+  width: 96px;
 }
 
 .financial-sheet-table th,
@@ -220,26 +219,21 @@
   background: var(--sheet-header-bg);
 }
 
-.financial-sheet-table thead th:first-child,
 .financial-sheet-data-row th,
 .financial-sheet-total-row th {
-  position: sticky;
-  left: 0;
-}
-
-.financial-sheet-table thead th:first-child {
-  z-index: 5;
-}
-
-.financial-sheet-data-row th,
-.financial-sheet-total-row th {
-  z-index: 2;
-  overflow: hidden;
+  overflow: visible;
   color: var(--bs-emphasis-color);
   text-align: left;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   white-space: nowrap;
-  background: var(--sheet-sticky-bg);
+  background: var(--sheet-panel-bg);
+}
+
+.financial-sheet-data-row th .text-truncate,
+.financial-sheet-total-row th .text-truncate {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .financial-sheet-data-row td,
@@ -251,6 +245,7 @@
   background: var(--sheet-panel-bg);
 }
 
+.financial-sheet-data-row:nth-of-type(even) th,
 .financial-sheet-data-row:nth-of-type(even) td {
   background: var(--sheet-muted-bg);
 }
@@ -292,6 +287,11 @@
 }
 
 .financial-sheet-percent-row td {
+  color: var(--bs-emphasis-color);
+  background: var(--sheet-muted-bg);
+}
+
+.financial-sheet-percent-row th {
   color: var(--bs-emphasis-color);
   background: var(--sheet-muted-bg);
 }
