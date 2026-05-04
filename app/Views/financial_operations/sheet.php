@@ -142,9 +142,6 @@ if ($sessionUserLabel === '')
         </select>
         <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
       </form>
-      <a class="btn btn-outline-secondary btn-sm" href="<?= url('financial_operation'); ?>">
-        <i class="bi bi-arrow-left me-1"></i>Voltar
-      </a>
       <?php if (authCan('financial_operation.create')): ?>
         <a class="btn btn-success btn-sm" href="<?= url('financial_operation/create'); ?>">
           <i class="bi bi-plus-lg me-1"></i>Novo lançamento

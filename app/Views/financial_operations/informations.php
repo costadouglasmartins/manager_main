@@ -89,6 +89,11 @@ $operationTotal = (float) ($financial_operation['total_value'] ?? 0);
 $categoryId = (int) ($financial_operation['financial_operation_category_id'] ?? 0);
 $categoryLabel = trim((string) ($financial_operation['category_name'] ?? ''));
 $categoryLabel = $categoryLabel !== '' ? $categoryLabel : 'Sem categoria';
+$categoryDescription = trim((string) ($financial_operation['category_description'] ?? ''));
+if ($categoryDescription !== '')
+	{
+	$categoryLabel .= ' - ' . $categoryDescription;
+	}
 $categoryDetail = $categoryId > 0 ? '#' . $categoryId . ' - ' . $categoryLabel : $categoryLabel;
 
 $userId = (int) ($financial_operation['user_id'] ?? 0);
@@ -322,10 +327,21 @@ $paymentCount = count($financial_operation_payments);
           <span class="foi-kicker">Tabela associada</span>
           <h2>Pagamentos da operação</h2>
         </div>
-        <?php if (authCan('financial_operation_payment.index')): ?>
-          <a class="btn btn-outline-primary btn-sm" href="<?= url('financial_operation_payment?financial_operation_id=' . $operationId); ?>">
-            <i class="bi bi-list-ul me-1"></i>Ver no módulo
-          </a>
+        <?php if (authCan('financial_operation_payment.index') || authCan('financial_operation.update')): ?>
+          <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+            <?php if (authCan('financial_operation.update')): ?>
+              <form class="m-0" method="POST" action="<?= url('financial_operation/recalculateTotal/' . $operationId); ?>">
+                <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+                  <i class="bi bi-calculator me-1"></i>Recalcular valor
+                </button>
+              </form>
+            <?php endif; ?>
+            <?php if (authCan('financial_operation_payment.index')): ?>
+              <a class="btn btn-outline-primary btn-sm" href="<?= url('financial_operation_payment?financial_operation_id=' . $operationId); ?>">
+                <i class="bi bi-list-ul me-1"></i>Ver no módulo
+              </a>
+            <?php endif; ?>
+          </div>
         <?php endif; ?>
       </div>
 
@@ -373,6 +389,11 @@ $paymentCount = count($financial_operation_payments);
                     <?php if (authCan('financial_operation_payment.informations')): ?>
                       <a href="<?= url('financial_operation_payment/informations/' . $payment['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
                     <?php endif; ?>
+                    <?php if (authCan('financial_operation_payment.delete')): ?>
+                      <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $payment['id']; ?>" data-name="Pagamento #<?= (int) $payment['id']; ?>">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    <?php endif; ?>
                   </td>
                 </tr>
               <?php endforeach; ?>
@@ -388,6 +409,30 @@ $paymentCount = count($financial_operation_payments);
       <?php endif; ?>
     </div>
   </section>
+
+  <?php if (!empty($financial_operation_payments) && authCan('financial_operation_payment.delete')): ?>
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirmar exclusão</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('financial_operation_payment/delete'); ?>" style="display: inline;">
+              <input type="hidden" name="id" id="recordId">
+              <input type="hidden" name="redirect_to" value="financial_operation/informations/<?= $operationId; ?>">
+              <button type="submit" class="btn btn-danger">Excluir</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
 <?php endif; ?>
 
-<script src="<?= url('assets/js/financial_operations/informations.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/informations.js?v=2'); ?>"></script>

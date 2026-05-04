@@ -317,6 +317,17 @@ class FinancialOperation extends Model
 		}
 
 	/**
+	 * Recalculates the operation total from its linked payments.
+	 *
+	 * @param int $financialOperationId Financial operation ID.
+	 * @return void
+	 */
+	public function recalculateTotalFromPayments(int $financialOperationId): void
+		{
+		$this->syncOperationTotalFromPayments($financialOperationId);
+		}
+
+	/**
 	 * Search method
 	 *
 	 * @param array<string, mixed> $filters Search filters.

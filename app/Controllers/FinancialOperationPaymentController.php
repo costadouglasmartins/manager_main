@@ -156,6 +156,7 @@ class FinancialOperationPaymentController extends Controller
 	public function delete($id)
 		{
 		$this->requirePermission('financial_operation_payment.delete');
+		$redirectPath = $this->deleteRedirectPath();
 
 		if ($_SERVER['REQUEST_METHOD'] === 'POST')
 			{
@@ -163,13 +164,34 @@ class FinancialOperationPaymentController extends Controller
 			try
 				{
 				$payment->delete($id);
-				$this->redirect('financial_operation_payment');
+				$this->redirect($redirectPath);
 				}
 			catch (\Exception $e)
 				{
-				$this->redirect('financial_operation_payment');
+				$this->redirect($redirectPath);
 				}
 			}
+		}
+
+	/**
+	 * Returns the safe redirect path to use after deleting a payment.
+	 *
+	 * @return string
+	 */
+	private function deleteRedirectPath(): string
+		{
+		$redirectPath = isset($_POST['redirect_to']) ? trim((string) $_POST['redirect_to']) : '';
+		if ($redirectPath === '')
+			{
+			return 'financial_operation_payment';
+			}
+
+		if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $redirectPath) || strpos($redirectPath, '/') === 0 || strpos($redirectPath, '\\') !== false)
+			{
+			return 'financial_operation_payment';
+			}
+
+		return $redirectPath;
 		}
 	}
 

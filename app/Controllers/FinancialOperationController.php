@@ -319,6 +319,34 @@ class FinancialOperationController extends Controller
 		}
 
 	/**
+	 * Recalculates the operation total from its linked payments.
+	 *
+	 * @param int|string $id Financial operation ID.
+	 */
+	public function recalculateTotal($id)
+		{
+		$this->requirePermission('financial_operation.update');
+
+		$operationId = (int) $id;
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $operationId <= 0)
+			{
+			$this->redirect($operationId > 0 ? 'financial_operation/informations/' . $operationId : 'financial_operation');
+			}
+
+		$financialOperation = new FinancialOperation();
+		try
+			{
+			$financialOperation->recalculateTotalFromPayments($operationId);
+			}
+		catch (\Exception $e)
+			{
+			// Keep the user on the operation screen even if the recalculation fails.
+			}
+
+		$this->redirect('financial_operation/informations/' . $operationId);
+		}
+
+	/**
 	 * Delete method
 	 *
 	 * @param int|string $id Financial operation ID.
