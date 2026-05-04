@@ -6,6 +6,28 @@ use App\Core\Authorization;
 
 class Controller
 	{
+	/**
+	 * Route aliases accepted by the controller.
+	 *
+	 * @var array<string, string>
+	 */
+	protected $routeAliases = [];
+
+	/**
+	 * Resolve a route method alias to the controller method that should run.
+	 *
+	 * @param string $routeMethod Method segment received from the URL.
+	 * @return string Controller method name.
+	 */
+	public function resolveRouteMethod(string $routeMethod): string
+		{
+		if (isset($this->routeAliases[$routeMethod]) && is_string($this->routeAliases[$routeMethod]))
+			{
+			return $this->routeAliases[$routeMethod];
+			}
+
+		return $routeMethod;
+		}
 
 	/**
 	 * Render a view and optionally wrap it with the main layout.

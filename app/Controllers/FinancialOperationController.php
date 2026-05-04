@@ -10,6 +10,16 @@ use App\Models\FinancialOperationPayment;
 class FinancialOperationController extends Controller
 	{
 	/**
+	 * Route aliases for Brazilian Portuguese report URLs.
+	 *
+	 * @var array<string, string>
+	 */
+	protected $routeAliases = [
+		'contas_a_receber' => 'accountsReceivable',
+		'contas_a_pagar'   => 'accountsPayable',
+	];
+
+	/**
 	 * Index method
 	 */
 	public function index()

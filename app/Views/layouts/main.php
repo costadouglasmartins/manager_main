@@ -227,9 +227,9 @@
                     <li class="dropdown-submenu">
                       <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-stack me-2"></i>Relatórios</a>
                       <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= url('financial_operation/accountsReceivable'); ?>"><i class="bi bi-arrow-down-circle me-2"></i>Contas a receber</a></li>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation/contas_a_receber'); ?>"><i class="bi bi-arrow-down-circle me-2"></i>Contas a receber</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="<?= url('financial_operation/accountsPayable'); ?>"><i class="bi bi-arrow-up-circle me-2"></i>Contas a pagar</a></li>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation/contas_a_pagar'); ?>"><i class="bi bi-arrow-up-circle me-2"></i>Contas a pagar</a></li>
                       </ul>
                     </li>
                   <?php endif; ?>
