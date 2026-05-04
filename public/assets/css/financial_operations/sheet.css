@@ -343,6 +343,11 @@
   outline-offset: 2px;
 }
 
+.financial-sheet-entry-paid {
+  color: var(--bs-success-text-emphasis) !important;
+  font-weight: 700;
+}
+
 .financial-sheet-modal-subtitle {
   display: block;
   margin-top: 0.15rem;

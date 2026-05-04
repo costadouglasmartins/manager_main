@@ -25,19 +25,38 @@ if (!function_exists('financialSheetPercent'))
     }
   }
 
+if (!function_exists('financialSheetIsPaidValue'))
+  {
+  function financialSheetIsPaidValue(int $cents, int $paidCents): bool
+    {
+    return $cents > 0 && $paidCents === $cents;
+    }
+  }
+
 if (!function_exists('financialSheetEntryButton'))
   {
-  function financialSheetEntryButton(int $cents, array $data, bool $blankWhenZero, bool $canEdit): string
+  function financialSheetEntryButton(int $cents, array $data, bool $blankWhenZero, bool $canEdit, bool $isPaid = false): string
     {
     $label = financialSheetMoney($cents, $blankWhenZero);
     if (!$canEdit || $cents === 0 || $label === '')
       {
+      if ($isPaid && $label !== '')
+        {
+        return '<span class="financial-sheet-entry-paid">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>';
+        }
+
       return $label;
+      }
+
+    $classes = ['financial-sheet-entry-button'];
+    if ($isPaid)
+      {
+      $classes[] = 'financial-sheet-entry-paid';
       }
 
     $attributes = [
       'type' => 'button',
-      'class' => 'financial-sheet-entry-button',
+      'class' => implode(' ', $classes),
       'data-sheet-entry' => '1',
     ];
     foreach ($data as $name => $value)
@@ -89,7 +108,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=5'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=6'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -191,23 +210,31 @@ if ($sessionUserLabel === '')
               <tr class="financial-sheet-data-row financial-sheet-income-data">
                 <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
-                  <td><?= financialSheetEntryButton((int) ($row['months'][$monthNumber] ?? 0), [
+                  <?php
+                  $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
+                  $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
+                  ?>
+                  <td><?= financialSheetEntryButton($monthCents, [
                     'sheet_year' => $year,
                     'sheet_type' => 'CREDIT',
                     'sheet_category_id' => $categoryId,
                     'sheet_category_label' => (string) ($row['label'] ?? ''),
                     'sheet_month' => (int) $monthNumber,
                     'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
-                  ], true, $canEditSheetOperations); ?></td>
+                  ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?></td>
                 <?php endforeach; ?>
-                <td><?= financialSheetEntryButton((int) ($row['total'] ?? 0), [
+                <?php
+                $rowTotalCents = (int) ($row['total'] ?? 0);
+                $rowPaidTotalCents = (int) ($row['paidTotal'] ?? 0);
+                ?>
+                <td><?= financialSheetEntryButton($rowTotalCents, [
                   'sheet_year' => $year,
                   'sheet_type' => 'CREDIT',
                   'sheet_category_id' => $categoryId,
                   'sheet_category_label' => (string) ($row['label'] ?? ''),
                   'sheet_month' => '',
                   'sheet_month_label' => 'Ano',
-                ], false, $canEditSheetOperations); ?></td>
+                ], false, $canEditSheetOperations, financialSheetIsPaidValue($rowTotalCents, $rowPaidTotalCents)); ?></td>
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
@@ -239,23 +266,31 @@ if ($sessionUserLabel === '')
               <tr class="financial-sheet-data-row financial-sheet-expense-data">
                 <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
-                  <td><?= financialSheetEntryButton((int) ($row['months'][$monthNumber] ?? 0), [
+                  <?php
+                  $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
+                  $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
+                  ?>
+                  <td><?= financialSheetEntryButton($monthCents, [
                     'sheet_year' => $year,
                     'sheet_type' => 'DEBIT',
                     'sheet_category_id' => $categoryId,
                     'sheet_category_label' => (string) ($row['label'] ?? ''),
                     'sheet_month' => (int) $monthNumber,
                     'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
-                  ], true, $canEditSheetOperations); ?></td>
+                  ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?></td>
                 <?php endforeach; ?>
-                <td><?= financialSheetEntryButton((int) ($row['total'] ?? 0), [
+                <?php
+                $rowTotalCents = (int) ($row['total'] ?? 0);
+                $rowPaidTotalCents = (int) ($row['paidTotal'] ?? 0);
+                ?>
+                <td><?= financialSheetEntryButton($rowTotalCents, [
                   'sheet_year' => $year,
                   'sheet_type' => 'DEBIT',
                   'sheet_category_id' => $categoryId,
                   'sheet_category_label' => (string) ($row['label'] ?? ''),
                   'sheet_month' => '',
                   'sheet_month_label' => 'Ano',
-                ], false, $canEditSheetOperations); ?></td>
+                ], false, $canEditSheetOperations, financialSheetIsPaidValue($rowTotalCents, $rowPaidTotalCents)); ?></td>
               </tr>
             <?php endforeach; ?>
           <?php else: ?>

@@ -398,7 +398,11 @@ class FinancialOperation extends Model
 			       Category.name AS category_name,
 			       Category.description AS category_description,
 			       MONTH(fop.due_date) AS operation_month,
-			       fop.value AS amount
+			       fop.value AS amount,
+			       CASE
+			         WHEN fop.payment_date IS NOT NULL THEN fop.value
+			         ELSE 0
+			       END AS paid_amount
 			FROM financial_operations AS fo
 			INNER JOIN financial_operations_payments AS fop ON fop.financial_operation_id = fo.id
 			LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
@@ -412,7 +416,8 @@ class FinancialOperation extends Model
 			       Category.name AS category_name,
 			       Category.description AS category_description,
 			       MONTH(COALESCE(fo.created, fo.modified)) AS operation_month,
-			       fo.total_value AS amount
+			       fo.total_value AS amount,
+			       0 AS paid_amount
 			FROM financial_operations AS fo
 			LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
 			WHERE NOT EXISTS (
@@ -443,6 +448,7 @@ class FinancialOperation extends Model
 				{
 				continue;
 				}
+			$paidCents = $this->moneyToCents($row['paid_amount'] ?? 0);
 
 			$targetRows =& $incomeRows;
 			$targetTotals =& $incomeTotals;
@@ -459,12 +465,16 @@ class FinancialOperation extends Model
 					'category_id' => (int) ($row['category_id'] ?? 0),
 					'label'       => $this->buildSheetCategoryLabel($row),
 					'months'      => $this->emptyMonthCents(),
+					'paidMonths'  => $this->emptyMonthCents(),
 					'total'       => 0,
+					'paidTotal'   => 0,
 				];
 				}
 
 			$targetRows[$key]['months'][$month] += $cents;
+			$targetRows[$key]['paidMonths'][$month] += $paidCents;
 			$targetRows[$key]['total'] += $cents;
+			$targetRows[$key]['paidTotal'] += $paidCents;
 			$targetTotals[$month] += $cents;
 			}
 
