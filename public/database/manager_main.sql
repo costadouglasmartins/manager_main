@@ -5705,7 +5705,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~15 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
@@ -5725,7 +5725,20 @@ INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `cre
 	(15, 'Transporte', 'Troca de óleo', '2026-04-30 21:23:08', '2026-04-30 21:23:08'),
 	(16, 'Renda', 'Salário mensal', '2026-04-30 21:39:20', '2026-04-30 21:39:20'),
 	(17, 'Moradia', 'Taxa de lixo', '2026-04-30 22:51:49', '2026-04-30 22:51:49'),
-	(18, 'Renda', 'Saldo mês anterior', '2026-05-01 21:33:22', '2026-05-01 21:33:22');
+	(18, 'Renda', 'Saldo mês anterior', '2026-05-01 21:33:22', '2026-05-01 21:33:22'),
+	(19, 'Alimentação', 'Café da manhã fins de semana', '2026-05-05 00:07:46', '2026-05-05 00:07:46'),
+	(20, 'Alimentação', 'Café da manhã de segunda a sexta', '2026-05-05 00:08:11', '2026-05-05 00:08:11'),
+	(21, 'Alimentação', 'Almoço fins de semana', '2026-05-05 00:08:47', '2026-05-05 00:08:47'),
+	(22, 'Alimentação', 'Almoço de segunda à sexta', '2026-05-05 00:09:31', '2026-05-05 00:09:31'),
+	(23, 'Alimentação', 'Janta fins de semana', '2026-05-05 00:10:14', '2026-05-05 00:10:14'),
+	(24, 'Alimentação', 'Janta segunda à sexta', '2026-05-05 00:10:56', '2026-05-05 00:11:37'),
+	(25, 'Economia', 'Aplicação', '2026-05-05 00:12:33', '2026-05-05 00:12:33'),
+	(26, 'Economia', 'Aposentadoria', '2026-05-05 00:12:47', '2026-05-05 00:12:47'),
+	(27, 'Saúde', 'Academia', '2026-05-05 00:14:26', '2026-05-05 00:14:26'),
+	(28, 'Saúde', 'Consultas', '2026-05-05 00:14:58', '2026-05-05 00:14:58'),
+	(29, 'Saúde', 'Medicamentos', '2026-05-05 00:15:36', '2026-05-05 00:16:46'),
+	(30, 'Saúde', 'Exames', '2026-05-05 00:16:33', '2026-05-05 00:16:33'),
+	(31, 'Saúde', 'Plano', '2026-05-05 00:17:23', '2026-05-05 00:17:23');
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -6361,7 +6374,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 
 -- Dumping data for table manager_main.user_remember_tokens: ~0 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(9, 1, '33800540b36d6048ebbfb85dbf47799a', 'd28a9150a694c38882f18bf5768f90283fae9b0da50ed989c84a53aa7544af23', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-03 21:59:15', '2026-05-02 15:33:45', '2026-05-04 21:59:15');
+	(9, 1, '50999669c0e273ed07ce2b35a08f6934', '06016ab379c01c23f60ba756277aeaa4754e0e01af9f10e8d2899ac959cd74dd', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-04 00:03:37', '2026-05-02 15:33:45', '2026-05-05 00:03:37');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
