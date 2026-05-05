@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=2'); ?>">
 
 <div class="people-create-page">
 <!-- Breadcrumbs -->

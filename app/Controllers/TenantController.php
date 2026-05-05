@@ -136,7 +136,6 @@ class TenantController extends Controller
 		$tenantId = (int) $id;
 		$userId   = isset($_POST['user_id']) ? (int) $_POST['user_id'] : 0;
 		$role     = isset($_POST['role'])    ? trim($_POST['role'])    : 'user';
-		$active   = isset($_POST['active'])  ? (int) $_POST['active']  : 1;
 
 		$allowedRoles = ['owner', 'admin', 'user'];
 		if (!in_array($role, $allowedRoles, true))
@@ -154,7 +153,7 @@ class TenantController extends Controller
 				}
 			else
 				{
-				$tenantModel->linkUser($tenantId, $userId, $role, $active);
+				$tenantModel->linkUser($tenantId, $userId, $role);
 				$this->flash('success', 'Usuario vinculado ao tenant com sucesso.');
 				}
 			}
@@ -163,7 +162,7 @@ class TenantController extends Controller
 		}
 
 	/**
-	 * Update an existing tenant_users link (role / active)
+	 * Update an existing tenant_users link role.
 	 * Route: POST tenant/updateUser/{tenantId}/{userId}
 	 * @param Integer $id     Tenant id
 	 * @param Integer $userId User id
@@ -181,7 +180,6 @@ class TenantController extends Controller
 		$tenantId = (int) $id;
 		$userId   = (int) ($userId ?? ($_POST['user_id'] ?? 0));
 		$role     = isset($_POST['role'])   ? trim($_POST['role'])   : 'user';
-		$active   = isset($_POST['active']) ? (int) $_POST['active'] : 1;
 
 		$allowedRoles = ['owner', 'admin', 'user'];
 		if (!in_array($role, $allowedRoles, true))
@@ -209,7 +207,7 @@ class TenantController extends Controller
 					}
 				}
 
-			$tenantModel->updateUserLink($tenantId, $userId, $role, $active);
+			$tenantModel->updateUserLink($tenantId, $userId, $role);
 			$this->flash('success', 'Vinculo atualizado com sucesso.');
 			}
 

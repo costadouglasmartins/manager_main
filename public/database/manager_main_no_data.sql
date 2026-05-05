@@ -227,7 +227,6 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   `tenant_id` int NOT NULL,
   `user_id` int NOT NULL,
   `role` enum('owner','admin','user') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY (`tenant_id`,`user_id`),

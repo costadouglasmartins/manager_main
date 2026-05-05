@@ -206,7 +206,7 @@ class Person extends Model
 
 				// The first user created through this flow owns the tenant.
 				$tenantModel = new Tenant();
-				$tenantModel->linkUser($tenantId, $userId, 'owner', 1);
+				$tenantModel->linkUser($tenantId, $userId, 'owner');
 				}
 
 			// Persist optional phone rows, skipping empty entries.
@@ -528,7 +528,7 @@ class Person extends Model
 		$tenantModel = new Tenant();
 		if (!$tenantModel->hasUser($tenantId, $userId))
 			{
-			$tenantModel->linkUser($tenantId, $userId, 'user', 1);
+				$tenantModel->linkUser($tenantId, $userId, 'user');
 			}
 		}
 
@@ -536,7 +536,7 @@ class Person extends Model
 	 * Synchronizes a user's tenant links.
 	 *
 	 * Regroups form data, removes links marked for deletion, updates basic tenant
-	 * data when sent and creates/updates the role and status in `tenant_users`.
+	 * data when sent and creates/updates the role in `tenant_users`.
 	 * Invalid tenant IDs are ignored so blank repeatable rows do not fail the
 	 * whole update.
 	 *
@@ -585,15 +585,14 @@ class Person extends Model
 				$role = 'user';
 				}
 
-			$active = (int) ($link['active'] ?? 1);
-			// Upsert the pivot relationship with its role and active flag.
+			// Upsert the pivot relationship with its role.
 			if ($tenantModel->hasUser($tenantId, $userId))
 				{
-				$tenantModel->updateUserLink($tenantId, $userId, $role, $active);
+				$tenantModel->updateUserLink($tenantId, $userId, $role);
 				}
 			else
 				{
-				$tenantModel->linkUser($tenantId, $userId, $role, $active);
+				$tenantModel->linkUser($tenantId, $userId, $role);
 				}
 			}
 		}
@@ -1049,7 +1048,6 @@ class Person extends Model
 			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
 			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
 			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
-			                                                      TenantUserAssoc.active DESC,
 			                                                      TenantUserAssoc.created ASC,
 			                                                      TenantUserAssoc.user_id ASC
 			                                             LIMIT 1) AS associated_person_id,
@@ -1059,7 +1057,6 @@ class Person extends Model
 			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
 			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
 			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
-			                                                      TenantUserAssoc.active DESC,
 			                                                      TenantUserAssoc.created ASC,
 			                                                      TenantUserAssoc.user_id ASC
 			                                             LIMIT 1) AS associated_person_name,
@@ -1069,7 +1066,6 @@ class Person extends Model
 			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
 			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
 			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
-			                                                      TenantUserAssoc.active DESC,
 			                                                      TenantUserAssoc.created ASC,
 			                                                      TenantUserAssoc.user_id ASC
 			                                             LIMIT 1) AS associated_person_fantasy,
@@ -1079,7 +1075,6 @@ class Person extends Model
 			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
 			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
 			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
-			                                                      TenantUserAssoc.active DESC,
 			                                                      TenantUserAssoc.created ASC,
 			                                                      TenantUserAssoc.user_id ASC
 			                                             LIMIT 1) AS associated_person_document,
@@ -1087,7 +1082,7 @@ class Person extends Model
 			                                          Tenant.status,
 			                                          Tenant.observations,
 			                                          TenantUser.role,
-			                                          TenantUser.active
+			                                          TenantUser.created
 			                                   FROM tenant_users AS TenantUser
 			                                   INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id
 			                                   WHERE TenantUser.user_id = :user_id

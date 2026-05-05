@@ -106,7 +106,6 @@
           <th>Pessoa associada</th>
           <th>Banco</th>
           <th>Perfil</th>
-          <th>Situação do vínculo</th>
           <th>Situação do tenant</th>
         </tr>
       </thead>
@@ -126,13 +125,6 @@
               $tenantRoles = ['owner' => 'Owner', 'admin' => 'Administrador', 'user' => 'Usuário'];
               echo htmlspecialchars($tenantRoles[$tenant['role']] ?? $tenant['role']);
               ?>
-            </td>
-            <td>
-              <?php if ((int) $tenant['active'] === 1): ?>
-                <span class="badge text-bg-success">Ativo</span>
-              <?php else: ?>
-                <span class="badge text-bg-secondary">Inativo</span>
-              <?php endif; ?>
             </td>
             <td>
               <?php if (($tenant['status'] ?? '') === 'active'): ?>

@@ -10,7 +10,7 @@ class Tenant extends Model
 	/**
 	 * Returns a subquery that selects one representative person for a tenant.
 	 *
-	 * The owner is preferred, then active links, then the oldest link.
+	 * The owner is preferred, then the oldest link.
 	 *
 	 * @param string $expression SQL expression from the associated person scope.
 	 * @return string
@@ -23,7 +23,6 @@ class Tenant extends Model
 		          INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
 		          WHERE TenantUserAssoc.tenant_id = Tenant.id
 		          ORDER BY TenantUserAssoc.role = 'owner' DESC,
-		                   TenantUserAssoc.active DESC,
 		                   TenantUserAssoc.created ASC,
 		                   TenantUserAssoc.user_id ASC
 		          LIMIT 1)";
@@ -287,26 +286,23 @@ class Tenant extends Model
 
 	/**
 	 * Link user to tenant in tenant_users table
-	 * Uses INSERT ... ON DUPLICATE KEY UPDATE so repeated calls update the role/active instead of failing.
+	 * Uses INSERT ... ON DUPLICATE KEY UPDATE so repeated calls update the role instead of failing.
 	 * @param int $tenantId
 	 * @param int $userId
 	 * @param string $role (owner, admin, user)
-	 * @param int $active
 	 * @return void
 	 */
-	public function linkUser(int $tenantId, int $userId, string $role = 'user', int $active = 1): void
+	public function linkUser(int $tenantId, int $userId, string $role = 'user'): void
 		{
-		$stmt = $this->db->prepare("INSERT INTO tenant_users (tenant_id, user_id, role, active, created, modified)
-		                            VALUES (:tenant_id, :user_id, :role, :active, :created, :modified)
+		$stmt = $this->db->prepare("INSERT INTO tenant_users (tenant_id, user_id, role, created, modified)
+		                            VALUES (:tenant_id, :user_id, :role, :created, :modified)
 		                            ON DUPLICATE KEY UPDATE role = VALUES(role),
-		                                                    active = VALUES(active),
 		                                                    modified = VALUES(modified)");
 
 		$stmt->execute([
 			'tenant_id' => $tenantId,
 			'user_id'   => $userId,
 			'role'      => $role,
-			'active'    => $active,
 			'created'   => date('Y-m-d H:i:s'),
 			'modified'  => date('Y-m-d H:i:s'),
 		]);
@@ -331,25 +327,22 @@ class Tenant extends Model
 		}
 
 	/**
-	 * Update tenant user link (role / active)
+	 * Update tenant user link role.
 	 * @param int $tenantId
 	 * @param int $userId
 	 * @param string $role
-	 * @param int $active
 	 * @return void
 	 */
-	public function updateUserLink(int $tenantId, int $userId, string $role, int $active): void
+	public function updateUserLink(int $tenantId, int $userId, string $role): void
 		{
 		$stmt = $this->db->prepare("UPDATE tenant_users
 		                            SET role     = :role,
-		                                active   = :active,
 		                                modified = :modified
 		                            WHERE tenant_id = :tenant_id
 		                              AND user_id   = :user_id");
 
 		$stmt->execute([
 			'role'      => $role,
-			'active'    => $active,
 			'modified'  => date('Y-m-d H:i:s'),
 			'tenant_id' => $tenantId,
 			'user_id'   => $userId,
@@ -365,7 +358,6 @@ class Tenant extends Model
 		{
 		$stmt = $this->db->prepare("SELECT TenantUser.user_id,
 		                                   TenantUser.role,
-		                                   TenantUser.active,
 		                                   TenantUser.created,
 		                                   TenantUser.modified,
 		                                   User.username,

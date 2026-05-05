@@ -29,7 +29,6 @@ class DatabaseManagerService
 		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
 		                  WHERE tu.tenant_id = t.id
 		                  ORDER BY tu.role = 'owner' DESC,
-		                           tu.active DESC,
 		                           tu.created ASC,
 		                           tu.user_id ASC
 		                  LIMIT 1) AS tenant_name,
@@ -39,7 +38,6 @@ class DatabaseManagerService
 		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
 		                  WHERE tu.tenant_id = t.id
 		                  ORDER BY tu.role = 'owner' DESC,
-		                           tu.active DESC,
 		                           tu.created ASC,
 		                           tu.user_id ASC
 		                  LIMIT 1) AS tenant_fantasy,

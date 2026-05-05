@@ -36,15 +36,16 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~0 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~5 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-28 00:05:35'),
 	(21, '88137-335', 'Rua Maria Soares', '141', 'Prédio ECG Sistemas', 43, 4, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(22, '88132-241', 'Rua Tal', '06', 'Complemento complemento', 44, 11, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(23, '88137-335', 'Avenida de tal', '1209', 'Lorem ipsum', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(23, '88137-335', 'Avenida de tal', '1209', 'Lorem ipsum', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(24, '88330-000', 'Rua 10', '237', 'Casa', 47, 1, '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5660,15 +5661,16 @@ CREATE TABLE IF NOT EXISTS `emails` (
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~1 rows (approximately)
+-- Dumping data for table manager_main.emails: ~5 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(27, 'lorem@ipsum.com', 'principal', 42, 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(28, 'suporte@ecg.inf.br', 'Principal', 43, 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(29, 'joao@dasilva.com.br', 'Principal', 44, 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(30, 'sky@walker.com', 'Principal', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(30, 'sky@walker.com', 'Principal', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(31, 'nome@pessoa.com', 'Principal', 47, 1, '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -5713,7 +5715,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_categories: ~15 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_categories: ~28 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
 	(1, 'Moradia', 'Aluguel', '2026-04-29 23:49:07', '2026-04-29 23:49:07'),
 	(3, 'Moradia', 'Energia elétrica', '2026-04-29 23:50:20', '2026-04-29 23:50:20'),
@@ -5761,7 +5763,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_payments: ~144 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_payments: ~111 rows (approximately)
 INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `type`, `value`, `payment_date`, `due_date`, `created`, `modified`) VALUES
 	(7, 2, 'CASH', 766.50, '2026-05-01 07:01:00', '2026-05-04', '2026-04-30 22:12:47', '2026-05-01 21:26:23'),
 	(8, 2, 'CASH', 770.00, NULL, '2026-06-01', '2026-04-30 22:12:47', '2026-04-30 22:12:47'),
@@ -5907,15 +5909,16 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~1 rows (approximately)
+-- Dumping data for table manager_main.people: ~6 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(42, 'Lorem Ipsums', 'Lorem Ipsum LTDAs', 'company', '67839081000199', 1, NULL, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(43, 'John Doe', 'John Doe', 'individual', '03861684071', 1, '1984-02-01', '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(44, 'João da Silva', 'João da Silva', 'individual', '97739421049', 1, '1976-08-09', '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(46, 'Sky Walker', 'Sky Walker', 'individual', '60477640028', 1, '1977-07-09', '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(46, 'Sky Walker', 'Sky Walker', 'individual', '60477640028', 1, '1977-07-09', '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(47, 'Nome da Pessoa', 'Nome da Pessoa', 'individual', '69350362082', 1, '1967-05-03', '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -6120,14 +6123,15 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~4 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(22, '88888888888', 'celular', 42, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(23, '4830331033', 'Comercial', 43, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(24, '66777778766', 'Celular', 44, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(25, '5548991908908', 'Celular', 46, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(25, '5548991908908', 'Celular', 46, '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(26, '5548999999999', 'Celular', 47, '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -6182,21 +6186,21 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~1 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~4 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(14, '0001', 'active', '', '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(15, '0002', 'active', '', '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(16, '0003', 'active', '', '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(17, '0004', 'active', 'Teste teste teste teste', '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(17, '0004', 'active', 'Teste teste teste teste', '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(18, '0005', 'active', 'Observações gerais do tenant!!', '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
   `tenant_id` int NOT NULL,
   `user_id` int NOT NULL,
   `role` enum('owner','admin','user') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY (`tenant_id`,`user_id`),
@@ -6205,12 +6209,13 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
-INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `active`, `created`, `modified`) VALUES
-	(14, 39, 'owner', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
-	(15, 40, 'owner', 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
-	(16, 41, 'owner', 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(17, 43, 'owner', 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+-- Dumping data for table manager_main.tenant_users: ~5 rows (approximately)
+INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
+	(14, 39, 'owner', '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(15, 40, 'owner', '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(16, 41, 'owner', '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(17, 43, 'owner', '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(18, 44, 'owner', '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -6229,15 +6234,16 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.users: ~2 rows (approximately)
+-- Dumping data for table manager_main.users: ~6 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
 	(39, 42, 14, 'lorem.ipsum', '$2y$12$FdVk3PDLGXXFx7J9Mp9LHOXvQmHyGgqkFZHrVTHYHqA2Yca7ykxB2', 'admin', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
 	(40, 43, 15, 'john.doe', '$2y$12$U8XIKwcdgtsDC47tHdZ60egkGfbhzZscY06q10ZdypCacm4SDJfg6', 'admin', 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
 	(41, 44, 16, 'joao.silva', '$2y$12$ldj2q8fQjViwqst7l8Y5s.JqMTI9Uurs/pcyQA3SNxHMnLBrLtZE.', 'admin', 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
-	(43, 46, 17, 'sky.walker', '$2y$12$EP.fEeXMA.rl7CPHUgE16uRSgIFDxyDAZJ7oI4TMosr5ODvkGmrZG', 'admin', 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
+	(43, 46, 17, 'sky.walker', '$2y$12$EP.fEeXMA.rl7CPHUgE16uRSgIFDxyDAZJ7oI4TMosr5ODvkGmrZG', 'admin', 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26'),
+	(44, 47, 18, 'nome.pessoa', '$2y$12$jaIT.MUpEunuir7piFsM0efHzYqyFgcg5ZEvOg.OYnvQahLsGZ5Ky', 'admin', 1, '2026-05-05 22:51:07', '2026-05-05 22:51:07');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
@@ -6392,7 +6398,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 
 -- Dumping data for table manager_main.user_remember_tokens: ~0 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(9, 1, '50999669c0e273ed07ce2b35a08f6934', '06016ab379c01c23f60ba756277aeaa4754e0e01af9f10e8d2899ac959cd74dd', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-04 00:03:37', '2026-05-02 15:33:45', '2026-05-05 00:03:37');
+	(9, 1, 'b8fa470b0693fc42fc574152c4e8d52a', '6ee5a85b3ec4b10c6b36545cb5169f506efaf52f38eba59d32115513338a2214', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-04 21:53:54', '2026-05-02 15:33:45', '2026-05-05 21:53:54');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
