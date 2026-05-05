@@ -23,8 +23,26 @@ class DatabaseManagerService
 		               SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS database_number,
 		               CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS UNSIGNED) AS database_order,
 		               t.id AS tenant_id,
-		               t.name AS tenant_name,
-		               t.fantasy AS tenant_fantasy,
+		               (SELECT p.name
+		                  FROM manager_main.tenant_users AS tu
+		                  INNER JOIN manager_main.users AS u ON u.id = tu.user_id
+		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
+		                  WHERE tu.tenant_id = t.id
+		                  ORDER BY tu.role = 'owner' DESC,
+		                           tu.active DESC,
+		                           tu.created ASC,
+		                           tu.user_id ASC
+		                  LIMIT 1) AS tenant_name,
+		               (SELECT p.fantasy
+		                  FROM manager_main.tenant_users AS tu
+		                  INNER JOIN manager_main.users AS u ON u.id = tu.user_id
+		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
+		                  WHERE tu.tenant_id = t.id
+		                  ORDER BY tu.role = 'owner' DESC,
+		                           tu.active DESC,
+		                           tu.created ASC,
+		                           tu.user_id ASC
+		                  LIMIT 1) AS tenant_fantasy,
 		               t.status AS tenant_status
 		        FROM information_schema.SCHEMATA AS s
 		        LEFT JOIN manager_main.tenants AS t

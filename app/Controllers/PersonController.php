@@ -169,10 +169,16 @@ class PersonController extends Controller
 				{
 				$label .= ' — ' . $r['city_name'];
 				}
+			if (!empty($r['state_acronym']))
+				{
+				$label .= ' — ' . $r['state_acronym'];
+				}
 			return [
-				'id'    => (int) $r['id'],
-				'label' => $label,
-				'name'  => $r['name'],
+				'id'            => (int) $r['id'],
+				'label'         => $label,
+				'name'          => $r['name'],
+				'city_name'     => $r['city_name'] ?? '',
+				'state_acronym' => $r['state_acronym'] ?? '',
 			];
 			}, $rows);
 

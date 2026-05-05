@@ -171,9 +171,6 @@ class Person extends Model
 
 					// Create the tenant as pending until its database is provisioned.
 					$tenantId = $tenantModel->create([
-						'name'            => $data['tenant']['name'],
-						'fantasy'         => $data['tenant']['fantasy'] ?? null,
-						'document'        => $data['tenant']['document'] ?? null,
 						'database_number' => $databaseNumber,
 						'status'          => 'pending',
 						'observations'    => $data['tenant']['observations'] ?? null,
@@ -186,9 +183,6 @@ class Person extends Model
 					if ($provisioned)
 						{
 						$tenantModel->update($tenantId, [
-							'name'         => $data['tenant']['name'],
-							'fantasy'      => $data['tenant']['fantasy'] ?? null,
-							'document'     => $data['tenant']['document'] ?? null,
 							'status'       => $tenantStatus,
 							'observations' => $data['tenant']['observations'] ?? null,
 						]);
@@ -196,8 +190,8 @@ class Person extends Model
 					}
 			elseif ($tenantMode === 'existing' && !empty($data['tenant']['existing_id']))
 				{
-        // Link the new user to an existing tenant selected in the form.
-        $tenantId = (int) $data['tenant']['existing_id'];
+				// Link the new user to an existing tenant selected in the form.
+				$tenantId = (int) $data['tenant']['existing_id'];
 				}
 
 			// Store the primary tenant on the user and create the pivot link.
@@ -575,13 +569,10 @@ class Person extends Model
 				continue;
 				}
 
-			// Update tenant display data when the editable fields are present.
-			if (isset($link['name']) && trim((string) $link['name']) !== '')
+			// Update tenant status/notes when those fields are present.
+			if (isset($link['status']) || array_key_exists('observations', $link))
 				{
 				$tenantModel->update($tenantId, [
-					'name'         => trim((string) $link['name']),
-					'fantasy'      => $link['fantasy'] ?? null,
-					'document'     => $link['document'] ?? null,
 					'status'       => $link['status'] ?? 'pending',
 					'observations' => $link['observations'] ?? null,
 				]);
@@ -1052,9 +1043,46 @@ class Person extends Model
 		if (!empty($user['id']))
 			{
 			$tenantsStmt = $this->db->prepare("SELECT Tenant.id,
-			                                          Tenant.name,
-			                                          Tenant.fantasy,
-			                                          Tenant.document,
+			                                          (SELECT PersonAssoc.id
+			                                             FROM tenant_users AS TenantUserAssoc
+			                                             INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
+			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
+			                                                      TenantUserAssoc.active DESC,
+			                                                      TenantUserAssoc.created ASC,
+			                                                      TenantUserAssoc.user_id ASC
+			                                             LIMIT 1) AS associated_person_id,
+			                                          (SELECT PersonAssoc.name
+			                                             FROM tenant_users AS TenantUserAssoc
+			                                             INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
+			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
+			                                                      TenantUserAssoc.active DESC,
+			                                                      TenantUserAssoc.created ASC,
+			                                                      TenantUserAssoc.user_id ASC
+			                                             LIMIT 1) AS associated_person_name,
+			                                          (SELECT PersonAssoc.fantasy
+			                                             FROM tenant_users AS TenantUserAssoc
+			                                             INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
+			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
+			                                                      TenantUserAssoc.active DESC,
+			                                                      TenantUserAssoc.created ASC,
+			                                                      TenantUserAssoc.user_id ASC
+			                                             LIMIT 1) AS associated_person_fantasy,
+			                                          (SELECT PersonAssoc.document
+			                                             FROM tenant_users AS TenantUserAssoc
+			                                             INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+			                                             INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+			                                             WHERE TenantUserAssoc.tenant_id = Tenant.id
+			                                             ORDER BY TenantUserAssoc.role = 'owner' DESC,
+			                                                      TenantUserAssoc.active DESC,
+			                                                      TenantUserAssoc.created ASC,
+			                                                      TenantUserAssoc.user_id ASC
+			                                             LIMIT 1) AS associated_person_document,
 			                                          Tenant.database_number,
 			                                          Tenant.status,
 			                                          Tenant.observations,
@@ -1063,7 +1091,7 @@ class Person extends Model
 			                                   FROM tenant_users AS TenantUser
 			                                   INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id
 			                                   WHERE TenantUser.user_id = :user_id
-			                                   ORDER BY Tenant.name ASC");
+			                                   ORDER BY associated_person_name ASC, Tenant.id ASC");
 			$tenantsStmt->execute(['user_id' => $user['id']]);
 			$tenants = $tenantsStmt->fetchAll(PDO::FETCH_ASSOC);
 			}

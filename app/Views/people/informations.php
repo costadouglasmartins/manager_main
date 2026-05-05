@@ -103,7 +103,7 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Nome</th>
+          <th>Pessoa associada</th>
           <th>Banco</th>
           <th>Perfil</th>
           <th>Situação do vínculo</th>
@@ -115,9 +115,9 @@
           <tr>
             <td class="text-muted" style="width: 1%;"><?= (int) $tenant['id']; ?></td>
             <td>
-              <?= htmlspecialchars($tenant['name']); ?>
-              <?php if (!empty($tenant['fantasy'])): ?>
-                <div class="small text-muted"><?= htmlspecialchars($tenant['fantasy']); ?></div>
+              <?= htmlspecialchars($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?>
+              <?php if (!empty($tenant['associated_person_fantasy'])): ?>
+                <div class="small text-muted"><?= htmlspecialchars($tenant['associated_person_fantasy']); ?></div>
               <?php endif; ?>
             </td>
             <td><code>manager_<?= htmlspecialchars($tenant['database_number']); ?></code></td>

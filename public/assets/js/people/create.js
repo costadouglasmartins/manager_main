@@ -52,11 +52,6 @@
 		const tenantMode            = document.getElementById("tenantMode");
 		const tenantNewFields       = document.getElementById("tenantNewFields");
 		const tenantExistingFields  = document.getElementById("tenantExistingFields");
-		const tenantCopyPerson      = document.getElementById("tenantCopyPerson");
-		const tenantName            = document.getElementById("tenantName");
-		const tenantFantasy         = document.getElementById("tenantFantasy");
-		const tenantDocument        = document.getElementById("tenantDocument");
-
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
@@ -161,9 +156,10 @@
 								li.addEventListener("mousedown", function (e)
 									{
 										e.preventDefault();
+										const displayValue = item.label || item.name || "";
 										onSelect(item);
 										clearList();
-										inputEl.value = item.name || item.label;
+										inputEl.value = displayValue;
 									});
 								listEl.appendChild(li);
 							});
@@ -251,6 +247,14 @@
 				const btnSave       = block.querySelector(".addr-btn-save-neighborhood");
 				const btnCancel     = block.querySelector(".addr-btn-cancel-neighborhood");
 
+				function buildNeighborhoodLabel(neighborhoodName, cityLabel)
+					{
+						const parts = [neighborhoodName, cityLabel]
+							.map(function (value) { return String(value || "").trim(); })
+							.filter(Boolean);
+						return parts.join(" — ");
+					}
+
 				function showCreatePanel(term)
 					{
 						createPanel.classList.remove("d-none");
@@ -268,6 +272,16 @@
 						newCityId.value    = "";
 						newCityInput.value = "";
 					}
+
+				textInput.addEventListener("input", function ()
+					{
+						hiddenId.value = "";
+					});
+
+				newCityInput.addEventListener("input", function ()
+					{
+						newCityId.value = "";
+					});
 
 				// Autocomplete do bairro com opção "Criar"
 				initMiniAutocomplete(
@@ -342,7 +356,7 @@
 									}
 
 								hiddenId.value  = data.id;
-								textInput.value = data.name;
+								textInput.value = data.label || buildNeighborhoodLabel(name, newCityInput.value);
 								hideCreatePanel();
 							}
 						catch (err)
@@ -373,25 +387,6 @@
 				tenantNewFields.classList.toggle("d-none", mode !== "new");
 				tenantExistingFields.classList.toggle("d-none", mode !== "existing");
 
-				// Ao trocar para "new", copiar dados da pessoa se checkbox marcado
-				if (mode === "new" && tenantCopyPerson && tenantCopyPerson.checked)
-					{
-						copyPersonToTenant();
-					}
-
-				// Manage required: tenant name required only when creating new
-				if (tenantName)
-					{
-						if (mode === "new")
-							{
-								tenantName.setAttribute("required", "");
-							}
-						else
-							{
-								tenantName.removeAttribute("required");
-							}
-					}
-
 				// Existing tenant select required only when mode is existing
 				const tenantExistingId = document.getElementById("tenantExistingId");
 				if (tenantExistingId)
@@ -407,38 +402,7 @@
 					}
 			}
 
-		function copyPersonToTenant()
-			{
-				const personName    = document.getElementById("personName");
-				const personFantasy = document.getElementById("personFantasy");
-				const personDoc     = document.getElementById("personDocument");
-
-				if (tenantName && personName)
-					{
-						tenantName.value = personName.value;
-					}
-				if (tenantFantasy && personFantasy)
-					{
-						tenantFantasy.value = personFantasy.value;
-					}
-				if (tenantDocument && personDoc)
-					{
-						tenantDocument.value = personDoc.value;
-					}
-			}
-
 		tenantMode.addEventListener("change", updateTenantPanels);
-
-		if (tenantCopyPerson)
-			{
-				tenantCopyPerson.addEventListener("change", function ()
-					{
-						if (this.checked && tenantMode.value === "new")
-							{
-								copyPersonToTenant();
-							}
-					});
-			}
 
 		// -----------------------------------------------------------------------
 		// Navegação de etapas
@@ -468,17 +432,31 @@
 							{
 								b.classList.remove("btn-outline-secondary");
 								b.classList.add("btn-primary");
+								b.setAttribute("aria-current", "step");
 							}
 						else
 							{
 								b.classList.remove("btn-primary");
 								b.classList.add("btn-outline-secondary");
+								b.removeAttribute("aria-current");
 							}
 					});
 
 				btnBack.disabled = currentStep === 1;
 				btnNext.classList.toggle("d-none", currentStep === TOTAL_STEPS);
 				btnSubmit.classList.toggle("d-none", currentStep !== TOTAL_STEPS);
+
+				const activeSection = form.querySelector('section[data-step="' + currentStep + '"]');
+				const firstControl = activeSection
+					? activeSection.querySelector("input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled])")
+					: null;
+				if (firstControl)
+					{
+						window.requestAnimationFrame(function ()
+							{
+								firstControl.focus({preventScroll: true});
+							});
+					}
 			}
 
 		// -----------------------------------------------------------------------
@@ -499,15 +477,6 @@
 			{
 				// Validação do tenant
 				const mode = tenantMode.value;
-
-				if (mode === "new")
-					{
-						if (!tenantName || !tenantName.value.trim())
-							{
-								showAlert("Informe o nome do tenant.");
-								return false;
-							}
-					}
 
 				if (mode === "existing")
 					{
@@ -793,9 +762,6 @@
 				if (tMode === "new")
 					{
 						rows.push(["Tenant / Modo", "Criar novo"]);
-						rows.push(["Tenant / Nome", normalizeValue(document.getElementById("tenantName"))]);
-						rows.push(["Tenant / Fantasia", normalizeValue(document.getElementById("tenantFantasy"))]);
-						rows.push(["Tenant / Documento", normalizeValue(document.getElementById("tenantDocument"))]);
 						rows.push(["Tenant / Situação", normalizeValue(document.getElementById("tenantStatus"))]);
 						rows.push(["Tenant / N. Banco", normalizeValue(document.getElementById("tenantDatabaseNumber"))]);
 						rows.push(["Tenant / Observações", normalizeValue(document.getElementById("tenantObservations"))]);
@@ -893,7 +859,7 @@
 			}
 
 		// -----------------------------------------------------------------------
-		// Eventos de remoção (delegação)
+		// Remove dynamic rows with delegated clicks
 		// -----------------------------------------------------------------------
 		document.addEventListener("click", function (e)
 			{
@@ -902,12 +868,12 @@
 					{
 						return;
 					}
-				const type = target.getAttribute("data-remove");
-				if (!type)
+				const removeButton = target.closest("[data-remove]");
+				if (!removeButton)
 					{
 						return;
 					}
-				const block = target.closest(".border");
+				const block = removeButton.closest(".border");
 				if (block)
 					{
 						block.remove();
@@ -1003,28 +969,98 @@
 			});
 
 		// -----------------------------------------------------------------------
-		// Máscara CEP (aplicada em linhas dinâmicas via delegação)
+		// Input masks for dynamic rows
 		// -----------------------------------------------------------------------
-    /*
 		function applyCepMask(value)
 			{
 				const digits = value.replace(/\D/g, "").slice(0, 8);
 				return digits.replace(/(\d{5})(\d{1,3})$/, "$1-$2");
 			}
 
+		function applyIntlPhoneMask(value)
+			{
+				const hasExplicitPlus = String(value || "").trim().startsWith("+");
+				const digits = String(value || "").replace(/\D/g, "").slice(0, 14);
+				if (!digits)
+					{
+						return "";
+					}
+
+				let countryCode = "55";
+				let nationalNumber = digits;
+
+				if (digits === "55" && hasExplicitPlus)
+					{
+						countryCode = "55";
+						nationalNumber = "";
+					}
+				else if (digits.startsWith("55") && (digits.length > 11 || (hasExplicitPlus && digits.length > 2)))
+					{
+						countryCode = "55";
+						nationalNumber = digits.slice(2, 13);
+					}
+				else if (hasExplicitPlus && digits.length > 11)
+					{
+						const countryLength = Math.min(3, digits.length - 11);
+						countryCode = digits.slice(0, countryLength);
+						nationalNumber = digits.slice(countryLength, countryLength + 11);
+					}
+				else
+					{
+						nationalNumber = digits.slice(0, 11);
+					}
+
+				const areaCode = nationalNumber.slice(0, 2);
+				const subscriber = nationalNumber.slice(2);
+				let formatted = "+" + countryCode;
+
+				if (areaCode)
+					{
+						formatted += "(" + areaCode;
+						if (areaCode.length === 2)
+							{
+								formatted += ")";
+							}
+					}
+
+				if (subscriber)
+					{
+						const firstPartLength = subscriber.length > 8 ? 5 : 4;
+						const firstPart = subscriber.slice(0, firstPartLength);
+						const secondPart = subscriber.slice(firstPartLength, firstPartLength + 4);
+
+						formatted += firstPart;
+						if (secondPart)
+							{
+								formatted += "-" + secondPart;
+							}
+					}
+
+				return formatted;
+			}
+
+		function applyMaskedValue(el, maskCallback)
+			{
+				const pos = el.selectionStart;
+				const prev = el.value;
+				el.value = maskCallback(el.value);
+				const diff = el.value.length - prev.length;
+				const nextPos = Math.max(0, (pos || el.value.length) + diff);
+				el.setSelectionRange(nextPos, nextPos);
+			}
+
 		document.addEventListener("input", function (e)
 			{
 				if (e.target && e.target.classList.contains("mask-cep"))
 					{
-						const el   = e.target;
-						const pos  = el.selectionStart;
-						const prev = el.value;
-						el.value   = applyCepMask(el.value);
-						const diff = el.value.length - prev.length;
-						el.setSelectionRange(pos + diff, pos + diff);
+						applyMaskedValue(e.target, applyCepMask);
+					}
+
+				if (e.target && e.target.classList.contains("mask-phone-intl"))
+					{
+						applyMaskedValue(e.target, applyIntlPhoneMask);
 					}
 			});
-      */
 
 		// -----------------------------------------------------------------------
 		// Init — pré-adiciona uma linha de cada seção para o usuário já ver os campos

@@ -87,9 +87,6 @@ class TenantController extends Controller
 		$tenantModel = new Tenant();
 
 		$data = [
-			'name'         => isset($_POST['name'])         ? trim($_POST['name'])         : '',
-			'fantasy'      => isset($_POST['fantasy'])      ? trim($_POST['fantasy'])      : null,
-			'document'     => isset($_POST['document'])     ? trim($_POST['document'])     : null,
 			'status'       => isset($_POST['status'])       ? trim($_POST['status'])       : 'pending',
 			'observations' => isset($_POST['observations']) ? trim($_POST['observations']) : null,
 		];

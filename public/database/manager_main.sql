@@ -36,12 +36,15 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.addresses: ~0 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(17, '88173-187', 'Rua zero um', '9821', 'Lanka Lanka', 42, 7, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
-	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-28 00:05:35');
+	(19, '88137-335', 'Rua do Amor-perfeito', '266', 'Apartamento 203', 3, 3, '2026-04-27 22:53:18', '2026-04-28 00:05:35'),
+	(21, '88137-335', 'Rua Maria Soares', '141', 'Prédio ECG Sistemas', 43, 4, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(22, '88132-241', 'Rua Tal', '06', 'Complemento complemento', 44, 11, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(23, '88137-335', 'Avenida de tal', '1209', 'Lorem ipsum', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5657,12 +5660,15 @@ CREATE TABLE IF NOT EXISTS `emails` (
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.emails: ~1 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
-	(27, 'lorem@ipsum.com', 'principal', 42, 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(27, 'lorem@ipsum.com', 'principal', 42, 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(28, 'suporte@ecg.inf.br', 'Principal', 43, 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(29, 'joao@dasilva.com.br', 'Principal', 44, 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(30, 'sky@walker.com', 'Principal', 46, 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -5901,12 +5907,15 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.people: ~1 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
-	(42, 'Lorem Ipsums', 'Lorem Ipsum LTDAs', 'company', '67839081000199', 1, NULL, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(42, 'Lorem Ipsums', 'Lorem Ipsum LTDAs', 'company', '67839081000199', 1, NULL, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(43, 'John Doe', 'John Doe', 'individual', '03861684071', 1, '1984-02-01', '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(44, 'João da Silva', 'João da Silva', 'individual', '97739421049', 1, '1976-08-09', '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(46, 'Sky Walker', 'Sky Walker', 'individual', '60477640028', 1, '1977-07-09', '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -6111,11 +6120,14 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
-	(22, '88888888888', 'celular', 42, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(22, '88888888888', 'celular', 42, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(23, '4830331033', 'Comercial', 43, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(24, '66777778766', 'Celular', 44, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(25, '5548991908908', 'Celular', 46, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -6163,9 +6175,6 @@ INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modifie
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL COMMENT 'Tenant name',
-  `fantasy` varchar(255) DEFAULT NULL COMMENT 'Trade name',
-  `document` varchar(20) DEFAULT NULL COMMENT 'CPF or CNPJ',
   `database_number` varchar(10) NOT NULL COMMENT 'Formatted database number (0001, 0002...)',
   `status` enum('active','suspended','pending') NOT NULL DEFAULT 'pending' COMMENT 'Tenant status',
   `observations` text COMMENT 'General observations',
@@ -6173,11 +6182,14 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.tenants: ~1 rows (approximately)
-INSERT INTO `tenants` (`id`, `name`, `fantasy`, `document`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
-	(14, 'Lorem Ipsum', 'Lorem Ipsum LTDA', '67.839.081/0001-99', '0001', 'active', '', '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
+	(14, '0001', 'active', '', '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(15, '0002', 'active', '', '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(16, '0003', 'active', '', '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(17, '0004', 'active', 'Teste teste teste teste', '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
@@ -6195,7 +6207,10 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
 
 -- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `active`, `created`, `modified`) VALUES
-	(14, 39, 'owner', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(14, 39, 'owner', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(15, 40, 'owner', 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(16, 41, 'owner', 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(17, 43, 'owner', 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -6214,12 +6229,15 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.users: ~2 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'admin', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
-	(39, 42, 14, 'lorem.ipsum', '$2y$12$FdVk3PDLGXXFx7J9Mp9LHOXvQmHyGgqkFZHrVTHYHqA2Yca7ykxB2', 'admin', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50');
+	(39, 42, 14, 'lorem.ipsum', '$2y$12$FdVk3PDLGXXFx7J9Mp9LHOXvQmHyGgqkFZHrVTHYHqA2Yca7ykxB2', 'admin', 1, '2026-04-24 21:16:08', '2026-04-25 10:37:50'),
+	(40, 43, 15, 'john.doe', '$2y$12$U8XIKwcdgtsDC47tHdZ60egkGfbhzZscY06q10ZdypCacm4SDJfg6', 'admin', 1, '2026-05-05 00:27:25', '2026-05-05 00:27:25'),
+	(41, 44, 16, 'joao.silva', '$2y$12$ldj2q8fQjViwqst7l8Y5s.JqMTI9Uurs/pcyQA3SNxHMnLBrLtZE.', 'admin', 1, '2026-05-05 00:50:24', '2026-05-05 00:50:24'),
+	(43, 46, 17, 'sky.walker', '$2y$12$EP.fEeXMA.rl7CPHUgE16uRSgIFDxyDAZJ7oI4TMosr5ODvkGmrZG', 'admin', 1, '2026-05-05 01:26:26', '2026-05-05 01:26:26');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (

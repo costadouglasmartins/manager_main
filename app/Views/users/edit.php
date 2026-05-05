@@ -50,7 +50,7 @@
         <?php if (!empty($tenants)): ?>
           <?php foreach ($tenants as $tenant): ?>
             <option value="<?= (int) $tenant['id']; ?>" <?= ((int) ($user['tenant_id'] ?? 0) === (int) $tenant['id'] ? 'selected="selected"' : ''); ?>>
-              <?= htmlspecialchars($tenant['name']); ?> (<?= htmlspecialchars($tenant['database_number']); ?>) [<?= htmlspecialchars($tenant['status']); ?>]
+              <?= htmlspecialchars($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id']), ENT_QUOTES, 'UTF-8'); ?> (<?= htmlspecialchars($tenant['database_number']); ?>) [<?= htmlspecialchars($tenant['status']); ?>]
             </option>
           <?php endforeach; ?>
         <?php endif; ?>

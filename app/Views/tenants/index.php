@@ -34,7 +34,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <input class="form-control" id="id" name="id" placeholder="Codigo" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-3">
-        <input class="form-control" id="name" name="name" placeholder="Nome" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <input class="form-control" id="name" name="name" placeholder="Pessoa associada" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-3">
         <input class="form-control" id="database_number" name="database_number" placeholder="N. banco" type="text" value="<?= htmlspecialchars($filters['database_number'], ENT_QUOTES, 'UTF-8') ?>">
@@ -67,7 +67,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <table class="table table-striped table-hover">
     <tr>
       <?= sortableTh('tenant', 'id', '#', $sort, $queryFilters, 'style="width: 1%;"') ?>
-      <?= sortableTh('tenant', 'name', 'Nome', $sort, $queryFilters) ?>
+      <?= sortableTh('tenant', 'name', 'Pessoa associada', $sort, $queryFilters) ?>
       <?= sortableTh('tenant', 'database_number', 'Banco', $sort, $queryFilters) ?>
       <?= sortableTh('tenant', 'status', 'Situacao', $sort, $queryFilters) ?>
       <th style="width: 1%;" class="text-nowrap text-end">Acoes</th>
@@ -76,7 +76,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <?php foreach ($tenants as $t): ?>
         <tr>
           <td><?= $t['id'] ?></td>
-          <td><?= htmlspecialchars($t['name']) ?></td>
+          <td><?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?></td>
           <td><code>manager_<?= htmlspecialchars($t['database_number']) ?></code></td>
           <td>
             <?php if ($t['status'] === 'active'): ?>
@@ -95,7 +95,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
               <a href="<?= url('tenant/informations/' . $t['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
             <?php endif; ?>
             <?php if (authCan('tenant.delete')): ?>
-              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $t['id'] ?>" data-name="<?= htmlspecialchars($t['name'], ENT_QUOTES, 'UTF-8') ?>">
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $t['id'] ?>" data-name="<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?>">
                 <i class="bi bi-trash"></i>
               </button>
             <?php endif; ?>

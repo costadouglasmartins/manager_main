@@ -16,9 +16,7 @@
       <table class="table table-sm align-middle">
         <tbody>
           <tr><th style="width: 30%;">Codigo</th><td><?= $tenant['id'] ?></td></tr>
-          <tr><th>Nome</th><td><?= htmlspecialchars($tenant['name']) ?></td></tr>
-          <tr><th>Nome fantasia</th><td><?= htmlspecialchars($tenant['fantasy'] ?? '') ?></td></tr>
-          <tr><th>Documento</th><td><?= htmlspecialchars($tenant['document'] ? maskCpfCnpj($tenant['document']) : '') ?></td></tr>
+          <tr><th>Pessoa associada</th><td><?= htmlspecialchars($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id']), ENT_QUOTES, 'UTF-8') ?></td></tr>
           <tr><th>Banco de dados</th><td><code>manager_<?= htmlspecialchars($tenant['database_number']) ?></code></td></tr>
           <tr>
             <th>Situacao</th>

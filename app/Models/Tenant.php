@@ -8,6 +8,83 @@ use PDO;
 class Tenant extends Model
 	{
 	/**
+	 * Returns a subquery that selects one representative person for a tenant.
+	 *
+	 * The owner is preferred, then active links, then the oldest link.
+	 *
+	 * @param string $expression SQL expression from the associated person scope.
+	 * @return string
+	 */
+	private function associatedPersonSql(string $expression): string
+		{
+		return "(SELECT {$expression}
+		          FROM tenant_users AS TenantUserAssoc
+		          INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+		          INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+		          WHERE TenantUserAssoc.tenant_id = Tenant.id
+		          ORDER BY TenantUserAssoc.role = 'owner' DESC,
+		                   TenantUserAssoc.active DESC,
+		                   TenantUserAssoc.created ASC,
+		                   TenantUserAssoc.user_id ASC
+		          LIMIT 1)";
+		}
+
+	/**
+	 * Applies a person-name filter through tenant_users.
+	 *
+	 * @param string $sql SQL query being built.
+	 * @param array<string, mixed> $params Bound parameters.
+	 * @param mixed $value Search term.
+	 * @return void
+	 */
+	private function addAssociatedPersonFilter(string &$sql, array &$params, $value): void
+		{
+		$term = trim((string) $value);
+		if ($term === '')
+			{
+			return;
+			}
+
+		$sql .= " AND EXISTS (
+		            SELECT 1
+		            FROM tenant_users AS TenantUserFilter
+		            INNER JOIN users AS UserFilter ON UserFilter.id = TenantUserFilter.user_id
+		            INNER JOIN people AS PersonFilter ON PersonFilter.id = UserFilter.person_id
+		            WHERE TenantUserFilter.tenant_id = Tenant.id
+		              AND (
+		                PersonFilter.name LIKE :name
+		                OR PersonFilter.fantasy LIKE :name
+		                OR PersonFilter.document LIKE :name
+		              )
+		          )";
+		$params['name'] = '%' . $term . '%';
+		}
+
+	/**
+	 * Select list for tenant rows plus their associated person.
+	 *
+	 * @return string
+	 */
+	private function tenantSelectColumns(): string
+		{
+		$personId = $this->associatedPersonSql('PersonAssoc.id');
+		$personName = $this->associatedPersonSql('PersonAssoc.name');
+		$personFantasy = $this->associatedPersonSql('PersonAssoc.fantasy');
+		$personDocument = $this->associatedPersonSql('PersonAssoc.document');
+
+		return "Tenant.id,
+		        {$personId} AS associated_person_id,
+		        {$personName} AS associated_person_name,
+		        {$personFantasy} AS associated_person_fantasy,
+		        {$personDocument} AS associated_person_document,
+		        Tenant.database_number,
+		        Tenant.status,
+		        Tenant.observations,
+		        Tenant.created,
+		        Tenant.modified";
+		}
+
+	/**
 	 * Returns sortable columns for list queries.
 	 *
 	 * @return array<string, string>
@@ -16,7 +93,7 @@ class Tenant extends Model
 		{
 		return [
 			'id'              => 'Tenant.id',
-			'name'            => 'Tenant.`name`',
+			'name'            => 'associated_person_name',
 			'database_number' => 'Tenant.`database_number`',
 			'status'          => 'Tenant.`status`',
 		];
@@ -27,15 +104,7 @@ class Tenant extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT Tenant.id,
-		               Tenant.name,
-		               Tenant.fantasy,
-		               Tenant.document,
-		               Tenant.database_number,
-		               Tenant.status,
-		               Tenant.observations,
-		               Tenant.created,
-		               Tenant.modified
+		$sql = "SELECT " . $this->tenantSelectColumns() . "
 		        FROM tenants AS Tenant
 		        WHERE 1=1";
 		$params = [];
@@ -48,8 +117,7 @@ class Tenant extends Model
 
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND Tenant.name LIKE :name";
-			$params['name'] = '%' . $filters['name'] . '%';
+			$this->addAssociatedPersonFilter($sql, $params, $filters['name']);
 			}
 
 		if (isset($filters['database_number']) && $filters['database_number'] !== '')
@@ -99,8 +167,7 @@ class Tenant extends Model
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND Tenant.name LIKE :name";
-			$params['name'] = '%' . $filters['name'] . '%';
+			$this->addAssociatedPersonFilter($sql, $params, $filters['name']);
 			}
 
 		if (!empty($filters['database_number']))
@@ -133,15 +200,7 @@ class Tenant extends Model
 	 */
 	public function find(int $id): ?array
 		{
-		$stmt = $this->db->prepare("SELECT Tenant.id,
-		                                   Tenant.name,
-		                                   Tenant.fantasy,
-		                                   Tenant.document,
-		                                   Tenant.database_number,
-		                                   Tenant.status,
-		                                   Tenant.observations,
-		                                   Tenant.created,
-		                                   Tenant.modified
+		$stmt = $this->db->prepare("SELECT " . $this->tenantSelectColumns() . "
 		                            FROM tenants AS Tenant
 		                            WHERE Tenant.id = :id
 		                            LIMIT 1");
@@ -167,13 +226,10 @@ class Tenant extends Model
 	public function create(array $data): int
 		{
 		$now = date('Y-m-d H:i:s');
-		$stmt = $this->db->prepare("INSERT INTO tenants (name, fantasy, document, database_number, status, observations, created, modified)
-		                            VALUES (:name, :fantasy, :document, :database_number, :status, :observations, :created, :modified)");
+		$stmt = $this->db->prepare("INSERT INTO tenants (database_number, status, observations, created, modified)
+		                            VALUES (:database_number, :status, :observations, :created, :modified)");
 
 		$stmt->execute([
-			'name'            => $data['name'],
-			'fantasy'         => $data['fantasy'] ?? null,
-			'document'        => $data['document'] ?? null,
 			'database_number' => $data['database_number'],
 			'status'          => $data['status'] ?? 'pending',
 			'observations'    => $data['observations'] ?? null,
@@ -190,18 +246,12 @@ class Tenant extends Model
 	public function update(int $id, array $data): void
 		{
 		$stmt = $this->db->prepare("UPDATE tenants AS Tenant
-		                            SET Tenant.name         = :name,
-		                                Tenant.fantasy      = :fantasy,
-		                                Tenant.document     = :document,
-		                                Tenant.status       = :status,
+		                            SET Tenant.status       = :status,
 		                                Tenant.observations = :observations,
 		                                Tenant.modified     = :modified
 		                            WHERE Tenant.id = :id");
 
 		$stmt->execute([
-			'name'         => $data['name'],
-			'fantasy'      => $data['fantasy'] ?? null,
-			'document'     => $data['document'] ?? null,
 			'status'       => $data['status'] ?? 'pending',
 			'observations' => $data['observations'] ?? null,
 			'modified'     => date('Y-m-d H:i:s'),
@@ -215,12 +265,10 @@ class Tenant extends Model
 	 */
 	public function getAllActive(): array
 		{
-		$stmt = $this->db->query("SELECT Tenant.id,
-		                                 Tenant.name,
-		                                 Tenant.database_number
+		$stmt = $this->db->query("SELECT " . $this->tenantSelectColumns() . "
 		                          FROM tenants AS Tenant
 		                          WHERE Tenant.status = 'active'
-		                          ORDER BY Tenant.name ASC");
+		                          ORDER BY associated_person_name ASC, Tenant.id ASC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -231,13 +279,9 @@ class Tenant extends Model
 	 */
 	public function getAll(): array
 		{
-		$stmt = $this->db->query("SELECT Tenant.id,
-		                                 Tenant.name,
-		                                 Tenant.fantasy,
-		                                 Tenant.database_number,
-		                                 Tenant.status
+		$stmt = $this->db->query("SELECT " . $this->tenantSelectColumns() . "
 		                          FROM tenants AS Tenant
-		                          ORDER BY Tenant.name ASC");
+		                          ORDER BY associated_person_name ASC, Tenant.id ASC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 

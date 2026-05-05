@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=1'); ?>">
+
+<div class="people-create-page">
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -8,8 +11,19 @@
 </nav>
 <!-- /Breadcrumbs -->
 
+<div class="people-create-toolbar">
+	<div>
+		<div class="people-create-eyebrow">Cadastro</div>
+		<h5 class="mb-0">Nova pessoa</h5>
+	</div>
+	<a class="btn btn-outline-secondary btn-sm" href="<?= url('person'); ?>">
+		<i class="bi bi-arrow-left"></i>
+		<span>Voltar para pessoas</span>
+	</a>
+</div>
+
 <!-- Progress -->
-<div class="card shadow-sm mb-3">
+<div class="card shadow-sm mb-3 people-progress-card">
 	<div class="card-body">
 		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 			<div>
@@ -19,40 +33,64 @@
 			<span class="badge text-bg-secondary" id="stepBadge">1/6</span>
 		</div>
 
-		<div class="progress mt-3" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
+		<div class="progress mt-3 people-progress" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
 			<div class="progress-bar" id="progressBar" style="width: 20%"></div>
 		</div>
 
-		<div class="row g-2 mt-3">
+		<div class="row g-2 mt-3 people-step-grid">
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-primary" data-step-jump="1">1. Pessoa</button>
+				<button type="button" class="btn w-100 btn-primary people-step-button" data-step-jump="1">
+					<span class="people-step-number">1</span>
+					<span>Pessoa</span>
+				</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="2">2. Usuário</button>
+				<button type="button" class="btn w-100 btn-outline-secondary people-step-button" data-step-jump="2">
+					<span class="people-step-number">2</span>
+					<span>Usuário</span>
+				</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="3">3. Tenant</button>
+				<button type="button" class="btn w-100 btn-outline-secondary people-step-button" data-step-jump="3">
+					<span class="people-step-number">3</span>
+					<span>Tenant</span>
+				</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="4">4. Endereços</button>
+				<button type="button" class="btn w-100 btn-outline-secondary people-step-button" data-step-jump="4">
+					<span class="people-step-number">4</span>
+					<span>Endereços</span>
+				</button>
 			</div>
 			<div class="col-6 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="5">5. Contatos</button>
+				<button type="button" class="btn w-100 btn-outline-secondary people-step-button" data-step-jump="5">
+					<span class="people-step-number">5</span>
+					<span>Contatos</span>
+				</button>
 			</div>
 			<div class="col-12 col-md">
-				<button type="button" class="btn w-100 btn-outline-secondary" data-step-jump="6">6. Revisão</button>
+				<button type="button" class="btn w-100 btn-outline-secondary people-step-button" data-step-jump="6">
+					<span class="people-step-number">6</span>
+					<span>Revisão</span>
+				</button>
 			</div>
 		</div>
 	</div>
 </div>
 
-<form action="<?= url('person/store'); ?>" method="POST" id="signupForm" class="needs-validation" novalidate>
-	<div class="card shadow-sm">
+<form action="<?= url('person/store'); ?>" method="POST" id="signupForm" class="needs-validation people-create-form" novalidate>
+	<div class="card shadow-sm people-form-card">
 		<div class="card-body">
 
 			<!-- Step 1: Pessoa -->
 			<section data-step="1">
-				<h2 class="h6 mb-3">Pessoa</h2>
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-person-vcard"></i></span>
+					<div>
+						<h2>Pessoa</h2>
+						<p>Identificação principal</p>
+					</div>
+				</div>
 
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
@@ -94,7 +132,13 @@
 
 			<!-- Step 2: Usuário -->
 			<section data-step="2" class="d-none">
-				<h2 class="h6 mb-3">Usuário</h2>
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-person-lock"></i></span>
+					<div>
+						<h2>Usuário</h2>
+						<p>Acesso ao sistema</p>
+					</div>
+				</div>
 
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
@@ -133,7 +177,13 @@
 
 			<!-- Step 3: Tenant -->
 			<section data-step="3" class="d-none">
-				<h2 class="h6 mb-3">Tenant</h2>
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-database"></i></span>
+					<div>
+						<h2>Tenant</h2>
+						<p>Vínculo opcional</p>
+					</div>
+				</div>
 
 				<div class="row g-3">
 					<div class="col-12">
@@ -147,27 +197,14 @@
 
 					<!-- Criar novo tenant -->
 					<div class="col-12 d-none" id="tenantNewFields">
-						<div class="border rounded p-3">
+						<div class="border rounded p-3 people-inline-panel">
 							<div class="row g-3">
 								<div class="col-12 col-md-6">
-									<label class="form-label" for="tenantName">Nome do tenant</label>
-									<input autocomplete="off" class="form-control" id="tenantName" name="tenant[name]" placeholder="Nome do tenant" type="text" />
-									<div class="invalid-feedback">Informe o nome do tenant.</div>
-								</div>
-								<div class="col-12 col-md-6">
-									<label class="form-label" for="tenantFantasy">Nome fantasia</label>
-									<input autocomplete="off" class="form-control" id="tenantFantasy" name="tenant[fantasy]" placeholder="Nome fantasia" type="text" />
-								</div>
-								<div class="col-12 col-md-4">
-									<label class="form-label" for="tenantDocument">Documento (CPF/CNPJ)</label>
-									<input autocomplete="off" class="form-control mask-cpf-cnpj" id="tenantDocument" name="tenant[document]" placeholder="CPF ou CNPJ" type="text" />
-								</div>
-								<div class="col-12 col-md-4">
 									<label class="form-label" for="tenantDatabaseNumber">N. do banco</label>
 									<input class="form-control" id="tenantDatabaseNumber" type="text" value="<?= htmlspecialchars($nextDatabaseNumber) ?>" disabled />
 									<div class="form-text">Gerado automaticamente: <code>manager_<?= htmlspecialchars($nextDatabaseNumber) ?></code></div>
 								</div>
-								<div class="col-12 col-md-4">
+								<div class="col-12 col-md-6">
 									<label class="form-label" for="tenantStatus">Situação</label>
 									<select autocomplete="off" class="form-select" id="tenantStatus" name="tenant[status]">
 										<option value="active" selected>Ativo</option>
@@ -179,15 +216,11 @@
 								</div>
 							</div>
 						</div>
-						<div class="form-check mt-2">
-							<input class="form-check-input" type="checkbox" id="tenantCopyPerson" checked />
-							<label class="form-check-label" for="tenantCopyPerson">Copiar nome, fantasia e documento da pessoa</label>
-						</div>
 					</div>
 
 					<!-- Selecionar tenant existente -->
 					<div class="col-12 d-none" id="tenantExistingFields">
-						<div class="border rounded p-3">
+						<div class="border rounded p-3 people-inline-panel">
 							<div class="row g-3">
 								<div class="col-12">
 									<label class="form-label" for="tenantExistingId">Selecionar tenant</label>
@@ -195,7 +228,7 @@
 										<option value="" selected disabled>Selecione um tenant...</option>
 										<?php foreach ($tenants as $t): ?>
 											<option value="<?= (int) $t['id']; ?>">
-												<?= htmlspecialchars($t['name']); ?>
+												<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id'])); ?>
 												— <?= htmlspecialchars($t['database_number']); ?>
 												(<?= htmlspecialchars($t['status']); ?>)
 											</option>
@@ -212,7 +245,13 @@
 
 			<!-- Step 4: Endereços -->
 			<section data-step="4" class="d-none">
-				<h2 class="h6 mb-3">Endereços</h2>
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-geo-alt"></i></span>
+					<div>
+						<h2>Endereços</h2>
+						<p>Localização e bairro</p>
+					</div>
+				</div>
 
 				<div class="row g-3">
 					<div class="col-12">
@@ -221,13 +260,16 @@
 								<div class="fw-semibold">Endereços</div>
 								<div class="text-body-secondary small">Obrigatório ao menos um endereço. Você pode cadastrar mais de um.</div>
 							</div>
-							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddAddress">Adicionar endereço</button>
+							<button type="button" class="btn btn-outline-primary btn-sm people-add-button" id="btnAddAddress">
+								<i class="bi bi-plus-lg"></i>
+								<span>Adicionar endereço</span>
+							</button>
 						</div>
 
-						<div class="mt-2" id="addressesContainer"></div>
+						<div class="mt-2 people-repeat-container" id="addressesContainer"></div>
 
 						<template id="addressTemplate">
-							<div class="border rounded p-3 mt-2">
+							<div class="border rounded p-3 mt-2 people-repeat-item">
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-3">
 										<label class="form-label">CEP</label>
@@ -243,7 +285,10 @@
 									</div>
 									<div class="col-12 col-md-2 d-grid">
 										<label class="form-label">&nbsp;</label>
-										<button type="button" class="btn btn-outline-danger" data-remove="address">Remover</button>
+										<button type="button" class="btn btn-outline-danger people-remove-button" data-remove="address" aria-label="Remover endereço">
+											<i class="bi bi-trash"></i>
+											<span class="d-md-none ms-1">Remover</span>
+										</button>
 									</div>
 									<div class="col-12 col-md-6">
 										<label class="form-label">Observações</label>
@@ -288,7 +333,13 @@
 
 			<!-- Step 5: Contatos -->
 			<section data-step="5" class="d-none">
-				<h2 class="h6 mb-3">Contatos</h2>
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-chat-dots"></i></span>
+					<div>
+						<h2>Contatos</h2>
+						<p>Telefone e e-mail</p>
+					</div>
+				</div>
 
 				<div class="row g-3">
 					<!-- Telefones -->
@@ -298,24 +349,30 @@
 								<div class="fw-semibold">Telefones</div>
 								<div class="text-body-secondary small">Obrigatório ao menos um telefone. Você pode cadastrar mais de um.</div>
 							</div>
-							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddPhone">Adicionar telefone</button>
+							<button type="button" class="btn btn-outline-primary btn-sm people-add-button" id="btnAddPhone">
+								<i class="bi bi-plus-lg"></i>
+								<span>Adicionar telefone</span>
+							</button>
 						</div>
 
-						<div class="mt-2" id="phonesContainer"></div>
+						<div class="mt-2 people-repeat-container" id="phonesContainer"></div>
 
 						<template id="phoneTemplate">
-							<div class="border rounded p-3 mt-2">
+							<div class="border rounded p-3 mt-2 people-repeat-item">
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-4">
 										<label class="form-label">Número</label>
-										<input class="form-control" name="phones[][number]" type="text" inputmode="numeric" placeholder="(XX) XXXXX-XXXX" />
+										<input class="form-control mask-phone-intl" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+55(48)99190-8908" />
 									</div>
 									<div class="col-12 col-md-7">
 										<label class="form-label">Observações</label>
 										<input class="form-control" name="phones[][notes]" type="text" placeholder="Ex.: celular, comercial, WhatsApp" />
 									</div>
 									<div class="col-12 col-md-1 d-grid">
-										<button type="button" class="btn btn-outline-danger" data-remove="phone">X</button>
+										<button type="button" class="btn btn-outline-danger people-remove-button" data-remove="phone" aria-label="Remover telefone">
+											<i class="bi bi-trash"></i>
+											<span class="d-md-none ms-1">Remover</span>
+										</button>
 									</div>
 								</div>
 							</div>
@@ -329,13 +386,16 @@
 								<div class="fw-semibold">E-mails</div>
 								<div class="text-body-secondary small">Obrigatório ao menos um e-mail. Você pode cadastrar mais de um.</div>
 							</div>
-							<button type="button" class="btn btn-outline-primary btn-sm" id="btnAddEmail">Adicionar e-mail</button>
+							<button type="button" class="btn btn-outline-primary btn-sm people-add-button" id="btnAddEmail">
+								<i class="bi bi-plus-lg"></i>
+								<span>Adicionar e-mail</span>
+							</button>
 						</div>
 
-						<div class="mt-2" id="emailsContainer"></div>
+						<div class="mt-2 people-repeat-container" id="emailsContainer"></div>
 
 						<template id="emailTemplate">
-							<div class="border rounded p-3 mt-2">
+							<div class="border rounded p-3 mt-2 people-repeat-item">
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-4">
 										<label class="form-label">Endereço de e-mail</label>
@@ -354,7 +414,10 @@
 										</select>
 									</div>
 									<div class="col-12 col-md-1 d-grid">
-										<button type="button" class="btn btn-outline-danger" data-remove="email">X</button>
+										<button type="button" class="btn btn-outline-danger people-remove-button" data-remove="email" aria-label="Remover e-mail">
+											<i class="bi bi-trash"></i>
+											<span class="d-md-none ms-1">Remover</span>
+										</button>
 									</div>
 								</div>
 							</div>
@@ -366,7 +429,15 @@
 
 			<!-- Step 6: Revisão -->
 			<section data-step="6" class="d-none">
-				<div class="alert alert-info mb-3" role="alert">
+				<div class="people-section-header">
+					<span class="people-section-icon"><i class="bi bi-check2-circle"></i></span>
+					<div>
+						<h2>Revisão</h2>
+						<p>Confirmação final</p>
+					</div>
+				</div>
+
+				<div class="alert alert-info mb-3 people-review-alert" role="alert">
 					Revise seus dados antes de concluir.
 				</div>
 
@@ -392,19 +463,29 @@
 
 		</div>
 
-		<div class="card-footer bg-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
-			<button type="button" class="btn btn-secondary" id="btnBack" disabled>Voltar</button>
+		<div class="card-footer bg-body d-flex flex-wrap gap-2 justify-content-between align-items-center people-form-footer">
+			<button type="button" class="btn btn-secondary" id="btnBack" disabled>
+				<i class="bi bi-arrow-left"></i>
+				<span>Voltar</span>
+			</button>
 
 			<div class="d-flex flex-wrap gap-2">
-				<button type="button" class="btn btn-primary" id="btnNext">Continuar</button>
-				<button type="submit" class="btn btn-success d-none" id="btnSubmit">Concluir</button>
+				<button type="button" class="btn btn-primary" id="btnNext">
+					<span>Continuar</span>
+					<i class="bi bi-arrow-right"></i>
+				</button>
+				<button type="submit" class="btn btn-success d-none" id="btnSubmit">
+					<i class="bi bi-check2"></i>
+					<span>Concluir</span>
+				</button>
 			</div>
 		</div>
 	</div>
 </form>
+</div>
 <script>
 	const PERSON_NEIGHBORHOOD_SEARCH_URL = "<?= url('person/neighborhoodSearch'); ?>";
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=7'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=9'); ?>"></script>

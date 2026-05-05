@@ -354,7 +354,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
               <a class="home-list-item" href="<?= url('tenant/informations/' . (int) $tenant['id']); ?>">
                 <span class="home-avatar home-avatar-tenant"><i class="bi bi-database"></i></span>
                 <span>
-                  <strong><?= htmlspecialchars($tenant['name'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></strong>
+                  <strong><?= htmlspecialchars($tenant['associated_person_name'] ?? ('Tenant #' . (int) ($tenant['id'] ?? 0)), ENT_QUOTES, 'UTF-8'); ?></strong>
                   <small>
                     <code>manager_<?= htmlspecialchars($tenant['database_number'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></code>
                     · <?= homeDashboardDate($tenant['created'] ?? null); ?>

@@ -27,17 +27,10 @@ $flash          = $flash          ?? null;
   <div class="card shadow-sm">
     <div class="card-body">
       <div class="row g-3">
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="name">Nome</label>
-          <input autocomplete="off" class="form-control" id="name" name="name" placeholder="Nome do tenant" type="text" value="<?= htmlspecialchars($tenant['name'], ENT_QUOTES, 'UTF-8') ?>" required />
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="fantasy">Nome fantasia</label>
-          <input autocomplete="off" class="form-control" id="fantasy" name="fantasy" placeholder="Nome fantasia" type="text" value="<?= htmlspecialchars($tenant['fantasy'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
-        </div>
         <div class="col-12 col-md-4">
-          <label class="form-label" for="document">Documento (CPF/CNPJ)</label>
-          <input autocomplete="off" class="form-control mask-cpf-cnpj" id="document" name="document" placeholder="CPF ou CNPJ" type="text" value="<?= htmlspecialchars($tenant['document'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+          <label class="form-label">Pessoa associada</label>
+          <input class="form-control" type="text" value="<?= htmlspecialchars($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id']), ENT_QUOTES, 'UTF-8') ?>" disabled />
+          <div class="form-text">Definida pelo vínculo em <code>tenant_users</code>, priorizando o perfil Owner.</div>
         </div>
         <div class="col-12 col-md-4">
           <label class="form-label">Banco de dados</label>

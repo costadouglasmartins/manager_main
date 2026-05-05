@@ -135,7 +135,7 @@ $selected = function ($actual, $expected): string
               <option value="">Sem tenant principal</option>
               <?php foreach ($allTenants as $tenant): ?>
                 <option value="<?= (int) $tenant['id']; ?>" <?= $selected((int) ($user['tenant_id'] ?? 0), (int) $tenant['id']); ?>>
-                  <?= $e($tenant['name'] ?? ''); ?> (manager_<?= $e($tenant['database_number'] ?? ''); ?>)
+                  <?= $e($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?> (manager_<?= $e($tenant['database_number'] ?? ''); ?>)
                 </option>
               <?php endforeach; ?>
             </select>
@@ -158,17 +158,9 @@ $selected = function ($actual, $expected): string
               <input type="hidden" name="tenant_links[<?= (int) $i; ?>][_delete]" value="0">
 
               <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-4">
-                  <label class="form-label">Nome do tenant</label>
-                  <input autocomplete="off" class="form-control" name="tenant_links[<?= (int) $i; ?>][name]" type="text" value="<?= $e($tenant['name'] ?? ''); ?>">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label">Nome fantasia</label>
-                  <input autocomplete="off" class="form-control" name="tenant_links[<?= (int) $i; ?>][fantasy]" type="text" value="<?= $e($tenant['fantasy'] ?? ''); ?>">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label">Documento (CPF/CNPJ)</label>
-                  <input autocomplete="off" class="form-control mask-cpf-cnpj" name="tenant_links[<?= (int) $i; ?>][document]" type="text" value="<?= $e(maskCpfCnpj($tenant['document'] ?? '')); ?>">
+                <div class="col-12 col-md-3">
+                  <label class="form-label">Pessoa associada</label>
+                  <input class="form-control" type="text" value="<?= $e($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?>" disabled>
                 </div>
                 <div class="col-12 col-md-3">
                   <label class="form-label">Banco</label>
@@ -219,7 +211,7 @@ $selected = function ($actual, $expected): string
                   <option value="">Selecione um tenant...</option>
                   <?php foreach ($allTenants as $tenant): ?>
                     <option value="<?= (int) $tenant['id']; ?>">
-                      <?= $e($tenant['name'] ?? ''); ?> (manager_<?= $e($tenant['database_number'] ?? ''); ?>)
+                      <?= $e($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?> (manager_<?= $e($tenant['database_number'] ?? ''); ?>)
                     </option>
                   <?php endforeach; ?>
                 </select>

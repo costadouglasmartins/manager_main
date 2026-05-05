@@ -67,6 +67,24 @@ if (!function_exists('maskPhoneBr'))
 			return '';
 			}
 		$len = strlen($digits);
+		// Brazilian mobile with country code: +55(11)91234-5678
+		if ($len === 13 && substr($digits, 0, 2) === '55')
+			{
+			return preg_replace(
+				'/(\d{2})(\d{2})(\d{1})(\d{4})(\d{4})/',
+				'+$1($2)$3$4-$5',
+				$digits
+			);
+			}
+		// Brazilian landline with country code: +55(11)1234-5678
+		if ($len === 12 && substr($digits, 0, 2) === '55')
+			{
+			return preg_replace(
+				'/(\d{2})(\d{2})(\d{4})(\d{4})/',
+				'+$1($2)$3-$4',
+				$digits
+			);
+			}
 		// 0800 xxx xxxx (11 digits starting with 0800)
 		if ($len === 11 && substr($digits, 0, 4) === '0800')
 			{
