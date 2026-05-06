@@ -5,6 +5,8 @@ $addresses  = is_array($addresses ?? null) ? $addresses : [];
 $phones     = is_array($phones ?? null) ? $phones : [];
 $emails     = is_array($emails ?? null) ? $emails : [];
 $tenants    = is_array($tenants ?? null) ? $tenants : [];
+$databaseTenants = is_array($database_tenants ?? null) ? $database_tenants : [];
+$databaseTenantMembers = is_array($database_tenant_members ?? null) ? $database_tenant_members : [];
 $allTenants = is_array($allTenants ?? null) ? $allTenants : [];
 
 $personId = (int) ($person['id'] ?? 0);
@@ -26,6 +28,22 @@ $personTypeLabel = (($person['type'] ?? '') === 'company') ? 'Pessoa jurídica' 
 $personStatusLabel = ((int) ($person['active'] ?? 1) === 1) ? 'Ativo' : 'Inativo';
 $personDocumentLabel = !empty($person['document']) ? maskCpfCnpj($person['document']) : 'Documento não informado';
 $userStatusLabel = ($userId > 0) ? 'Usuário vinculado' : 'Sem usuário vinculado';
+
+$currentTenantId = (int) ($user['tenant_id'] ?? 0);
+if ($currentTenantId <= 0 && !empty($tenants[0]['id']))
+  {
+  $currentTenantId = (int) $tenants[0]['id'];
+  }
+
+$currentTenantDatabaseNumber = '';
+foreach ($allTenants as $tenantOption)
+  {
+  if ((int) ($tenantOption['id'] ?? 0) === $currentTenantId)
+    {
+    $currentTenantDatabaseNumber = (string) ($tenantOption['database_number'] ?? '');
+    break;
+    }
+  }
 ?>
 
 <link rel="stylesheet" href="<?= url('assets/css/people/edit.css?v=1'); ?>">
@@ -234,55 +252,104 @@ $userStatusLabel = ($userId > 0) ? 'Usuário vinculado' : 'Sem usuário vinculad
               </div>
               <div class="col-12 col-lg-4">
                 <label class="form-label">Resumo</label>
-                <input class="form-control" type="text" value="<?= count($tenants); ?> tenant(s) vinculado(s)" disabled>
+                <input class="form-control" type="text" value="<?= (!empty($databaseTenantMembers) ? count($databaseTenantMembers) : count($tenants)); ?> vínculo(s) no banco" disabled>
               </div>
             </div>
           </div>
 
           <div class="people-repeat-container" id="tenantLinksContainer">
-            <?php foreach ($tenants as $i => $tenant): ?>
-              <div class="border rounded p-3 mt-2 people-repeat-item people-repeat-item-tenant" data-repeat-item data-tenant-link-item data-existing="1">
-                <input type="hidden" name="tenant_links[<?= (int) $i; ?>][tenant_id]" value="<?= (int) $tenant['id']; ?>">
-                <input type="hidden" name="tenant_links[<?= (int) $i; ?>][_delete]" value="0">
+            <?php if (!empty($databaseTenantMembers)): ?>
+              <?php foreach ($databaseTenantMembers as $i => $member): ?>
+                <?php $isCurrentUserTenantMember = ((int) ($member['user_id'] ?? 0) === $userId); ?>
+                <div class="border rounded p-3 mt-2 people-repeat-item people-repeat-item-tenant" data-repeat-item data-tenant-link-item data-existing="<?= $isCurrentUserTenantMember ? '1' : '0'; ?>">
+                  <?php if ($isCurrentUserTenantMember): ?>
+                    <input type="hidden" name="tenant_links[<?= (int) $i; ?>][tenant_id]" value="<?= (int) $member['tenant_id']; ?>">
+                    <input type="hidden" name="tenant_links[<?= (int) $i; ?>][_delete]" value="0">
+                  <?php endif; ?>
 
-                <div class="row g-3 align-items-end">
-                  <div class="col-12 col-lg-4">
-                    <label class="form-label">Pessoa associada</label>
-                    <input class="form-control" type="text" value="<?= $e($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?>" disabled>
-                  </div>
-                  <div class="col-12 col-md-6 col-lg-3">
-                    <label class="form-label">Banco</label>
-                    <input class="form-control" type="text" value="manager_<?= $e($tenant['database_number'] ?? ''); ?>" disabled>
-                  </div>
-                  <div class="col-12 col-md-6 col-lg-4">
-                    <label class="form-label">Situação do tenant</label>
-                    <select class="form-select" name="tenant_links[<?= (int) $i; ?>][status]">
-                      <option value="active" <?= $selected($tenant['status'] ?? '', 'active'); ?>>Ativo</option>
-                      <option value="suspended" <?= $selected($tenant['status'] ?? '', 'suspended'); ?>>Suspenso</option>
-                      <option value="pending" <?= $selected($tenant['status'] ?? '', 'pending'); ?>>Pendente</option>
-                    </select>
-                  </div>
-                  <div class="col-12 col-md-6 col-lg-1 d-grid">
-                    <button type="button" class="btn btn-outline-danger people-remove-button" data-remove="tenant-link" aria-label="Remover tenant">
-                      <i class="bi bi-trash"></i>
-                      <span class="d-lg-none ms-1">Remover</span>
-                    </button>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Perfil no tenant</label>
-                    <select class="form-select" name="tenant_links[<?= (int) $i; ?>][role]">
-                      <option value="owner" <?= $selected($tenant['role'] ?? '', 'owner'); ?>>Owner</option>
-                      <option value="admin" <?= $selected($tenant['role'] ?? '', 'admin'); ?>>Administrador</option>
-                      <option value="user" <?= $selected($tenant['role'] ?? '', 'user'); ?>>Usuário</option>
-                    </select>
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Observações</label>
-                    <textarea class="form-control" name="tenant_links[<?= (int) $i; ?>][observations]" rows="2"><?= $e($tenant['observations'] ?? ''); ?></textarea>
+                  <div class="row g-3 align-items-end">
+                    <div class="col-12 col-lg-4">
+                      <label class="form-label">Pessoa associada</label>
+                      <input class="form-control" type="text" value="<?= $e($member['person_name'] ?? ('Pessoa #' . (int) $member['person_id'])); ?>" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <label class="form-label">Banco</label>
+                      <input class="form-control" type="text" value="manager_<?= $e($member['database_number'] ?? ''); ?>" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                      <label class="form-label">Situação do tenant</label>
+                      <select class="form-select" <?= $isCurrentUserTenantMember ? 'name="tenant_links[' . (int) $i . '][status]"' : 'disabled'; ?>>
+                        <option value="active" <?= $selected($member['status'] ?? '', 'active'); ?>>Ativo</option>
+                        <option value="suspended" <?= $selected($member['status'] ?? '', 'suspended'); ?>>Suspenso</option>
+                        <option value="pending" <?= $selected($member['status'] ?? '', 'pending'); ?>>Pendente</option>
+                      </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-1 d-grid">
+                      <button type="button" class="btn btn-outline-danger people-remove-button" <?= $isCurrentUserTenantMember ? 'data-remove="tenant-link"' : 'disabled'; ?> aria-label="Remover tenant">
+                        <i class="bi bi-trash"></i>
+                        <span class="d-lg-none ms-1">Remover</span>
+                      </button>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Perfil no tenant</label>
+                      <select class="form-select" <?= $isCurrentUserTenantMember ? 'name="tenant_links[' . (int) $i . '][role]"' : 'disabled'; ?>>
+                        <option value="owner" <?= $selected($member['role'] ?? '', 'owner'); ?>>Owner</option>
+                        <option value="admin" <?= $selected($member['role'] ?? '', 'admin'); ?>>Administrador</option>
+                        <option value="user" <?= $selected($member['role'] ?? '', 'user'); ?>>Usuário</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Observações</label>
+                      <textarea class="form-control" <?= $isCurrentUserTenantMember ? 'name="tenant_links[' . (int) $i . '][observations]"' : 'disabled'; ?> rows="2"><?= $e($member['observations'] ?? ''); ?></textarea>
+                    </div>
                   </div>
                 </div>
-              </div>
-            <?php endforeach; ?>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <?php foreach ($tenants as $i => $tenant): ?>
+                <div class="border rounded p-3 mt-2 people-repeat-item people-repeat-item-tenant" data-repeat-item data-tenant-link-item data-existing="1">
+                  <input type="hidden" name="tenant_links[<?= (int) $i; ?>][tenant_id]" value="<?= (int) $tenant['id']; ?>">
+                  <input type="hidden" name="tenant_links[<?= (int) $i; ?>][_delete]" value="0">
+
+                  <div class="row g-3 align-items-end">
+                    <div class="col-12 col-lg-4">
+                      <label class="form-label">Pessoa associada</label>
+                      <input class="form-control" type="text" value="<?= $e($tenant['associated_person_name'] ?? ('Tenant #' . (int) $tenant['id'])); ?>" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                      <label class="form-label">Banco</label>
+                      <input class="form-control" type="text" value="manager_<?= $e($tenant['database_number'] ?? ''); ?>" disabled>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                      <label class="form-label">Situação do tenant</label>
+                      <select class="form-select" name="tenant_links[<?= (int) $i; ?>][status]">
+                        <option value="active" <?= $selected($tenant['status'] ?? '', 'active'); ?>>Ativo</option>
+                        <option value="suspended" <?= $selected($tenant['status'] ?? '', 'suspended'); ?>>Suspenso</option>
+                        <option value="pending" <?= $selected($tenant['status'] ?? '', 'pending'); ?>>Pendente</option>
+                      </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-1 d-grid">
+                      <button type="button" class="btn btn-outline-danger people-remove-button" data-remove="tenant-link" aria-label="Remover tenant">
+                        <i class="bi bi-trash"></i>
+                        <span class="d-lg-none ms-1">Remover</span>
+                      </button>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Perfil no tenant</label>
+                      <select class="form-select" name="tenant_links[<?= (int) $i; ?>][role]">
+                        <option value="owner" <?= $selected($tenant['role'] ?? '', 'owner'); ?>>Owner</option>
+                        <option value="admin" <?= $selected($tenant['role'] ?? '', 'admin'); ?>>Administrador</option>
+                        <option value="user" <?= $selected($tenant['role'] ?? '', 'user'); ?>>Usuário</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Observações</label>
+                      <textarea class="form-control" name="tenant_links[<?= (int) $i; ?>][observations]" rows="2"><?= $e($tenant['observations'] ?? ''); ?></textarea>
+                    </div>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
 
           <template id="tenantLinkTemplate">
@@ -618,13 +685,137 @@ $userStatusLabel = ($userId > 0) ? 'Usuário vinculado' : 'Sem usuário vinculad
   </form>
 </div>
 
+<div class="modal fade" id="createLinkedPersonModal" tabindex="-1" aria-labelledby="createLinkedPersonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <form id="createLinkedPersonForm" novalidate>
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="createLinkedPersonModalLabel">Adicionar pessoa ao tenant</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="tenant_id" value="<?= (int) $currentTenantId; ?>">
+
+          <div class="alert alert-secondary py-2 mb-3">
+            <div class="small mb-0">
+              Tenant alvo:
+              <strong>
+                <?php if ($currentTenantId > 0): ?>
+                  #<?= (int) $currentTenantId; ?> (manager_<?= $e($currentTenantDatabaseNumber); ?>)
+                <?php else: ?>
+                  não definido
+                <?php endif; ?>
+              </strong>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <h6 class="mb-0">Pessoa</h6>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Nome completo</label>
+              <input type="text" class="form-control" name="person[name]" maxlength="255" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Nome fantasia</label>
+              <input type="text" class="form-control" name="person[fantasy]" maxlength="255">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Tipo de pessoa</label>
+              <select class="form-select" name="person[type]" required>
+                <option value="">Selecione...</option>
+                <option value="individual">Pessoa física</option>
+                <option value="company">Pessoa jurídica</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Documento (CPF/CNPJ)</label>
+              <input type="text" class="form-control mask-cpf-cnpj" name="person[document]" maxlength="18" required>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Data de nascimento</label>
+              <input type="text" class="form-control mask-date" name="person[birthdate]" placeholder="DD/MM/AAAA">
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <h6 class="mb-0">Usuário</h6>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Nome de usuário</label>
+              <input type="text" class="form-control" name="user[username]" maxlength="45" required>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Tipo de acesso</label>
+              <select class="form-select" name="user[type]" required>
+                <option value="">Selecione...</option>
+                <option value="root">Root</option>
+                <option value="admin">Administrador</option>
+                <option value="user">Usuário</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Situação</label>
+              <select class="form-select" name="user[active]">
+                <option value="1" selected>Ativo</option>
+                <option value="0">Inativo</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Senha</label>
+              <input type="password" class="form-control" name="user[password]" minlength="8" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Confirmar senha</label>
+              <input type="password" class="form-control" name="user[password_confirm]" minlength="8" required>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <h6 class="mb-0">E-mail</h6>
+            </div>
+            <div class="col-12 col-md-5">
+              <label class="form-label">Endereço de e-mail</label>
+              <input type="email" class="form-control" name="emails[0][address]" maxlength="255" placeholder="exemplo@email.com" required>
+            </div>
+            <div class="col-12 col-md-5">
+              <label class="form-label">Descrição</label>
+              <input type="text" class="form-control" name="emails[0][description]" maxlength="500" placeholder="Ex.: principal, financeiro, comercial">
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label">E-mail de login?</label>
+              <select class="form-select" name="emails[0][is_login]">
+                <option value="1" selected>Sim</option>
+                <option value="0">Não</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitCreateLinkedPerson">Salvar pessoa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
   const PERSON_NEIGHBORHOOD_SEARCH_URL = "<?= url('person/neighborhoodSearch'); ?>";
   const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
   const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
+  const PERSON_STORE_LINKED_TENANT_URL = "<?= url('person/storeLinkedTenant'); ?>";
+  const CURRENT_PERSON_TENANT_ID       = <?= (int) $currentTenantId; ?>;
   let addressCounter    = <?= (int) count($addresses); ?>;
   let phoneCounter      = <?= (int) count($phones); ?>;
   let emailCounter      = <?= (int) count($emails); ?>;
   let tenantLinkCounter = <?= (int) count($tenants); ?>;
 </script>
-<script src="<?= url('assets/js/people/edit.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/people/edit.js?v=3'); ?>"></script>

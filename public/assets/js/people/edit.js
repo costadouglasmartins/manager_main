@@ -273,7 +273,83 @@
 
   document.getElementById("btnAddTenantLink")?.addEventListener("click", function ()
     {
-    addFromTemplate("tenantLinkTemplate", "tenantLinksContainer", "tenantLink");
+    if (!CURRENT_PERSON_TENANT_ID)
+      {
+      alert("Esta pessoa não possui tenant principal definido.");
+      return;
+      }
+
+    const modalEl = document.getElementById("createLinkedPersonModal");
+    if (!modalEl || !window.bootstrap || !window.bootstrap.Modal)
+      {
+      return;
+      }
+    const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+    });
+
+  const createLinkedPersonForm = document.getElementById("createLinkedPersonForm");
+  createLinkedPersonForm?.addEventListener("submit", async function (e)
+    {
+    e.preventDefault();
+
+    const password = createLinkedPersonForm.querySelector("input[name='user[password]']")?.value || "";
+    const passwordConfirm = createLinkedPersonForm.querySelector("input[name='user[password_confirm]']")?.value || "";
+
+    if (password.length < 8)
+      {
+      alert("A senha deve ter pelo menos 8 caracteres.");
+      return;
+      }
+
+    if (password !== passwordConfirm)
+      {
+      alert("A confirmação de senha não confere.");
+      return;
+      }
+
+    const submitButton = document.getElementById("btnSubmitCreateLinkedPerson");
+    if (submitButton)
+      {
+      submitButton.disabled = true;
+      submitButton.textContent = "Salvando...";
+      }
+
+    try
+      {
+      const formData = new FormData(createLinkedPersonForm);
+      formData.append("person[active]", "1");
+
+      const response = await fetch(PERSON_STORE_LINKED_TENANT_URL, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"},
+        body: formData
+      });
+
+      const payload = await response.json();
+      if (!response.ok)
+        {
+        alert(payload.message || "Não foi possível salvar a pessoa.");
+        return;
+        }
+
+      alert("Pessoa cadastrada e vinculada ao tenant com sucesso.");
+      window.location.reload();
+      }
+    catch (err)
+      {
+      console.error(err);
+      alert("Erro de comunicação ao salvar a pessoa.");
+      }
+    finally
+      {
+      if (submitButton)
+        {
+        submitButton.disabled = false;
+        submitButton.textContent = "Salvar pessoa";
+        }
+      }
     });
 
   document.addEventListener("click", function (e)

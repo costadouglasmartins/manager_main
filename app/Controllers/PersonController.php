@@ -276,6 +276,73 @@ class PersonController extends Controller
 		}
 
 	/**
+	 * Creates a new person linked to an existing tenant and returns JSON.
+	 *
+	 * This endpoint is intended for inline creation flows (for example, modal
+	 * forms) where the UI must remain on the current screen.
+	 *
+	 * @return void
+	 */
+	public function storeLinkedTenant()
+		{
+		$this->requirePermission('person.store');
+
+		$tenantId = (int) ($_POST['tenant_id'] ?? 0);
+		if ($tenantId <= 0)
+			{
+			$this->json([
+				'error' => 'validation_error',
+				'message' => 'Tenant inválido para associação.',
+			], 422);
+			}
+
+		if (empty($_POST['person']['name']) || empty($_POST['person']['type']) || empty($_POST['person']['document']))
+			{
+			$this->json([
+				'error' => 'validation_error',
+				'message' => 'Preencha os campos obrigatórios da pessoa.',
+			], 422);
+			}
+
+		if (empty($_POST['user']['username']) || empty($_POST['user']['type']) || empty($_POST['user']['password']))
+			{
+			$this->json([
+				'error' => 'validation_error',
+				'message' => 'Preencha os campos obrigatórios do usuário.',
+			], 422);
+			}
+
+		$payload = $_POST;
+		$payload['tenant'] = [
+			'mode' => 'existing',
+			'existing_id' => $tenantId,
+		];
+
+		$person = new Person();
+
+		try
+			{
+			$result = $person->create($payload);
+			$this->json([
+				'success' => true,
+				'message' => 'Pessoa criada e vinculada ao tenant com sucesso.',
+				'data' => [
+					'person_id' => (int) ($result['person_id'] ?? 0),
+					'user_id' => (int) ($result['user_id'] ?? 0),
+					'tenant_id' => (int) ($result['tenant_id'] ?? 0),
+				],
+			], 201);
+			}
+		catch (\Throwable $e)
+			{
+			$this->json([
+				'error' => 'create_failed',
+				'message' => 'Erro ao cadastrar pessoa vinculada ao tenant.',
+			], 500);
+			}
+		}
+
+	/**
 	 * Displays the person edit form.
 	 *
 	 * Loads the person, user, phones, emails, addresses, tenant links and the
@@ -301,6 +368,8 @@ class PersonController extends Controller
 			'emails'     => $data['emails'],
 			'addresses'  => $data['addresses'],
 			'tenants'    => $data['tenants'],
+			'database_tenants' => $data['database_tenants'] ?? [],
+			'database_tenant_members' => $data['database_tenant_members'] ?? [],
 			'allTenants' => $allTenants,
 		]);
 		}

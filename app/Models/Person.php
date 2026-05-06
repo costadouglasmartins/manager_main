@@ -1039,6 +1039,8 @@ class Person extends Model
 
 		// Tenant links are available only when the person has a user record.
 		$tenants = [];
+		$databaseTenants = [];
+		$databaseTenantMembers = [];
 		if (!empty($user['id']))
 			{
 			$tenantsStmt = $this->db->prepare("SELECT Tenant.id,
@@ -1089,6 +1091,63 @@ class Person extends Model
 			                                   ORDER BY associated_person_name ASC, Tenant.id ASC");
 			$tenantsStmt->execute(['user_id' => $user['id']]);
 			$tenants = $tenantsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+			$baseTenantId = (int) ($user['tenant_id'] ?? 0);
+			if ($baseTenantId <= 0 && !empty($tenants[0]['id']))
+				{
+				$baseTenantId = (int) $tenants[0]['id'];
+				}
+
+			// List every tenant that belongs to the same database number as the
+			// user's primary tenant, so the edit screen can show full membership.
+			$databaseTenantsStmt = $this->db->prepare("SELECT Tenant.id,
+			                                                  (SELECT PersonAssoc.name
+			                                                     FROM tenant_users AS TenantUserAssoc
+			                                                     INNER JOIN users AS UserAssoc ON UserAssoc.id = TenantUserAssoc.user_id
+			                                                     INNER JOIN people AS PersonAssoc ON PersonAssoc.id = UserAssoc.person_id
+			                                                     WHERE TenantUserAssoc.tenant_id = Tenant.id
+			                                                     ORDER BY TenantUserAssoc.role = 'owner' DESC,
+			                                                              TenantUserAssoc.created ASC,
+			                                                              TenantUserAssoc.user_id ASC
+			                                                     LIMIT 1) AS associated_person_name,
+			                                                  Tenant.database_number,
+			                                                  Tenant.status
+			                                           FROM tenants AS Tenant
+			                                           WHERE Tenant.database_number = (
+			                                             SELECT TenantBase.database_number
+			                                             FROM tenants AS TenantBase
+			                                             WHERE TenantBase.id = :tenant_id
+			                                             LIMIT 1
+			                                           )
+			                                           ORDER BY associated_person_name ASC, Tenant.id ASC");
+			$databaseTenantsStmt->execute(['tenant_id' => $baseTenantId]);
+			$databaseTenants = $databaseTenantsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+			$databaseTenantMembersStmt = $this->db->prepare("SELECT Tenant.id AS tenant_id,
+			                                                        Tenant.database_number,
+			                                                        Tenant.status,
+			                                                        Tenant.observations,
+			                                                        TenantUser.role,
+			                                                        User.id AS user_id,
+			                                                        User.username,
+			                                                        Person.id AS person_id,
+			                                                        Person.name AS person_name
+			                                                 FROM tenants AS Tenant
+			                                                 INNER JOIN tenant_users AS TenantUser ON TenantUser.tenant_id = Tenant.id
+			                                                 INNER JOIN users AS User ON User.id = TenantUser.user_id
+			                                                 INNER JOIN people AS Person ON Person.id = User.person_id
+			                                                 WHERE Tenant.database_number = (
+			                                                   SELECT TenantBase.database_number
+			                                                   FROM tenants AS TenantBase
+			                                                   WHERE TenantBase.id = :tenant_id
+			                                                   LIMIT 1
+			                                                 )
+			                                                 ORDER BY Tenant.id ASC,
+			                                                          TenantUser.role = 'owner' DESC,
+			                                                          TenantUser.role = 'admin' DESC,
+			                                                          Person.name ASC");
+			$databaseTenantMembersStmt->execute(['tenant_id' => $baseTenantId]);
+			$databaseTenantMembers = $databaseTenantMembersStmt->fetchAll(PDO::FETCH_ASSOC);
 			}
 
 		return [
@@ -1098,6 +1157,8 @@ class Person extends Model
 			'emails'    => $emails,
 			'addresses' => $addresses,
 			'tenants'   => $tenants,
+			'database_tenants' => $databaseTenants,
+			'database_tenant_members' => $databaseTenantMembers,
 		];
 		}
 
