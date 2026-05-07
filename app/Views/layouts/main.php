@@ -254,7 +254,7 @@
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tools me-2"></i>Ferramentas</a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-person-vcard me-2"></i>Gerador de CPF / CNPJ</a></li>
+                  <li><a class="dropdown-item" href="<?= url('tool/documents'); ?>"><i class="bi bi-person-vcard me-2"></i>Gerador/Validador de CPF / CNPJ</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="#"><i class="bi bi-envelope-check-fill me-2"></i>Validador de E-mail</a></li>
                 </ul>
