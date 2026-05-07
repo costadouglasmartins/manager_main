@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="<?= url('assets/css/bootstrap.min.css'); ?>">
   <link rel="stylesheet" href="<?= url('assets/images/bootstrap-icons.min.css'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/main.css?v=4'); ?>">
-  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=1'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=4'); ?>">
   <link rel="apple-touch-icon" sizes="180x180" href="<?= url('assets/images/apple-touch-icon.png'); ?>">
   <link rel="icon" type="image/png" sizes="32x32" href="<?= url('assets/images/favicon-32x32.png'); ?>">
   <link rel="icon" type="image/png" sizes="16x16" href="<?= url('assets/images/favicon-16x16.png'); ?>">
@@ -44,10 +44,6 @@
                 <i class="bi bi-layers me-1"></i> Cadastros essenciais
               </a>
               <ul class="dropdown-menu" aria-labelledby="menuExemplo">
-
-                <li><a class="dropdown-item" href="<?= url('/'); ?>"><i class="bi bi-house me-2"></i>Início</a></li>
-
-                <li><hr class="dropdown-divider" /></li>
                 <?php if (authCan('neighborhood.index')): ?>
                   <!-- Neighborhood -->
                   <li class="dropdown-submenu">
@@ -158,11 +154,6 @@
                   </li>
                   <!-- /Person -->
                 <?php endif; ?>
-
-                <li><hr class="dropdown-divider" /></li>
-
-                <li><a class="dropdown-item" href="#"><i class="bi bi-info-circle me-2"></i>Sobre</a></li>
-
               </ul>
             </li>
             <!-- /Four levels menu -->
@@ -243,17 +234,22 @@
         <ul class="navbar-nav mb-2 mb-lg-0">
         <?php if (!empty($_SESSION['manager_main']['user'])): ?>
           <li class="nav-item dropdown me-lg-3">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="systemMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-gear-fill me-2"></i>Sistema
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-              <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
-              <li><hr class="dropdown-divider" /></li>
-              <?php if (authCan('database_manager.index') || authIsRoot()): ?>
-                <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
-                <li><hr class="dropdown-divider" /></li>
-              <?php endif; ?>
-              <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="systemMenu">
+              <li class="dropdown-submenu">
+                <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-sliders me-2"></i>Configurações</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <?php if (authCan('database_manager.index') || authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
+                  <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
+                </ul>
+              </li>
               <li><hr class="dropdown-divider" /></li>
               <li><a class="dropdown-item" href="<?= url('user'); ?>"><i class="bi bi-person me-2"></i>Usuários</a></li>
             </ul>
@@ -283,8 +279,8 @@
           </li>
 
           <!-- Botão de tema -->
-          <li class="nav-item">
-            <button id="themeToggle" class="btn-theme" type="button" title="Alternar tema">
+          <li class="nav-item d-lg-flex align-items-lg-center">
+            <button id="themeToggle" class="nav-link btn-theme d-flex align-items-center" type="button" title="Alternar tema">
               <i class="bi bi-moon-fill"></i>
             </button>
           </li>
@@ -298,7 +294,7 @@
   </div>
   
   <script src="<?= url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
-  <script src="<?= url('assets/js/menu.js?v=1'); ?>"></script>
+  <script src="<?= url('assets/js/menu.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/helper.js?v=1'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=1'); ?>"></script>
 </body>

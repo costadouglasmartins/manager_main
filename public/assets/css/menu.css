@@ -11,10 +11,16 @@
 .dropdown-submenu .dropdown-menu {
   top: 0;
   left: 100%;
+  right: auto;
   margin-top: -0.25rem;
   display: none;
   position: absolute;
   z-index: 1031; /* acima da navbar (1030) em todos os níveis */
+}
+
+.dropdown-submenu.submenu-open-left > .dropdown-menu {
+  left: auto;
+  right: 100%;
 }
 
 /* JS controla abertura — .show é aplicado via menu.js */
@@ -27,6 +33,7 @@
     position: static;
     display: none;
     margin-left: 1rem;
+    right: auto;
     z-index: auto;
   }
   .dropdown-submenu.show > .dropdown-menu {
@@ -51,6 +58,11 @@
 .btn-theme {
   border: none;
   background: transparent;
-  color: white;
-  font-size: 1.25rem;
+  color: var(--bs-navbar-color);
+  line-height: inherit;
+}
+
+.btn-theme:hover,
+.btn-theme:focus {
+  color: var(--bs-navbar-hover-color);
 }

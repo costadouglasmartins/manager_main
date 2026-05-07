@@ -13,7 +13,6 @@
 
 <div class="people-create-toolbar">
 	<div>
-		<div class="people-create-eyebrow">Cadastro</div>
 		<h5 class="mb-0">Nova pessoa</h5>
 	</div>
 	<a class="btn btn-outline-secondary btn-sm" href="<?= url('person'); ?>">

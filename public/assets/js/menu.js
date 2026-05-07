@@ -30,6 +30,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
   /**
+   * Defines which side has enough room to render a submenu.
+   * @param {component} submenu
+   */
+  function updateSubmenuDirection(submenu)
+    {
+    const menu = submenu.querySelector(":scope > .dropdown-menu");
+    if (!menu)
+      {
+      return;
+      }
+
+    submenu.classList.remove("submenu-open-left");
+    if (window.innerWidth < 992)
+      {
+      return;
+      }
+
+    const submenuRect = submenu.getBoundingClientRect();
+    const menuWidth = menu.offsetWidth;
+    const viewportWidth = document.documentElement.clientWidth;
+    const rightSpace = viewportWidth - submenuRect.right;
+    const leftSpace = submenuRect.left;
+
+    submenu.classList.toggle("submenu-open-left", rightSpace < menuWidth && leftSpace > rightSpace);
+    }
+
+  /**
    * Helpers of submenus
    * @param {component} submenu 
    */
@@ -48,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (menu)
       {
       menu.style.display = "block";
+      updateSubmenuDirection(submenu);
       }
     submenu.classList.add("show");
     }
@@ -60,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
     // Recursively closes all open child submenus
     submenu.querySelectorAll(".dropdown-submenu.show").forEach(s => {
-      s.classList.remove("show");
+      s.classList.remove("show", "submenu-open-left");
       const m = s.querySelector(":scope > .dropdown-menu");
       if (m)
         {
@@ -72,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
       menu.style.display = "";
       }
-    submenu.classList.remove("show");
+    submenu.classList.remove("show", "submenu-open-left");
     }
 
   /**
@@ -124,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
-   * Submenus — levels 3, 4, …
+   * Submenus - nested dropdown items
    * Desktop: hovering for 2 seconds opens it; moving the pointer away closes it immediately.
    * Clicking opens it right away (toggle).
    * Mobile:  click only (toggle), no timer.
@@ -170,8 +198,12 @@ document.addEventListener("DOMContentLoaded", () => {
       else 
         {
         openSubmenu(submenu);
-        }
+      }
     });
+  });
+
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".dropdown-submenu.show").forEach(updateSubmenuDirection);
   });
 
 });
