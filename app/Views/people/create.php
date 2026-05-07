@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=2'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=3'); ?>">
 
 <div class="people-create-page">
 <!-- Breadcrumbs -->
@@ -296,8 +296,8 @@
 									</div>
 									<div class="col-12 col-md-6 position-relative">
 										<label class="form-label">Bairro</label>
-										<input type="hidden" class="addr-neighborhood-id" name="addresses[][neighborhood_id]" value="" />
-										<input type="text" class="form-control addr-neighborhood-input" autocomplete="off" placeholder="Digite o nome do bairro..." />
+										<input type="hidden" class="addr-neighborhood-id" name="addresses[][neighborhood_id]" value=""/>
+										<input type="text" class="form-control addr-neighborhood-input" name="addresses[][neighborhood_name]" autocomplete="off" placeholder="Digite o nome do bairro..." />
 										<ul class="list-group addr-neighborhood-results" style="display:none; position:absolute; width:100%; z-index:1050; max-height:220px; overflow-y:auto;"></ul>
 									</div>
 
@@ -488,5 +488,5 @@
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=9'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=10'); ?>"></script>
 <script src="<?= url('assets/js/masks.js?v=4'); ?>"></script>

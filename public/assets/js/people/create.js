@@ -8,6 +8,7 @@
 			}
 
 		const TOTAL_STEPS = 6;
+		const STORAGE_KEY = "peopleCreateFormStateV1";
 
 		const steps = [
 			{n: 1, title: "Etapa 1 de 6", subtitle: "Pessoa"},
@@ -146,6 +147,161 @@
 		let addressCounter = 0;
 		let phoneCounter = 0;
 		let emailCounter = 0;
+
+		function getFormState()
+			{
+				const fields = {};
+				Array.from(form.querySelectorAll("input[name], select[name], textarea[name]")).forEach(function (el)
+					{
+						const name = el.name;
+						if (!name)
+							{
+								return;
+							}
+						if (el.type === "checkbox")
+							{
+								fields[name] = !!el.checked;
+								return;
+							}
+						if (el.type === "radio")
+							{
+								if (el.checked)
+									{
+										fields[name] = el.value;
+									}
+								return;
+							}
+						fields[name] = el.value;
+					});
+
+				return {
+					currentStep: currentStep,
+					fields: fields
+				};
+			}
+
+		function saveFormState()
+			{
+				try
+					{
+						sessionStorage.setItem(STORAGE_KEY, JSON.stringify(getFormState()));
+					}
+				catch (err)
+					{
+						console.warn("Could not persist create form state:", err);
+					}
+			}
+
+		function clearFormState()
+			{
+				try
+					{
+						sessionStorage.removeItem(STORAGE_KEY);
+					}
+				catch (err)
+					{
+						console.warn("Could not clear create form state:", err);
+					}
+			}
+
+		function ensureDynamicRows(fieldNames, prefix, addRowFn)
+			{
+				let maxIndex = -1;
+				fieldNames.forEach(function (name)
+					{
+						const match = name.match(new RegExp("^" + prefix + "\\\\[(\\\\d+)\\\\]"));
+						if (!match)
+							{
+								return;
+							}
+						const idx = parseInt(match[1], 10);
+						if (!Number.isNaN(idx))
+							{
+								maxIndex = Math.max(maxIndex, idx);
+							}
+					});
+
+				const requiredCount = maxIndex + 1;
+				for (let i = 1; i < requiredCount; i += 1)
+					{
+						addRowFn();
+					}
+			}
+
+		function restoreFormState()
+			{
+				let raw;
+				try
+					{
+						raw = sessionStorage.getItem(STORAGE_KEY);
+					}
+				catch (err)
+					{
+						console.warn("Could not read persisted create form state:", err);
+						return;
+					}
+
+				if (!raw)
+					{
+						return;
+					}
+
+				let state;
+				try
+					{
+						state = JSON.parse(raw);
+					}
+				catch (_err)
+					{
+						clearFormState();
+						return;
+					}
+
+				if (!state || typeof state !== "object" || !state.fields || typeof state.fields !== "object")
+					{
+						clearFormState();
+						return;
+					}
+
+				const fieldNames = Object.keys(state.fields);
+				ensureDynamicRows(fieldNames, "addresses", addAddressRow);
+				ensureDynamicRows(fieldNames, "phones", addPhoneRow);
+				ensureDynamicRows(fieldNames, "emails", addEmailRow);
+
+				fieldNames.forEach(function (name)
+					{
+						const value = state.fields[name];
+						const controls = form.querySelectorAll("[name=\"" + CSS.escape(name) + "\"]");
+						if (!controls.length)
+							{
+								return;
+							}
+
+						controls.forEach(function (el)
+							{
+								if (el.type === "checkbox")
+									{
+										el.checked = !!value;
+										return;
+									}
+								if (el.type === "radio")
+									{
+										el.checked = String(el.value) === String(value);
+										return;
+									}
+								el.value = value == null ? "" : String(value);
+							});
+					});
+
+				updateTenantPanels();
+
+				const targetStep = Math.min(TOTAL_STEPS, Math.max(1, parseInt(state.currentStep, 10) || 1));
+				showStep(targetStep);
+				if (targetStep === TOTAL_STEPS)
+					{
+						buildReview();
+					}
+			}
 
 		// -----------------------------------------------------------------------
 		// Mini-autocomplete genérico (reutilizado para bairro e cidade)
@@ -954,6 +1110,7 @@
 			{
 				form.classList.remove("was-validated");
 				showStep(Math.max(1, currentStep - 1));
+				saveFormState();
 			});
 
 		// -----------------------------------------------------------------------
@@ -972,6 +1129,7 @@
 					{
 						buildReview();
 					}
+				saveFormState();
 			});
 
 		// -----------------------------------------------------------------------
@@ -987,7 +1145,11 @@
 						return;
 					}
 				// Formulário válido — submit nativo
+				clearFormState();
 			});
+
+		form.addEventListener("input", saveFormState);
+		form.addEventListener("change", saveFormState);
 
 		// -----------------------------------------------------------------------
 		// Init — pré-adiciona uma linha de cada seção para o usuário já ver os campos
@@ -996,4 +1158,5 @@
 		addPhoneRow();
 		addEmailRow();
 		showStep(1);
+		restoreFormState();
 	})();

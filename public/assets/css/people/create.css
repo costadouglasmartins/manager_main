@@ -250,12 +250,8 @@
 }
 
 .people-form-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
   border-top: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(12px);
+  background: var(--bs-body-bg) !important;
 }
 
 .people-form-footer .btn {
@@ -291,7 +287,7 @@
 }
 
 [data-bs-theme="dark"] .people-form-footer {
-  background: rgba(33, 37, 41, 0.9) !important;
+  background: var(--bs-body-bg) !important;
 }
 
 @media (max-width: 767.98px) {
