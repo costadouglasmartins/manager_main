@@ -312,9 +312,10 @@
 
 				if (isCnpjNewGenerator())
 					{
-						const documents = generateCnpjAlphanumericFamily(setBranchQuantity(cnpjNewBranches ? cnpjNewBranches.value : 0), generatorFormatted.checked);
+						const branchQuantity = setBranchQuantity(cnpjNewBranches ? cnpjNewBranches.value : 0);
+						const documents = generateCnpjAlphanumericFamily(branchQuantity, generatorFormatted.checked);
 						generatedDocument.value = documents[0].value;
-						renderCnpjNewGeneratedList(documents);
+						renderCnpjNewGeneratedList(branchQuantity > 1 ? documents : []);
 						generatedDocument.focus();
 						generatedDocument.select();
 						return;

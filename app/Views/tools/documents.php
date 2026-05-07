@@ -1,5 +1,5 @@
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/documents.css?v=2'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/documents.css?v=3'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -12,15 +12,8 @@
 <!-- /Breadcrumbs -->
 
 <section class="document-tool" id="documentToolApp">
-  <div class="document-tool-header mb-4">
-    <div>
-      <span class="document-tool-kicker">Ferramentas</span>
-      <h1 class="document-tool-title">CPF e CNPJ</h1>
-    </div>
-  </div>
-
   <div class="row g-4">
-    <div class="col-12 col-xl-5">
+    <div class="col-12 col-xl-6">
       <div class="card shadow-sm h-100">
         <div class="card-body">
           <div class="d-flex align-items-center gap-2 mb-3">
@@ -95,7 +88,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-xl-7">
+    <div class="col-12 col-xl-6">
       <div class="card shadow-sm h-100">
         <div class="card-body">
           <div class="d-flex align-items-center gap-2 mb-3">

@@ -11,18 +11,6 @@
   --document-tool-success: #53bf91;
 }
 
-.document-tool-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.15rem;
-  color: #fff;
-  background: linear-gradient(135deg, rgba(31, 122, 140, 0.92), rgba(36, 43, 49, 0.96));
-  border: 1px solid var(--document-tool-border);
-  border-radius: 8px;
-}
-
 .document-tool-kicker {
   display: block;
   margin-bottom: 0.25rem;
@@ -31,13 +19,6 @@
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
-}
-
-.document-tool-title {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: 0;
 }
 
 .document-tool .card {
@@ -161,15 +142,6 @@
 }
 
 @media (max-width: 767.98px) {
-  .document-tool-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .document-tool-title {
-    font-size: 1.45rem;
-  }
-
   .document-branch-stepper,
   .document-branch-row {
     grid-template-columns: 1fr;
