@@ -71,6 +71,9 @@ $addressesStmt->execute(['id' => $id]);
 
 ## Banco de dados e transações
 
+- Para acesso a banco de dados em tarefas operacionais, debugging e consultas fora da aplicação web, use sempre o MCP do projeto.
+- Não use acesso direto via clientes nativos (`mysql`, `psql`, etc.) quando a operação puder ser feita via MCP.
+- Ao executar o MCP localmente, use sempre PHP na linha de comando (ex.: `php .mcp/server.php` ou `./.mcp/run.sh`).
 - Envolva fluxos de create/update/delete em múltiplas tabelas com transações.
 - Faça rollback da transação quando qualquer escrita falhar.
 - Mantenha relacionamentos de tenants explícitos por meio de `tenant_users`.

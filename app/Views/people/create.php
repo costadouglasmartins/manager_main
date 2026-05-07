@@ -362,7 +362,7 @@
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-4">
 										<label class="form-label">Número</label>
-										<input class="form-control mask-phone-intl" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+55(48)99190-8908" />
+										<input class="form-control mask-phone" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+XX(XX)XXXXX-XXXX"/>
 									</div>
 									<div class="col-12 col-md-7">
 										<label class="form-label">Observações</label>
@@ -489,3 +489,4 @@
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
 <script src="<?= url('assets/js/people/create.js?v=9'); ?>"></script>
+<script src="<?= url('assets/js/masks.js?v=2'); ?>"></script>

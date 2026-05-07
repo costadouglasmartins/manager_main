@@ -30,6 +30,7 @@
 		const btnSubmit = document.getElementById("btnSubmit");
 
 		const personName = document.getElementById("personName");
+		const personFantasy = document.getElementById("personFantasy");
 		const userUsername = document.getElementById("userUsername");
 		const userPassword  = document.getElementById("userPassword");
 		const userPassword2 = document.getElementById("userPassword2");
@@ -55,7 +56,7 @@
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
-			"personName", "userUsername",
+			"personName", "personFantasy", "userUsername",
 			"addressesContainer", "phonesContainer", "emailsContainer",
 			"addressTemplate", "phoneTemplate", "emailTemplate",
 			"btnAddAddress", "btnAddPhone", "btnAddEmail",
@@ -75,6 +76,7 @@
 		// -----------------------------------------------------------------------
 		let lastSuggestedUsername = "";
 		let usernameEditedManually = false;
+		let fantasyEditedManually = false;
 
 		function buildUsernameSuggestion(fullName)
 			{
@@ -111,12 +113,31 @@
 				userUsername.value = lastSuggestedUsername;
 			}
 
+		function syncFantasyName()
+			{
+				if (fantasyEditedManually)
+					{
+						return;
+					}
+
+				personFantasy.value = personName.value;
+			}
+
 		userUsername.addEventListener("input", function ()
 			{
 				usernameEditedManually = userUsername.value.trim() !== "" && userUsername.value !== lastSuggestedUsername;
 			});
 
-		personName.addEventListener("input", updateUsernameSuggestion);
+		personFantasy.addEventListener("input", function ()
+			{
+				fantasyEditedManually = personFantasy.value.trim() !== "" && personFantasy.value !== personName.value;
+			});
+
+		personName.addEventListener("input", function ()
+			{
+				updateUsernameSuggestion();
+				syncFantasyName();
+			});
 		personName.addEventListener("blur", updateUsernameSuggestion);
 
 		// -----------------------------------------------------------------------
@@ -966,100 +987,6 @@
 						return;
 					}
 				// Formulário válido — submit nativo
-			});
-
-		// -----------------------------------------------------------------------
-		// Input masks for dynamic rows
-		// -----------------------------------------------------------------------
-		function applyCepMask(value)
-			{
-				const digits = value.replace(/\D/g, "").slice(0, 8);
-				return digits.replace(/(\d{5})(\d{1,3})$/, "$1-$2");
-			}
-
-		function applyIntlPhoneMask(value)
-			{
-				const hasExplicitPlus = String(value || "").trim().startsWith("+");
-				const digits = String(value || "").replace(/\D/g, "").slice(0, 14);
-				if (!digits)
-					{
-						return "";
-					}
-
-				let countryCode = "55";
-				let nationalNumber = digits;
-
-				if (digits === "55" && hasExplicitPlus)
-					{
-						countryCode = "55";
-						nationalNumber = "";
-					}
-				else if (digits.startsWith("55") && (digits.length > 11 || (hasExplicitPlus && digits.length > 2)))
-					{
-						countryCode = "55";
-						nationalNumber = digits.slice(2, 13);
-					}
-				else if (hasExplicitPlus && digits.length > 11)
-					{
-						const countryLength = Math.min(3, digits.length - 11);
-						countryCode = digits.slice(0, countryLength);
-						nationalNumber = digits.slice(countryLength, countryLength + 11);
-					}
-				else
-					{
-						nationalNumber = digits.slice(0, 11);
-					}
-
-				const areaCode = nationalNumber.slice(0, 2);
-				const subscriber = nationalNumber.slice(2);
-				let formatted = "+" + countryCode;
-
-				if (areaCode)
-					{
-						formatted += "(" + areaCode;
-						if (areaCode.length === 2)
-							{
-								formatted += ")";
-							}
-					}
-
-				if (subscriber)
-					{
-						const firstPartLength = subscriber.length > 8 ? 5 : 4;
-						const firstPart = subscriber.slice(0, firstPartLength);
-						const secondPart = subscriber.slice(firstPartLength, firstPartLength + 4);
-
-						formatted += firstPart;
-						if (secondPart)
-							{
-								formatted += "-" + secondPart;
-							}
-					}
-
-				return formatted;
-			}
-
-		function applyMaskedValue(el, maskCallback)
-			{
-				const pos = el.selectionStart;
-				const prev = el.value;
-				el.value = maskCallback(el.value);
-				const diff = el.value.length - prev.length;
-				const nextPos = Math.max(0, (pos || el.value.length) + diff);
-				el.setSelectionRange(nextPos, nextPos);
-			}
-
-		document.addEventListener("input", function (e)
-			{
-				if (e.target && e.target.classList.contains("mask-cep"))
-					{
-						applyMaskedValue(e.target, applyCepMask);
-					}
-
-				if (e.target && e.target.classList.contains("mask-phone-intl"))
-					{
-						applyMaskedValue(e.target, applyIntlPhoneMask);
-					}
 			});
 
 		// -----------------------------------------------------------------------
