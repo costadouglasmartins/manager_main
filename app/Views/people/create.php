@@ -489,4 +489,4 @@
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 </script>
 <script src="<?= url('assets/js/people/create.js?v=9'); ?>"></script>
-<script src="<?= url('assets/js/masks.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/masks.js?v=4'); ?>"></script>

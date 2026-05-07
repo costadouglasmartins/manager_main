@@ -46,6 +46,32 @@ document.addEventListener("input", function (e)
   });
 
 /**
+ * Applies masks to fields that already have values when the page loads.
+ */
+document.addEventListener("DOMContentLoaded", function ()
+  {
+  document.querySelectorAll(".mask-cep").forEach(function (el)
+    {
+    el.value = applyCepMask(el.value);
+    });
+
+  document.querySelectorAll(".mask-cpf-cnpj").forEach(function (el)
+    {
+    el.value = applyCpfCnpjMask(el.value);
+    });
+
+  document.querySelectorAll(".mask-phone, .mask-phone-intl").forEach(function (el)
+    {
+    el.value = applyPhoneMask(el.value);
+    });
+
+  document.querySelectorAll(".mask-date").forEach(function (el)
+    {
+    el.value = applyDatePtBrMask(el.value);
+    });
+  });
+
+/**
  * Formats a CEP value as `99999-999`.
  *
  * @param {string} value
@@ -138,17 +164,25 @@ function applyPhoneMask(value)
 
   if (hasExplicitPlus)
     {
-    const currentCountryMatch = raw.match(/^\s*\+(\d{1,3})\(/);
-    if (currentCountryMatch)
+    if (/^[17]/.test(digits))
       {
-      countryCode = currentCountryMatch[1];
-      nationalNumber = raw.slice(currentCountryMatch[0].length).replace(/\D/g, "").slice(0, 11);
+      countryCode = digits.slice(0, 1);
+      nationalNumber = digits.slice(1, 12);
       }
     else
       {
-      const countryLength = digits.length <= 3 ? digits.length : (digits.length > 13 ? 3 : 2);
-      countryCode = digits.slice(0, countryLength);
-      nationalNumber = digits.slice(countryLength, countryLength + 11);
+      const currentCountryMatch = raw.match(/^\s*\+(\d{1,3})\(/);
+      if (currentCountryMatch)
+        {
+        countryCode = currentCountryMatch[1];
+        nationalNumber = raw.slice(currentCountryMatch[0].length).replace(/\D/g, "").slice(0, 11);
+        }
+      else
+        {
+        const countryLength = digits.length <= 3 ? digits.length : (digits.length > 13 ? 3 : 2);
+        countryCode = digits.slice(0, countryLength);
+        nationalNumber = digits.slice(countryLength, countryLength + 11);
+        }
       }
     }
   else
@@ -163,7 +197,7 @@ function applyPhoneMask(value)
   if (areaCode)
     {
     formatted += "(" + areaCode;
-    if (areaCode.length === 2)
+    if (areaCode.length === 2 && subscriber)
       {
       formatted += ")";
       }

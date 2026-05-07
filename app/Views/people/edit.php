@@ -26,7 +26,7 @@ $personName = trim((string) ($person['name'] ?? ''));
 $personLabel = ($personName !== '') ? $personName : ('Pessoa #' . $personId);
 $personTypeLabel = (($person['type'] ?? '') === 'company') ? 'Pessoa jurídica' : 'Pessoa física';
 $personStatusLabel = ((int) ($person['active'] ?? 1) === 1) ? 'Ativo' : 'Inativo';
-$personDocumentLabel = !empty($person['document']) ? maskCpfCnpj($person['document']) : 'Documento não informado';
+$personDocumentLabel = !empty($person['document']) ? $person['document'] : 'Documento não informado';
 $userStatusLabel = ($userId > 0) ? 'Usuário vinculado' : 'Sem usuário vinculado';
 
 $currentTenantId = (int) ($user['tenant_id'] ?? 0);
@@ -819,3 +819,4 @@ foreach ($allTenants as $tenantOption)
   let tenantLinkCounter = <?= (int) count($tenants); ?>;
 </script>
 <script src="<?= url('assets/js/people/edit.js?v=3'); ?>"></script>
+<script src="<?= url('assets/js/masks.js?v=4'); ?>"></script>

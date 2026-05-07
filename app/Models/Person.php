@@ -134,7 +134,7 @@ class Person extends Model
 				'name'      => $data['person']['name'],
 				'fantasy'   => $data['person']['fantasy'] ?? '',
 				'type'      => $data['person']['type'],
-				'document'  => onlyDigits($data['person']['document']),
+				'document'  => onlyAlphanumeric($data['person']['document']),
 				'active'    => intval($data['person']['active'] ?? 1),
 				'birthdate' => $birthdate,
 				'created'   => date('Y-m-d H:i:s'),
@@ -401,7 +401,7 @@ class Person extends Model
 			'name'      => trim((string) ($data['name'] ?? '')),
 			'fantasy'   => $data['fantasy'] ?? '',
 			'type'      => $data['type'] ?? 'individual',
-			'document'  => onlyDigits($data['document'] ?? ''),
+			'document'  => onlyAlphanumeric($data['document'] ?? ''),
 			'active'    => (int) ($data['active'] ?? 0),
 			'birthdate' => (!empty($data['birthdate']) ? dateBrToUs($data['birthdate']) : null),
 			'modified'  => date('Y-m-d H:i:s'),
@@ -876,7 +876,7 @@ class Person extends Model
 		if (isset($filters['document']) && $filters['document'] !== '')
 			{
 			$sql .= " AND document LIKE :document";
-			$params['document'] = onlyDigits($filters['document']);
+			$params['document'] = onlyAlphanumeric($filters['document']);
 			}
 
 		// Active accepts only boolean-like integer values.
@@ -954,7 +954,7 @@ class Person extends Model
 		if (!empty($filters['document']))
 			{
 			$sql .= " AND document LIKE :document";
-			$params['document'] = onlyDigits($filters['document']);
+			$params['document'] = onlyAlphanumeric($filters['document']);
 			}
 
 		if (!empty($filters['birthdate']))
