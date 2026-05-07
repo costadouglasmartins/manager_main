@@ -11,7 +11,7 @@
   </script>
   <link rel="stylesheet" href="<?= url('assets/css/bootstrap.min.css'); ?>">
   <link rel="stylesheet" href="<?= url('assets/images/bootstrap-icons.min.css'); ?>">
-  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=2'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=4'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=1'); ?>">
   <link rel="apple-touch-icon" sizes="180x180" href="<?= url('assets/images/apple-touch-icon.png'); ?>">
   <link rel="icon" type="image/png" sizes="32x32" href="<?= url('assets/images/favicon-32x32.png'); ?>">

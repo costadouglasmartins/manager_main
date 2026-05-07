@@ -13,7 +13,6 @@
   --sheet-balance-bg: rgba(var(--bs-warning-rgb), 0.18);
   --sheet-balance-text: var(--bs-warning-text-emphasis);
   --sheet-shadow: 0 0.5rem 1.5rem rgba(33, 37, 41, 0.08);
-  font-family: inherit;
 }
 
 [data-bs-theme="dark"] .financial-sheet-page {

@@ -22,7 +22,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 
 <h5>Lista de Bairros</h5>
 
-<form action="<?= url('neighborhood'); ?>" class="row g-3 mb-3" method="get">
+<form action="<?= url('neighborhood'); ?>" class="row g-3 mb-3 index-search-card" method="get">
   <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">

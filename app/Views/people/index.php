@@ -28,7 +28,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 <!-- /Breadcrumbs -->
 <h5>Lista de Pessoas</h5>
 <!-- Search form -->
-<form action="<?= url('person'); ?>" class="row g-3 mb-3" method="get">
+<form action="<?= url('person'); ?>" class="row g-3 mb-3 index-search-card" method="get">
   <?= sortHiddenInputs($sort) ?>
   <div class="col-12 col-lg-9">
     <div class="row g-3">

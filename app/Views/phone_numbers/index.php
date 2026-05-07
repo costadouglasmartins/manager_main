@@ -23,7 +23,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 
 <h5>Lista de Telefones</h5>
 
-<form action="<?= url('phone_number'); ?>" class="row g-3 mb-3" method="get">
+<form action="<?= url('phone_number'); ?>" class="row g-3 mb-3 index-search-card" method="get">
   <?= sortHiddenInputs($sort) ?>
 
   <div class="col-12 col-lg-9">

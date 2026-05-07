@@ -29,7 +29,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 <h5>Lista de usuários</h5>
 
 <!-- Search form -->
-<form action="<?= url('user'); ?>" class="row g-3 mb-3">
+<form action="<?= url('user'); ?>" class="row g-3 mb-3 index-search-card">
   <?= sortHiddenInputs($sort) ?>
   <div class="col-12 col-lg-9">
     <div class="row g-3">
