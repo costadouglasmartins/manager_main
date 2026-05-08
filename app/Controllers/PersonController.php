@@ -258,6 +258,28 @@ class PersonController extends Controller
 
 		$this->json(['items' => $items]);
 		}
+
+	/**
+	 * Checks whether a person document is already registered.
+	 *
+	 * Used by the create form to enforce the unique document rule before submit.
+	 *
+	 * @return void
+	 */
+	public function documentExists()
+		{
+		$this->requireAnyPermission(['person.create', 'person.store']);
+
+		$document = trim((string) ($_GET['document'] ?? $_POST['document'] ?? ''));
+		$person = new Person();
+		$exists = $person->documentExists($document);
+
+		$this->json([
+			'exists'    => $exists,
+			'available' => !$exists,
+			'document'  => onlyAlphanumeric($document),
+		]);
+		}
   
 	/**
 	 * Persists a new person from posted form data.
@@ -271,6 +293,30 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.store');
 		$person = new Person();
+		$document = $_POST['person']['document'] ?? '';
+
+		if ($person->documentExists($document))
+			{
+			if ($this->wantsJson())
+				{
+				$this->json([
+					'error'   => 'validation_error',
+					'message' => 'Este documento já está cadastrado.',
+				], 422);
+				}
+
+			http_response_code(422);
+
+			$tenantModel = new Tenant();
+			$this->view('people/create', [
+				'title'              => 'Nova pessoa',
+				'nextDatabaseNumber' => $tenantModel->nextDatabaseNumber(),
+				'tenants'            => $tenantModel->getAll(),
+				'formError'          => 'Este documento já está cadastrado.',
+			]);
+			return;
+			}
+
 		$person->create($_POST);
 		$this->redirect('person');
 		}
@@ -335,6 +381,14 @@ class PersonController extends Controller
 			}
 		catch (\Throwable $e)
 			{
+			if ($e instanceof \InvalidArgumentException)
+				{
+				$this->json([
+					'error' => 'validation_error',
+					'message' => $e->getMessage(),
+				], 422);
+				}
+
 			$this->json([
 				'error' => 'create_failed',
 				'message' => 'Erro ao cadastrar pessoa vinculada ao tenant.',

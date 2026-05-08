@@ -116,6 +116,11 @@ class Person extends Model
 	 */
 	public function create($data)
 		{
+		$document = onlyAlphanumeric($data['person']['document'] ?? '');
+		if ($document !== '' && $this->documentExists($document))
+			{
+			throw new \InvalidArgumentException('Este documento já está cadastrado.');
+			}
 
 		try
 			{
@@ -310,6 +315,43 @@ class Person extends Model
 		$stmt = $this->db->prepare("SELECT * FROM people WHERE id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Checks whether a normalized document already exists in the people table.
+	 *
+	 * @param string|null $document CPF/CNPJ value typed by the user.
+	 * @param int|null $exceptPersonId Person ID to ignore when checking uniqueness.
+	 * @return bool True when the document is already registered.
+	 */
+	public function documentExists(?string $document, ?int $exceptPersonId = null): bool
+		{
+		$normalizedDocument = onlyAlphanumeric($document);
+		if ($normalizedDocument === '')
+			{
+			return false;
+			}
+
+		$sql = "SELECT 1 FROM people WHERE document = :document";
+		$params = ['document' => $normalizedDocument];
+
+		if ($exceptPersonId !== null && $exceptPersonId > 0)
+			{
+			$sql .= " AND id <> :id";
+			$params['id'] = $exceptPersonId;
+			}
+
+		$sql .= " LIMIT 1";
+
+		$stmt = $this->db->prepare($sql);
+		foreach ($params as $key => $value)
+			{
+			$paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+			$stmt->bindValue(':' . $key, $value, $paramType);
+			}
+		$stmt->execute();
+
+		return (bool) $stmt->fetchColumn();
 		}
 
 	/**

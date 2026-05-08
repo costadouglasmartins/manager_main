@@ -20,6 +20,7 @@
 		];
 
 		let currentStep = 1;
+		let isSubmittingAfterAsyncValidation = false;
 
 		const stepTitle    = document.getElementById("stepTitle");
 		const stepSubtitle = document.getElementById("stepSubtitle");
@@ -32,9 +33,17 @@
 
 		const personName = document.getElementById("personName");
 		const personFantasy = document.getElementById("personFantasy");
+		const personType = document.getElementById("personType");
+		const personDocument = document.getElementById("personDocument");
 		const userUsername = document.getElementById("userUsername");
 		const userPassword  = document.getElementById("userPassword");
 		const userPassword2 = document.getElementById("userPassword2");
+		const personDocumentFeedback = personDocument && personDocument.parentElement
+			? personDocument.parentElement.querySelector(".invalid-feedback")
+			: null;
+		const personDocumentDefaultFeedback = personDocumentFeedback
+			? personDocumentFeedback.textContent
+			: "Informe o documento.";
 
 		const addressesContainer = document.getElementById("addressesContainer");
 		const phonesContainer    = document.getElementById("phonesContainer");
@@ -57,7 +66,7 @@
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
-			"personName", "personFantasy", "userUsername",
+			"personName", "personFantasy", "personType", "personDocument", "userUsername",
 			"addressesContainer", "phonesContainer", "emailsContainer",
 			"addressTemplate", "phoneTemplate", "emailTemplate",
 			"btnAddAddress", "btnAddPhone", "btnAddEmail",
@@ -140,6 +149,206 @@
 				syncFantasyName();
 			});
 		personName.addEventListener("blur", updateUsernameSuggestion);
+
+		// -----------------------------------------------------------------------
+		// Person document validation
+		// -----------------------------------------------------------------------
+		let personDocumentCheckController = null;
+		let personDocumentCheckTimer = null;
+		let personDocumentCheckSequence = 0;
+		let personDocumentCheckCache = {
+			key: "",
+			exists: false
+		};
+
+		function setPersonDocumentFeedback(message)
+			{
+				if (personDocumentFeedback)
+					{
+						personDocumentFeedback.textContent = message;
+					}
+			}
+
+		function normalizePersonDocumentValue(value)
+			{
+				return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+			}
+
+		function getPersonDocumentCheckKey()
+			{
+				return personType.value + ":" + normalizePersonDocumentValue(personDocument.value);
+			}
+
+		function abortPersonDocumentCheck()
+			{
+				if (personDocumentCheckTimer)
+					{
+						clearTimeout(personDocumentCheckTimer);
+						personDocumentCheckTimer = null;
+					}
+
+				if (personDocumentCheckController)
+					{
+						personDocumentCheckController.abort();
+						personDocumentCheckController = null;
+					}
+			}
+
+		function applyPersonDocumentAvailability(exists)
+			{
+				if (exists)
+					{
+						const message = "Este documento já está cadastrado.";
+						personDocument.setCustomValidity(message);
+						setPersonDocumentFeedback(message);
+						return false;
+					}
+
+				personDocument.setCustomValidity("");
+				setPersonDocumentFeedback(personDocumentDefaultFeedback);
+				return true;
+			}
+
+		function validatePersonDocumentFormat()
+			{
+				const type = personType.value;
+				const value = personDocument.value.trim();
+
+				personDocument.setCustomValidity("");
+
+				if (!value || !type)
+					{
+						setPersonDocumentFeedback(personDocumentDefaultFeedback);
+						return true;
+					}
+
+				let isValid = true;
+				let message = personDocumentDefaultFeedback;
+
+				if (type === "individual")
+					{
+						isValid = typeof validateCpf === "function" && validateCpf(value);
+						message = "Informe um CPF válido.";
+					}
+				else if (type === "company")
+					{
+						const isCurrentCnpjValid = typeof validateCnpj === "function" && validateCnpj(value);
+						const isNewCnpjValid = typeof validateCnpjAlphanumeric === "function" && validateCnpjAlphanumeric(value);
+						isValid = isCurrentCnpjValid || isNewCnpjValid;
+						message = "Informe um CNPJ válido.";
+					}
+
+				if (!isValid)
+					{
+						personDocument.setCustomValidity(message);
+						setPersonDocumentFeedback(message);
+						return false;
+					}
+
+				setPersonDocumentFeedback(personDocumentDefaultFeedback);
+				return true;
+			}
+
+		async function validatePersonDocumentAvailability(force)
+			{
+				abortPersonDocumentCheck();
+
+				if (!validatePersonDocumentFormat())
+					{
+						return false;
+					}
+
+				const normalizedDocument = normalizePersonDocumentValue(personDocument.value);
+				if (!personType.value || !normalizedDocument)
+					{
+						return true;
+					}
+
+				const checkKey = getPersonDocumentCheckKey();
+				if (!force && personDocumentCheckCache.key === checkKey)
+					{
+						return applyPersonDocumentAvailability(personDocumentCheckCache.exists);
+					}
+
+				const controller = new AbortController();
+				const sequence = personDocumentCheckSequence + 1;
+				personDocumentCheckSequence = sequence;
+				personDocumentCheckController = controller;
+
+				try
+					{
+						const url = new URL(PERSON_DOCUMENT_EXISTS_URL, window.location.origin);
+						url.searchParams.set("document", normalizedDocument);
+
+						const response = await fetch(url.toString(), {
+							method: "GET",
+							credentials: "same-origin",
+							headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"},
+							signal: controller.signal
+						});
+
+						if (!response.ok)
+							{
+								throw new Error("Document check failed with status " + response.status);
+							}
+
+						const data = await response.json();
+						if (sequence !== personDocumentCheckSequence || checkKey !== getPersonDocumentCheckKey())
+							{
+								return true;
+							}
+
+						personDocumentCheckCache = {
+							key: checkKey,
+							exists: !!data.exists
+						};
+
+						return applyPersonDocumentAvailability(personDocumentCheckCache.exists);
+					}
+				catch (err)
+					{
+						if (err && err.name === "AbortError")
+							{
+								return true;
+							}
+
+						console.error("documentExists fetch error:", err);
+						const message = "Não foi possível validar se o documento já existe.";
+						personDocument.setCustomValidity(message);
+						setPersonDocumentFeedback(message);
+						return false;
+					}
+				finally
+					{
+						if (personDocumentCheckController === controller)
+							{
+								personDocumentCheckController = null;
+							}
+					}
+			}
+
+		function queuePersonDocumentAvailabilityCheck()
+			{
+				abortPersonDocumentCheck();
+				personDocumentCheckCache.key = "";
+
+				if (!validatePersonDocumentFormat())
+					{
+						return;
+					}
+
+				personDocumentCheckTimer = setTimeout(function ()
+					{
+						validatePersonDocumentAvailability(false);
+					}, 500);
+			}
+
+		personType.addEventListener("change", queuePersonDocumentAvailabilityCheck);
+		personDocument.addEventListener("input", queuePersonDocumentAvailabilityCheck);
+		personDocument.addEventListener("blur", function ()
+			{
+				validatePersonDocumentAvailability(false);
+			});
 
 		// -----------------------------------------------------------------------
 		// Contador de endereços
@@ -760,8 +969,13 @@
 				return true;
 			}
 
-		function validateCurrentStep()
+		async function validateCurrentStep()
 			{
+				if (currentStep === 1)
+					{
+						await validatePersonDocumentAvailability(true);
+					}
+
 				// Validação customizada: senhas (etapa 2)
 				if (currentStep === 2)
 					{
@@ -1080,7 +1294,7 @@
 		// -----------------------------------------------------------------------
 		document.querySelectorAll("[data-step-jump]").forEach((btn) =>
 			{
-				btn.addEventListener("click", function ()
+				btn.addEventListener("click", async function ()
 					{
 						const to = parseInt(btn.getAttribute("data-step-jump"), 10);
 
@@ -1091,7 +1305,7 @@
 								return;
 							}
 
-						if (validateCurrentStep())
+						if (await validateCurrentStep())
 							{
 								form.classList.remove("was-validated");
 								showStep(to);
@@ -1116,9 +1330,9 @@
 		// -----------------------------------------------------------------------
 		// Botão Continuar
 		// -----------------------------------------------------------------------
-		btnNext.addEventListener("click", function ()
+		btnNext.addEventListener("click", async function ()
 			{
-				if (!validateCurrentStep())
+				if (!await validateCurrentStep())
 					{
 						return;
 					}
@@ -1135,17 +1349,43 @@
 		// -----------------------------------------------------------------------
 		// Submissão final
 		// -----------------------------------------------------------------------
-		form.addEventListener("submit", function (e)
+		form.addEventListener("submit", async function (e)
 			{
+				if (isSubmittingAfterAsyncValidation)
+					{
+						clearFormState();
+						return;
+					}
+
+				e.preventDefault();
+				e.stopPropagation();
+
+				const documentIsAvailable = await validatePersonDocumentAvailability(true);
+				if (!documentIsAvailable)
+					{
+						showStep(1);
+						form.classList.add("was-validated");
+						showAlert("Verifique o documento informado.");
+						return;
+					}
+
 				if (!form.checkValidity())
 					{
-						e.preventDefault();
-						e.stopPropagation();
 						form.classList.add("was-validated");
 						return;
 					}
+
 				// Formulário válido — submit nativo
 				clearFormState();
+				isSubmittingAfterAsyncValidation = true;
+				if (typeof form.requestSubmit === "function")
+					{
+						form.requestSubmit();
+					}
+				else
+					{
+						form.submit();
+					}
 			});
 
 		form.addEventListener("input", saveFormState);

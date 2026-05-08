@@ -1,3 +1,4 @@
+<?php $formError = $formError ?? null; ?>
 <link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=3'); ?>">
 
 <div class="people-create-page">
@@ -20,6 +21,12 @@
 		<span>Voltar para pessoas</span>
 	</a>
 </div>
+
+<?php if (!empty($formError)): ?>
+	<div class="alert alert-danger" role="alert">
+		<?= htmlspecialchars($formError, ENT_QUOTES, 'UTF-8'); ?>
+	</div>
+<?php endif; ?>
 
 <!-- Progress -->
 <div class="card shadow-sm mb-3 people-progress-card">
@@ -187,7 +194,7 @@
 				<div class="row g-3">
 					<div class="col-12">
 						<label class="form-label">Associar tenant?</label>
-						<select class="form-select" id="tenantMode" name="tenant[mode]">
+						<select autocomplete="off" class="form-select" id="tenantMode" name="tenant[mode]">
 							<option value="none" selected>Não associar tenant</option>
 							<option value="new">Criar novo tenant</option>
 							<option value="existing">Selecionar tenant existente</option>
@@ -200,7 +207,7 @@
 							<div class="row g-3">
 								<div class="col-12 col-md-6">
 									<label class="form-label" for="tenantDatabaseNumber">N. do banco</label>
-									<input class="form-control" id="tenantDatabaseNumber" type="text" value="<?= htmlspecialchars($nextDatabaseNumber) ?>" disabled />
+									<input autocomplete="off" class="form-control" id="tenantDatabaseNumber" type="text" value="<?= htmlspecialchars($nextDatabaseNumber) ?>" disabled />
 									<div class="form-text">Gerado automaticamente: <code>manager_<?= htmlspecialchars($nextDatabaseNumber) ?></code></div>
 								</div>
 								<div class="col-12 col-md-6">
@@ -211,7 +218,7 @@
 								</div>
 								<div class="col-12">
 									<label class="form-label" for="tenantObservations">Observações</label>
-									<textarea class="form-control" id="tenantObservations" name="tenant[observations]" rows="2" placeholder="Observações gerais..."></textarea>
+									<textarea autocomplete="off" class="form-control" id="tenantObservations" name="tenant[observations]" rows="2" placeholder="Observações gerais..."></textarea>
 								</div>
 							</div>
 						</div>
@@ -223,7 +230,7 @@
 							<div class="row g-3">
 								<div class="col-12">
 									<label class="form-label" for="tenantExistingId">Selecionar tenant</label>
-									<select class="form-select" id="tenantExistingId" name="tenant[existing_id]">
+									<select autocomplete="off" class="form-select" id="tenantExistingId" name="tenant[existing_id]">
 										<option value="" selected disabled>Selecione um tenant...</option>
 										<?php foreach ($tenants as $t): ?>
 											<option value="<?= (int) $t['id']; ?>">
@@ -272,15 +279,15 @@
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-3">
 										<label class="form-label">CEP</label>
-										<input class="form-control mask-cep" name="addresses[][zip_code]" type="text" maxlength="9" placeholder="00000-000" />
+										<input autocomplete="off" class="form-control mask-cep" name="addresses[][zip_code]" type="text" maxlength="9" placeholder="00000-000" />
 									</div>
 									<div class="col-12 col-md-5">
 										<label class="form-label">Logradouro</label>
-										<input class="form-control" name="addresses[][street]" type="text" maxlength="255" placeholder="Rua, Avenida, etc." />
+										<input autocomplete="off" class="form-control" name="addresses[][street]" type="text" maxlength="255" placeholder="Rua, Avenida, etc." />
 									</div>
 									<div class="col-12 col-md-2">
 										<label class="form-label">Número</label>
-										<input class="form-control" name="addresses[][number]" type="text" maxlength="10" placeholder="Nº" />
+										<input autocomplete="off" class="form-control" name="addresses[][number]" type="text" maxlength="10" placeholder="Nº" />
 									</div>
 									<div class="col-12 col-md-2 d-grid">
 										<label class="form-label">&nbsp;</label>
@@ -291,12 +298,12 @@
 									</div>
 									<div class="col-12 col-md-6">
 										<label class="form-label">Observações</label>
-										<input class="form-control" name="addresses[][observations]" type="text" maxlength="255" placeholder="Complemento, referência, etc." />
+										<input autocomplete="off" class="form-control" name="addresses[][observations]" type="text" maxlength="255" placeholder="Complemento, referência, etc." />
 									</div>
 									<div class="col-12 col-md-6 position-relative">
 										<label class="form-label">Bairro</label>
 										<input type="hidden" class="addr-neighborhood-id" name="addresses[][neighborhood_id]" value=""/>
-										<input type="text" class="form-control addr-neighborhood-input" name="addresses[][neighborhood_name]" autocomplete="off" placeholder="Digite o nome do bairro..." />
+										<input autocomplete="off" type="text" class="form-control addr-neighborhood-input" name="addresses[][neighborhood_name]" placeholder="Digite o nome do bairro..." />
 										<ul class="list-group addr-neighborhood-results" style="display:none; position:absolute; width:100%; z-index:1050; max-height:220px; overflow-y:auto;"></ul>
 									</div>
 
@@ -307,7 +314,7 @@
 											<div class="row g-2 align-items-end">
 												<div class="col-12 col-md-5">
 													<label class="form-label small">Nome do bairro</label>
-													<input type="text" class="form-control form-control-sm addr-new-neighborhood-name" placeholder="Ex.: Centro" />
+													<input autocomplete="off" type="text" class="form-control form-control-sm addr-new-neighborhood-name" placeholder="Ex.: Centro" />
 												</div>
 												<div class="col-12 col-md-5 position-relative">
 													<label class="form-label small">Cidade</label>
@@ -361,11 +368,11 @@
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-4">
 										<label class="form-label">Número</label>
-										<input class="form-control mask-phone" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+XX(XX)XXXXX-XXXX"/>
+										<input autocomplete="off" class="form-control mask-phone" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+XX(XX)XXXXX-XXXX"/>
 									</div>
 									<div class="col-12 col-md-7">
 										<label class="form-label">Observações</label>
-										<input class="form-control" name="phones[][notes]" type="text" placeholder="Ex.: celular, comercial, WhatsApp" />
+										<input autocomplete="off" class="form-control" name="phones[][notes]" type="text" placeholder="Ex.: celular, comercial, WhatsApp" />
 									</div>
 									<div class="col-12 col-md-1 d-grid">
 										<button type="button" class="btn btn-outline-danger people-remove-button" data-remove="phone" aria-label="Remover telefone">
@@ -398,16 +405,16 @@
 								<div class="row g-2 align-items-end">
 									<div class="col-12 col-md-4">
 										<label class="form-label">Endereço de e-mail</label>
-										<input class="form-control" name="emails[][address]" type="email" placeholder="exemplo@email.com" />
+										<input autocomplete="off" class="form-control" name="emails[][address]" type="email" placeholder="exemplo@email.com" />
 										<div class="invalid-feedback">Informe um e-mail válido.</div>
 									</div>
 									<div class="col-12 col-md-4">
 										<label class="form-label">Descrição</label>
-										<input class="form-control" name="emails[][description]" type="text" placeholder="Ex.: financeiro, pessoal, comercial" />
+										<input autocomplete="off" class="form-control" name="emails[][description]" type="text" placeholder="Ex.: financeiro, pessoal, comercial" />
 									</div>
 									<div class="col-12 col-md-3">
 										<label class="form-label">E-mail de login?</label>
-										<select class="form-select" name="emails[][is_login]">
+										<select autocomplete="off" class="form-select" name="emails[][is_login]">
 											<option value="0" selected>Não</option>
 											<option value="1">Sim</option>
 										</select>
@@ -486,6 +493,7 @@
 	const PERSON_NEIGHBORHOOD_SEARCH_URL = "<?= url('person/neighborhoodSearch'); ?>";
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
+	const PERSON_DOCUMENT_EXISTS_URL     = "<?= url('person/documentExists'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=10'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=12'); ?>"></script>
 <script src="<?= url('assets/js/masks.js?v=4'); ?>"></script>
