@@ -254,11 +254,17 @@
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tools me-2"></i>Ferramentas</a>
                 <ul class="dropdown-menu">
-                  <?php if (authCan('tool.documents')): ?>
+                  <?php $canToolDocuments = authCan('tool.documents'); ?>
+                  <?php $canToolEmailValidation = authCan('tool.email_validation'); ?>
+                  <?php if ($canToolDocuments): ?>
                     <li><a class="dropdown-item" href="<?= url('tool/documents'); ?>"><i class="bi bi-person-vcard me-2"></i>Gerador/Validador de CPF / CNPJ</a></li>
+                  <?php endif; ?>
+                  <?php if ($canToolDocuments && $canToolEmailValidation): ?>
                     <li><hr class="dropdown-divider" /></li>
                   <?php endif; ?>
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-envelope-check-fill me-2"></i>Validador de E-mail</a></li>
+                  <?php if ($canToolEmailValidation): ?>
+                    <li><a class="dropdown-item" href="<?= url('tool/email_validation'); ?>"><i class="bi bi-envelope-check-fill me-2"></i>Validador de E-mail</a></li>
+                  <?php endif; ?>
                 </ul>
               </li>
               <li><hr class="dropdown-divider" /></li>

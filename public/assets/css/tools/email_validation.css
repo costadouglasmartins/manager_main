@@ -1,0 +1,79 @@
+.email-validation-tool {
+  --email-validation-border: rgba(var(--bs-body-color-rgb), 0.13);
+  --email-validation-soft: var(--bs-tertiary-bg);
+}
+
+[data-bs-theme="dark"] .email-validation-tool {
+  --email-validation-border: rgba(255, 255, 255, 0.14);
+}
+
+.email-validation-tool .card {
+  border: 1px solid var(--email-validation-border);
+  border-radius: 8px;
+}
+
+.email-validation-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+}
+
+.email-validation-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.email-validation-message {
+  min-height: 3.35rem;
+}
+
+.email-validation-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.email-validation-summary-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.8rem;
+  background: var(--email-validation-soft);
+  border: 1px solid var(--email-validation-border);
+  border-radius: 8px;
+}
+
+.email-validation-summary-item small {
+  color: var(--bs-secondary-color);
+}
+
+.email-validation-summary-item strong {
+  overflow-wrap: anywhere;
+}
+
+.email-validation-summary-item .badge {
+  justify-self: start;
+}
+
+.email-validation-json {
+  min-height: 16rem;
+  max-height: 30rem;
+  padding: 1rem;
+  overflow: auto;
+  color: var(--bs-body-color);
+  background: var(--email-validation-soft);
+  border: 1px solid var(--email-validation-border);
+  border-radius: 8px;
+}
+
+@media (max-width: 767.98px) {
+  .email-validation-summary {
+    grid-template-columns: 1fr;
+  }
+}
