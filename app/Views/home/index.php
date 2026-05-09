@@ -112,7 +112,9 @@ $citiesTotal = homeDashboardCount($locations, 'cities');
 $contactAverage = $peopleTotal > 0 ? $contactTotal / $peopleTotal : 0;
 $tenantActivePercent = homeDashboardPercent($tenantsActive, $tenantsTotal);
 $peopleActivePercent = homeDashboardPercent($peopleActive, $peopleTotal);
+$usersActivePercent = homeDashboardPercent($usersActive, $usersTotal);
 $privilegedPercent = homeDashboardPercent($privilegedUsers, $usersTotal);
+$contactDensityPercent = min(100, (int) round($contactAverage * 25));
 
 $peopleChart = [
 	['label' => 'Pessoas ativas', 'value' => $peopleActive, 'icon' => 'bi-check2-circle', 'tone' => 'success'],
@@ -135,9 +137,9 @@ $tenantPendingAngle = $tenantActiveAngle + (homeDashboardPercent($tenantsPending
 $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSuspended, $tenantBase) * 3.6);
 ?>
 
-<!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/home/index.css?v=1'); ?>">
-<!-- /CSS -->
+<!-- Css -->
+<link rel="stylesheet" href="<?= url('assets/css/home/index.css?v=2'); ?>">
+<!-- /Css -->
 
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
@@ -156,11 +158,28 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
         <p class="home-subtitle mb-0">
           Acompanhe cadastros, tenants, usuários e canais de contato em uma tela única.
         </p>
+        <div class="home-hero-metrics">
+          <span>
+            <i class="bi bi-people"></i>
+            <strong><?= number_format($peopleTotal, 0, ',', '.'); ?></strong>
+            <small>pessoas</small>
+          </span>
+          <span>
+            <i class="bi bi-person-lock"></i>
+            <strong><?= number_format($usersTotal, 0, ',', '.'); ?></strong>
+            <small>usuários</small>
+          </span>
+          <span>
+            <i class="bi bi-hdd-network"></i>
+            <strong><?= number_format($tenantsTotal, 0, ',', '.'); ?></strong>
+            <small>tenants</small>
+          </span>
+        </div>
       </div>
       <div class="col-12 col-xl-5">
         <div class="home-hero-actions">
           <?php if (homeDashboardCan('person.create')): ?>
-            <a class="btn btn-warning" href="<?= url('person/create'); ?>">
+            <a class="btn btn-light" href="<?= url('person/create'); ?>">
               <i class="bi bi-person-plus me-1"></i>Nova pessoa
             </a>
           <?php endif; ?>
@@ -181,35 +200,51 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi">
-        <div class="home-kpi-icon text-bg-primary"><i class="bi bi-people-fill"></i></div>
+      <div class="home-kpi" style="--kpi-progress: <?= $peopleActivePercent; ?>%;">
+        <div class="home-kpi-top">
+          <div class="home-kpi-icon text-bg-primary"><i class="bi bi-people-fill"></i></div>
+          <span class="home-kpi-pill"><?= $peopleActivePercent; ?>%</span>
+        </div>
         <span class="home-kpi-label">Pessoas ativas</span>
         <strong class="home-kpi-value home-counter" data-target="<?= $peopleActive; ?>"><?= number_format($peopleActive, 0, ',', '.'); ?></strong>
         <span class="home-kpi-meta"><?= $peopleActivePercent; ?>% do cadastro total</span>
+        <span class="home-kpi-track"><span></span></span>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi">
-        <div class="home-kpi-icon text-bg-success"><i class="bi bi-database-check"></i></div>
+      <div class="home-kpi" style="--kpi-progress: <?= $tenantActivePercent; ?>%;">
+        <div class="home-kpi-top">
+          <div class="home-kpi-icon text-bg-success"><i class="bi bi-database-check"></i></div>
+          <span class="home-kpi-pill"><?= $tenantActivePercent; ?>%</span>
+        </div>
         <span class="home-kpi-label">Tenants ativos</span>
         <strong class="home-kpi-value home-counter" data-target="<?= $tenantsActive; ?>"><?= number_format($tenantsActive, 0, ',', '.'); ?></strong>
         <span class="home-kpi-meta"><?= $tenantActivePercent; ?>% operacionais</span>
+        <span class="home-kpi-track"><span></span></span>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi">
-        <div class="home-kpi-icon text-bg-info"><i class="bi bi-person-gear"></i></div>
+      <div class="home-kpi" style="--kpi-progress: <?= $usersActivePercent; ?>%;">
+        <div class="home-kpi-top">
+          <div class="home-kpi-icon text-bg-info"><i class="bi bi-person-gear"></i></div>
+          <span class="home-kpi-pill"><?= $usersActivePercent; ?>%</span>
+        </div>
         <span class="home-kpi-label">Usuários ativos</span>
         <strong class="home-kpi-value home-counter" data-target="<?= $usersActive; ?>"><?= number_format($usersActive, 0, ',', '.'); ?></strong>
         <span class="home-kpi-meta"><?= $privilegedPercent; ?>% com perfil admin/root</span>
+        <span class="home-kpi-track"><span></span></span>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi">
-        <div class="home-kpi-icon text-bg-warning"><i class="bi bi-broadcast-pin"></i></div>
+      <div class="home-kpi" style="--kpi-progress: <?= $contactDensityPercent; ?>%;">
+        <div class="home-kpi-top">
+          <div class="home-kpi-icon text-bg-warning"><i class="bi bi-broadcast-pin"></i></div>
+          <span class="home-kpi-pill"><?= number_format($contactAverage, 1, ',', '.'); ?>/pessoa</span>
+        </div>
         <span class="home-kpi-label">Canais de contato</span>
         <strong class="home-kpi-value home-counter" data-target="<?= $contactTotal; ?>"><?= number_format($contactTotal, 0, ',', '.'); ?></strong>
         <span class="home-kpi-meta"><?= number_format($contactAverage, 1, ',', '.'); ?> por pessoa</span>
+        <span class="home-kpi-track"><span></span></span>
       </div>
     </div>
   </div>
@@ -222,7 +257,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
             <span class="home-kicker">Cadastros</span>
             <h2 class="home-panel-title">Distribuição de pessoas</h2>
           </div>
-          <span class="badge text-bg-dark"><?= number_format($peopleTotal, 0, ',', '.'); ?> total</span>
+          <span class="home-panel-count"><?= number_format($peopleTotal, 0, ',', '.'); ?> total</span>
         </div>
 
         <div class="home-chart-list">
@@ -253,11 +288,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
         </div>
 
         <div class="home-donut-wrap">
-          <div
-            class="home-donut"
-            style="--tenant-active: <?= $tenantActiveAngle; ?>deg; --tenant-pending: <?= $tenantPendingAngle; ?>deg; --tenant-suspended: <?= $tenantSuspendedAngle; ?>deg;"
-            aria-label="Distribuição de status de tenants"
-          >
+          <div class="home-donut" style="--tenant-active: <?= $tenantActiveAngle; ?>deg; --tenant-pending: <?= $tenantPendingAngle; ?>deg; --tenant-suspended: <?= $tenantSuspendedAngle; ?>deg;" role="img" aria-label="Distribuição de status de tenants">
             <span><?= number_format($tenantsTotal, 0, ',', '.'); ?></span>
             <small>tenants</small>
           </div>
@@ -311,7 +342,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
             <h2 class="home-panel-title">Pessoas recentes</h2>
           </div>
           <?php if (homeDashboardCan('person.index')): ?>
-            <a href="<?= url('person'); ?>" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            <a href="<?= url('person'); ?>" class="btn btn-sm btn-outline-primary home-panel-action">Ver todas</a>
           <?php endif; ?>
         </div>
 
@@ -344,7 +375,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
             <h2 class="home-panel-title">Tenants recentes</h2>
           </div>
           <?php if (homeDashboardCan('tenant.index')): ?>
-            <a href="<?= url('tenant'); ?>" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            <a href="<?= url('tenant'); ?>" class="btn btn-sm btn-outline-primary home-panel-action">Ver todos</a>
           <?php endif; ?>
         </div>
 
@@ -373,5 +404,6 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
     </div>
   </div>
 </section>
-
-<script src="<?= url('assets/js/home/index.js?v=1'); ?>"></script>
+<!-- Js -->
+<script src="<?= url('assets/js/home/index.js?v=2'); ?>"></script>
+<!-- /Js -->
