@@ -116,11 +116,14 @@ class Person extends Model
 	 */
 	public function create($data)
 		{
-		$document = onlyAlphanumeric($data['person']['document'] ?? '');
-		if ($document !== '' && $this->documentExists($document))
+		if (!is_array($data))
 			{
-			throw new \InvalidArgumentException('Este documento já está cadastrado.');
+			throw new \InvalidArgumentException('Dados inválidos para cadastro de pessoa.');
 			}
+
+		$this->assertUniqueCreateValues($data);
+		$document = onlyAlphanumeric($data['person']['document'] ?? '');
+		$username = trim((string) ($data['user']['username'] ?? ''));
 
 		try
 			{
@@ -139,7 +142,7 @@ class Person extends Model
 				'name'      => $data['person']['name'],
 				'fantasy'   => $data['person']['fantasy'] ?? '',
 				'type'      => $data['person']['type'],
-				'document'  => onlyAlphanumeric($data['person']['document']),
+				'document'  => $document,
 				'active'    => intval($data['person']['active'] ?? 1),
 				'birthdate' => $birthdate,
 				'created'   => date('Y-m-d H:i:s'),
@@ -155,7 +158,7 @@ class Person extends Model
 			$stmtUser = $this->db->prepare($sqlUser);
 			$stmtUser->execute([
 				'person_id' => $personId,
-				'username'  => $data['user']['username'],
+				'username'  => $username,
 				'password'  => password_hash($data['user']['password'], PASSWORD_DEFAULT),
 				'type'      => $data['user']['type'],
 				'active'    => intval($data['user']['active'] ?? 1),
@@ -279,7 +282,7 @@ class Person extends Model
 						continue;
 						}
 					$stmtEmail->execute([
-						'email'        => $email['address'],
+						'email'        => trim((string) $email['address']),
 						'observations' => $email['description'] ?? null,
 						'is_login'     => intval($email['is_login'] ?? 0),
 						'person_id'    => $personId,
@@ -352,6 +355,206 @@ class Person extends Model
 		$stmt->execute();
 
 		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
+	 * Checks whether a username already exists in the users table.
+	 *
+	 * @param string|null $username Username typed by the user.
+	 * @param int|null $exceptUserId User ID to ignore when checking uniqueness.
+	 * @return bool True when the username is already registered.
+	 */
+	public function usernameExists(?string $username, ?int $exceptUserId = null): bool
+		{
+		$normalizedUsername = strtolower(trim((string) $username));
+		if ($normalizedUsername === '')
+			{
+			return false;
+			}
+
+		$sql = "SELECT 1 FROM users WHERE LOWER(username) = :username";
+		$params = ['username' => $normalizedUsername];
+
+		if ($exceptUserId !== null && $exceptUserId > 0)
+			{
+			$sql .= " AND id <> :id";
+			$params['id'] = $exceptUserId;
+			}
+
+		$sql .= " LIMIT 1";
+
+		return $this->existsBySql($sql, $params);
+		}
+
+	/**
+	 * Checks whether a phone number already exists in the phone_numbers table.
+	 *
+	 * @param string|null $phoneNumber Phone number typed by the user.
+	 * @param int|null $exceptPhoneNumberId Phone number ID to ignore when checking uniqueness.
+	 * @return bool True when the phone number is already registered.
+	 */
+	public function phoneNumberExists(?string $phoneNumber, ?int $exceptPhoneNumberId = null): bool
+		{
+		$normalizedPhoneNumber = onlyDigits($phoneNumber);
+		if ($normalizedPhoneNumber === '')
+			{
+			return false;
+			}
+
+		$sql = "
+			SELECT 1
+			FROM phone_numbers
+			WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone_number, '+', ''), '(', ''), ')', ''), '-', ''), ' ', ''), '.', ''), '/', '') = :phone_number
+		";
+		$params = ['phone_number' => $normalizedPhoneNumber];
+
+		if ($exceptPhoneNumberId !== null && $exceptPhoneNumberId > 0)
+			{
+			$sql .= " AND id <> :id";
+			$params['id'] = $exceptPhoneNumberId;
+			}
+
+		$sql .= " LIMIT 1";
+
+		return $this->existsBySql($sql, $params);
+		}
+
+	/**
+	 * Checks whether an e-mail address already exists in the emails table.
+	 *
+	 * @param string|null $email E-mail address typed by the user.
+	 * @param int|null $exceptEmailId E-mail ID to ignore when checking uniqueness.
+	 * @return bool True when the e-mail address is already registered.
+	 */
+	public function emailExists(?string $email, ?int $exceptEmailId = null): bool
+		{
+		$normalizedEmail = $this->normalizeEmail($email);
+		if ($normalizedEmail === '')
+			{
+			return false;
+			}
+
+		$sql = "SELECT 1 FROM emails WHERE LOWER(email) = :email";
+		$params = ['email' => $normalizedEmail];
+
+		if ($exceptEmailId !== null && $exceptEmailId > 0)
+			{
+			$sql .= " AND id <> :id";
+			$params['id'] = $exceptEmailId;
+			}
+
+		$sql .= " LIMIT 1";
+
+		return $this->existsBySql($sql, $params);
+		}
+
+	/**
+	 * Validates unique fields before creating a person aggregate.
+	 *
+	 * @param array<string, mixed> $data Form data grouped by section.
+	 * @return void
+	 * @throws \InvalidArgumentException When a unique field is already registered.
+	 */
+	private function assertUniqueCreateValues(array &$data): void
+		{
+		$document = onlyAlphanumeric($data['person']['document'] ?? '');
+		if ($document !== '' && $this->documentExists($document))
+			{
+			throw new \InvalidArgumentException('Este documento já está cadastrado.');
+			}
+
+		$username = trim((string) ($data['user']['username'] ?? ''));
+		if ($username !== '' && $this->usernameExists($username))
+			{
+			throw new \InvalidArgumentException('Este nome de usuário já está cadastrado.');
+			}
+
+		if (!empty($data['phones']) && is_array($data['phones']))
+			{
+			$data['phones'] = $this->regroupFormArray($data['phones']);
+			$seenPhoneNumbers = [];
+
+			foreach ($data['phones'] as $phone)
+				{
+				if (!is_array($phone))
+					{
+					continue;
+					}
+				$phoneNumber = onlyDigits($phone['number'] ?? '');
+				if ($phoneNumber === '')
+					{
+					continue;
+					}
+				if (isset($seenPhoneNumbers[$phoneNumber]))
+					{
+					throw new \InvalidArgumentException('Este telefone foi informado mais de uma vez.');
+					}
+				if ($this->phoneNumberExists($phoneNumber))
+					{
+					throw new \InvalidArgumentException('Este telefone já está cadastrado.');
+					}
+				$seenPhoneNumbers[$phoneNumber] = true;
+				}
+			}
+
+		if (!empty($data['emails']) && is_array($data['emails']))
+			{
+			$data['emails'] = $this->regroupFormArray($data['emails']);
+			$seenEmails = [];
+
+			foreach ($data['emails'] as $email)
+				{
+				if (!is_array($email))
+					{
+					continue;
+					}
+				$emailAddress = $this->normalizeEmail($email['address'] ?? '');
+				if ($emailAddress === '')
+					{
+					continue;
+					}
+				if (isset($seenEmails[$emailAddress]))
+					{
+					throw new \InvalidArgumentException('Este e-mail foi informado mais de uma vez.');
+					}
+				if ($this->emailExists($emailAddress))
+					{
+					throw new \InvalidArgumentException('Este e-mail já está cadastrado.');
+					}
+				$seenEmails[$emailAddress] = true;
+				}
+			}
+		}
+
+	/**
+	 * Executes a simple existence query with named parameters.
+	 *
+	 * @param string $sql SQL statement that returns at least one column.
+	 * @param array<string, mixed> $params Named parameters without the leading colon.
+	 * @return bool True when at least one row exists.
+	 */
+	private function existsBySql(string $sql, array $params): bool
+		{
+		$stmt = $this->db->prepare($sql);
+		foreach ($params as $key => $value)
+			{
+			$paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+			$stmt->bindValue(':' . $key, $value, $paramType);
+			}
+		$stmt->execute();
+
+		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
+	 * Normalizes an e-mail address for uniqueness comparisons.
+	 *
+	 * @param string|null $email Raw e-mail address.
+	 * @return string Normalized e-mail address.
+	 */
+	private function normalizeEmail(?string $email): string
+		{
+		return strtolower(trim((string) $email));
 		}
 
 	/**

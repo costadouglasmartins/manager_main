@@ -280,6 +280,72 @@ class PersonController extends Controller
 			'document'  => onlyAlphanumeric($document),
 		]);
 		}
+
+	/**
+	 * Checks whether a username is already registered.
+	 *
+	 * Used by the create form to enforce the unique username rule before submit.
+	 *
+	 * @return void
+	 */
+	public function usernameExists()
+		{
+		$this->requireAnyPermission(['person.create', 'person.store']);
+
+		$username = trim((string) ($_GET['username'] ?? $_POST['username'] ?? ''));
+		$person = new Person();
+		$exists = $person->usernameExists($username);
+
+		$this->json([
+			'exists'    => $exists,
+			'available' => !$exists,
+			'username'  => strtolower($username),
+		]);
+		}
+
+	/**
+	 * Checks whether a phone number is already registered.
+	 *
+	 * Used by the create form to enforce the unique phone rule before submit.
+	 *
+	 * @return void
+	 */
+	public function phoneNumberExists()
+		{
+		$this->requireAnyPermission(['person.create', 'person.store']);
+
+		$phoneNumber = trim((string) ($_GET['phone_number'] ?? $_POST['phone_number'] ?? ''));
+		$person = new Person();
+		$exists = $person->phoneNumberExists($phoneNumber);
+
+		$this->json([
+			'exists'       => $exists,
+			'available'    => !$exists,
+			'phone_number' => onlyDigits($phoneNumber),
+		]);
+		}
+
+	/**
+	 * Checks whether an e-mail address is already registered.
+	 *
+	 * Used by the create form to enforce the unique e-mail rule before submit.
+	 *
+	 * @return void
+	 */
+	public function emailExists()
+		{
+		$this->requireAnyPermission(['person.create', 'person.store']);
+
+		$email = trim((string) ($_GET['email'] ?? $_POST['email'] ?? ''));
+		$person = new Person();
+		$exists = $person->emailExists($email);
+
+		$this->json([
+			'exists'    => $exists,
+			'available' => !$exists,
+			'email'     => strtolower($email),
+		]);
+		}
   
 	/**
 	 * Persists a new person from posted form data.
@@ -293,31 +359,26 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.store');
 		$person = new Person();
-		$document = $_POST['person']['document'] ?? '';
 
-		if ($person->documentExists($document))
+		try
+			{
+			$person->create($_POST);
+			}
+		catch (\InvalidArgumentException $e)
 			{
 			if ($this->wantsJson())
 				{
 				$this->json([
 					'error'   => 'validation_error',
-					'message' => 'Este documento já está cadastrado.',
+					'message' => $e->getMessage(),
 				], 422);
 				}
 
 			http_response_code(422);
-
-			$tenantModel = new Tenant();
-			$this->view('people/create', [
-				'title'              => 'Nova pessoa',
-				'nextDatabaseNumber' => $tenantModel->nextDatabaseNumber(),
-				'tenants'            => $tenantModel->getAll(),
-				'formError'          => 'Este documento já está cadastrado.',
-			]);
+			$this->renderCreateFormWithError($e->getMessage());
 			return;
 			}
 
-		$person->create($_POST);
 		$this->redirect('person');
 		}
 
@@ -526,7 +587,24 @@ class PersonController extends Controller
 			} catch (\Exception $e) {
 				$this->redirect('person');
 			}
+			}
 		}
+
+	/**
+	 * Renders the create form with a validation error message.
+	 *
+	 * @param string $message Message displayed above the form.
+	 * @return void
+	 */
+	private function renderCreateFormWithError(string $message): void
+		{
+		$tenantModel = new Tenant();
+		$this->view('people/create', [
+			'title'              => 'Nova pessoa',
+			'nextDatabaseNumber' => $tenantModel->nextDatabaseNumber(),
+			'tenants'            => $tenantModel->getAll(),
+			'formError'          => $message,
+		]);
 		}
 	}
 ?>

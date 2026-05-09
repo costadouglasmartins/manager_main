@@ -351,6 +351,343 @@
 			});
 
 		// -----------------------------------------------------------------------
+		// Unique field validation
+		// -----------------------------------------------------------------------
+		const fieldFeedbackDefaults = new WeakMap();
+		const uniqueFieldStates = new WeakMap();
+
+		const usernameUniqueConfig = {
+			endpoint: PERSON_USERNAME_EXISTS_URL,
+			param: "username",
+			normalize: function (value) { return String(value || "").trim().toLowerCase(); },
+			duplicateMessage: "Este nome de usuário já está cadastrado.",
+			failureMessage: "Não foi possível validar se o nome de usuário já existe."
+		};
+
+		const phoneNumberUniqueConfig = {
+			endpoint: PERSON_PHONE_NUMBER_EXISTS_URL,
+			param: "phone_number",
+			normalize: function (value) { return String(value || "").replace(/\D/g, ""); },
+			duplicateMessage: "Este telefone já está cadastrado.",
+			localDuplicateMessage: "Este telefone foi informado mais de uma vez.",
+			failureMessage: "Não foi possível validar se o telefone já existe."
+		};
+
+		const emailUniqueConfig = {
+			endpoint: PERSON_EMAIL_EXISTS_URL,
+			param: "email",
+			normalize: function (value) { return String(value || "").trim().toLowerCase(); },
+			duplicateMessage: "Este e-mail já está cadastrado.",
+			localDuplicateMessage: "Este e-mail foi informado mais de uma vez.",
+			failureMessage: "Não foi possível validar se o e-mail já existe."
+		};
+
+		function getFieldFeedback(el)
+			{
+				return el && el.parentElement
+					? el.parentElement.querySelector(".invalid-feedback")
+					: null;
+			}
+
+		function getDefaultFieldFeedback(el)
+			{
+				if (fieldFeedbackDefaults.has(el))
+					{
+						return fieldFeedbackDefaults.get(el);
+					}
+
+				const feedback = getFieldFeedback(el);
+				const defaultMessage = feedback ? feedback.textContent : "";
+				fieldFeedbackDefaults.set(el, defaultMessage);
+				return defaultMessage;
+			}
+
+		function setFieldFeedback(el, message)
+			{
+				const feedback = getFieldFeedback(el);
+				if (feedback)
+					{
+						feedback.textContent = message;
+					}
+			}
+
+		function resetFieldFeedback(el)
+			{
+				setFieldFeedback(el, getDefaultFieldFeedback(el));
+			}
+
+		function setUniqueFieldValidity(el, message)
+			{
+				el.setCustomValidity(message);
+				setFieldFeedback(el, message);
+				return false;
+			}
+
+		function getUniqueFieldState(el)
+			{
+				if (!uniqueFieldStates.has(el))
+					{
+						uniqueFieldStates.set(el, {
+							timer: null,
+							controller: null,
+							sequence: 0,
+							cacheKey: "",
+							exists: false
+						});
+					}
+
+				return uniqueFieldStates.get(el);
+			}
+
+		function abortUniqueFieldCheck(el)
+			{
+				const state = getUniqueFieldState(el);
+				if (state.timer)
+					{
+						clearTimeout(state.timer);
+						state.timer = null;
+					}
+
+				if (state.controller)
+					{
+						state.controller.abort();
+						state.controller = null;
+					}
+			}
+
+		function getUniqueFieldCheckKey(el, config)
+			{
+				return config.endpoint + ":" + config.normalize(el.value);
+			}
+
+		function applyUniqueFieldAvailability(el, config, exists)
+			{
+				if (exists)
+					{
+						return setUniqueFieldValidity(el, config.duplicateMessage);
+					}
+
+				el.setCustomValidity("");
+				resetFieldFeedback(el);
+				return true;
+			}
+
+		async function validateUniqueFieldAvailability(el, config, force)
+			{
+				abortUniqueFieldCheck(el);
+				el.setCustomValidity("");
+				resetFieldFeedback(el);
+
+				const normalizedValue = config.normalize(el.value);
+				if (!normalizedValue)
+					{
+						return true;
+					}
+
+				if (!el.validity.valid)
+					{
+						return false;
+					}
+
+				const state = getUniqueFieldState(el);
+				const checkKey = getUniqueFieldCheckKey(el, config);
+				if (!force && state.cacheKey === checkKey)
+					{
+						return applyUniqueFieldAvailability(el, config, state.exists);
+					}
+
+				const controller = new AbortController();
+				const sequence = state.sequence + 1;
+				state.sequence = sequence;
+				state.controller = controller;
+
+				try
+					{
+						const url = new URL(config.endpoint, window.location.origin);
+						url.searchParams.set(config.param, normalizedValue);
+
+						const response = await fetch(url.toString(), {
+							method: "GET",
+							credentials: "same-origin",
+							headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"},
+							signal: controller.signal
+						});
+
+						if (!response.ok)
+							{
+								throw new Error("Unique field check failed with status " + response.status);
+							}
+
+						const data = await response.json();
+						if (state.sequence !== sequence || checkKey !== getUniqueFieldCheckKey(el, config))
+							{
+								return true;
+							}
+
+						state.cacheKey = checkKey;
+						state.exists = !!data.exists;
+						return applyUniqueFieldAvailability(el, config, state.exists);
+					}
+				catch (err)
+					{
+						if (err && err.name === "AbortError")
+							{
+								return true;
+							}
+
+						console.error("unique field fetch error:", err);
+						return setUniqueFieldValidity(el, config.failureMessage);
+					}
+				finally
+					{
+						if (state.controller === controller)
+							{
+								state.controller = null;
+							}
+					}
+			}
+
+		function queueUniqueFieldAvailabilityCheck(el, config)
+			{
+				const state = getUniqueFieldState(el);
+				abortUniqueFieldCheck(el);
+				state.cacheKey = "";
+
+				el.setCustomValidity("");
+				resetFieldFeedback(el);
+
+				const normalizedValue = config.normalize(el.value);
+				if (!normalizedValue || !el.validity.valid)
+					{
+						return;
+					}
+
+				state.timer = setTimeout(function ()
+					{
+						validateUniqueFieldAvailability(el, config, false);
+					}, 500);
+			}
+
+		function getPhoneNumberFields()
+			{
+				return Array.from(phonesContainer.querySelectorAll("input[name^='phones['][name$='[number]']"));
+			}
+
+		function getEmailAddressFields()
+			{
+				return Array.from(emailsContainer.querySelectorAll("input[name^='emails['][name$='[address]']"));
+			}
+
+		function validateLocalUniqueFields(fields, config)
+			{
+				const seen = new Map();
+				let ok = true;
+
+				fields.forEach(function (el)
+					{
+						const normalizedValue = config.normalize(el.value);
+						if (!normalizedValue)
+							{
+								return;
+							}
+
+						if (seen.has(normalizedValue))
+							{
+								setUniqueFieldValidity(el, config.localDuplicateMessage);
+								setUniqueFieldValidity(seen.get(normalizedValue), config.localDuplicateMessage);
+								ok = false;
+								return;
+							}
+
+						seen.set(normalizedValue, el);
+					});
+
+				return ok;
+			}
+
+		async function validateUniqueFieldList(fields, config, force)
+			{
+				fields.forEach(function (el)
+					{
+						abortUniqueFieldCheck(el);
+						el.setCustomValidity("");
+						resetFieldFeedback(el);
+					});
+
+				if (!validateLocalUniqueFields(fields, config))
+					{
+						return false;
+					}
+
+				let ok = true;
+				for (const el of fields)
+					{
+						if (!await validateUniqueFieldAvailability(el, config, force))
+							{
+								ok = false;
+							}
+					}
+
+				return ok;
+			}
+
+		function getUniqueConfigForElement(el)
+			{
+				if (el === userUsername)
+					{
+						return usernameUniqueConfig;
+					}
+				if (el.matches("input[name^='phones['][name$='[number]']"))
+					{
+						return phoneNumberUniqueConfig;
+					}
+				if (el.matches("input[name^='emails['][name$='[address]']"))
+					{
+						return emailUniqueConfig;
+					}
+
+				return null;
+			}
+
+		userUsername.addEventListener("input", function ()
+			{
+				queueUniqueFieldAvailabilityCheck(userUsername, usernameUniqueConfig);
+			});
+
+		userUsername.addEventListener("blur", function ()
+			{
+				validateUniqueFieldAvailability(userUsername, usernameUniqueConfig, false);
+			});
+
+		document.addEventListener("input", function (e)
+			{
+				if (!(e.target instanceof HTMLInputElement))
+					{
+						return;
+					}
+
+				const config = getUniqueConfigForElement(e.target);
+				if (config && e.target !== userUsername)
+					{
+						queueUniqueFieldAvailabilityCheck(e.target, config);
+					}
+			});
+
+		document.addEventListener("blur", function (e)
+			{
+				if (!(e.target instanceof HTMLInputElement))
+					{
+						return;
+					}
+
+				const config = getUniqueConfigForElement(e.target);
+				if (config && e.target !== userUsername)
+					{
+						validateUniqueFieldAvailability(e.target, config, false);
+					}
+			}, true);
+
+		// -----------------------------------------------------------------------
 		// Contador de endereços
 		// -----------------------------------------------------------------------
 		let addressCounter = 0;
@@ -922,7 +1259,7 @@
 				return true;
 			}
 
-		function validateStep5()
+		async function validateStep5()
 			{
 				// Pelo menos um telefone preenchido
 				const phoneBlocks = Array.from(phonesContainer.querySelectorAll("[data-remove='phone']"))
@@ -966,7 +1303,11 @@
 							}
 					}
 
-				return true;
+				const phoneNumbersAreAvailable = await validateUniqueFieldList(getPhoneNumberFields(), phoneNumberUniqueConfig, true);
+				const emailsAreAvailable = await validateUniqueFieldList(getEmailAddressFields(), emailUniqueConfig, true);
+				form.classList.add("was-validated");
+
+				return phoneNumbersAreAvailable && emailsAreAvailable;
 			}
 
 		async function validateCurrentStep()
@@ -979,6 +1320,8 @@
 				// Validação customizada: senhas (etapa 2)
 				if (currentStep === 2)
 					{
+						await validateUniqueFieldAvailability(userUsername, usernameUniqueConfig, true);
+
 						if (userPassword.value !== userPassword2.value)
 							{
 								userPassword2.setCustomValidity("As senhas não coincidem.");
@@ -1002,7 +1345,7 @@
 
 				if (currentStep === 5)
 					{
-						return validateStep5();
+						return await validateStep5();
 					}
 
 				const requiredControls = getCurrentStepRequiredControls();
@@ -1366,6 +1709,25 @@
 						showStep(1);
 						form.classList.add("was-validated");
 						showAlert("Verifique o documento informado.");
+						return;
+					}
+
+				const usernameIsAvailable = await validateUniqueFieldAvailability(userUsername, usernameUniqueConfig, true);
+				if (!usernameIsAvailable)
+					{
+						showStep(2);
+						form.classList.add("was-validated");
+						showAlert("Verifique o nome de usuário informado.");
+						return;
+					}
+
+				const phoneNumbersAreAvailable = await validateUniqueFieldList(getPhoneNumberFields(), phoneNumberUniqueConfig, true);
+				const emailsAreAvailable = await validateUniqueFieldList(getEmailAddressFields(), emailUniqueConfig, true);
+				if (!phoneNumbersAreAvailable || !emailsAreAvailable)
+					{
+						showStep(5);
+						form.classList.add("was-validated");
+						showAlert("Verifique os contatos informados.");
 						return;
 					}
 

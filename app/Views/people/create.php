@@ -369,6 +369,7 @@
 									<div class="col-12 col-md-4">
 										<label class="form-label">Número</label>
 										<input autocomplete="off" class="form-control mask-phone" name="phones[][number]" type="text" inputmode="tel" maxlength="18" placeholder="+XX(XX)XXXXX-XXXX"/>
+										<div class="invalid-feedback">Informe o telefone.</div>
 									</div>
 									<div class="col-12 col-md-7">
 										<label class="form-label">Observações</label>
@@ -494,6 +495,9 @@
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
 	const PERSON_DOCUMENT_EXISTS_URL     = "<?= url('person/documentExists'); ?>";
+	const PERSON_USERNAME_EXISTS_URL     = "<?= url('person/usernameExists'); ?>";
+	const PERSON_PHONE_NUMBER_EXISTS_URL = "<?= url('person/phoneNumberExists'); ?>";
+	const PERSON_EMAIL_EXISTS_URL        = "<?= url('person/emailExists'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=12'); ?>"></script>
-<script src="<?= url('assets/js/masks.js?v=4'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=13'); ?>"></script>
+<script src="<?= url('assets/js/masks.js?v=5'); ?>"></script>
