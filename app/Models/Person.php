@@ -124,6 +124,8 @@ class Person extends Model
 		$this->assertUniqueCreateValues($data);
 		$document = onlyAlphanumeric($data['person']['document'] ?? '');
 		$username = trim((string) ($data['user']['username'] ?? ''));
+		$tenantProvisionDatabaseNumber = null;
+		$tenantProvisionObservations = null;
 
 		try
 			{
@@ -173,29 +175,18 @@ class Person extends Model
 
 			if ($tenantMode === 'new')
 				{
-					$tenantModel = new Tenant();
-					$databaseNumber = $tenantModel->nextDatabaseNumber();
-					$tenantStatus = 'active';
+				$tenantModel = new Tenant();
+				$databaseNumber = $tenantModel->nextDatabaseNumber();
+				$tenantProvisionDatabaseNumber = $databaseNumber;
+				$tenantProvisionObservations = $data['tenant']['observations'] ?? null;
 
-					// Create the tenant as pending until its database is provisioned.
-					$tenantId = $tenantModel->create([
-						'database_number' => $databaseNumber,
-						'status'          => 'pending',
-						'observations'    => $data['tenant']['observations'] ?? null,
-					]);
-
-					$provisioner = new TenantProvisioner();
-					$provisioned = $provisioner->provision($databaseNumber);
-
-					// Activate the tenant only after successful provisioning.
-					if ($provisioned)
-						{
-						$tenantModel->update($tenantId, [
-							'status'       => $tenantStatus,
-							'observations' => $data['tenant']['observations'] ?? null,
-						]);
-						}
-					}
+				// Create the tenant as pending until its database is provisioned after commit.
+				$tenantId = $tenantModel->create([
+					'database_number' => $databaseNumber,
+					'status'          => 'pending',
+					'observations'    => $data['tenant']['observations'] ?? null,
+				]);
+				}
 			elseif ($tenantMode === 'existing' && !empty($data['tenant']['existing_id']))
 				{
 				// Link the new user to an existing tenant selected in the form.
@@ -294,6 +285,23 @@ class Person extends Model
 
 			$this->db->commit();
 
+			if ($tenantProvisionDatabaseNumber !== null && $tenantId !== null)
+				{
+				$provisioner = new TenantProvisioner();
+				$provisioned = $provisioner->provision($tenantProvisionDatabaseNumber);
+
+				// The tenant template seeds manager_main permissions, so it must run
+				// after the tenant/user rows are committed and visible to MySQL.
+				if ($provisioned)
+					{
+					$tenantModel = new Tenant();
+					$tenantModel->update((int) $tenantId, [
+						'status'       => 'active',
+						'observations' => $tenantProvisionObservations,
+					]);
+					}
+				}
+
 			return [
 				'person_id' => $personId,
 				'user_id'   => $userId,
@@ -302,7 +310,10 @@ class Person extends Model
 			}
 		catch (\Exception $e)
 			{
-			$this->db->rollBack();
+			if ($this->db->inTransaction())
+				{
+				$this->db->rollBack();
+				}
 			throw $e;
 			}
 		}
