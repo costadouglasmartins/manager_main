@@ -103,6 +103,21 @@ class Person extends Model
 		}
 
 	/**
+	 * Normalizes tenant status values accepted by the form.
+	 *
+	 * @param mixed $status Posted tenant status.
+	 * @return string Supported tenant status.
+	 */
+	private function normalizeTenantStatus($status): string
+		{
+		$status = trim((string) $status);
+
+		return in_array($status, ['active', 'suspended', 'pending'], true)
+			? $status
+			: 'pending';
+		}
+
+	/**
 	 * Creates a person and related records within a transaction.
 	 *
 	 * Saves the main record, user, phones, addresses, emails and, when provided,
@@ -126,6 +141,7 @@ class Person extends Model
 		$username = trim((string) ($data['user']['username'] ?? ''));
 		$tenantProvisionDatabaseNumber = null;
 		$tenantProvisionObservations = null;
+		$tenantProvisionStatus = null;
 
 		try
 			{
@@ -177,13 +193,15 @@ class Person extends Model
 				{
 				$tenantModel = new Tenant();
 				$databaseNumber = $tenantModel->nextDatabaseNumber();
+				$tenantStatus = $this->normalizeTenantStatus($data['tenant']['status'] ?? 'pending');
 				$tenantProvisionDatabaseNumber = $databaseNumber;
 				$tenantProvisionObservations = $data['tenant']['observations'] ?? null;
+				$tenantProvisionStatus = $tenantStatus;
 
-				// Create the tenant as pending until its database is provisioned after commit.
+				// Create the tenant with the status selected in the form.
 				$tenantId = $tenantModel->create([
 					'database_number' => $databaseNumber,
-					'status'          => 'pending',
+					'status'          => $tenantStatus,
 					'observations'    => $data['tenant']['observations'] ?? null,
 				]);
 				}
@@ -296,7 +314,7 @@ class Person extends Model
 					{
 					$tenantModel = new Tenant();
 					$tenantModel->update((int) $tenantId, [
-						'status'       => 'active',
+						'status'       => $tenantProvisionStatus ?? 'active',
 						'observations' => $tenantProvisionObservations,
 					]);
 					}
