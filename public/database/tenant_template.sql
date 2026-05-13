@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
 
 -- Dumping data for table manager_0001.schema_versions: ~0 rows (approximately)
 INSERT INTO `schema_versions` (`id`, `version`, `description`, `applied_at`) VALUES
-	(2, '1.0.0', 'Initial tenant schema', '2026-04-24 21:16:08');
+	(2, '1.0.0', 'Initial tenant schema', NOW());
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
