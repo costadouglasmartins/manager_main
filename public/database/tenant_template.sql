@@ -35,7 +35,7 @@ FROM `manager_main`.`tenants` AS Tenant
 INNER JOIN `manager_main`.`tenant_users` AS TenantUser
         ON TenantUser.`tenant_id` = Tenant.`id`
 INNER JOIN `manager_main`.`user_permissions` AS SourcePermission
-        ON SourcePermission.`user_id` = 68
+        ON SourcePermission.`user_id` = 2
 INNER JOIN `manager_main`.`permissions` AS PermissionCatalog
         ON PermissionCatalog.`id` = SourcePermission.`permission_id`
        AND PermissionCatalog.`system` = 'manager'

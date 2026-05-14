@@ -6,21 +6,51 @@ function permSystemBadgeClassOrphaned(string $system): string
 	return $system === 'manager' ? 'text-bg-success' : 'text-bg-primary';
 	}
 
+function permSystemIconOrphaned(string $system): string
+	{
+	return $system === 'manager' ? 'bi-diagram-3' : 'bi-grid-3x3-gap';
+	}
+
 $deleted = null;
-if (isset($_GET['deleted'])) {
+if (isset($_GET['deleted']))
+	{
 	$deleted = (int) $_GET['deleted'];
-}
+	}
 
 $usersAffected = null;
-if (isset($_GET['users_affected'])) {
+if (isset($_GET['users_affected']))
+	{
 	$usersAffected = (int) $_GET['users_affected'];
-}
+	}
 
 $error = null;
-if (isset($_GET['error'])) {
+if (isset($_GET['error']))
+	{
 	$error = (string) $_GET['error'];
-}
+	}
+
+$totalOrphaned = (int) ($stats['total_orphaned'] ?? count($orphaned));
+$totalUserLinks = 0;
+$permissionsWithUsers = 0;
+
+foreach ($orphaned as $perm)
+	{
+	$permId = (int) $perm['id'];
+	$userCount = (int) ($stats['permissions'][$permId]['user_count'] ?? 0);
+	$totalUserLinks += $userCount;
+
+	if ($userCount > 0)
+		{
+		$permissionsWithUsers += 1;
+		}
+	}
+
+$permissionsWithoutUsers = max(0, $totalOrphaned - $permissionsWithUsers);
 ?>
+
+<!-- CSS -->
+<link rel="stylesheet" href="<?= url('assets/css/permissions/orphaned.css?v=1'); ?>">
+<!-- /CSS -->
 
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
@@ -31,153 +61,212 @@ if (isset($_GET['error'])) {
   </ol>
 </nav>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5>Permissões Órfãs</h5>
-  <a href="<?= url('permission'); ?>" class="btn btn-secondary btn-sm">Voltar</a>
+<div class="orphaned-permissions-shell">
+  <section class="orphaned-hero mb-3">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+      <div class="d-flex align-items-start gap-3">
+        <div class="orphaned-hero-icon" aria-hidden="true">
+          <i class="bi bi-shield-exclamation"></i>
+        </div>
+        <div>
+          <span class="orphaned-kicker">Auditoria de acesso</span>
+          <h5 class="mb-2">Permissões Órfãs</h5>
+          <p class="text-muted mb-0">
+            Revise permissões que não existem mais no código e remova os vínculos do catálogo quando estiver tudo conferido.
+          </p>
+        </div>
+      </div>
+
+      <a href="<?= url('permission'); ?>" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+        Voltar
+      </a>
+    </div>
+  </section>
+
+  <?php if ($deleted === 1): ?>
+    <div class="alert alert-success py-2 orphaned-alert">
+      <div class="d-flex gap-2">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <div>
+          <strong>Permissão órfã removida com sucesso!</strong>
+          <?php if ($usersAffected !== null && $usersAffected > 0): ?>
+            <br><small><?= $usersAffected; ?> usuário(s) teve/tiveram esta permissão removida.</small>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  <?php elseif ($deleted === 0): ?>
+    <div class="alert alert-danger py-2 orphaned-alert">
+      <div class="d-flex gap-2">
+        <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+        <div>
+          <strong>Erro ao remover permissão.</strong>
+          <?php if ($error === 'not_orphaned'): ?>
+            Esta permissão não é órfã ou não existe.
+          <?php elseif ($error === 'exception'): ?>
+            Erro ao processar a operação. Tente novamente.
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="orphaned-stat-card">
+        <span class="orphaned-stat-label">Órfãs</span>
+        <span class="orphaned-stat-value"><?= $totalOrphaned; ?></span>
+        <small class="text-muted">permissões fora do código</small>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="orphaned-stat-card orphaned-stat-card-warning">
+        <span class="orphaned-stat-label">Vínculos ativos</span>
+        <span class="orphaned-stat-value"><?= $totalUserLinks; ?></span>
+        <small class="text-muted">atribuição(ões) impactadas</small>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="orphaned-stat-card orphaned-stat-card-success">
+        <span class="orphaned-stat-label">Sem vínculos</span>
+        <span class="orphaned-stat-value"><?= $permissionsWithoutUsers; ?></span>
+        <small class="text-muted">prontas para remoção limpa</small>
+      </div>
+    </div>
+  </div>
+
+  <?php if ($totalOrphaned === 0): ?>
+    <section class="orphaned-empty-state">
+      <div class="orphaned-empty-icon" aria-hidden="true">
+        <i class="bi bi-shield-check"></i>
+      </div>
+      <h6 class="mb-2">Nenhuma permissão órfã encontrada</h6>
+      <p class="text-muted mb-0">Todas as permissões no catálogo existem no código.</p>
+    </section>
+  <?php else: ?>
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-2 mb-3">
+      <div>
+        <span class="orphaned-kicker">Catálogo pendente</span>
+        <h6 class="mb-0"><?= $totalOrphaned; ?> permissão(ões) órfã(s)</h6>
+      </div>
+      <?php if ($permissionsWithUsers > 0): ?>
+        <span class="badge text-bg-warning orphaned-summary-badge">
+          <i class="bi bi-person-exclamation me-1" aria-hidden="true"></i>
+          <?= $permissionsWithUsers; ?> com usuário(s)
+        </span>
+      <?php else: ?>
+        <span class="badge text-bg-success orphaned-summary-badge">
+          <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+          Nenhum vínculo ativo
+        </span>
+      <?php endif; ?>
+    </div>
+
+    <div class="orphaned-permission-list">
+      <?php foreach ($orphaned as $perm): ?>
+        <?php
+          $permId = (int) $perm['id'];
+          $userCount = (int) ($stats['permissions'][$permId]['user_count'] ?? 0);
+          $psys = (string) ($perm['system'] ?? 'manager_main');
+          $description = trim((string) ($perm['description'] ?? ''));
+          $hasUsers = $userCount > 0;
+        ?>
+        <article class="orphaned-permission-card<?= ($hasUsers ? ' orphaned-permission-card-warning' : ''); ?>" data-system="<?= htmlspecialchars($psys, ENT_QUOTES, 'UTF-8'); ?>">
+          <div class="orphaned-permission-system">
+            <span class="orphaned-system-icon" aria-hidden="true">
+              <i class="bi <?= permSystemIconOrphaned($psys); ?>"></i>
+            </span>
+            <span class="badge <?= permSystemBadgeClassOrphaned($psys); ?>"><?= htmlspecialchars($psys); ?></span>
+          </div>
+
+          <div class="orphaned-permission-main">
+            <code class="orphaned-ability"><?= htmlspecialchars((string) $perm['ability']); ?></code>
+            <span class="orphaned-description<?= ($description === '' ? ' orphaned-description-empty' : ''); ?>">
+              <?= htmlspecialchars($description !== '' ? $description : 'Sem descrição informada.'); ?>
+            </span>
+          </div>
+
+          <div class="orphaned-user-impact">
+            <?php if ($hasUsers): ?>
+              <span class="orphaned-impact-number text-danger"><?= $userCount; ?></span>
+              <span class="orphaned-impact-label">usuário(s)</span>
+            <?php else: ?>
+              <span class="orphaned-impact-number text-success">0</span>
+              <span class="orphaned-impact-label">vínculos</span>
+            <?php endif; ?>
+          </div>
+
+          <div class="orphaned-permission-action">
+            <button
+              class="btn btn-sm btn-danger orphaned-remove-button"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+              data-id="<?= $permId; ?>"
+              data-ability="<?= htmlspecialchars((string) $perm['ability'], ENT_QUOTES, 'UTF-8'); ?>"
+              data-user-count="<?= $userCount; ?>"
+              title="Deletar permissão órfã"
+            >
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+              <span>Remover</span>
+            </button>
+          </div>
+        </article>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
 </div>
 
-<p class="text-muted">
-  Estas são permissões que não existem mais no código.
-  Você pode removê-las com segurança. Os usuários que as possuem perderão o acesso.
-</p>
-
-<?php if ($deleted === 1): ?>
-  <div class="alert alert-success py-2">
-    <strong>Permissão órfã removida com sucesso!</strong>
-    <?php if ($usersAffected !== null && $usersAffected > 0): ?>
-      <br><small><?= $usersAffected; ?> usuário(s) teve/tiveram esta permissão removida.</small>
-    <?php endif; ?>
-  </div>
-<?php elseif ($deleted === 0): ?>
-  <div class="alert alert-danger py-2">
-    <strong>Erro ao remover permissão.</strong>
-    <?php if ($error === 'not_orphaned'): ?>
-      Esta permissão não é órfã ou não existe.
-    <?php elseif ($error === 'exception'): ?>
-      Erro ao processar a operação. Tente novamente.
-    <?php endif; ?>
-  </div>
-<?php endif; ?>
-
-<?php if ($stats['total_orphaned'] === 0): ?>
-  <div class="alert alert-info">
-    Nenhuma permissão órfã encontrada. Todas as permissões no catálogo existem no código.
-  </div>
-<?php else: ?>
-  <div class="card">
-    <div class="card-header bg-light">
-      <strong><?= $stats['total_orphaned']; ?> permissão(ões) órfã(s)</strong>
-    </div>
-    <div class="table-responsive">
-      <table class="table table-sm table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Sistema</th>
-            <th>Ability</th>
-            <th>Descrição</th>
-            <th class="text-center">Usuários afetados</th>
-            <th class="text-center">Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($orphaned as $perm): ?>
-            <?php
-              $permId = (int) $perm['id'];
-              $userCount = $stats['permissions'][$permId]['user_count'] ?? 0;
-              $psys = (string) ($perm['system'] ?? 'manager_main');
-            ?>
-            <tr class="<?= ($userCount > 0 ? 'table-warning' : ''); ?>">
-              <td>
-                <span class="badge <?= permSystemBadgeClassOrphaned($psys); ?>"><?= htmlspecialchars($psys); ?></span>
-              </td>
-              <td><code><?= htmlspecialchars($perm['ability']); ?></code></td>
-              <td><?= htmlspecialchars((string) ($perm['description'] ?? '—')); ?></td>
-              <td class="text-center">
-                <?php if ($userCount > 0): ?>
-                  <span class="badge text-bg-danger"><?= $userCount; ?></span>
-                <?php else: ?>
-                  <span class="text-muted">—</span>
-                <?php endif; ?>
-              </td>
-              <td class="text-center">
-                <button
-                  class="btn btn-sm btn-danger"
-                  data-bs-toggle="modal"
-                  data-bs-target="#deleteModal"
-                  data-id="<?= $permId; ?>"
-                  data-ability="<?= htmlspecialchars($perm['ability']); ?>"
-                  data-user-count="<?= $userCount; ?>"
-                  title="Deletar permissão órfã"
-                >
-                  Remover
-                </button>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-  </div>
-<?php endif; ?>
-
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content orphaned-modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Confirmar remoção de permissão órfã</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div>
+          <span class="orphaned-kicker">Confirmação</span>
+          <h5 class="modal-title" id="deleteModalTitle">Remover permissão órfã</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <p>Tem certeza que deseja remover a permissão?</p>
-        <div class="bg-light p-3 rounded mb-3 border">
+        <p class="mb-3">Esta ação remove a permissão do catálogo e de todos os usuários vinculados.</p>
+
+        <div class="orphaned-modal-ability mb-3">
           <code id="abilityName" class="fw-semibold"></code>
         </div>
 
-        <div id="affectedUsersSection" style="display: none;">
-          <div class="alert alert-danger">
-            <strong>⚠️ Usuários afetados:</strong>
-            <p class="mb-2">Os seguintes <span id="userCountText"></span> usuário(s) perderá/perderão acesso a esta permissão:</p>
-            <div id="affectedUsersList" class="text-sm"></div>
+        <div id="affectedUsersSection" class="d-none">
+          <div class="alert alert-danger mb-0">
+            <div class="d-flex gap-2">
+              <i class="bi bi-person-exclamation" aria-hidden="true"></i>
+              <div>
+                <strong>Usuários afetados: <span id="userCountText"></span></strong>
+                <p class="mb-0 small" id="affectedUsersList"></p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div id="noUsersSection" style="display: none;">
-          <div class="alert alert-info">
-            <small>Nenhum usuário possui esta permissão no momento.</small>
+        <div id="noUsersSection" class="d-none">
+          <div class="alert alert-info mb-0">
+            <div class="d-flex gap-2">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <small>Nenhum usuário possui esta permissão no momento.</small>
+            </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
-          <button type="submit" class="btn btn-danger">Remover Permissão</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="deleteForm" data-delete-url-base="<?= url('permission/deleteOrphaned') ?>">
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash3 me-1" aria-hidden="true"></i>
+            Remover Permissão
+          </button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const permId = e.relatedTarget.dataset.id;
-  const ability = e.relatedTarget.dataset.ability;
-  const userCount = parseInt(e.relatedTarget.dataset.userCount) || 0;
-
-  document.getElementById('abilityName').textContent = ability;
-  document.getElementById('deleteForm').action = '<?= url('permission/deleteOrphaned') ?>/' + permId;
-
-  // Mostrar ou esconder seção de usuários afetados
-  const affectedSection = document.getElementById('affectedUsersSection');
-  const noUsersSection = document.getElementById('noUsersSection');
-
-  if (userCount > 0) {
-    affectedSection.style.display = 'block';
-    noUsersSection.style.display = 'none';
-    document.getElementById('userCountText').textContent = userCount;
-  } else {
-    affectedSection.style.display = 'none';
-    noUsersSection.style.display = 'block';
-  }
-});
-</script>
+<script src="<?= url('assets/js/permissions/orphaned.js?v=1'); ?>"></script>
