@@ -1,13 +1,12 @@
 CREATE TABLE IF NOT EXISTS `schema_versions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
-  `description` varchar(255) DEFAULT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `version` VARCHAR(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
+  `description` VARCHAR(255) DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `schema_versions_version_unique` (`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-
 
 INSERT IGNORE INTO `schema_versions` (
   `version`,
@@ -20,7 +19,6 @@ INSERT IGNORE INTO `schema_versions` (
   NOW(),
   NOW()
 );
-
 
 INSERT IGNORE INTO `manager_main`.`user_permissions` (
   `user_id`,
@@ -44,76 +42,85 @@ INNER JOIN `manager_main`.`permissions` AS PermissionCatalog
 WHERE CAST(Tenant.`database_number` AS CHAR) = SUBSTRING(DATABASE(), CHAR_LENGTH('manager_') + 1)
   AND TenantUser.`role` = 'owner';
 
-
 CREATE TABLE IF NOT EXISTS `banks` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `number` varchar(4) NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT 1,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `banks_number_unique` (`number`)
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL DEFAULT '0',
+  `number` VARCHAR(4) NOT NULL DEFAULT '0',
+  `active` TINYINT NOT NULL DEFAULT 0,
+  `created` DATETIME NULL DEFAULT NULL,
+  `modified` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-
 CREATE TABLE IF NOT EXISTS `bank_accounts` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `bank_id` int NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `agency` varchar(6) NOT NULL,
-  `account` varchar(50) NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT 1,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `bank_id` INT NOT NULL,
+  `name` VARCHAR(50) NOT NULL,
+  `agency` VARCHAR(6) NOT NULL,
+  `account` VARCHAR(50) NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NULL DEFAULT NULL,
+  `modified` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_bank_accounts_bank_id` (`bank_id`),
+  INDEX `fk_bank_accounts_banks_idx` (`bank_id`),
   CONSTRAINT `fk_bank_accounts_banks`
     FOREIGN KEY (`bank_id`)
     REFERENCES `banks` (`id`)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-
-
-CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `financial_operations_subcategories_name_unique` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-
 
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `financial_operation_subcategory_id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `financial_operations_categories_name_unique` (`name`),
-  KEY `idx_financial_operations_categories_subcategory_id` (`financial_operation_subcategory_id`),
-  CONSTRAINT `fk_financial_operations_categories_subcategories`
-    FOREIGN KEY (`financial_operation_subcategory_id`)
-    REFERENCES `financial_operations_subcategories` (`id`)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+  UNIQUE INDEX `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-
 CREATE TABLE IF NOT EXISTS `financial_operations` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `financial_operation_category_id` int NOT NULL,
-  `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` INT NOT NULL,
+  `total_amount` DECIMAL(10,2) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_financial_operations_category_id` (`financial_operation_category_id`),
+  INDEX `fk_financial_operations_categories_idx` (`financial_operation_category_id`),
   CONSTRAINT `fk_financial_operations_categories`
     FOREIGN KEY (`financial_operation_category_id`)
     REFERENCES `financial_operations_categories` (`id`)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` INT NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `financial_operations_subcategories_name_unique` (`name`),
+  INDEX `fk_financial_operations_subcategories_categories_idx` (`financial_operation_category_id`),
+  CONSTRAINT `fk_financial_operations_subcategories_categories`
+    FOREIGN KEY (`financial_operation_category_id`)
+    REFERENCES `financial_operations_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_id` INT NOT NULL,
+  `value` DECIMAL(10,2) NOT NULL,
+  `created` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `fk_financial_operations_payments_operations_idx` (`financial_operation_id`),
+  CONSTRAINT `fk_financial_operations_payments_operations`
+    FOREIGN KEY (`financial_operation_id`)
+    REFERENCES `financial_operations` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
