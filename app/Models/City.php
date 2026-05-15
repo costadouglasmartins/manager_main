@@ -15,10 +15,10 @@ class City extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'           => 'c.id',
-			'name'         => 'c.`name`',
-			'state_name'   => 's.`name`',
-			'country_name' => 'co.`name`',
+			'id'           => 'City.id',
+			'name'         => 'City.`name`',
+			'state_name'   => 'State.`name`',
+			'country_name' => 'Country.`name`',
 		];
 		}
 
@@ -27,7 +27,16 @@ class City extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT c.*, s.name AS state_name FROM cities c LEFT JOIN states s ON s.id = c.state_id ORDER BY c.id DESC");
+		$stmt = $this->db->query("SELECT City.id,
+		                                 City.name,
+		                                 City.description,
+		                                 City.state_id,
+		                                 City.created,
+		                                 City.modified,
+		                                 State.name AS state_name
+		                          FROM cities AS City
+		                          LEFT JOIN states AS State ON State.id = City.state_id
+		                          ORDER BY City.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -40,7 +49,18 @@ class City extends Model
 			{
 			$this->db->beginTransaction();
 
-			$sql = "INSERT INTO cities (`name`, `description`, `state_id`, `created`, `modified`) VALUES (:name, :description, :state_id, :created, :modified)";
+			$sql = "INSERT INTO cities
+			             (`name`,
+			              `description`,
+			              `state_id`,
+			              `created`,
+			              `modified`)
+			        VALUES
+			             (:name,
+			              :description,
+			              :state_id,
+			              :created,
+			              :modified)";
 			$stmt = $this->db->prepare($sql);
 			$stmt->execute([
 				'name'        => $data['name'],
@@ -67,7 +87,16 @@ class City extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT c.*, s.name AS state_name FROM cities c LEFT JOIN states s ON s.id = c.state_id WHERE c.id = :id");
+		$stmt = $this->db->prepare("SELECT City.id,
+		                                   City.name,
+		                                   City.description,
+		                                   City.state_id,
+		                                   City.created,
+		                                   City.modified,
+		                                   State.name AS state_name
+		                            FROM cities AS City
+		                            LEFT JOIN states AS State ON State.id = City.state_id
+		                            WHERE City.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -77,15 +106,12 @@ class City extends Model
 	 */
 	public function update($id, $data)
 		{
-		$stmt = $this->db->prepare("
-			UPDATE cities
-			SET
-				`name`        = :name,
-				`description` = :description,
-				`state_id`    = :state_id,
-				`modified`    = :modified
-			WHERE id = :id
-		");
+		$stmt = $this->db->prepare("UPDATE cities
+		                            SET `name`        = :name,
+		                                `description` = :description,
+		                                `state_id`    = :state_id,
+		                                `modified`    = :modified
+		                            WHERE id = :id");
 
 		$stmt->execute([
 			'name'        => $data['name'],
@@ -101,45 +127,58 @@ class City extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT c.*, s.name AS state_name, co.name AS country_name FROM cities c LEFT JOIN states s ON s.id = c.state_id LEFT JOIN countries co ON co.id = s.country_id WHERE 1=1";
+		$sql = "SELECT City.id,
+		               City.name,
+		               City.description,
+		               City.state_id,
+		               City.created,
+		               City.modified,
+		               State.name AS state_name,
+		               Country.name AS country_name
+		        FROM cities AS City
+		        LEFT JOIN states AS State ON State.id = City.state_id
+		        LEFT JOIN countries AS Country ON Country.id = State.country_id
+		        WHERE 1=1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND c.id = :id";
+			$sql .= " AND City.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND c.`name` LIKE :name";
+			$sql .= " AND City.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (isset($filters['state_id']) && $filters['state_id'] !== '')
 			{
-			$sql .= " AND c.state_id = :state_id";
+			$sql .= " AND City.state_id = :state_id";
 			$params['state_id'] = (int) $filters['state_id'];
 			}
 		elseif (isset($filters['state_name']) && $filters['state_name'] !== '')
 			{
-			$sql .= " AND s.`name` LIKE :state_name";
+			$sql .= " AND State.`name` LIKE :state_name";
 			$params['state_name'] = '%' . $filters['state_name'] . '%';
 			}
 
 		if (isset($filters['country_id']) && $filters['country_id'] !== '')
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
 		elseif (isset($filters['country_name']) && $filters['country_name'] !== '')
 			{
-			$sql .= " AND co.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
 		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
-		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
+		$sql .= " ORDER BY {$orderBy}
+		          LIMIT :limit
+		          OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 
@@ -162,40 +201,44 @@ class City extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM cities c LEFT JOIN states s ON s.id = c.state_id LEFT JOIN countries co ON co.id = s.country_id WHERE 1=1";
+		$sql = "SELECT COUNT(*) AS total
+		        FROM cities AS City
+		        LEFT JOIN states AS State ON State.id = City.state_id
+		        LEFT JOIN countries AS Country ON Country.id = State.country_id
+		        WHERE 1=1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND c.id = :id";
+			$sql .= " AND City.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND c.`name` LIKE :name";
+			$sql .= " AND City.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['state_id']))
 			{
-			$sql .= " AND c.state_id = :state_id";
+			$sql .= " AND City.state_id = :state_id";
 			$params['state_id'] = (int) $filters['state_id'];
 			}
 		elseif (!empty($filters['state_name']))
 			{
-			$sql .= " AND s.`name` LIKE :state_name";
+			$sql .= " AND State.`name` LIKE :state_name";
 			$params['state_name'] = '%' . $filters['state_name'] . '%';
 			}
 
 		if (!empty($filters['country_id']))
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
 		elseif (!empty($filters['country_name']))
 			{
-			$sql .= " AND co.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
@@ -217,7 +260,16 @@ class City extends Model
 	 */
 	public function findAllByCityId($id)
 		{
-		$stmt = $this->db->prepare("SELECT c.*, s.name AS state_name FROM cities c LEFT JOIN states s ON s.id = c.state_id WHERE c.id = :id");
+		$stmt = $this->db->prepare("SELECT City.id,
+		                                   City.name,
+		                                   City.description,
+		                                   City.state_id,
+		                                   City.created,
+		                                   City.modified,
+		                                   State.name AS state_name
+		                            FROM cities AS City
+		                            LEFT JOIN states AS State ON State.id = City.state_id
+		                            WHERE City.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['city' => $data];
@@ -236,36 +288,43 @@ class City extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT c.id, c.`name`, c.state_id, s.`name` AS state_name, s.acronym AS state_acronym, s.country_id, co.`name` AS country_name
-			FROM cities c
-			LEFT JOIN states s ON s.id = c.state_id
-			LEFT JOIN countries co ON co.id = s.country_id
-			WHERE c.`name` LIKE :t";
+		$sql = "SELECT City.id,
+		               City.`name`,
+		               City.state_id,
+		               State.`name` AS state_name,
+		               State.acronym AS state_acronym,
+		               State.country_id,
+		               Country.`name` AS country_name
+		        FROM cities AS City
+		        LEFT JOIN states AS State ON State.id = City.state_id
+		        LEFT JOIN countries AS Country ON Country.id = State.country_id
+		        WHERE City.`name` LIKE :t";
 		$params = [':t' => '%' . $term . '%'];
 
 		if ($stateId !== null && $stateId > 0)
 			{
-			$sql .= " AND c.state_id = :state_id";
+			$sql .= " AND City.state_id = :state_id";
 			$params[':state_id'] = $stateId;
 			}
 		elseif (trim($stateName) !== '')
 			{
-			$sql .= " AND s.`name` LIKE :state_name";
+			$sql .= " AND State.`name` LIKE :state_name";
 			$params[':state_name'] = '%' . trim($stateName) . '%';
 			}
 
 		if ($countryId !== null && $countryId > 0)
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params[':country_id'] = $countryId;
 			}
 		elseif (trim($countryName) !== '')
 			{
-			$sql .= " AND co.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params[':country_name'] = '%' . trim($countryName) . '%';
 			}
 
-		$sql .= " ORDER BY c.`name` ASC LIMIT {$limit}";
+		$sql .= " ORDER BY City.`name` ASC
+		          LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($params);
@@ -285,23 +344,28 @@ class City extends Model
 			$this->db->beginTransaction();
 
 			// Get all neighborhoods for this city
-			$stmt = $this->db->prepare("SELECT id FROM neighborhoods WHERE city_id = :id");
+			$stmt = $this->db->prepare("SELECT Neighborhood.id
+			                            FROM neighborhoods AS Neighborhood
+			                            WHERE Neighborhood.city_id = :id");
 			$stmt->execute(['id' => $id]);
 			$neighborhoods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 			// Delete addresses for each neighborhood
 			foreach ($neighborhoods as $neighborhood)
 				{
-				$stmt = $this->db->prepare("DELETE FROM addresses WHERE neighborhood_id = :neighborhood_id");
+				$stmt = $this->db->prepare("DELETE FROM addresses
+				                            WHERE neighborhood_id = :neighborhood_id");
 				$stmt->execute(['neighborhood_id' => $neighborhood['id']]);
 				}
 
 			// Delete neighborhoods
-			$stmt = $this->db->prepare("DELETE FROM neighborhoods WHERE city_id = :id");
+			$stmt = $this->db->prepare("DELETE FROM neighborhoods
+			                            WHERE city_id = :id");
 			$stmt->execute(['id' => $id]);
 
 			// Delete city
-			$stmt = $this->db->prepare("DELETE FROM cities WHERE id = :id");
+			$stmt = $this->db->prepare("DELETE FROM cities
+			                            WHERE id = :id");
 			$stmt->execute(['id' => $id]);
 
 			$this->db->commit();

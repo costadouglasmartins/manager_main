@@ -15,11 +15,11 @@ class Address extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'          => 'a.id',
-			'zip_code'    => 'a.`zip_code`',
-			'street'      => 'a.`street`',
-			'number'      => 'a.`number`',
-			'person_name' => 'p.`name`',
+			'id'          => 'Address.id',
+			'zip_code'    => 'Address.`zip_code`',
+			'street'      => 'Address.`street`',
+			'number'      => 'Address.`number`',
+			'person_name' => 'Person.`name`',
 		];
 		}
 
@@ -28,7 +28,21 @@ class Address extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT a.*, p.name AS person_name, n.name AS neighborhood_name FROM addresses a LEFT JOIN people p ON p.id = a.person_id LEFT JOIN neighborhoods n ON n.id = a.neighborhood_id ORDER BY a.id DESC");
+		$stmt = $this->db->query("SELECT Address.id,
+		                                 Address.zip_code,
+		                                 Address.street,
+		                                 Address.number,
+		                                 Address.observations,
+		                                 Address.person_id,
+		                                 Address.neighborhood_id,
+		                                 Address.created,
+		                                 Address.modified,
+		                                 Person.name AS person_name,
+		                                 Neighborhood.name AS neighborhood_name
+		                          FROM addresses AS Address
+		                          LEFT JOIN people AS Person ON Person.id = Address.person_id
+		                          LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
+		                          ORDER BY Address.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -41,7 +55,24 @@ class Address extends Model
 			{
 			$this->db->beginTransaction();
 
-			$sql = "INSERT INTO addresses (`zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES (:zip_code, :street, :number, :observations, :person_id, :neighborhood_id, :created, :modified)";
+			$sql = "INSERT INTO addresses
+			             (`zip_code`,
+			              `street`,
+			              `number`,
+			              `observations`,
+			              `person_id`,
+			              `neighborhood_id`,
+			              `created`,
+			              `modified`)
+			        VALUES
+			             (:zip_code,
+			              :street,
+			              :number,
+			              :observations,
+			              :person_id,
+			              :neighborhood_id,
+			              :created,
+			              :modified)";
 			$stmt = $this->db->prepare($sql);
 			$stmt->execute([
 				'zip_code'        => $data['zip_code'],
@@ -71,7 +102,21 @@ class Address extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT a.*, p.name AS person_name, n.name AS neighborhood_name FROM addresses a LEFT JOIN people p ON p.id = a.person_id LEFT JOIN neighborhoods n ON n.id = a.neighborhood_id WHERE a.id = :id");
+		$stmt = $this->db->prepare("SELECT Address.id,
+		                                   Address.zip_code,
+		                                   Address.street,
+		                                   Address.number,
+		                                   Address.observations,
+		                                   Address.person_id,
+		                                   Address.neighborhood_id,
+		                                   Address.created,
+		                                   Address.modified,
+		                                   Person.name AS person_name,
+		                                   Neighborhood.name AS neighborhood_name
+		                            FROM addresses AS Address
+		                            LEFT JOIN people AS Person ON Person.id = Address.person_id
+		                            LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
+		                            WHERE Address.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -81,18 +126,15 @@ class Address extends Model
 	 */
 	public function update($id, $data)
 		{
-		$stmt = $this->db->prepare("
-			UPDATE addresses
-			SET
-				`zip_code`        = :zip_code,
-				`street`          = :street,
-				`number`          = :number,
-				`observations`    = :observations,
-				`person_id`       = :person_id,
-				`neighborhood_id` = :neighborhood_id,
-				`modified`        = :modified
-			WHERE id = :id
-		");
+		$stmt = $this->db->prepare("UPDATE addresses
+		                            SET `zip_code`        = :zip_code,
+		                                `street`          = :street,
+		                                `number`          = :number,
+		                                `observations`    = :observations,
+		                                `person_id`       = :person_id,
+		                                `neighborhood_id` = :neighborhood_id,
+		                                `modified`        = :modified
+		                            WHERE id = :id");
 
 		$stmt->execute([
 			'zip_code'        => $data['zip_code'],
@@ -129,17 +171,17 @@ class Address extends Model
 			return null;
 			}
 
-		$stmt = $this->db->prepare("SELECT n.id,
-		                                   n.name,
-		                                   c.name AS city_name,
-		                                   s.acronym AS state_acronym
-		                            FROM neighborhoods AS n
-		                            INNER JOIN cities AS c ON c.id = n.city_id
-		                            INNER JOIN states AS s ON s.id = c.state_id
-		                            WHERE n.name = :neighborhood
-		                              AND c.name = :city
-		                              AND UPPER(s.acronym) = :state_acronym
-		                            ORDER BY n.id ASC
+		$stmt = $this->db->prepare("SELECT Neighborhood.id,
+		                                   Neighborhood.name,
+		                                   City.name AS city_name,
+		                                   State.acronym AS state_acronym
+		                            FROM neighborhoods AS Neighborhood
+		                            INNER JOIN cities AS City ON City.id = Neighborhood.city_id
+		                            INNER JOIN states AS State ON State.id = City.state_id
+		                            WHERE Neighborhood.name = :neighborhood
+		                              AND City.name = :city
+		                              AND UPPER(State.acronym) = :state_acronym
+		                            ORDER BY Neighborhood.id ASC
 		                            LIMIT 1");
 		$stmt->execute([
 			'neighborhood'  => $neighborhood,
@@ -156,35 +198,51 @@ class Address extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT a.*, p.name AS person_name, n.name AS neighborhood_name FROM addresses a LEFT JOIN people p ON p.id = a.person_id LEFT JOIN neighborhoods n ON n.id = a.neighborhood_id WHERE 1=1";
+		$sql = "SELECT Address.id,
+		               Address.zip_code,
+		               Address.street,
+		               Address.number,
+		               Address.observations,
+		               Address.person_id,
+		               Address.neighborhood_id,
+		               Address.created,
+		               Address.modified,
+		               Person.name AS person_name,
+		               Neighborhood.name AS neighborhood_name
+		        FROM addresses AS Address
+		        LEFT JOIN people AS Person ON Person.id = Address.person_id
+		        LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
+		        WHERE 1=1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND a.id = :id";
+			$sql .= " AND Address.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['street']) && $filters['street'] !== '')
 			{
-			$sql .= " AND a.`street` LIKE :street";
+			$sql .= " AND Address.`street` LIKE :street";
 			$params['street'] = '%' . $filters['street'] . '%';
 			}
 
 		if (isset($filters['zip_code']) && $filters['zip_code'] !== '')
 			{
-			$sql .= " AND a.`zip_code` LIKE :zip_code";
+			$sql .= " AND Address.`zip_code` LIKE :zip_code";
 			$params['zip_code'] = '%' . $filters['zip_code'] . '%';
 			}
 
 		if (isset($filters['person_id']) && $filters['person_id'] !== '')
 			{
-			$sql .= " AND a.person_id = :person_id";
+			$sql .= " AND Address.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
 		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
-		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
+		$sql .= " ORDER BY {$orderBy}
+		          LIMIT :limit
+		          OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 
@@ -207,30 +265,32 @@ class Address extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM addresses WHERE 1=1";
+		$sql = "SELECT COUNT(*) AS total
+		        FROM addresses AS Address
+		        WHERE 1=1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND Address.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['street']))
 			{
-			$sql .= " AND `street` LIKE :street";
+			$sql .= " AND Address.`street` LIKE :street";
 			$params['street'] = '%' . $filters['street'] . '%';
 			}
 
 		if (!empty($filters['zip_code']))
 			{
-			$sql .= " AND `zip_code` LIKE :zip_code";
+			$sql .= " AND Address.`zip_code` LIKE :zip_code";
 			$params['zip_code'] = '%' . $filters['zip_code'] . '%';
 			}
 
 		if (!empty($filters['person_id']))
 			{
-			$sql .= " AND person_id = :person_id";
+			$sql .= " AND Address.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
@@ -252,7 +312,21 @@ class Address extends Model
 	 */
 	public function findAllByAddressId($id)
 		{
-		$stmt = $this->db->prepare("SELECT a.*, p.name AS person_name, n.name AS neighborhood_name FROM addresses a LEFT JOIN people p ON p.id = a.person_id LEFT JOIN neighborhoods n ON n.id = a.neighborhood_id WHERE a.id = :id");
+		$stmt = $this->db->prepare("SELECT Address.id,
+		                                   Address.zip_code,
+		                                   Address.street,
+		                                   Address.number,
+		                                   Address.observations,
+		                                   Address.person_id,
+		                                   Address.neighborhood_id,
+		                                   Address.created,
+		                                   Address.modified,
+		                                   Person.name AS person_name,
+		                                   Neighborhood.name AS neighborhood_name
+		                            FROM addresses AS Address
+		                            LEFT JOIN people AS Person ON Person.id = Address.person_id
+		                            LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
+		                            WHERE Address.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['address' => $data];
@@ -269,7 +343,8 @@ class Address extends Model
 			{
 			$this->db->beginTransaction();
 
-			$stmt = $this->db->prepare("DELETE FROM addresses WHERE id = :id");
+			$stmt = $this->db->prepare("DELETE FROM addresses
+			                            WHERE id = :id");
 			$stmt->execute(['id' => $id]);
 
 			$this->db->commit();
