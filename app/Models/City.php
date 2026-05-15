@@ -15,9 +15,10 @@ class City extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'         => 'c.id',
-			'name'       => 'c.`name`',
-			'state_name' => 's.`name`',
+			'id'           => 'c.id',
+			'name'         => 'c.`name`',
+			'state_name'   => 's.`name`',
+			'country_name' => 'co.`name`',
 		];
 		}
 
@@ -100,7 +101,7 @@ class City extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT c.*, s.name AS state_name FROM cities c LEFT JOIN states s ON s.id = c.state_id WHERE 1=1";
+		$sql = "SELECT c.*, s.name AS state_name, co.name AS country_name FROM cities c LEFT JOIN states s ON s.id = c.state_id LEFT JOIN countries co ON co.id = s.country_id WHERE 1=1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
@@ -119,6 +120,22 @@ class City extends Model
 			{
 			$sql .= " AND c.state_id = :state_id";
 			$params['state_id'] = (int) $filters['state_id'];
+			}
+		elseif (isset($filters['state_name']) && $filters['state_name'] !== '')
+			{
+			$sql .= " AND s.`name` LIKE :state_name";
+			$params['state_name'] = '%' . $filters['state_name'] . '%';
+			}
+
+		if (isset($filters['country_id']) && $filters['country_id'] !== '')
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+		elseif (isset($filters['country_name']) && $filters['country_name'] !== '')
+			{
+			$sql .= " AND co.`name` LIKE :country_name";
+			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
 		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
@@ -145,25 +162,41 @@ class City extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM cities WHERE 1=1";
+		$sql = "SELECT COUNT(*) AS total FROM cities c LEFT JOIN states s ON s.id = c.state_id LEFT JOIN countries co ON co.id = s.country_id WHERE 1=1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND c.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND `name` LIKE :name";
+			$sql .= " AND c.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['state_id']))
 			{
-			$sql .= " AND state_id = :state_id";
+			$sql .= " AND c.state_id = :state_id";
 			$params['state_id'] = (int) $filters['state_id'];
+			}
+		elseif (!empty($filters['state_name']))
+			{
+			$sql .= " AND s.`name` LIKE :state_name";
+			$params['state_name'] = '%' . $filters['state_name'] . '%';
+			}
+
+		if (!empty($filters['country_id']))
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+		elseif (!empty($filters['country_name']))
+			{
+			$sql .= " AND co.`name` LIKE :country_name";
+			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
 		$stmt = $this->db->prepare($sql);
@@ -193,7 +226,7 @@ class City extends Model
 	/**
 	 * Autocomplete method
 	 */
-	public function autocomplete(string $term, int $limit = 100): array
+	public function autocomplete(string $term, int $limit = 100, ?int $stateId = null, ?int $countryId = null, string $stateName = '', string $countryName = ''): array
 		{
 		$term = trim($term);
 		if ($term === '')
@@ -203,15 +236,39 @@ class City extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT c.id, c.`name`, s.acronym AS state_acronym
+		$sql = "SELECT c.id, c.`name`, c.state_id, s.`name` AS state_name, s.acronym AS state_acronym, s.country_id, co.`name` AS country_name
 			FROM cities c
 			LEFT JOIN states s ON s.id = c.state_id
-			WHERE c.`name` LIKE :t
-			ORDER BY c.`name` ASC
-			LIMIT {$limit}";
+			LEFT JOIN countries co ON co.id = s.country_id
+			WHERE c.`name` LIKE :t";
+		$params = [':t' => '%' . $term . '%'];
+
+		if ($stateId !== null && $stateId > 0)
+			{
+			$sql .= " AND c.state_id = :state_id";
+			$params[':state_id'] = $stateId;
+			}
+		elseif (trim($stateName) !== '')
+			{
+			$sql .= " AND s.`name` LIKE :state_name";
+			$params[':state_name'] = '%' . trim($stateName) . '%';
+			}
+
+		if ($countryId !== null && $countryId > 0)
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params[':country_id'] = $countryId;
+			}
+		elseif (trim($countryName) !== '')
+			{
+			$sql .= " AND co.`name` LIKE :country_name";
+			$params[':country_name'] = '%' . trim($countryName) . '%';
+			}
+
+		$sql .= " ORDER BY c.`name` ASC LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute([':t' => '%' . $term . '%']);
+		$stmt->execute($params);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}

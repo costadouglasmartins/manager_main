@@ -1,14 +1,24 @@
 <?php
-$filters = $filters ?? ['id' => '', 'name' => '', 'state_id' => ''];
+$filters = array_merge([
+  'id'           => '',
+  'name'         => '',
+  'country_id'   => '',
+  'country_name' => '',
+  'state_id'     => '',
+  'state_name'   => '',
+], $filters ?? []);
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($cities) ? count($cities) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
-  'id'       => $filters['id'],
-  'name'     => $filters['name'],
-  'state_id' => $filters['state_id'],
+  'id'           => $filters['id'],
+  'name'         => $filters['name'],
+  'country_id'   => $filters['country_id'],
+  'country_name' => $filters['country_name'],
+  'state_id'     => $filters['state_id'],
+  'state_name'   => $filters['state_name'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
@@ -28,17 +38,25 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <div class="col-12 col-lg-9">
     <div class="row g-3">
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6 col-lg-12">
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4 position-relative">
-        <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da cidade..." name="name" data-endpoint="<?= url('city/autocomplete'); ?>" data-results="#cityResults" data-hidden="#id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
-        <ul id="cityResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <div class="col-12 col-md-6 col-lg-6 position-relative">
+        <input type="hidden" id="country_id" name="country_id" value="<?= htmlspecialchars($filters['country_id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="countryName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="País" name="country_name" data-endpoint="<?= url('country/autocomplete'); ?>" data-results="#countryResults" data-hidden="#country_id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['country_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="countryResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <input class="form-control" id="state_id" name="state_id" type="text" placeholder="ID do estado" value="<?= htmlspecialchars($filters['state_id'], ENT_QUOTES, 'UTF-8') ?>">
+      <div class="col-12 col-md-6 col-lg-6 position-relative">
+        <input type="hidden" id="state_id" name="state_id" value="<?= htmlspecialchars($filters['state_id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="stateName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Estado" name="state_name" data-endpoint="<?= url('state/autocomplete'); ?>" data-results="#stateResults" data-hidden="#state_id" data-minlen="1" data-param="term" data-extra='{"country_id":"#country_id","country_name":"#countryName"}' value="<?= htmlspecialchars($filters['state_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="stateResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-12 position-relative">
+        <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Cidade" name="name" data-endpoint="<?= url('city/autocomplete'); ?>" data-results="#cityResults" data-hidden="#id" data-minlen="1" data-param="term" data-extra='{"country_id":"#country_id","country_name":"#countryName","state_id":"#state_id","state_name":"#stateName"}' value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="cityResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
     </div>
@@ -65,6 +83,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?= sortableTh('city', 'id', '#', $sort, $queryFilters) ?>
         <?= sortableTh('city', 'name', 'Nome', $sort, $queryFilters) ?>
         <?= sortableTh('city', 'state_name', 'Estado', $sort, $queryFilters) ?>
+        <?= sortableTh('city', 'country_name', 'País', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -75,6 +94,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
             <td style="width:1%;"><?= $row['id'] ?></td>
             <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($row['state_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($row['country_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
             <td style="width:1%;" class="text-nowrap text-end">
               <?php if (authCan('city.edit')): ?>
                 <a href="<?= url('city/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
@@ -92,7 +112,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="4" class="text-center">Nenhum registro encontrado.</td>
+          <td colspan="5" class="text-center">Nenhum registro encontrado.</td>
         </tr>
       <?php endif; ?>
     </tbody>
@@ -118,7 +138,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+        <form method="POST" action="#" id="deleteForm" data-delete-url="<?= url('city/delete') ?>" style="display: inline;">
           <input type="hidden" name="id" id="recordId">
           <button type="submit" class="btn btn-danger">Excluir</button>
         </form>
@@ -127,13 +147,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const recordId = e.relatedTarget.dataset.id;
-  document.getElementById('recordId').value = recordId;
-  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
-  document.getElementById('deleteForm').action = '<?= url('city/delete') ?>/' + recordId;
-});
-</script>
-
 <script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/cities/index.js?v=1'); ?>"></script>

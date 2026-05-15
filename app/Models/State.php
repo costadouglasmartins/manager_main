@@ -224,7 +224,7 @@ class State extends Model
 	/**
 	 * Autocomplete method
 	 */
-	public function autocomplete(string $term, int $limit = 100): array
+	public function autocomplete(string $term, int $limit = 100, ?int $countryId = null, string $countryName = ''): array
 		{
 		$term = trim($term);
 		if ($term === '')
@@ -234,10 +234,27 @@ class State extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT id, `name`, acronym FROM states WHERE `name` LIKE :t ORDER BY `name` ASC LIMIT {$limit}";
+		$sql = "SELECT s.id, s.`name`, s.acronym, s.country_id, c.`name` AS country_name
+			FROM states s
+			LEFT JOIN countries c ON c.id = s.country_id
+			WHERE s.`name` LIKE :t";
+		$params = [':t' => '%' . $term . '%'];
+
+		if ($countryId !== null && $countryId > 0)
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params[':country_id'] = $countryId;
+			}
+		elseif (trim($countryName) !== '')
+			{
+			$sql .= " AND c.`name` LIKE :country_name";
+			$params[':country_name'] = '%' . trim($countryName) . '%';
+			}
+
+		$sql .= " ORDER BY s.`name` ASC LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute([':t' => '%' . $term . '%']);
+		$stmt->execute($params);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}

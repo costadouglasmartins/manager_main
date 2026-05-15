@@ -132,9 +132,11 @@ class StateController extends Controller
 
 		$term = $_GET['term'] ?? '';
 		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 100;
+		$countryId = isset($_GET['country_id']) && trim((string) $_GET['country_id']) !== '' ? (int) $_GET['country_id'] : null;
+		$countryName = isset($_GET['country_name']) ? trim((string) $_GET['country_name']) : '';
 
 		$state = new State();
-		$rows = $state->autocomplete((string) $term, $limit);
+		$rows = $state->autocomplete((string) $term, $limit, $countryId, $countryName);
 
 		$items = array_map(function ($r)
 			{
@@ -148,6 +150,8 @@ class StateController extends Controller
 				'label'   => $label,
 				'name'    => $r['name'] ?? null,
 				'acronym' => $r['acronym'] ?? null,
+				'country_id' => isset($r['country_id']) ? (int) $r['country_id'] : null,
+				'country_name' => $r['country_name'] ?? null,
 			];
 			}, $rows);
 

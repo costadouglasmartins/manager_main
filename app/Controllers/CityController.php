@@ -18,9 +18,12 @@ class CityController extends Controller
 		$city = new City();
 
 		$filters = [
-			'id'       => isset($_GET['id'])       ? trim($_GET['id'])       : '',
-			'name'     => isset($_GET['name'])     ? trim($_GET['name'])     : '',
-			'state_id' => isset($_GET['state_id']) ? trim($_GET['state_id']) : '',
+			'id'           => isset($_GET['id'])           ? trim($_GET['id'])           : '',
+			'name'         => isset($_GET['name'])         ? trim($_GET['name'])         : '',
+			'country_id'   => isset($_GET['country_id'])   ? trim($_GET['country_id'])   : '',
+			'country_name' => isset($_GET['country_name']) ? trim($_GET['country_name']) : '',
+			'state_id'     => isset($_GET['state_id'])     ? trim($_GET['state_id'])     : '',
+			'state_name'   => isset($_GET['state_name'])   ? trim($_GET['state_name'])   : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -130,9 +133,13 @@ class CityController extends Controller
 
 		$term = $_GET['term'] ?? '';
 		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 100;
+		$countryId = isset($_GET['country_id']) && trim((string) $_GET['country_id']) !== '' ? (int) $_GET['country_id'] : null;
+		$stateId = isset($_GET['state_id']) && trim((string) $_GET['state_id']) !== '' ? (int) $_GET['state_id'] : null;
+		$countryName = isset($_GET['country_name']) ? trim((string) $_GET['country_name']) : '';
+		$stateName = isset($_GET['state_name']) ? trim((string) $_GET['state_name']) : '';
 
 		$city = new City();
-		$rows = $city->autocomplete((string) $term, $limit);
+		$rows = $city->autocomplete((string) $term, $limit, $stateId, $countryId, $stateName, $countryName);
 
 		$items = array_map(function ($r)
 			{
@@ -146,9 +153,13 @@ class CityController extends Controller
 				$label .= ' — ' . $r['state_acronym'];
 				}
 			return [
-				'id'    => isset($r['id']) ? (int) $r['id'] : null,
-				'label' => $label,
-				'name'  => $r['name'] ?? null,
+				'id'           => isset($r['id']) ? (int) $r['id'] : null,
+				'label'        => $label,
+				'name'         => $r['name'] ?? null,
+				'state_id'     => isset($r['state_id']) ? (int) $r['state_id'] : null,
+				'state_name'   => $r['state_name'] ?? null,
+				'country_id'   => isset($r['country_id']) ? (int) $r['country_id'] : null,
+				'country_name' => $r['country_name'] ?? null,
 			];
 			}, $rows);
 
