@@ -243,10 +243,6 @@
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
                   <li><hr class="dropdown-divider" /></li>
-                  <?php if (authCan('database_manager.index') || authIsRoot()): ?>
-                    <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                  <?php endif; ?>
                   <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
                 </ul>
               </li>
@@ -254,6 +250,10 @@
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tools me-2"></i>Ferramentas</a>
                 <ul class="dropdown-menu">
+                  <?php if (authCan('database_manager.index') || authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
                   <?php $canToolDocuments = authCan('tool.documents'); ?>
                   <?php $canToolEmailValidation = authCan('tool.email_validation'); ?>
                   <?php if ($canToolDocuments): ?>
