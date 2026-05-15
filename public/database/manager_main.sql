@@ -36,12 +36,13 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~1 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~2 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(1, '92834-752', 'Foulston Street', '1', 'Sem complemento', 72, 10, '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(2, '12342-345', 'Rua tal', '123', 'sem complemento', 73, 7, '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(2, '12342-345', 'Rua tal', '123', 'sem complemento', 73, 7, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(3, '03298-454', 'Main Street', '02', 'Rua internacional', 74, 8, '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
@@ -5907,13 +5908,14 @@ CREATE TABLE IF NOT EXISTS `emails` (
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~1 rows (approximately)
+-- Dumping data for table manager_main.emails: ~3 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'email', 72, 1, '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(3, 'jessica@chastain.com', 'email', 73, 1, '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(3, 'jessica@chastain.com', 'email', 73, 1, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(4, 'lorem@ipsum.com', 'login', 74, 1, '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -5931,7 +5933,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations: ~14 rows (approximately)
+-- Dumping data for table manager_main.financial_operations: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -5991,7 +5993,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_payments: ~105 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_payments: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6035,13 +6037,14 @@ CREATE TABLE IF NOT EXISTS `people` (
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~1 rows (approximately)
+-- Dumping data for table manager_main.people: ~3 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(72, 'Emma Watson', 'Emma Watson', 'individual', '47966652343', 1, '1990-04-15', '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(73, 'Jessica Chastain', 'Jessica Chastain', 'individual', '79969228536', 1, '1977-03-24', '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(73, 'Jessica Chastain', 'Jessica Chastain', 'individual', '79969228536', 1, '1977-03-24', '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(74, 'Lorem Ipsum', 'Lorem Ipsum', 'company', '1EKSDRIY000159', 1, NULL, '2026-05-15 23:32:45', '2026-05-15 23:32:45');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -6055,7 +6058,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6930 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~182 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~207 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6278,12 +6281,13 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~0 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(1, '5548999999999', 'Celular', 72, '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(2, '5566777776565', 'celular', 73, '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(2, '5566777776565', 'celular', 73, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(3, '12255529999', 'com', 74, '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -6298,7 +6302,7 @@ CREATE TABLE IF NOT EXISTS `states` (
   CONSTRAINT `fk_states_countries1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.states: ~27 rows (approximately)
+-- Dumping data for table manager_main.states: ~77 rows (approximately)
 INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modified`) VALUES
 	(1, 'Acre', 'AC', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Alagoas', 'AL', 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -6388,12 +6392,13 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~0 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~2 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson.', '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(2, '0002', 'active', 'Banco da Jessica.', '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(2, '0002', 'active', 'Banco da Jessica.', '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(3, '0003', 'active', '', '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
@@ -6408,10 +6413,11 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~2 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(2, 3, 'owner', '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(2, 3, 'owner', '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(3, 4, 'owner', '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -6430,13 +6436,14 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.users: ~1 rows (approximately)
+-- Dumping data for table manager_main.users: ~3 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'douglas.costa', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
 	(2, 72, 1, 'emma.watson', '$2y$12$1wAuy8IRATroOodUloVBX.BwGY0cYc/cVPiJSH5wDyVFEpPyFbSwm', 'admin', 1, '2026-05-14 23:12:13', '2026-05-14 23:12:13'),
-	(3, 73, 2, 'jessica.chastain', '$2y$12$207VAZ.Mdg9vBrZ3GbNWTekHeqDmapEMV89CXJyRArirEqeoxxA7i', 'admin', 1, '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(3, 73, 2, 'jessica.chastain', '$2y$12$207VAZ.Mdg9vBrZ3GbNWTekHeqDmapEMV89CXJyRArirEqeoxxA7i', 'admin', 1, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(4, 74, 3, 'lorem.ipsum', '$2y$12$8MQQFvF3BjQkYsDoA1LNYOskskmcxWZbKScv./4.LNaR.w95iIzxu', 'admin', 1, '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
@@ -6450,7 +6457,7 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~120 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~367 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-05-14 23:08:11', '2026-05-14 23:08:11'),
 	(1, 8, '2026-05-14 23:08:11', '2026-05-14 23:08:11'),
@@ -6818,7 +6825,98 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(3, 6719, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
 	(3, 6720, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
 	(3, 6721, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
-	(3, 6722, '2026-05-14 23:55:58', '2026-05-14 23:55:58');
+	(3, 6722, '2026-05-14 23:55:58', '2026-05-14 23:55:58'),
+	(4, 1223, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 1225, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3193, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3194, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3195, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3196, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3197, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3198, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3199, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3202, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3203, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3206, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3207, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3209, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3210, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3211, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3213, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3214, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3215, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3216, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3217, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3218, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3219, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3220, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3221, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3223, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3224, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3227, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3228, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3229, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3230, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3231, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3232, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3233, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3234, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3235, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3236, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3237, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3238, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3239, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3240, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3241, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3242, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3243, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3246, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3247, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3251, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3253, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3254, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3255, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3256, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3257, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3258, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 3701, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 5209, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6120, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6121, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6122, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6123, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6124, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6125, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6126, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6127, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6128, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6129, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6130, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6131, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6699, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6700, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6701, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6702, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6703, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6704, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6705, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6706, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6707, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6708, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6709, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6710, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6711, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6712, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6713, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6714, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6715, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6716, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6717, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6718, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6719, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6720, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6721, '2026-05-15 23:32:46', '2026-05-15 23:32:46'),
+	(4, 6722, '2026-05-15 23:32:46', '2026-05-15 23:32:46');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
@@ -6836,14 +6934,14 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   KEY `idx_user_remember_tokens_user` (`user_id`),
   KEY `idx_user_remember_tokens_expires` (`expires_at`),
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.user_remember_tokens: ~4 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(10, 1, '49b4fb576a85f893b045906eeb49d262', '279590e2d21759f6d107b9a7f620a614ed4130635b4d53a0ee1e76579dff6fa6', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15', '172.18.0.1', '2026-06-06 02:20:23', '2026-05-07 02:20:23', NULL),
 	(12, 1, 'b1fdec5b6a2f18923eaf2c51a31b992b', '27cf38a34c27cbea1bd567f6b48f21be6c2708c632dbd9b47e7fec6074c548b3', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-06 23:57:40', '2026-05-07 23:57:40', NULL),
 	(14, 1, '6efcd34956eaec9685abdcf0ecd84759', '29815fcdefc0779948c80f6a7fc562fb6321e7d6cc0fc39bc0ef575753db6502', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', '172.18.0.1', '2026-06-12 21:00:36', '2026-05-10 11:37:56', '2026-05-13 21:00:36'),
-	(15, 1, 'daa9c4e3ec0aae87ae0f9996d45157e5', 'd5e7ad67d1c6dc3fb5eb0e8bb4b8792427541275018a6820a3ac32df05c8e2a4', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-14 22:25:50', '2026-05-11 22:40:35', '2026-05-15 22:25:50');
+	(16, 1, 'f68dd08660b2e60a560a870382c29c81', '2932e13adbb0f7b7da7e356694ddc9178e12f9dd65576b46d72a24d49a34680c', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0', '172.18.0.1', '2026-06-14 23:35:53', '2026-05-15 23:35:53', NULL);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

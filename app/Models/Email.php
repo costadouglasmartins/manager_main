@@ -15,10 +15,10 @@ class Email extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'          => 'e.id',
-			'email'       => 'e.`email`',
-			'person_name' => 'p.`name`',
-			'observations' => 'e.`observations`',
+			'id'           => 'Email.id',
+			'email'        => 'Email.`email`',
+			'person_name'  => 'Person.`name`',
+			'observations' => 'Email.`observations`',
 		];
 		}
 
@@ -27,7 +27,16 @@ class Email extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT e.*, p.name AS person_name FROM emails e LEFT JOIN people p ON p.id = e.person_id ORDER BY e.id DESC");
+		$stmt = $this->db->query("SELECT Email.id,
+		                               Email.email,
+		                               Email.is_login,
+		                               Email.observations,
+		                               Email.person_id,
+		                               Email.created,
+		                               Person.name AS person_name
+		                        FROM emails AS Email
+		                        LEFT JOIN people AS Person ON Person.id = Email.person_id
+		                        ORDER BY Email.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -67,7 +76,16 @@ class Email extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT e.*, p.name AS person_name FROM emails e LEFT JOIN people p ON p.id = e.person_id WHERE e.id = :id");
+		$stmt = $this->db->prepare("SELECT Email.id,
+		                                   Email.email,
+		                                   Email.is_login,
+		                                   Email.observations,
+		                                   Email.person_id,
+		                                   Email.created,
+		                                   Person.name AS person_name
+		                           FROM emails AS Email
+		                           LEFT JOIN people AS Person ON Person.id = Email.person_id
+		                           WHERE Email.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -77,15 +95,12 @@ class Email extends Model
 	 */
 	public function update($id, $data)
 		{
-		$stmt = $this->db->prepare("
-			UPDATE emails
-			SET
-				`email`        = :email,
-				`is_login`     = :is_login,
-				`observations` = :observations,
-				`person_id`    = :person_id
-			WHERE id = :id
-		");
+		$stmt = $this->db->prepare("UPDATE emails AS Email
+                                SET Email.`email` = :email,
+                                    Email.`is_login` = :is_login,
+                                    Email.`observations` = :observations,
+                                    Email.`person_id` = :person_id
+                                WHERE Email.id = :id");
 
 		$stmt->execute([
 			'email'        => $data['email'],
@@ -101,24 +116,33 @@ class Email extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT e.*, p.name AS person_name FROM emails e LEFT JOIN people p ON p.id = e.person_id WHERE 1=1";
+		$sql = "SELECT Email.id,
+		               Email.email,
+		               Email.is_login,
+		               Email.observations,
+		               Email.person_id,
+		               Email.created,
+		               Person.name AS person_name
+		        FROM emails AS Email
+		        LEFT JOIN people AS Person ON Person.id = Email.person_id
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND e.id = :id";
+			$sql .= " AND Email.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['email']) && $filters['email'] !== '')
 			{
-			$sql .= " AND e.`email` LIKE :email";
+			$sql .= " AND Email.`email` LIKE :email";
 			$params['email'] = '%' . $filters['email'] . '%';
 			}
 
 		if (isset($filters['person_id']) && $filters['person_id'] !== '')
 			{
-			$sql .= " AND e.person_id = :person_id";
+			$sql .= " AND Email.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
@@ -146,24 +170,26 @@ class Email extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM emails WHERE 1=1";
+		$sql = "SELECT COUNT(Email.id) AS total
+		        FROM emails AS Email
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND Email.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['email']))
 			{
-			$sql .= " AND `email` LIKE :email";
+			$sql .= " AND Email.`email` LIKE :email";
 			$params['email'] = '%' . $filters['email'] . '%';
 			}
 
 		if (!empty($filters['person_id']))
 			{
-			$sql .= " AND person_id = :person_id";
+			$sql .= " AND Email.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
@@ -185,7 +211,16 @@ class Email extends Model
 	 */
 	public function findAllByEmailId($id)
 		{
-		$stmt = $this->db->prepare("SELECT e.*, p.name AS person_name FROM emails e LEFT JOIN people p ON p.id = e.person_id WHERE e.id = :id");
+		$stmt = $this->db->prepare("SELECT Email.id,
+		                                   Email.email,
+		                                   Email.is_login,
+		                                   Email.observations,
+		                                   Email.person_id,
+		                                   Email.created,
+		                                   Person.name AS person_name
+		                           FROM emails AS Email
+		                           LEFT JOIN people AS Person ON Person.id = Email.person_id
+		                           WHERE Email.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['email' => $data];

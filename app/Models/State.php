@@ -15,10 +15,10 @@ class State extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'           => 's.id',
-			'name'         => 's.`name`',
-			'acronym'      => 's.`acronym`',
-			'country_name' => 'c.`name`',
+			'id'           => 'State.id',
+			'name'         => 'State.`name`',
+			'acronym'      => 'State.`acronym`',
+			'country_name' => 'Country.`name`',
 		];
 		}
 
@@ -28,7 +28,7 @@ class State extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT s.*, c.name AS country_name FROM states s LEFT JOIN countries c ON c.id = s.country_id ORDER BY s.id DESC");
+		$stmt = $this->db->query("SELECT State.id, State.name, State.acronym, State.country_id, State.created, State.modified, Country.name AS country_name FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id ORDER BY State.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -73,7 +73,7 @@ class State extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT s.*, c.name AS country_name FROM states s LEFT JOIN countries c ON c.id = s.country_id WHERE s.id = :id");
+		$stmt = $this->db->prepare("SELECT State.id, State.name, State.acronym, State.country_id, State.created, State.modified, Country.name AS country_name FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE State.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -109,35 +109,35 @@ class State extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT s.*, c.name AS country_name FROM states s LEFT JOIN countries c ON c.id = s.country_id WHERE 1=1";
+		$sql = "SELECT State.id, State.name, State.acronym, State.country_id, State.created, State.modified, Country.name AS country_name FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND s.id = :id";
+			$sql .= " AND State.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND s.`name` LIKE :name";
+			$sql .= " AND State.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (isset($filters['acronym']) && $filters['acronym'] !== '')
 			{
-			$sql .= " AND s.`acronym` = :acronym";
+			$sql .= " AND State.`acronym` = :acronym";
 			$params['acronym'] = $filters['acronym'];
 			}
 
 		if (isset($filters['country_id']) && $filters['country_id'] !== '')
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
 		elseif (isset($filters['country_name']) && $filters['country_name'] !== '')
 			{
-			$sql .= " AND c.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
@@ -165,35 +165,35 @@ class State extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM states s LEFT JOIN countries c ON c.id = s.country_id WHERE 1=1";
+		$sql = "SELECT COUNT(State.id) AS total FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND s.id = :id";
+			$sql .= " AND State.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND s.`name` LIKE :name";
+			$sql .= " AND State.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['acronym']))
 			{
-			$sql .= " AND s.`acronym` = :acronym";
+			$sql .= " AND State.`acronym` = :acronym";
 			$params['acronym'] = $filters['acronym'];
 			}
 
 		if (!empty($filters['country_id']))
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
 		elseif (!empty($filters['country_name']))
 			{
-			$sql .= " AND c.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
@@ -215,7 +215,7 @@ class State extends Model
 	 */
 	public function findAllByStateId($id)
 		{
-		$stmt = $this->db->prepare("SELECT s.*, c.name AS country_name FROM states s LEFT JOIN countries c ON c.id = s.country_id WHERE s.id = :id");
+		$stmt = $this->db->prepare("SELECT State.id, State.name, State.acronym, State.country_id, State.created, State.modified, Country.name AS country_name FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE State.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['state' => $data];
@@ -234,24 +234,24 @@ class State extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT s.id, s.`name`, s.acronym, s.country_id, c.`name` AS country_name
-			FROM states s
-			LEFT JOIN countries c ON c.id = s.country_id
-			WHERE s.`name` LIKE :t";
+		$sql = "SELECT State.id, State.`name`, s.acronym, s.country_id, Country.`name` AS country_name
+			FROM states AS State
+			LEFT JOIN countries AS Country ON Country.id = State.country_id
+			WHERE State.`name` LIKE :t";
 		$params = [':t' => '%' . $term . '%'];
 
 		if ($countryId !== null && $countryId > 0)
 			{
-			$sql .= " AND s.country_id = :country_id";
+			$sql .= " AND State.country_id = :country_id";
 			$params[':country_id'] = $countryId;
 			}
 		elseif (trim($countryName) !== '')
 			{
-			$sql .= " AND c.`name` LIKE :country_name";
+			$sql .= " AND Country.`name` LIKE :country_name";
 			$params[':country_name'] = '%' . trim($countryName) . '%';
 			}
 
-		$sql .= " ORDER BY s.`name` ASC LIMIT {$limit}";
+		$sql .= " ORDER BY State.`name` ASC LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($params);

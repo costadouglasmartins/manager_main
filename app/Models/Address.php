@@ -212,7 +212,7 @@ class Address extends Model
 		        FROM addresses AS Address
 		        LEFT JOIN people AS Person ON Person.id = Address.person_id
 		        LEFT JOIN neighborhoods AS Neighborhood ON Neighborhood.id = Address.neighborhood_id
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
@@ -265,9 +265,9 @@ class Address extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total
+		$sql = "SELECT COUNT(Address.id) AS total
 		        FROM addresses AS Address
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))

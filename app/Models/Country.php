@@ -138,7 +138,7 @@ class Country extends Model
 		               Country.created,
 		               Country.modified
 		        FROM countries AS Country
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		// Id 
@@ -192,9 +192,9 @@ class Country extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total
+		$sql = "SELECT COUNT(Country.id) AS total
 		        FROM countries AS Country
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		// Filter by ID (exact)

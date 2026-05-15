@@ -15,12 +15,12 @@ class FinancialOperationPayment extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'                     => 'fop.id',
-			'financial_operation_id' => 'fop.financial_operation_id',
-			'type'                   => 'fop.`type`',
-			'value'                  => 'fop.`value`',
-			'payment_date'           => 'fop.`payment_date`',
-			'due_date'               => 'fop.`due_date`',
+			'id'                     => 'FinancialOperationPayment.id',
+			'financial_operation_id' => 'FinancialOperationPayment.financial_operation_id',
+			'type'                   => 'FinancialOperationPayment.`type`',
+			'value'                  => 'FinancialOperationPayment.`value`',
+			'payment_date'           => 'FinancialOperationPayment.`payment_date`',
+			'due_date'               => 'FinancialOperationPayment.`due_date`',
 		];
 		}
 
@@ -47,7 +47,7 @@ class FinancialOperationPayment extends Model
 	 */
 	public function getAll(): array
 		{
-		$stmt = $this->db->query($this->baseSelect() . " ORDER BY fop.id DESC");
+		$stmt = $this->db->query($this->baseSelect() . " ORDER BY FinancialOperationPayment.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -99,7 +99,7 @@ class FinancialOperationPayment extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare($this->baseSelect() . " WHERE fop.id = :id");
+		$stmt = $this->db->prepare($this->baseSelect() . " WHERE FinancialOperationPayment.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -113,8 +113,8 @@ class FinancialOperationPayment extends Model
 	public function findByFinancialOperationId($financialOperationId): array
 		{
 		$stmt = $this->db->prepare($this->baseSelect() . "
-			WHERE fop.financial_operation_id = :financial_operation_id
-			ORDER BY fop.due_date ASC, fop.id ASC
+			WHERE FinancialOperationPayment.financial_operation_id = :financial_operation_id
+			ORDER BY FinancialOperationPayment.due_date ASC, FinancialOperationPayment.id ASC
 		");
 		$stmt->execute(['financial_operation_id' => $financialOperationId]);
 
@@ -163,7 +163,7 @@ class FinancialOperationPayment extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = $this->baseSelect() . " WHERE 1=1";
+		$sql = $this->baseSelect() . " WHERE 1 = 1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
@@ -188,12 +188,12 @@ class FinancialOperationPayment extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total
-		        FROM financial_operations_payments AS fop
-		        INNER JOIN financial_operations AS fo ON fo.id = fop.financial_operation_id
-		        INNER JOIN users AS User ON User.id = fo.user_id
+		$sql = "SELECT COUNT(FinancialOperationPayment.id) AS total
+		        FROM financial_operations_payments AS FinancialOperationPayment
+		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
+		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		        LEFT JOIN people AS Person ON Person.id = User.person_id
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
@@ -221,12 +221,12 @@ class FinancialOperationPayment extends Model
 			return [];
 			}
 
-		$sql = $this->accountsReportSelect() . " WHERE fo.`type` = :operation_type";
+		$sql = $this->accountsReportSelect() . " WHERE FinancialOperation.`type` = :operation_type";
 		$params = ['operation_type' => $operationType];
 
 		$this->applyAccountsReportFilters($sql, $params, $filters);
 
-		$sql .= " ORDER BY fop.due_date ASC, fop.id ASC LIMIT :limit OFFSET :offset";
+		$sql .= " ORDER BY FinancialOperationPayment.due_date ASC, FinancialOperationPayment.id ASC LIMIT :limit OFFSET :offset";
 
 		$stmt = $this->db->prepare($sql);
 		$this->bindParams($stmt, $params);
@@ -251,11 +251,11 @@ class FinancialOperationPayment extends Model
 			return 0;
 			}
 
-		$sql = "SELECT COUNT(*) AS total
-		        FROM financial_operations_payments AS fop
-		        INNER JOIN financial_operations AS fo ON fo.id = fop.financial_operation_id
-		        LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
-		        WHERE fo.`type` = :operation_type";
+		$sql = "SELECT COUNT(FinancialOperationPayment.id) AS total
+		        FROM financial_operations_payments AS FinancialOperationPayment
+		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
+		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
+		        WHERE FinancialOperation.`type` = :operation_type";
 		$params = ['operation_type' => $operationType];
 
 		$this->applyAccountsReportFilters($sql, $params, $filters);
@@ -310,16 +310,23 @@ class FinancialOperationPayment extends Model
 	 */
 	private function baseSelect(): string
 		{
-		return "SELECT fop.*,
-		               fo.type AS financial_operation_type,
-		               fo.total_value AS financial_operation_total_value,
+		return "SELECT FinancialOperationPayment.id,
+		               FinancialOperationPayment.financial_operation_id,
+		               FinancialOperationPayment.type,
+		               FinancialOperationPayment.value,
+		               FinancialOperationPayment.payment_date,
+		               FinancialOperationPayment.due_date,
+		               FinancialOperationPayment.created,
+		               FinancialOperationPayment.modified,
+		               FinancialOperation.type AS financial_operation_type,
+		               FinancialOperation.total_value AS financial_operation_total_value,
 		               Category.name AS financial_operation_category_name,
 		               User.username,
 		               Person.name AS user_name
-		        FROM financial_operations_payments AS fop
-		        INNER JOIN financial_operations AS fo ON fo.id = fop.financial_operation_id
-		        LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
-		        INNER JOIN users AS User ON User.id = fo.user_id
+		        FROM financial_operations_payments AS FinancialOperationPayment
+		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
+		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
+		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		        LEFT JOIN people AS Person ON Person.id = User.person_id";
 		}
 
@@ -330,10 +337,17 @@ class FinancialOperationPayment extends Model
 	 */
 	private function accountsReportSelect(): string
 		{
-		return "SELECT fop.*,
-		               fo.type AS financial_operation_type,
-		               fo.total_value AS financial_operation_total_value,
-		               fo.user_id,
+		return "SELECT FinancialOperationPayment.id,
+		               FinancialOperationPayment.financial_operation_id,
+		               FinancialOperationPayment.type,
+		               FinancialOperationPayment.value,
+		               FinancialOperationPayment.payment_date,
+		               FinancialOperationPayment.due_date,
+		               FinancialOperationPayment.created,
+		               FinancialOperationPayment.modified,
+		               FinancialOperation.type AS financial_operation_type,
+		               FinancialOperation.total_value AS financial_operation_total_value,
+		               FinancialOperation.user_id,
 		               Category.id AS category_id,
 		               Category.name AS category_name,
 		               Category.description AS category_description,
@@ -347,10 +361,10 @@ class FinancialOperationPayment extends Model
 		               ) AS category_label,
 		               User.username,
 		               Person.name AS user_name
-		        FROM financial_operations_payments AS fop
-		        INNER JOIN financial_operations AS fo ON fo.id = fop.financial_operation_id
-		        LEFT JOIN financial_operations_categories AS Category ON Category.id = fo.financial_operation_category_id
-		        INNER JOIN users AS User ON User.id = fo.user_id
+		        FROM financial_operations_payments AS FinancialOperationPayment
+		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
+		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
+		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		        LEFT JOIN people AS Person ON Person.id = User.person_id";
 		}
 
@@ -366,31 +380,31 @@ class FinancialOperationPayment extends Model
 		{
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND fop.id = :id";
+			$sql .= " AND FinancialOperationPayment.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['financial_operation_id']) && $filters['financial_operation_id'] !== '')
 			{
-			$sql .= " AND fop.financial_operation_id = :financial_operation_id";
+			$sql .= " AND FinancialOperationPayment.financial_operation_id = :financial_operation_id";
 			$params['financial_operation_id'] = (int) $filters['financial_operation_id'];
 			}
 
 		if (isset($filters['type']) && $filters['type'] !== '')
 			{
-			$sql .= " AND fop.`type` = :type";
+			$sql .= " AND FinancialOperationPayment.`type` = :type";
 			$params['type'] = $filters['type'];
 			}
 
 		if (isset($filters['payment_date']) && $filters['payment_date'] !== '')
 			{
-			$sql .= " AND DATE(fop.payment_date) = :payment_date";
+			$sql .= " AND DATE(FinancialOperationPayment.payment_date) = :payment_date";
 			$params['payment_date'] = $this->normalizeDate($filters['payment_date']);
 			}
 
 		if (isset($filters['due_date']) && $filters['due_date'] !== '')
 			{
-			$sql .= " AND fop.due_date = :due_date";
+			$sql .= " AND FinancialOperationPayment.due_date = :due_date";
 			$params['due_date'] = $this->normalizeDate($filters['due_date']);
 			}
 		}
@@ -408,21 +422,21 @@ class FinancialOperationPayment extends Model
 		$categoryId = (int) ($filters['financial_operation_category_id'] ?? 0);
 		if ($categoryId > 0)
 			{
-			$sql .= " AND fo.financial_operation_category_id = :financial_operation_category_id";
+			$sql .= " AND FinancialOperation.financial_operation_category_id = :financial_operation_category_id";
 			$params['financial_operation_category_id'] = $categoryId;
 			}
 
 		$dueDateStart = $this->normalizeDateFilter($filters['due_date_start'] ?? null);
 		if ($dueDateStart !== null)
 			{
-			$sql .= " AND fop.due_date >= :due_date_start";
+			$sql .= " AND FinancialOperationPayment.due_date >= :due_date_start";
 			$params['due_date_start'] = $dueDateStart;
 			}
 
 		$dueDateEnd = $this->normalizeDateFilter($filters['due_date_end'] ?? null);
 		if ($dueDateEnd !== null)
 			{
-			$sql .= " AND fop.due_date <= :due_date_end";
+			$sql .= " AND FinancialOperationPayment.due_date <= :due_date_end";
 			$params['due_date_end'] = $dueDateEnd;
 			}
 		}

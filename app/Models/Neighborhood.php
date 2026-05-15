@@ -15,9 +15,9 @@ class Neighborhood extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'        => 'n.id',
-			'name'      => 'n.`name`',
-			'city_name' => 'c.`name`',
+			'id'        => 'Neighborhood.id',
+			'name'      => 'Neighborhood.`name`',
+			'city_name' => 'City.`name`',
 		];
 		}
 
@@ -26,7 +26,7 @@ class Neighborhood extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT n.*, c.name AS city_name FROM neighborhoods n LEFT JOIN cities c ON c.id = n.city_id ORDER BY n.id DESC");
+		$stmt = $this->db->query("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id ORDER BY Neighborhood.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -65,7 +65,7 @@ class Neighborhood extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT n.*, c.name AS city_name FROM neighborhoods n LEFT JOIN cities c ON c.id = n.city_id WHERE n.id = :id");
+		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE Neighborhood.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -97,24 +97,24 @@ class Neighborhood extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT n.*, c.name AS city_name FROM neighborhoods n LEFT JOIN cities c ON c.id = n.city_id WHERE 1=1";
+		$sql = "SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND n.id = :id";
+			$sql .= " AND Neighborhood.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND n.`name` LIKE :name";
+			$sql .= " AND Neighborhood.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (isset($filters['city_id']) && $filters['city_id'] !== '')
 			{
-			$sql .= " AND n.city_id = :city_id";
+			$sql .= " AND Neighborhood.city_id = :city_id";
 			$params['city_id'] = (int) $filters['city_id'];
 			}
 
@@ -142,24 +142,24 @@ class Neighborhood extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM neighborhoods WHERE 1=1";
+		$sql = "SELECT COUNT(Neighborhood.id) AS total FROM neighborhoods AS Neighborhood WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND Neighborhood.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND `name` LIKE :name";
+			$sql .= " AND Neighborhood.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['city_id']))
 			{
-			$sql .= " AND city_id = :city_id";
+			$sql .= " AND Neighborhood.city_id = :city_id";
 			$params['city_id'] = (int) $filters['city_id'];
 			}
 
@@ -181,7 +181,7 @@ class Neighborhood extends Model
 	 */
 	public function findAllByNeighborhoodId($id)
 		{
-		$stmt = $this->db->prepare("SELECT n.*, c.name AS city_name FROM neighborhoods n LEFT JOIN cities c ON c.id = n.city_id WHERE n.id = :id");
+		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE Neighborhood.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['neighborhood' => $data];
@@ -200,13 +200,16 @@ class Neighborhood extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT n.id, n.`name`, c.`name` AS city_name, s.acronym AS state_acronym
-			FROM neighborhoods n
-			LEFT JOIN cities c ON c.id = n.city_id
-			LEFT JOIN states s ON s.id = c.state_id
-			WHERE n.`name` LIKE :t
-			ORDER BY n.`name` ASC
-			LIMIT {$limit}";
+		$sql = "SELECT  Neighborhood.id, 
+                    Neighborhood.`name`, 
+                    City.`name` AS city_name, 
+                    State.acronym AS state_acronym
+            FROM neighborhoods AS Neighborhood
+            LEFT JOIN cities AS City ON City.id = Neighborhood.city_id
+            LEFT JOIN states AS State ON State.id = City.state_id
+            WHERE Neighborhood.`name` LIKE :t
+            ORDER BY Neighborhood.`name` ASC
+            LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute([':t' => '%' . $term . '%']);

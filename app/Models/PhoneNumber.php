@@ -15,10 +15,10 @@ class PhoneNumber extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'           => 'ph.id',
-			'phone_number' => 'ph.`phone_number`',
-			'person_name'  => 'p.`name`',
-			'observations' => 'ph.`observations`',
+			'id'           => 'PhoneNumber.id',
+			'phone_number' => 'PhoneNumber.`phone_number`',
+			'person_name'  => 'Person.`name`',
+			'observations' => 'PhoneNumber.`observations`',
 		];
 		}
 
@@ -27,7 +27,7 @@ class PhoneNumber extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT ph.*, p.name AS person_name FROM phone_numbers ph LEFT JOIN people p ON p.id = ph.person_id ORDER BY ph.id DESC");
+		$stmt = $this->db->query("SELECT PhoneNumber.id, PhoneNumber.phone_number, PhoneNumber.observations, PhoneNumber.person_id, PhoneNumber.created, PhoneNumber.modified, Person.name AS person_name FROM phone_numbers AS PhoneNumber LEFT JOIN people AS Person ON Person.id = PhoneNumber.person_id ORDER BY PhoneNumber.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -67,7 +67,7 @@ class PhoneNumber extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT ph.*, p.name AS person_name FROM phone_numbers ph LEFT JOIN people p ON p.id = ph.person_id WHERE ph.id = :id");
+		$stmt = $this->db->prepare("SELECT PhoneNumber.id, PhoneNumber.phone_number, PhoneNumber.observations, PhoneNumber.person_id, PhoneNumber.created, PhoneNumber.modified, Person.name AS person_name FROM phone_numbers AS PhoneNumber LEFT JOIN people AS Person ON Person.id = PhoneNumber.person_id WHERE PhoneNumber.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -101,24 +101,24 @@ class PhoneNumber extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT ph.*, p.name AS person_name FROM phone_numbers ph LEFT JOIN people p ON p.id = ph.person_id WHERE 1=1";
+		$sql = "SELECT PhoneNumber.id, PhoneNumber.phone_number, PhoneNumber.observations, PhoneNumber.person_id, PhoneNumber.created, PhoneNumber.modified, Person.name AS person_name FROM phone_numbers AS PhoneNumber LEFT JOIN people AS Person ON Person.id = PhoneNumber.person_id WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND ph.id = :id";
+			$sql .= " AND PhoneNumber.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['phone_number']) && $filters['phone_number'] !== '')
 			{
-			$sql .= " AND ph.`phone_number` LIKE :phone_number";
+			$sql .= " AND PhoneNumber.`phone_number` LIKE :phone_number";
 			$params['phone_number'] = '%' . $filters['phone_number'] . '%';
 			}
 
 		if (isset($filters['person_id']) && $filters['person_id'] !== '')
 			{
-			$sql .= " AND ph.person_id = :person_id";
+			$sql .= " AND PhoneNumber.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
@@ -146,24 +146,24 @@ class PhoneNumber extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM phone_numbers WHERE 1=1";
+		$sql = "SELECT COUNT(PhoneNumber.id) AS total FROM phone_numbers AS PhoneNumber WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND PhoneNumber.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['phone_number']))
 			{
-			$sql .= " AND `phone_number` LIKE :phone_number";
+			$sql .= " AND PhoneNumber.`phone_number` LIKE :phone_number";
 			$params['phone_number'] = '%' . $filters['phone_number'] . '%';
 			}
 
 		if (!empty($filters['person_id']))
 			{
-			$sql .= " AND person_id = :person_id";
+			$sql .= " AND PhoneNumber.person_id = :person_id";
 			$params['person_id'] = (int) $filters['person_id'];
 			}
 
@@ -185,7 +185,7 @@ class PhoneNumber extends Model
 	 */
 	public function findAllByPhoneNumberId($id)
 		{
-		$stmt = $this->db->prepare("SELECT ph.*, p.name AS person_name FROM phone_numbers ph LEFT JOIN people p ON p.id = ph.person_id WHERE ph.id = :id");
+		$stmt = $this->db->prepare("SELECT PhoneNumber.id, PhoneNumber.phone_number, PhoneNumber.observations, PhoneNumber.person_id, PhoneNumber.created, PhoneNumber.modified, Person.name AS person_name FROM phone_numbers AS PhoneNumber LEFT JOIN people AS Person ON Person.id = PhoneNumber.person_id WHERE PhoneNumber.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['phone_number' => $data];

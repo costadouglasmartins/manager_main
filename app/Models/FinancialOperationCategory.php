@@ -28,7 +28,13 @@ class FinancialOperationCategory extends Model
 	 */
 	public function getAll(): array
 		{
-		$stmt = $this->db->query("SELECT * FROM financial_operations_categories ORDER BY name ASC");
+		$stmt = $this->db->query("SELECT FinancialOperationCategory.id,
+								 FinancialOperationCategory.name,
+								 FinancialOperationCategory.description,
+								 FinancialOperationCategory.created,
+								 FinancialOperationCategory.modified
+							  FROM financial_operations_categories AS FinancialOperationCategory
+							  ORDER BY FinancialOperationCategory.name ASC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -78,7 +84,13 @@ class FinancialOperationCategory extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT * FROM financial_operations_categories WHERE id = :id");
+		$stmt = $this->db->prepare("SELECT FinancialOperationCategory.id,
+								   FinancialOperationCategory.name,
+								   FinancialOperationCategory.description,
+								   FinancialOperationCategory.created,
+								   FinancialOperationCategory.modified
+							    FROM financial_operations_categories AS FinancialOperationCategory
+							    WHERE FinancialOperationCategory.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -119,7 +131,13 @@ class FinancialOperationCategory extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT * FROM financial_operations_categories WHERE 1=1";
+		$sql = "SELECT FinancialOperationCategory.id,
+							  FinancialOperationCategory.name,
+							  FinancialOperationCategory.description,
+							  FinancialOperationCategory.created,
+							  FinancialOperationCategory.modified
+						   FROM financial_operations_categories AS FinancialOperationCategory
+						   WHERE 1 = 1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
@@ -144,7 +162,7 @@ class FinancialOperationCategory extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM financial_operations_categories WHERE 1=1";
+		$sql = "SELECT COUNT(FinancialOperationCategory.id) AS total FROM financial_operations_categories WHERE 1 = 1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
@@ -204,19 +222,19 @@ class FinancialOperationCategory extends Model
 		{
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND FinancialOperationCategory.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND `name` LIKE :name";
+			$sql .= " AND FinancialOperationCategory.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (isset($filters['description']) && $filters['description'] !== '')
 			{
-			$sql .= " AND `description` LIKE :description";
+			$sql .= " AND FinancialOperationCategory.`description` LIKE :description";
 			$params['description'] = '%' . $filters['description'] . '%';
 			}
 		}

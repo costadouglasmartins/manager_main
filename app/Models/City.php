@@ -138,7 +138,7 @@ class City extends Model
 		        FROM cities AS City
 		        LEFT JOIN states AS State ON State.id = City.state_id
 		        LEFT JOIN countries AS Country ON Country.id = State.country_id
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
@@ -201,11 +201,11 @@ class City extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total
+		$sql = "SELECT COUNT(City.id) AS total
 		        FROM cities AS City
 		        LEFT JOIN states AS State ON State.id = City.state_id
 		        LEFT JOIN countries AS Country ON Country.id = State.country_id
-		        WHERE 1=1";
+		        WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))

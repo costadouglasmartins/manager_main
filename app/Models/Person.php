@@ -41,7 +41,17 @@ class Person extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT * FROM people ORDER BY id DESC");
+		$stmt = $this->db->query("SELECT Person.id,
+                                     Person.name,
+                                     Person.fantasy,
+                                     Person.type,
+                                     Person.document,
+                                     Person.active,
+                                     Person.birthdate,
+                                     Person.created,
+                                     Person.modified
+                              FROM people AS Person
+                              ORDER BY Person.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -344,7 +354,17 @@ class Person extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT * FROM people WHERE id = :id");
+		$stmt = $this->db->prepare("SELECT Person.id,
+                                       Person.name,
+                                       Person.fantasy,
+                                       Person.type,
+                                       Person.document,
+                                       Person.active,
+                                       Person.birthdate,
+                                       Person.created,
+						                           Person.modified
+                                FROM people AS Person
+                                WHERE Person.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -1122,34 +1142,34 @@ class Person extends Model
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
 		// Start with a neutral predicate so optional filters can be appended.
-		$sql = "SELECT * FROM people WHERE 1=1";
+		$sql = "SELECT Person.id, Person.name, Person.fantasy, Person.type, Person.document, Person.active, Person.birthdate, Person.created, Person.modified FROM people AS Person WHERE 1 = 1";
 		$params = [];
 
 		// Exact ID lookup.
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND Person.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		// Partial name lookup.
 		if (isset($filters['name']) && $filters['name'] !== '')
 			{
-			$sql .= " AND `name` LIKE :name";
+			$sql .= " AND Person.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		// Exact person type lookup.
 		if (isset($filters['type']) && $filters['type'] !== '')
 			{
-			$sql .= " AND `type` = :type";
+			$sql .= " AND Person.`type` = :type";
 			$params['type'] = $filters['type'];
 			}
 
 		// Document search uses only digits to match stored normalized values.
 		if (isset($filters['document']) && $filters['document'] !== '')
 			{
-			$sql .= " AND document LIKE :document";
+			$sql .= " AND Person.document LIKE :document";
 			$params['document'] = onlyAlphanumeric($filters['document']);
 			}
 
@@ -1159,7 +1179,7 @@ class Person extends Model
 			$active = (int) $filters['active'];
 			if (in_array($active, [0, 1], true))
 				{
-				$sql .= " AND active = :active";
+				$sql .= " AND Person.active = :active";
 				$params['active'] = $active;
 				}
 			}
@@ -1167,7 +1187,7 @@ class Person extends Model
 		// Convert the UI date format before comparing with the database value.
 		if (isset($filters['birthdate']) && $filters['birthdate'] !== '')
 			{
-			$sql .= " AND birthdate = :birthdate";
+			$sql .= " AND Person.birthdate = :birthdate";
 			$params['birthdate'] = dateBrToUs($filters['birthdate']);
 			}
 
@@ -1203,37 +1223,37 @@ class Person extends Model
 	public function count(array $filters = []): int
 		{
 		// Start with a neutral predicate so optional filters can be appended.
-		$sql = "SELECT COUNT(*) AS total FROM people WHERE 1=1";
+		$sql = "SELECT COUNT(Person.id) AS total FROM people AS Person WHERE 1 = 1";
 		$params = [];
 
 		// Keep count filters aligned with the search filters above.
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND Person.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND name LIKE :name";
+			$sql .= " AND Person.name LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['type']))
 			{
-			$sql .= " AND `type` = :type";
+			$sql .= " AND Person.`type` = :type";
 			$params['type'] = $filters['type'];
 			}
 
 		if (!empty($filters['document']))
 			{
-			$sql .= " AND document LIKE :document";
+			$sql .= " AND Person.document LIKE :document";
 			$params['document'] = onlyAlphanumeric($filters['document']);
 			}
 
 		if (!empty($filters['birthdate']))
 			{
-			$sql .= " AND birthdate = :birthdate";
+			$sql .= " AND Person.birthdate = :birthdate";
 			$params['birthdate'] = dateBrToUs($filters['birthdate']);
 			}
 
@@ -1242,7 +1262,7 @@ class Person extends Model
 			$active = (int) $filters['active'];
 			if (in_array($active, [0, 1], true))
 				{
-				$sql .= " AND active = :active";
+				$sql .= " AND Person.active = :active";
 				$params['active'] = $active;
 				}
 			}
@@ -1273,7 +1293,17 @@ class Person extends Model
 	public function findAllByPersonId($id)
 		{
 		// Base person record.
-		$personStmt = $this->db->prepare("SELECT * FROM people WHERE id = :id");
+		$personStmt = $this->db->prepare("SELECT Person.id,
+		                                         Person.name,
+		                                         Person.fantasy,
+		                                         Person.type,
+		                                         Person.document,
+		                                         Person.active,
+		                                         Person.birthdate,
+		                                         Person.created,
+		                                         Person.modified
+		                                  FROM people AS Person
+		                                  WHERE Person.id = :id");
 		$personStmt->execute(['id' => $id]);
 		$person = $personStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -1283,12 +1313,12 @@ class Person extends Model
 		$user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
 		// Contact phone numbers.
-		$phonesStmt = $this->db->prepare("SELECT * FROM phone_numbers WHERE person_id = :id ORDER BY id ASC");
+		$phonesStmt = $this->db->prepare("SELECT PhoneNumber.id, PhoneNumber.phone_number, PhoneNumber.observations, PhoneNumber.person_id, PhoneNumber.created, PhoneNumber.modified FROM phone_numbers AS PhoneNumber WHERE PhoneNumber.person_id = :id ORDER BY PhoneNumber.id ASC");
 		$phonesStmt->execute(['id' => $id]);
 		$phones = $phonesStmt->fetchAll(PDO::FETCH_ASSOC);
 
 		// Contact emails.
-		$emailsStmt = $this->db->prepare("SELECT * FROM emails WHERE person_id = :id ORDER BY id ASC");
+		$emailsStmt = $this->db->prepare("SELECT Email.id, Email.email, Email.is_login, Email.observations, Email.person_id, Email.created FROM emails AS Email WHERE Email.person_id = :id ORDER BY Email.id ASC");
 		$emailsStmt->execute(['id' => $id]);
 		$emails = $emailsStmt->fetchAll(PDO::FETCH_ASSOC);
 
