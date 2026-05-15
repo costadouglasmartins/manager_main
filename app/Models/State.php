@@ -130,6 +130,17 @@ class State extends Model
 			$params['acronym'] = $filters['acronym'];
 			}
 
+		if (isset($filters['country_id']) && $filters['country_id'] !== '')
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+		elseif (isset($filters['country_name']) && $filters['country_name'] !== '')
+			{
+			$sql .= " AND c.`name` LIKE :country_name";
+			$params['country_name'] = '%' . $filters['country_name'] . '%';
+			}
+
 		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
 		$sql .= " ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
 
@@ -154,25 +165,36 @@ class State extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(*) AS total FROM states WHERE 1=1";
+		$sql = "SELECT COUNT(*) AS total FROM states s LEFT JOIN countries c ON c.id = s.country_id WHERE 1=1";
 		$params = [];
 
 		if (!empty($filters['id']))
 			{
-			$sql .= " AND id = :id";
+			$sql .= " AND s.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
 		if (!empty($filters['name']))
 			{
-			$sql .= " AND `name` LIKE :name";
+			$sql .= " AND s.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
 		if (!empty($filters['acronym']))
 			{
-			$sql .= " AND `acronym` = :acronym";
+			$sql .= " AND s.`acronym` = :acronym";
 			$params['acronym'] = $filters['acronym'];
+			}
+
+		if (!empty($filters['country_id']))
+			{
+			$sql .= " AND s.country_id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+		elseif (!empty($filters['country_name']))
+			{
+			$sql .= " AND c.`name` LIKE :country_name";
+			$params['country_name'] = '%' . $filters['country_name'] . '%';
 			}
 
 		$stmt = $this->db->prepare($sql);

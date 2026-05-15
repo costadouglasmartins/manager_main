@@ -18,9 +18,11 @@ class StateController extends Controller
 		$state = new State();
 
 		$filters = [
-			'id'      => isset($_GET['id'])      ? trim($_GET['id'])      : '',
-			'name'    => isset($_GET['name'])    ? trim($_GET['name'])    : '',
-			'acronym' => isset($_GET['acronym']) ? trim($_GET['acronym']) : '',
+			'id'           => isset($_GET['id'])           ? trim($_GET['id'])           : '',
+			'name'         => isset($_GET['name'])         ? trim($_GET['name'])         : '',
+			'acronym'      => isset($_GET['acronym'])      ? trim($_GET['acronym'])      : '',
+			'country_id'   => isset($_GET['country_id'])   ? trim($_GET['country_id'])   : '',
+			'country_name' => isset($_GET['country_name']) ? trim($_GET['country_name']) : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;

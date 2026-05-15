@@ -1,14 +1,16 @@
 <?php
-$filters = $filters ?? ['id' => '', 'name' => '', 'acronym' => ''];
+$filters = array_merge(['id' => '', 'name' => '', 'acronym' => '', 'country_id' => '', 'country_name' => ''], $filters ?? []);
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($states) ? count($states) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
-  'id'      => $filters['id'],
-  'name'    => $filters['name'],
-  'acronym' => $filters['acronym'],
+  'id'           => $filters['id'],
+  'name'         => $filters['name'],
+  'acronym'      => $filters['acronym'],
+  'country_id'   => $filters['country_id'],
+  'country_name' => $filters['country_name'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
@@ -28,16 +30,22 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <div class="col-12 col-lg-9">
     <div class="row g-3">
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6 col-lg-6">
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6 col-lg-6">
         <input class="form-control" id="name" name="name" type="text" placeholder="Nome" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6 col-lg-6">
         <input class="form-control" id="acronym" name="acronym" type="text" placeholder="Sigla" value="<?= htmlspecialchars($filters['acronym'], ENT_QUOTES, 'UTF-8') ?>">
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-6 position-relative">
+        <input type="hidden" id="country_id" name="country_id" value="<?= htmlspecialchars($filters['country_id'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="countryName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="País" name="country_name" data-endpoint="<?= url('country/autocomplete'); ?>" data-results="#countryResults" data-hidden="#country_id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['country_name'], ENT_QUOTES, 'UTF-8') ?>">
+        <ul id="countryResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
     </div>
@@ -119,7 +127,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+        <form method="POST" action="#" id="deleteForm" data-delete-url="<?= url('state/delete') ?>" style="display: inline;">
           <input type="hidden" name="id" id="recordId">
           <button type="submit" class="btn btn-danger">Excluir</button>
         </form>
@@ -128,11 +136,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const recordId = e.relatedTarget.dataset.id;
-  document.getElementById('recordId').value = recordId;
-  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
-  document.getElementById('deleteForm').action = '<?= url('state/delete') ?>/' + recordId;
-});
-</script>
+<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/states/index.js?v=1'); ?>"></script>
