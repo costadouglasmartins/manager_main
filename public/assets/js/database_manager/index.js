@@ -28,6 +28,9 @@
 	const executionAlert = document.getElementById("executionAlert");
 	const executionLog = document.getElementById("executionLog");
 	const logCount = document.getElementById("logCount");
+	const sqlResponseCount = document.getElementById("sqlResponseCount");
+	const sqlResponseEmpty = document.getElementById("sqlResponseEmpty");
+	const sqlResponseResults = document.getElementById("sqlResponseResults");
 
 	let catalog = [];
 	try
@@ -43,7 +46,28 @@
 		successCount: 0,
 		errorCount: 0,
 		logEntries: 0,
+		resultEntries: 0,
 	};
+
+	function escapeHtml(value)
+		{
+		return String(value ?? "")
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;")
+			.replace(/'/g, "&#039;");
+		}
+
+	function formatCellValue(value)
+		{
+		if (value === null)
+			{
+			return '<span class="text-muted fst-italic">NULL</span>';
+			}
+
+		return escapeHtml(value);
+		}
 
 	function normalizeDatabaseNumber(value)
 		{
@@ -180,9 +204,11 @@
 		state.successCount = 0;
 		state.errorCount = 0;
 		state.logEntries = 0;
+		state.resultEntries = 0;
 		successBadge.textContent = "0 sucesso";
 		errorBadge.textContent = "0 erro";
 		logCount.textContent = "0 eventos";
+		sqlResponseCount.textContent = "0 retornos";
 		progressLabel.textContent = "Preparando execução";
 		progressMeta.textContent = "0%";
 		progressBar.style.width = "0%";
@@ -191,6 +217,8 @@
 		progressBar.classList.add("progress-bar-striped", "progress-bar-animated");
 		executionSubtitle.textContent = "Conectando ao servidor e iniciando o lote.";
 		executionLog.innerHTML = "";
+		sqlResponseResults.innerHTML = "";
+		sqlResponseEmpty.classList.remove("d-none");
 		setExecutionAlert("info", "Aguardando o primeiro retorno do servidor.");
 		executionPanel.classList.remove("d-none");
 		executionPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -205,10 +233,10 @@
 		item.className = `list-group-item list-group-item-${type}`;
 		item.innerHTML = `
 			<div class="log-title">
-				<strong>${title}</strong>
-				<small>${meta || ""}</small>
+				<strong>${escapeHtml(title)}</strong>
+				<small>${escapeHtml(meta || "")}</small>
 			</div>
-			<p class="mb-0 mt-2">${message}</p>
+			<p class="mb-0 mt-2">${escapeHtml(message)}</p>
 		`;
 
 		executionLog.prepend(item);
@@ -227,6 +255,141 @@
 			{
 			executionSubtitle.textContent = meta;
 			}
+		}
+
+	function renderSqlResponses(payload)
+		{
+		state.resultEntries += 1;
+		sqlResponseCount.textContent = `${state.resultEntries} retorno${state.resultEntries === 1 ? "" : "s"}`;
+		sqlResponseEmpty.classList.add("d-none");
+
+		const wrapper = document.createElement("div");
+		wrapper.className = `database-manager-response-card ${payload.success ? "is-success" : "is-error"}`;
+
+		const resultSets = Array.isArray(payload.result_sets) ? payload.result_sets : [];
+		const affectedRows = Number(payload.affected_rows || 0);
+		const tenantLabel = payload.tenant_name ? `<span class="text-muted">${escapeHtml(payload.tenant_name)}</span>` : '<span class="text-muted">Sem tenant vinculado</span>';
+
+		wrapper.innerHTML = `
+			<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+				<div>
+					<strong>${escapeHtml(payload.database_name || "Banco")}</strong>
+					<div class="small">${tenantLabel}</div>
+				</div>
+				<div class="d-flex flex-wrap gap-2">
+					<span class="badge ${payload.success ? "text-bg-success" : "text-bg-danger"}">${payload.success ? "Sucesso" : "Erro"}</span>
+					<span class="badge text-bg-light border">${escapeHtml(payload.duration_ms || 0)} ms</span>
+				</div>
+			</div>
+			<p class="mb-3">${escapeHtml(payload.message || "")}</p>
+		`;
+
+		if (!payload.success)
+			{
+			sqlResponseResults.appendChild(wrapper);
+			return;
+			}
+
+		if (resultSets.length < 1)
+			{
+			const info = document.createElement("div");
+			info.className = "database-manager-affected-rows";
+			info.textContent = `${affectedRows} linha(s) afetada(s).`;
+			wrapper.appendChild(info);
+			sqlResponseResults.appendChild(wrapper);
+			return;
+			}
+
+		resultSets.forEach((resultSet) =>
+			{
+			wrapper.appendChild(buildResultSetTable(resultSet));
+			});
+
+		sqlResponseResults.appendChild(wrapper);
+		}
+
+	function buildResultSetTable(resultSet)
+		{
+		const columns = Array.isArray(resultSet.columns) ? resultSet.columns : [];
+		const rows = Array.isArray(resultSet.rows) ? resultSet.rows : [];
+		const block = document.createElement("div");
+		block.className = "mb-3";
+
+		const title = document.createElement("div");
+		title.className = "d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2";
+		title.innerHTML = `
+			<strong>Resultado ${escapeHtml(resultSet.statement_index || 1)}</strong>
+			<small class="text-muted">${escapeHtml(resultSet.displayed_rows || 0)} de ${escapeHtml(resultSet.row_count || 0)} linha(s)</small>
+		`;
+		block.appendChild(title);
+
+		if (resultSet.truncated)
+			{
+			const truncatedAlert = document.createElement("div");
+			truncatedAlert.className = "alert alert-warning py-2 mb-2";
+			truncatedAlert.textContent = `Exibindo as primeiras ${resultSet.max_rows} linhas para manter a tela responsiva.`;
+			block.appendChild(truncatedAlert);
+			}
+
+		if (columns.length < 1)
+			{
+			const empty = document.createElement("div");
+			empty.className = "alert alert-light border mb-0";
+			empty.textContent = "A consulta não retornou colunas.";
+			block.appendChild(empty);
+			return block;
+			}
+
+		const tableWrapper = document.createElement("div");
+		tableWrapper.className = "database-manager-result-table-wrap table-responsive";
+		tableWrapper.style.maxHeight = "360px";
+		tableWrapper.style.overflow = "auto";
+
+		const table = document.createElement("table");
+		table.className = "database-manager-result-table table table-sm table-hover align-middle mb-0";
+
+		const thead = document.createElement("thead");
+		const headRow = document.createElement("tr");
+		columns.forEach((column) =>
+			{
+			const th = document.createElement("th");
+			th.scope = "col";
+			th.textContent = column;
+			headRow.appendChild(th);
+			});
+		thead.appendChild(headRow);
+		table.appendChild(thead);
+
+		const tbody = document.createElement("tbody");
+		if (rows.length < 1)
+			{
+			const row = document.createElement("tr");
+			const cell = document.createElement("td");
+			cell.colSpan = columns.length;
+			cell.className = "text-muted text-center py-3";
+			cell.textContent = "Nenhuma linha retornada.";
+			row.appendChild(cell);
+			tbody.appendChild(row);
+			}
+		else
+			{
+			rows.forEach((resultRow) =>
+				{
+				const row = document.createElement("tr");
+				columns.forEach((column, index) =>
+					{
+					const cell = document.createElement("td");
+					cell.innerHTML = formatCellValue(Array.isArray(resultRow) ? resultRow[index] : resultRow[column]);
+					row.appendChild(cell);
+					});
+				tbody.appendChild(row);
+				});
+			}
+
+		table.appendChild(tbody);
+		tableWrapper.appendChild(table);
+		block.appendChild(tableWrapper);
+		return block;
 		}
 
 	function handleStreamEvent(payload)
@@ -292,6 +455,7 @@
 			const meta = `${payload.duration_ms} ms`;
 
 			appendLog(payload.success ? "success" : "danger", title, message, meta);
+			renderSqlResponses(payload);
 			setExecutionAlert(
 				payload.success ? "success" : "danger",
 				payload.success
@@ -413,6 +577,7 @@
 				method: "POST",
 				body: formData,
 				headers: {
+					"Accept": "application/x-ndjson, application/json",
 					"X-Requested-With": "XMLHttpRequest"
 				}
 			});

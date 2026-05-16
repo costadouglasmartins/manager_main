@@ -1,0 +1,99 @@
+.database-manager-response-card {
+  padding: 1rem;
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.18);
+  border-radius: 0.375rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+.database-manager-response-card.is-success {
+  border-color: rgba(var(--bs-success-rgb), 0.35);
+}
+
+.database-manager-response-card.is-error {
+  border-color: rgba(var(--bs-danger-rgb), 0.45);
+}
+
+.database-manager-response-card p,
+.database-manager-response-card strong,
+.database-manager-response-card small,
+.database-manager-response-card .small {
+  color: inherit;
+}
+
+.database-manager-response-card .text-muted {
+  color: var(--bs-secondary-color) !important;
+}
+
+.database-manager-affected-rows {
+  margin-bottom: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.14);
+  border-radius: 0.375rem;
+  background: rgba(var(--bs-body-color-rgb), 0.04);
+  color: var(--bs-body-color);
+}
+
+.database-manager-result-table-wrap {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.18);
+  border-radius: 0.375rem;
+}
+
+.database-manager-result-table {
+  --bs-table-bg: var(--bs-body-bg);
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-striped-bg: rgba(var(--bs-body-color-rgb), 0.045);
+  --bs-table-striped-color: var(--bs-body-color);
+  --bs-table-hover-bg: rgba(var(--bs-primary-rgb), 0.08);
+  --bs-table-hover-color: var(--bs-body-color);
+}
+
+.database-manager-result-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom-color: rgba(var(--bs-body-color-rgb), 0.24);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-emphasis-color);
+}
+
+.database-manager-result-table td,
+.database-manager-result-table th {
+  white-space: nowrap;
+}
+
+[data-bs-theme="dark"] .database-manager-response-card {
+  background: #151a20;
+  color: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+[data-bs-theme="dark"] .database-manager-response-card.is-success {
+  border-color: rgba(75, 192, 127, 0.5);
+}
+
+[data-bs-theme="dark"] .database-manager-response-card.is-error {
+  border-color: rgba(255, 107, 107, 0.55);
+}
+
+[data-bs-theme="dark"] .database-manager-affected-rows {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+[data-bs-theme="dark"] .database-manager-result-table {
+  --bs-table-bg: #111820;
+  --bs-table-color: #f1f5f9;
+  --bs-table-striped-bg: #1c2630;
+  --bs-table-striped-color: #f1f5f9;
+  --bs-table-hover-bg: #243241;
+  --bs-table-hover-color: #ffffff;
+}
+
+[data-bs-theme="dark"] .database-manager-result-table thead th {
+  background: #e9ecef;
+  color: #111820;
+}

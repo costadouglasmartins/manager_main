@@ -13,6 +13,7 @@ class DatabaseManagerService
 	private string $dbPassword = 'rootpassword';
 	private string $dbCharset = 'utf8';
 	private string $dbPrefix = 'manager_';
+	private int $maxResultRows = 200;
 
 	public function getCatalog(): array
 		{
@@ -213,11 +214,40 @@ class DatabaseManagerService
 		try
 			{
 			$pdo = $this->getDatabaseConnection($databaseName);
-			$pdo->exec($sql);
+			$stmt = $pdo->query($sql);
+			if ($stmt === false)
+				{
+				throw new PDOException('Não foi possível executar o script SQL.');
+				}
+
+			$resultSets = [];
+			$affectedRows = 0;
+			$statementIndex = 1;
+
+			do
+				{
+				if ($stmt->columnCount() > 0)
+					{
+					$resultSets[] = $this->fetchResultSet($stmt, $statementIndex);
+					}
+				else
+					{
+					$rowCount = $stmt->rowCount();
+					if ($rowCount > 0)
+						{
+						$affectedRows += $rowCount;
+						}
+					}
+
+				$statementIndex++;
+				}
+			while ($stmt->nextRowset());
 
 			return [
 				'success' => true,
-				'message' => 'Script executado com sucesso.',
+				'message' => $this->buildSuccessMessage($resultSets, $affectedRows),
+				'affected_rows' => $affectedRows,
+				'result_sets' => $resultSets,
 				'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
 			];
 			}
@@ -226,9 +256,99 @@ class DatabaseManagerService
 			return [
 				'success' => false,
 				'message' => $e->getMessage(),
+				'affected_rows' => 0,
+				'result_sets' => [],
 				'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
 			];
 			}
+		}
+
+	/**
+	 * Fetches a single SQL result set while limiting rows sent back to the browser.
+	 *
+	 * @param \PDOStatement $stmt Executed statement positioned on a rowset.
+	 * @param int $statementIndex Statement index inside the submitted SQL script.
+	 * @return array<string, mixed>
+	 */
+	private function fetchResultSet(\PDOStatement $stmt, int $statementIndex): array
+		{
+		$columns = [];
+		$columnCount = $stmt->columnCount();
+		for ($index = 0; $index < $columnCount; $index++)
+			{
+			$meta = $stmt->getColumnMeta($index);
+			$name = is_array($meta) && isset($meta['name']) ? (string) $meta['name'] : '';
+			$columns[] = $name !== '' ? $name : 'column_' . ($index + 1);
+			}
+
+		$rows = [];
+		$totalRows = 0;
+		while (($row = $stmt->fetch(PDO::FETCH_NUM)) !== false)
+			{
+			$totalRows++;
+			if (count($rows) < $this->maxResultRows)
+				{
+				$rows[] = $this->normalizeResultRow($row);
+				}
+			}
+
+		return [
+			'statement_index' => $statementIndex,
+			'columns' => $columns,
+			'rows' => $rows,
+			'row_count' => $totalRows,
+			'displayed_rows' => count($rows),
+			'truncated' => $totalRows > $this->maxResultRows,
+			'max_rows' => $this->maxResultRows,
+		];
+		}
+
+	/**
+	 * Normalizes database values for JSON streaming.
+	 *
+	 * @param array<int, mixed> $row Database result row.
+	 * @return array<int, mixed>
+	 */
+	private function normalizeResultRow(array $row): array
+		{
+		foreach ($row as $key => $value)
+			{
+			if ($value === null || is_scalar($value))
+				{
+				continue;
+				}
+
+			$encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			$row[$key] = $encoded !== false ? $encoded : '[unserializable value]';
+			}
+
+		return $row;
+		}
+
+	/**
+	 * Builds the execution message shown in the real-time stream.
+	 *
+	 * @param array<int, array<string, mixed>> $resultSets SELECT-like result sets.
+	 * @param int $affectedRows Number of affected rows for write statements.
+	 */
+	private function buildSuccessMessage(array $resultSets, int $affectedRows): string
+		{
+		if (!empty($resultSets))
+			{
+			$totalRows = 0;
+			foreach ($resultSets as $resultSet)
+				{
+				$totalRows += (int) ($resultSet['row_count'] ?? 0);
+				}
+
+			return sprintf(
+				'Consulta executada com sucesso. %d conjunto(s) de resultado, %d linha(s) retornada(s).',
+				count($resultSets),
+				$totalRows
+			);
+			}
+
+		return sprintf('Script executado com sucesso. %d linha(s) afetada(s).', $affectedRows);
 		}
 
 	private function getAdminConnection(): PDO

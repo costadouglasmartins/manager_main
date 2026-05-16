@@ -13,6 +13,7 @@ $catalogJson = json_encode(
 	JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
 );
 ?>
+<link rel="stylesheet" href="<?= url('assets/css/database_manager/index.css?v=1'); ?>">
 
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
@@ -74,43 +75,6 @@ $catalogJson = json_encode(
         </div>
       </div>
     <?php endif; ?>
-
-    <div class="card shadow-sm d-none" id="executionPanel">
-      <div class="card-body">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-          <div>
-            <h6 class="mb-1">Acompanhamento da execução</h6>
-            <p class="text-muted mb-0" id="executionSubtitle">Aguardando início do lote.</p>
-          </div>
-          <div class="d-flex flex-wrap gap-2">
-            <span class="badge text-bg-success" id="successBadge">0 sucesso</span>
-            <span class="badge text-bg-danger" id="errorBadge">0 erro</span>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong id="progressLabel">Pronto para executar</strong>
-            <span class="text-muted" id="progressMeta">0%</span>
-          </div>
-          <div class="progress" role="progressbar" aria-label="Progresso da execução" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 0%">0%</div>
-          </div>
-        </div>
-
-        <div id="executionAlert" class="alert alert-info mb-3">
-          O processamento será exibido aqui assim que o servidor iniciar o lote.
-        </div>
-
-        <div class="border rounded p-3">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">Log de execução</h6>
-            <small class="text-muted" id="logCount">0 eventos</small>
-          </div>
-          <div class="list-group" id="executionLog" style="max-height: 420px; overflow-y: auto;"></div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="col-12 col-xl-8">
@@ -166,6 +130,56 @@ $catalogJson = json_encode(
             <textarea class="form-control font-monospace" id="sqlCommand" name="sql_command" rows="12" placeholder="Exemplo: UPDATE settings SET value = 'ativo' WHERE `key` = 'feature_flag';"></textarea>
             <div class="form-text">
               Evite usar <code>USE</code> e <code>DELIMITER</code>. O módulo escolhe automaticamente o banco de cada execução.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card shadow-sm d-none" id="executionPanel">
+              <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                  <div>
+                    <h6 class="mb-1">Retorno SQL em tempo real</h6>
+                    <p class="text-muted mb-0" id="executionSubtitle">Aguardando início do lote.</p>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge text-bg-success" id="successBadge">0 sucesso</span>
+                    <span class="badge text-bg-danger" id="errorBadge">0 erro</span>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong id="progressLabel">Pronto para executar</strong>
+                    <span class="text-muted" id="progressMeta">0%</span>
+                  </div>
+                  <div class="progress" role="progressbar" aria-label="Progresso da execução" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 0%">0%</div>
+                  </div>
+                </div>
+
+                <div id="executionAlert" class="alert alert-info mb-3">
+                  O processamento será exibido aqui assim que o servidor iniciar o lote.
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Respostas dos bancos</h6>
+                    <small class="text-muted" id="sqlResponseCount">0 retornos</small>
+                  </div>
+                  <div id="sqlResponseEmpty" class="alert alert-light border mb-0">
+                    As mensagens e tabelas de SELECT aparecerão aqui conforme cada banco terminar.
+                  </div>
+                  <div class="d-flex flex-column gap-3" id="sqlResponseResults"></div>
+                </div>
+
+                <div class="border rounded p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Log de execução</h6>
+                    <small class="text-muted" id="logCount">0 eventos</small>
+                  </div>
+                  <div class="list-group" id="executionLog" style="max-height: 420px; overflow-y: auto;"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -242,4 +256,4 @@ $catalogJson = json_encode(
 </div>
 
 <script type="application/json" id="databaseManagerCatalog"><?= $catalogJson ?></script>
-<script src="<?= url('assets/js/database_manager/database-manager.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/database_manager/index.js?v=3'); ?>"></script>

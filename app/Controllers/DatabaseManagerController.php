@@ -134,6 +134,8 @@ class DatabaseManagerController extends Controller
 				'tenant_status' => $target['tenant_status'],
 				'success' => $result['success'],
 				'message' => $result['message'],
+				'affected_rows' => $result['affected_rows'] ?? 0,
+				'result_sets' => $result['result_sets'] ?? [],
 				'duration_ms' => $result['duration_ms'],
 				'finished_at' => date('c'),
 			];
@@ -234,6 +236,7 @@ class DatabaseManagerController extends Controller
 				'tenant_name' => $target['tenant_name'],
 				'success' => $result['success'],
 				'message' => $result['message'],
+				'affected_rows' => $result['affected_rows'] ?? 0,
 				'duration_ms' => $result['duration_ms'],
 			];
 			}
