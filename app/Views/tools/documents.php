@@ -133,5 +133,5 @@
   </div>
 </section>
 
-<script src="<?= url('assets/js/helper.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
 <script src="<?= url('assets/js/tools/documents.js?v=2'); ?>"></script>

@@ -128,7 +128,7 @@ function charToBase36Value(char)
       {
         return Number(char);
       }
-    return char.charCodeAt(0) - 55;
+    return char.charCodeAt(0) - 48;
   }
 
 function calculateCnpjAlphanumericDigit(baseChars, weights)
