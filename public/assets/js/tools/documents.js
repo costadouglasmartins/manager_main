@@ -315,7 +315,7 @@
 						const branchQuantity = setBranchQuantity(cnpjNewBranches ? cnpjNewBranches.value : 0);
 						const documents = generateCnpjAlphanumericFamily(branchQuantity, generatorFormatted.checked);
 						generatedDocument.value = documents[0].value;
-						renderCnpjNewGeneratedList(branchQuantity > 1 ? documents : []);
+						renderCnpjNewGeneratedList(branchQuantity > 0 ? documents : []);
 						generatedDocument.focus();
 						generatedDocument.select();
 						return;
