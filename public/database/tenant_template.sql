@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
   `version` VARCHAR(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
   `description` VARCHAR(255) DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `schema_versions_version_unique` (`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -41,19 +41,9 @@ INNER JOIN `manager_main`.`user_permissions` AS SourcePermission
 INNER JOIN `manager_main`.`permissions` AS PermissionCatalog
         ON PermissionCatalog.`id` = SourcePermission.`permission_id`
        AND PermissionCatalog.`system` = 'manager'
-WHERE LPAD(CAST(Tenant.`database_number` AS UNSIGNED), 4, '0') = SUBSTRING(DATABASE(), CHAR_LENGTH('manager_') + 1)
+WHERE DATABASE() REGEXP '^manager_[0-9]{4}$'
+  AND LPAD(CAST(Tenant.`database_number` AS UNSIGNED), 4, '0') = SUBSTRING(DATABASE(), CHAR_LENGTH('manager_') + 1)
   AND TenantUser.`role` = 'owner';
-
-
-CREATE TABLE IF NOT EXISTS `banks` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) NOT NULL DEFAULT '0',
-  `number` VARCHAR(4) NOT NULL DEFAULT '0',
-  `active` TINYINT NOT NULL DEFAULT 0,
-  `created` DATETIME NULL DEFAULT NULL,
-  `modified` DATETIME NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
 CREATE TABLE IF NOT EXISTS `bank_accounts` (
@@ -63,15 +53,17 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `agency` VARCHAR(6) NOT NULL,
   `account` VARCHAR(50) NOT NULL,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created` DATETIME NULL DEFAULT NULL,
-  `modified` DATETIME NULL DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+
   INDEX `fk_bank_accounts_banks_idx` (`bank_id`),
+
   CONSTRAINT `fk_bank_accounts_banks`
     FOREIGN KEY (`bank_id`)
-    REFERENCES `banks` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
+    REFERENCES `manager_main`.`banks` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -105,24 +97,39 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories`
     FOREIGN KEY (`financial_operation_category_id`)
     REFERENCES `financial_operations_categories` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
 CREATE TABLE IF NOT EXISTS `financial_operations` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `financial_operation_category_id` INT NOT NULL,
-  `total_amount` DECIMAL(10,2) NOT NULL,
+  `financial_operation_subcategory_id` INT DEFAULT NULL,
+  `total_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `fk_financial_operations_categories_idx` (`financial_operation_category_id`),
+
+  INDEX `fk_financial_operations_categories_idx` (
+    `financial_operation_category_id`
+  ),
+
+  INDEX `fk_financial_operations_subcategories_idx` (
+    `financial_operation_subcategory_id`
+  ),
+
   CONSTRAINT `fk_financial_operations_categories`
     FOREIGN KEY (`financial_operation_category_id`)
     REFERENCES `financial_operations_categories` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_financial_operations_subcategories`
+    FOREIGN KEY (`financial_operation_subcategory_id`)
+    REFERENCES `financial_operations_subcategories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -130,15 +137,19 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `financial_operation_id` INT NOT NULL,
   `value` DECIMAL(10,2) NOT NULL,
-  `created` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `fk_financial_operations_payments_operations_idx` (`financial_operation_id`),
+
+  INDEX `fk_financial_operations_payments_operations_idx` (
+    `financial_operation_id`
+  ),
+
   CONSTRAINT `fk_financial_operations_payments_operations`
     FOREIGN KEY (`financial_operation_id`)
     REFERENCES `financial_operations` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -149,12 +160,15 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   `file_name` VARCHAR(150) NOT NULL,
   `file_path` VARCHAR(255) NOT NULL,
   `file_hash` CHAR(64) DEFAULT NULL,
-  `created` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+
   UNIQUE KEY `uq_bank_files_path` (`file_path`),
+
   INDEX `idx_bank_files_bank_account_id` (`bank_account_id`),
   INDEX `idx_bank_files_file_type` (`file_type`),
+
   CONSTRAINT `fk_bank_files_bank_accounts`
     FOREIGN KEY (`bank_account_id`)
     REFERENCES `bank_accounts` (`id`)
@@ -222,8 +236,8 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   `last_occurrence_code` VARCHAR(2) DEFAULT NULL,
   `last_occurrence_message` VARCHAR(255) DEFAULT NULL,
 
-  `created` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
 
@@ -241,6 +255,7 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   INDEX `idx_bank_slips_status` (`status`),
   INDEX `idx_bank_slips_due_date` (`due_date`),
   INDEX `idx_bank_slips_document_number` (`document_number`),
+  INDEX `idx_bank_slips_payer_document` (`payer_document`),
 
   CONSTRAINT `fk_bank_slips_bank_accounts`
     FOREIGN KEY (`bank_account_id`)
