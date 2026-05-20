@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `schema_versions` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `version` VARCHAR(20) NOT NULL COMMENT 'Version number (e.g.: 1.0.0)',
+  `version` VARCHAR(20) NOT NULL COMMENT 'Version number (e.g.: 1.5.0)',
   `description` VARCHAR(255) DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
