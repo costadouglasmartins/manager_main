@@ -61,6 +61,25 @@
 
                 <li><hr class="dropdown-divider" /></li>
 
+                <?php if (authCan('bank.index')): ?>
+                  <!-- Bank -->
+                  <li class="dropdown-submenu">
+                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-bank me-2"></i>Bancos</a>
+                    <ul class="dropdown-menu">
+                      <?php if (authCan('bank.create')): ?>
+                        <li><a class="dropdown-item" href="<?= url('bank/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                      <?php endif; ?>
+                      <li><a class="dropdown-item" href="<?= url('bank'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                    </ul>
+                  </li>
+                  <!-- /Bank -->
+                <?php endif; ?>
+
+                <?php if (authCan('bank.index')): ?>
+                  <li><hr class="dropdown-divider" /></li>
+                <?php endif; ?>
+
                 <?php if (authCan('city.index')): ?>
                   <!-- City -->
                   <li class="dropdown-submenu">
