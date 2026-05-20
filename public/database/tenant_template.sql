@@ -57,9 +57,9 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
 
-  INDEX `fk_bank_accounts_banks_idx` (`bank_id`),
+  INDEX `fk_bank_accounts_manager_main_banks_idx` (`bank_id`),
 
-  CONSTRAINT `fk_bank_accounts_banks`
+  CONSTRAINT `fk_bank_accounts_manager_main_banks`
     FOREIGN KEY (`bank_id`)
     REFERENCES `manager_main`.`banks` (`id`)
     ON DELETE RESTRICT
