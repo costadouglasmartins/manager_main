@@ -36,7 +36,7 @@ function permSystemIcon(string $system): string
 	return $system === 'manager' ? 'bi-diagram-3' : 'bi-grid-3x3-gap';
 	}
 
-// Organiza: [system][module] => [rows]
+// Organize: [system][module] => [rows]
 $bySystem = [
 	'manager_main' => [],
 	'manager'      => [],
@@ -65,7 +65,7 @@ foreach ($bySystem as $sys => $_groups)
 	ksort($bySystem[$sys]);
 	}
 
-// Deriva o sistema de origem do usuário selecionado (manager_main se central, manager se pertence a tenant).
+// Derive the selected user's source system (manager_main for central users, manager for tenant users).
 $userOriginSystem = null;
 if (!empty($selectedUser))
 	{
@@ -136,6 +136,39 @@ foreach ($bySystem as $systemName => $groups)
 	$totalGrantedPermissions += $systemChecked;
 	}
 
+$effectivePermissionsBySystem = [];
+foreach ($bySystem as $systemName => $_groups)
+	{
+	$effectivePermissionsBySystem[$systemName] = [];
+	}
+
+foreach ($permissions as $permissionRow)
+	{
+	$permissionId = (int) $permissionRow['id'];
+	if (!isset($userPermissionLookup[$permissionId]))
+		{
+		continue;
+		}
+
+	$permissionSystem = (string) ($permissionRow['system'] ?? 'manager_main');
+	if (!isset($effectivePermissionsBySystem[$permissionSystem]))
+		{
+		$effectivePermissionsBySystem[$permissionSystem] = [];
+		}
+
+	$effectivePermissionsBySystem[$permissionSystem][] = (string) $permissionRow['ability'];
+	}
+
+$hasEffectivePermissionsBySystem = false;
+foreach ($effectivePermissionsBySystem as $systemName => $abilities)
+	{
+	sort($effectivePermissionsBySystem[$systemName], SORT_NATURAL | SORT_FLAG_CASE);
+	if (!empty($effectivePermissionsBySystem[$systemName]))
+		{
+		$hasEffectivePermissionsBySystem = true;
+		}
+	}
+
 $syncCount = null;
 if (isset($_GET['synced']))
 	{
@@ -149,7 +182,7 @@ if (isset($_GET['created']))
 	}
 ?>
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/permissions/index.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/permissions/index.css?v=3'); ?>">
 <!-- /CSS -->
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
@@ -173,83 +206,64 @@ if (isset($_GET['created']))
   </div>
 <?php endif; ?>
 
-<div class="permissions-shell">
-  <div class="card shadow-sm border-0 permission-toolbar-card mb-4">
-    <div class="card-body p-3 p-lg-4">
-      <div class="row g-4 align-items-start">
-        <div class="col-12 col-xl-7">
-          <div class="d-flex align-items-start gap-3 mb-3">
-            <div class="permission-system-icon">
-              <i class="bi bi-shield-lock"></i>
-            </div>
-            <div>
-              <span class="permission-kicker">Painel de acesso</span>
-              <div class="fw-semibold mb-1">Busque um usuário e distribua acessos por módulo</div>
-              <p class="text-muted mb-0">
-                O catálogo agora aparece em acordeão por sistema e cada permissão fica em um card clicável,
-                facilitando leitura rápida no desktop e no mobile.
-              </p>
-            </div>
-          </div>
+<div class="permissions-shell" data-user-search-url="<?= htmlspecialchars(url('permission/searchUsers'), ENT_QUOTES, 'UTF-8'); ?>" data-permission-url="<?= htmlspecialchars(url('permission'), ENT_QUOTES, 'UTF-8'); ?>" data-user-origin-system="<?= htmlspecialchars((string) ($userOriginSystem ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+  <div class="card shadow-sm border-0 permission-header-card mb-3">
+    <div class="card-body p-3 p-lg-4 d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <span class="permission-kicker">Painel de acesso</span>
+        <h6 class="mb-1">Distribuição de permissões por usuário</h6>
+        <p class="text-muted mb-0">Selecione um usuário, revise os módulos por sistema e aplique os acessos necessários.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge text-bg-light border px-3 py-2"><strong><?= (int) $totalCatalogPermissions; ?></strong> permissões</span>
+        <span class="badge text-bg-light border px-3 py-2"><strong><?= (int) $totalModules; ?></strong> módulos</span>
+        <span class="badge text-bg-light border px-3 py-2"><strong><?= (int) $totalSystems; ?></strong> sistemas</span>
+      </div>
+    </div>
+  </div>
 
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-xl-7">
+      <div class="card shadow-sm border-0 permission-search-card h-100">
+        <div class="card-body p-3 p-lg-4">
           <label for="userSearchInput" class="form-label fw-semibold mb-1">Buscar usuário</label>
-          <small class="text-muted d-block mb-2">Digite nome, e-mail ou username para abrir o catálogo do usuário.</small>
+          <small class="text-muted d-block mb-3">Digite nome, e-mail ou username para abrir o catálogo.</small>
           <div class="position-relative" id="userSearchWrapper">
-            <input
-              type="text"
-              id="userSearchInput"
-              class="form-control"
-              placeholder="Digite o nome, e-mail ou username do usuário..."
-              autocomplete="off"
-            >
+            <input type="text" id="userSearchInput" class="form-control form-control-lg" placeholder="Digite o nome, e-mail ou username do usuário..." autocomplete="off">
             <div id="userSearchResults" class="list-group position-absolute w-100 shadow-sm permission-results" style="z-index:1050; max-height:300px; overflow-y:auto; display:none;"></div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="col-12 col-xl-5">
-          <div class="border rounded-4 p-3 h-100 bg-body">
-            <span class="permission-kicker">Ações rápidas</span>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <form method="POST" action="<?= url('permission/sync'); ?>" class="d-inline">
-                <input type="hidden" name="selected_user_id" value="<?= (int) ($selectedUserId ?? 0); ?>">
-                <button class="btn btn-primary" type="submit">
-                  Sincronizar permissões
-                </button>
-              </form>
-
-              <a href="<?= url('permission/orphaned'); ?>" class="btn btn-warning">
-                Permissões órfãs
-              </a>
-
-              <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#addPermCatalog" aria-expanded="false" aria-controls="addPermCatalog">
-                Adicionar manualmente
-              </button>
-            </div>
-
-            <div class="row g-3">
-              <div class="col-6">
-                <div class="permission-stat-card p-3">
-                  <span class="permission-stat-label">Catálogo</span>
-                  <span class="permission-stat-value"><?= (int) $totalCatalogPermissions; ?></span>
-                  <small class="text-muted">permissões catalogadas</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="permission-stat-card p-3">
-                  <span class="permission-stat-label">Módulos</span>
-                  <span class="permission-stat-value"><?= (int) $totalModules; ?></span>
-                  <small class="text-muted">grupos organizados</small>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="permission-stat-card p-3">
-                  <span class="permission-stat-label">Sistemas</span>
-                  <span class="permission-stat-value"><?= (int) $totalSystems; ?></span>
-                  <small class="text-muted">catálogos separados por origem</small>
-                </div>
-              </div>
-            </div>
+    <div class="col-12 col-xl-5">
+      <div class="card shadow-sm border-0 permission-actions-card h-100">
+        <div class="card-body p-3 p-lg-4">
+          <span class="permission-kicker">Ações rápidas</span>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <form method="POST" action="<?= url('permission/sync'); ?>" class="d-inline">
+              <input type="hidden" name="selected_user_id" value="<?= (int) ($selectedUserId ?? 0); ?>">
+              <button class="btn btn-primary" type="submit">Sincronizar permissões</button>
+            </form>
+            <a href="<?= url('permission/orphaned'); ?>" class="btn btn-outline-warning">Permissões órfãs</a>
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#addPermCatalog" aria-expanded="false" aria-controls="addPermCatalog">Adicionar manualmente</button>
           </div>
+
+          <?php if (!empty($systemStats)): ?>
+            <div class="permission-system-summary" aria-label="Resumo por sistema">
+              <div class="permission-system-summary-title">Resumo por sistema</div>
+              <?php foreach ($systemStats as $summarySystemName => $summaryStat): ?>
+                <div class="permission-system-summary-row" data-system="<?= htmlspecialchars($summarySystemName); ?>">
+                  <span class="permission-system-summary-name">
+                    <span class="permission-system-summary-icon" aria-hidden="true"><i class="bi <?= permSystemIcon($summarySystemName); ?>"></i></span>
+                    <span class="badge <?= permSystemBadgeClass($summarySystemName); ?>"><?= htmlspecialchars($summarySystemName); ?></span>
+                  </span>
+                  <span><strong><?= (int) $summaryStat['groups']; ?></strong> módulos</span>
+                  <span><strong><?= (int) $summaryStat['total']; ?></strong> permissões</span>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -322,20 +336,6 @@ if (isset($_GET['created']))
               <small class="text-muted">permissões marcadas agora</small>
             </div>
           </div>
-          <div class="col-12 col-sm-6 col-xl-4">
-            <div class="permission-stat-card p-3">
-              <span class="permission-stat-label">Catálogo</span>
-              <span class="permission-stat-value"><?= (int) $totalCatalogPermissions; ?></span>
-              <small class="text-muted">itens disponíveis no painel</small>
-            </div>
-          </div>
-          <div class="col-12 col-sm-6 col-xl-4">
-            <div class="permission-stat-card p-3">
-              <span class="permission-stat-label">Módulos</span>
-              <span class="permission-stat-value"><?= (int) $totalModules; ?></span>
-              <small class="text-muted">agrupamentos no acordeão</small>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -356,9 +356,9 @@ if (isset($_GET['created']))
   <?php else: ?>
 
     <?php
-    // Toggle de filtro por sistema.
-    // Se o usuário é do manager_main, por padrão o bloco "manager" fica oculto (e vice-versa).
-    // O checkbox abaixo permite ao operador exibir também as permissões do outro sistema.
+    // System filter toggle.
+    // If the user is from manager_main, the manager block starts hidden (and vice versa).
+    // The checkbox below lets the operator show permissions from the other system too.
     $otherSystem = ($userOriginSystem === 'manager') ? 'manager_main' : 'manager';
     $selectedUserType = (string) ($selectedUser['type'] ?? '');
     $canShowOtherSystemToggle = !($otherSystem === 'manager_main' && $selectedUserType !== 'root');
@@ -406,7 +406,7 @@ if (isset($_GET['created']))
 
           $systemStat = $systemStats[$systemName] ?? ['total' => 0, 'checked' => 0, 'groups' => 0, 'groupStats' => []];
 
-          // Oculta por padrão o bloco do "outro" sistema; o toggle acima mostra.
+          // Hide the other system by default; the toggle above shows it.
           $isOtherSystem = ($systemName !== $userOriginSystem);
           $sectionStyle = $isOtherSystem ? 'display:none;' : '';
         ?>
@@ -491,16 +491,7 @@ if (isset($_GET['created']))
                             ?>
                             <div class="col-12 col-md-6 col-xxl-4">
                               <label class="permission-choice">
-                                <input
-                                  id="<?= htmlspecialchars($inputId); ?>"
-                                  class="form-check-input permission-checkbox permission-choice-input"
-                                  type="checkbox"
-                                  name="permission_ids[]"
-                                  value="<?= $pid; ?>"
-                                  data-permission-system="<?= htmlspecialchars($systemName); ?>"
-                                  data-permission-group="<?= htmlspecialchars($groupName); ?>"
-                                  <?= ($checked ? 'checked' : ''); ?>
-                                >
+                                <input id="<?= htmlspecialchars($inputId); ?>" class="form-check-input permission-checkbox permission-choice-input" type="checkbox" name="permission_ids[]" value="<?= $pid; ?>" data-permission-system="<?= htmlspecialchars($systemName); ?>" data-permission-group="<?= htmlspecialchars($groupName); ?>" <?= ($checked ? 'checked' : ''); ?>>
                                 <span class="permission-choice-body">
                                   <span class="permission-choice-meta">
                                     <span class="badge <?= permSystemBadgeClass($psys); ?>"><?= htmlspecialchars($psys); ?></span>
@@ -552,12 +543,23 @@ if (isset($_GET['created']))
         <div class="card shadow-sm border-0 permission-effective-card">
           <div class="card-body p-3">
             <div class="fw-semibold mb-2">Permissões ativas do usuário</div>
-            <?php if (empty($effectiveAbilities)): ?>
+            <?php if (!$hasEffectivePermissionsBySystem): ?>
               <div class="text-muted">Nenhuma permissão ativa encontrada.</div>
             <?php else: ?>
-              <div class="d-flex flex-wrap gap-2">
-                <?php foreach ($effectiveAbilities as $ab): ?>
-                  <span class="badge text-bg-secondary"><code class="text-white"><?= htmlspecialchars($ab); ?></code></span>
+              <div class="permission-effective-systems">
+                <?php foreach ($effectivePermissionsBySystem as $systemName => $abilities): ?>
+                  <?php if (empty($abilities)) { continue; } ?>
+                  <section class="permission-effective-system" data-system="<?= htmlspecialchars($systemName); ?>">
+                    <div class="permission-effective-system-header">
+                      <span class="badge <?= permSystemBadgeClass($systemName); ?>"><?= htmlspecialchars($systemName); ?></span>
+                      <span class="text-muted small"><?= count($abilities); ?> permissão(ões)</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <?php foreach ($abilities as $ability): ?>
+                        <span class="badge text-bg-secondary"><code class="text-white"><?= htmlspecialchars($ability); ?></code></span>
+                      <?php endforeach; ?>
+                    </div>
+                  </section>
                 <?php endforeach; ?>
               </div>
             <?php endif; ?>
@@ -569,264 +571,4 @@ if (isset($_GET['created']))
 
   <?php endif; ?>
 </div>
-
-<script>
-(function() {
-  var input = document.getElementById('userSearchInput');
-  var resultsDiv = document.getElementById('userSearchResults');
-  var debounceTimer = null;
-  var baseUrl = '<?= url("permission/searchUsers"); ?>';
-  var permUrl = '<?= url("permission"); ?>';
-
-  function updatePermissionChoiceState(permissionCheckbox) {
-    var choice = permissionCheckbox.closest('.permission-choice');
-    if (!choice) {
-      return;
-    }
-
-    var stateBadge = choice.querySelector('.permission-state-badge');
-    if (stateBadge) {
-      stateBadge.textContent = permissionCheckbox.checked ? 'Concedida' : 'Disponível';
-      stateBadge.className = 'badge rounded-pill permission-state-badge ' + (permissionCheckbox.checked ? 'text-bg-success' : 'text-bg-light border');
-    }
-
-    var hint = choice.querySelector('.permission-choice-hint');
-    if (hint) {
-      hint.textContent = permissionCheckbox.checked ? 'Clique para remover' : 'Clique para conceder';
-    }
-  }
-
-  function countChecked(checkboxes) {
-    var checkedCount = 0;
-
-    checkboxes.forEach(function(checkbox) {
-      if (checkbox.checked) {
-        checkedCount += 1;
-      }
-    });
-
-    return checkedCount;
-  }
-
-  function getSystemPermissionCheckboxes(systemName) {
-    return document.querySelectorAll('.permission-checkbox[data-permission-system="' + systemName + '"]');
-  }
-
-  function getGroupPermissionCheckboxes(systemName, groupName) {
-    return document.querySelectorAll('.permission-checkbox[data-permission-system="' + systemName + '"][data-permission-group="' + groupName + '"]');
-  }
-
-  function syncBulkToggleState(toggleCheckbox, permissionCheckboxes) {
-    if (!toggleCheckbox) {
-      return;
-    }
-
-    if (permissionCheckboxes.length === 0) {
-      toggleCheckbox.checked = false;
-      toggleCheckbox.indeterminate = false;
-      toggleCheckbox.disabled = true;
-      return;
-    }
-
-    var checkedCount = countChecked(permissionCheckboxes);
-    toggleCheckbox.disabled = false;
-    toggleCheckbox.checked = checkedCount === permissionCheckboxes.length;
-    toggleCheckbox.indeterminate = checkedCount > 0 && checkedCount < permissionCheckboxes.length;
-  }
-
-  function refreshSelectionMetrics() {
-    var permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
-    var groupToggleCheckboxes = document.querySelectorAll('.group-toggle-checkbox');
-    var systemToggleCheckboxes = document.querySelectorAll('.system-toggle-checkbox');
-    var totalGrantedCount = countChecked(permissionCheckboxes);
-
-    permissionCheckboxes.forEach(function(permissionCheckbox) {
-      updatePermissionChoiceState(permissionCheckbox);
-    });
-
-    groupToggleCheckboxes.forEach(function(groupToggle) {
-      var systemName = groupToggle.getAttribute('data-system-toggle');
-      var groupName = groupToggle.getAttribute('data-group-toggle');
-      var groupKey = systemName + '::' + groupName;
-      var groupCheckboxes = getGroupPermissionCheckboxes(systemName, groupName);
-      var checkedCount = countChecked(groupCheckboxes);
-      var groupCountTargets = document.querySelectorAll('[data-group-selected-count="' + groupKey + '"]');
-
-      groupCountTargets.forEach(function(target) {
-        target.textContent = checkedCount;
-      });
-
-      syncBulkToggleState(groupToggle, groupCheckboxes);
-    });
-
-    systemToggleCheckboxes.forEach(function(systemToggle) {
-      var systemName = systemToggle.getAttribute('data-system-toggle');
-      var systemCheckboxes = getSystemPermissionCheckboxes(systemName);
-      var checkedCount = countChecked(systemCheckboxes);
-      var systemCountTargets = document.querySelectorAll('[data-system-selected-count="' + systemName + '"]');
-
-      systemCountTargets.forEach(function(target) {
-        target.textContent = checkedCount;
-      });
-
-      syncBulkToggleState(systemToggle, systemCheckboxes);
-    });
-
-    document.querySelectorAll('[data-total-granted-count]').forEach(function(target) {
-      target.textContent = totalGrantedCount;
-    });
-  }
-
-  function setAccordionState(expand) {
-    if (typeof bootstrap === 'undefined' || !bootstrap.Collapse) {
-      return;
-    }
-
-    document.querySelectorAll('.permission-accordion .accordion-collapse').forEach(function(collapseElement) {
-      var collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false });
-
-      if (expand) {
-        collapseInstance.show();
-        return;
-      }
-
-      collapseInstance.hide();
-    });
-  }
-
-  if (input) {
-    input.addEventListener('input', function() {
-      clearTimeout(debounceTimer);
-      var q = input.value.trim();
-
-      if (q.length < 2) {
-        resultsDiv.style.display = 'none';
-        resultsDiv.innerHTML = '';
-        return;
-      }
-
-      debounceTimer = setTimeout(function() {
-        fetch(baseUrl + '?q=' + encodeURIComponent(q), {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-          .then(function(r) { return r.json(); })
-          .then(function(users) {
-            resultsDiv.innerHTML = '';
-
-            if (users.length === 0) {
-              resultsDiv.innerHTML = '<div class="list-group-item text-muted">Nenhum usuário encontrado.</div>';
-              resultsDiv.style.display = 'block';
-              return;
-            }
-
-            users.forEach(function(u) {
-              var item = document.createElement('a');
-              item.href = permUrl + '?user_id=' + u.id;
-              item.className = 'list-group-item list-group-item-action py-2';
-
-              var nameSpan = document.createElement('span');
-              nameSpan.className = 'fw-semibold';
-              nameSpan.textContent = u.name || u.username;
-
-              var badge = document.createElement('span');
-              badge.className = 'badge text-bg-info ms-2';
-              badge.textContent = u.type;
-
-              var emailDiv = document.createElement('div');
-              emailDiv.className = 'small text-muted';
-              emailDiv.textContent = u.email;
-
-              if (u.username && u.username !== (u.name || '')) {
-                emailDiv.textContent += ' (' + u.username + ')';
-              }
-
-              item.appendChild(nameSpan);
-              item.appendChild(badge);
-              item.appendChild(emailDiv);
-              resultsDiv.appendChild(item);
-            });
-
-            resultsDiv.style.display = 'block';
-          })
-          .catch(function() {
-            resultsDiv.style.display = 'none';
-          });
-      }, 300);
-    });
-
-    input.addEventListener('focus', function() {
-      if (resultsDiv.innerHTML.trim() !== '') {
-        resultsDiv.style.display = 'block';
-      }
-    });
-  }
-
-  document.addEventListener('click', function(e) {
-    var wrapper = document.getElementById('userSearchWrapper');
-    if (wrapper && !wrapper.contains(e.target)) {
-      resultsDiv.style.display = 'none';
-    }
-  });
-
-  var toggleOtherSystem = document.getElementById('toggleOtherSystem');
-  if (toggleOtherSystem) {
-    var userOrigin = <?= json_encode((string) ($userOriginSystem ?? '')); ?>;
-    toggleOtherSystem.addEventListener('change', function() {
-      document.querySelectorAll('.perm-system-block').forEach(function(block) {
-        var systemName = block.getAttribute('data-system');
-
-        if (systemName === userOrigin) {
-          block.style.display = '';
-          return;
-        }
-
-        block.style.display = toggleOtherSystem.checked ? '' : 'none';
-      });
-    });
-  }
-
-  document.querySelectorAll('.system-toggle-checkbox').forEach(function(systemToggle) {
-    systemToggle.addEventListener('change', function() {
-      var systemName = systemToggle.getAttribute('data-system-toggle');
-      var permissionCheckboxes = getSystemPermissionCheckboxes(systemName);
-
-      permissionCheckboxes.forEach(function(permissionCheckbox) {
-        permissionCheckbox.checked = systemToggle.checked;
-      });
-
-      systemToggle.indeterminate = false;
-      refreshSelectionMetrics();
-    });
-  });
-
-  document.querySelectorAll('.group-toggle-checkbox').forEach(function(groupToggle) {
-    groupToggle.addEventListener('change', function() {
-      var systemName = groupToggle.getAttribute('data-system-toggle');
-      var groupName = groupToggle.getAttribute('data-group-toggle');
-      var permissionCheckboxes = getGroupPermissionCheckboxes(systemName, groupName);
-
-      permissionCheckboxes.forEach(function(permissionCheckbox) {
-        permissionCheckbox.checked = groupToggle.checked;
-      });
-
-      groupToggle.indeterminate = false;
-      refreshSelectionMetrics();
-    });
-  });
-
-  document.querySelectorAll('.permission-checkbox').forEach(function(permissionCheckbox) {
-    permissionCheckbox.addEventListener('change', function() {
-      refreshSelectionMetrics();
-    });
-  });
-
-  document.querySelectorAll('[data-permission-accordion-action]').forEach(function(actionButton) {
-    actionButton.addEventListener('click', function() {
-      var action = actionButton.getAttribute('data-permission-accordion-action');
-      setAccordionState(action === 'expand');
-    });
-  });
-
-  refreshSelectionMetrics();
-})();
-</script>
+<script src="<?= url('assets/js/permissions/index.js?v=1'); ?>"></script>
