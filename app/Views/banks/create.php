@@ -6,7 +6,6 @@
   </ol>
 </nav>
 
-<h5>Criar banco</h5>
 <form action="<?= url('bank/store'); ?>" method="POST">
   <div class="row">
 

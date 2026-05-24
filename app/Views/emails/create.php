@@ -10,7 +10,6 @@
 <!-- /Breadcrumbs -->
 
 <!-- E-mail -->
-<h5>Criar e-mail</h5>
 <form action="<?= url('email/store/'); ?>" method="POST">
   <div class="row">
 

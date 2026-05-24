@@ -6,7 +6,6 @@
   </ol>
 </nav>
 
-<h5>Criar categoria financeira</h5>
 <form action="<?= url('financial_operation_category/store/'); ?>" method="POST">
   <div class="row">
 

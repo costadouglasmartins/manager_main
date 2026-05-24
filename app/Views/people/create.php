@@ -1,5 +1,5 @@
 <?php $formError = $formError ?? null; ?>
-<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=3'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=4'); ?>">
 
 <div class="people-create-page">
 <!-- Breadcrumbs -->
@@ -12,16 +12,6 @@
 </nav>
 <!-- /Breadcrumbs -->
 
-<div class="people-create-toolbar">
-	<div>
-		<h5 class="mb-0">Nova pessoa</h5>
-	</div>
-	<a class="btn btn-outline-secondary btn-sm" href="<?= url('person'); ?>">
-		<i class="bi bi-arrow-left"></i>
-		<span>Voltar para pessoas</span>
-	</a>
-</div>
-
 <?php if (!empty($formError)): ?>
 	<div class="alert alert-danger" role="alert">
 		<?= htmlspecialchars($formError, ENT_QUOTES, 'UTF-8'); ?>
@@ -29,17 +19,20 @@
 <?php endif; ?>
 
 <!-- Progress -->
-<div class="card shadow-sm mb-3 people-progress-card">
-	<div class="card-body">
-		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-			<div>
-				<div class="fw-semibold" id="stepTitle">Etapa 1 de 6</div>
-				<div class="text-body-secondary small" id="stepSubtitle">Pessoa</div>
-			</div>
-			<span class="badge text-bg-secondary" id="stepBadge">1/6</span>
+<div class="people-progress-card people-card-accent-primary mb-4">
+	<div class="row g-3 align-items-center">
+		<div class="col-12">
+			<span class="people-create-eyebrow" id="stepSubtitle">Pessoa</span>
+			<h1 class="people-create-title" id="stepTitle">Etapa 1 de 6</h1>
+			<p class="people-create-subtitle mb-0">
+				Complete o cadastro guiado por etapas.
+				<span class="badge text-bg-secondary people-step-badge" id="stepBadge">1/6</span>
+			</p>
 		</div>
+	</div>
 
-		<div class="progress mt-3 people-progress" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
+	<div class="people-progress-controls">
+		<div class="progress people-progress" role="progressbar" aria-label="Progresso do cadastro" aria-valuemin="0" aria-valuemax="100">
 			<div class="progress-bar" id="progressBar" style="width: 20%"></div>
 		</div>
 

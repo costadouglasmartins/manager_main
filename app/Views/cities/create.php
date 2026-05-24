@@ -10,7 +10,6 @@
 <!-- /Breadcrumbs -->
 
 <!-- Cidade -->
-<h5>Criar cidade</h5>
 <form action="<?= url('city/store/'); ?>" method="POST">
   <div class="row">
 

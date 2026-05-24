@@ -10,7 +10,6 @@
 <!-- /Breadcrumbs -->
 
 <!-- Bairro -->
-<h5>Criar bairro</h5>
 <form action="<?= url('neighborhood/store/'); ?>" method="POST">
   <div class="row">
 

@@ -25,7 +25,6 @@ if ($sessionUserLabel === '')
   </ol>
 </nav>
 
-<h5>Criar operação financeira</h5>
 <form action="<?= url('financial_operation/store/'); ?>" method="POST" id="financialOperationCreateForm">
   <div class="row">
 

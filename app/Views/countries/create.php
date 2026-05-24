@@ -10,7 +10,6 @@
 <!-- /Breadcrumbs -->
 
 <!-- País -->
-<h5>Criar país</h5>
 <form action="<?= url('country/store/'); ?>" method="POST">
   <div class="row">
     

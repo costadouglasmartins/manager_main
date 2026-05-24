@@ -12,7 +12,6 @@ $financialOperations = $financialOperations ?? [];
   </ol>
 </nav>
 
-<h5>Criar pagamento financeiro</h5>
 <form action="<?= url('financial_operation_payment/store/'); ?>" method="POST">
   <div class="row">
 

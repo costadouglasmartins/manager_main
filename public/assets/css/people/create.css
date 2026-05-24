@@ -1,5 +1,22 @@
 .people-create-page {
+  --people-border: rgba(var(--bs-body-color-rgb), 0.12);
+  --people-panel-bg: var(--bs-body-bg);
+  --people-ink: var(--bs-body-color);
+  --people-muted: var(--bs-secondary-color);
+  --people-primary: #3b82f6;
+  --people-active: #38bdf8;
+  --people-shadow: 0 14px 32px rgba(20, 28, 35, 0.1);
   margin-bottom: 2rem;
+}
+
+[data-bs-theme="dark"] .people-create-page {
+  --people-border: rgba(255, 255, 255, 0.12);
+  --people-panel-bg: #151a1f;
+  --people-ink: #edf2f4;
+  --people-muted: #aab4bc;
+  --people-primary: #93c5fd;
+  --people-active: #67e8f9;
+  --people-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
 }
 
 .people-create-page .breadcrumb {
@@ -25,29 +42,82 @@
 }
 
 .people-create-eyebrow {
-  color: #1f7a8c;
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--people-muted);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .people-progress-card,
 .people-form-card {
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.12);
+  border: 1px solid var(--people-border);
   border-radius: 8px;
 }
 
 .people-progress-card {
+  position: relative;
   overflow: hidden;
+  padding: 1.35rem;
+  color: var(--people-ink);
+  box-shadow: var(--people-shadow);
   background:
-    linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(25, 135, 84, 0.06) 56%, rgba(255, 193, 7, 0.08)),
-    var(--bs-body-bg);
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(56, 189, 248, 0.08)),
+    linear-gradient(90deg, rgba(var(--bs-body-bg-rgb), 0.88), rgba(var(--bs-body-bg-rgb), 0.72)),
+    var(--people-panel-bg);
 }
 
-.people-progress-card .card-body,
+.people-progress-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+}
+
+.people-progress-card > .row,
+.people-progress-controls {
+  position: relative;
+  z-index: 1;
+}
+
+.people-card-accent-primary {
+  border-bottom: 4px solid var(--people-primary);
+}
+
+.people-progress-card .people-create-eyebrow {
+  color: var(--people-primary);
+}
+
+.people-create-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.people-create-subtitle {
+  max-width: 680px;
+  color: var(--people-muted);
+}
+
+.people-step-badge {
+  vertical-align: text-bottom;
+}
+
 .people-form-card > .card-body {
   padding: 1.15rem;
+}
+
+.people-progress-controls {
+  margin-top: 1rem;
 }
 
 .people-progress {
@@ -58,7 +128,7 @@
 }
 
 .people-progress .progress-bar {
-  background: linear-gradient(90deg, #0d6efd, #198754);
+  background: linear-gradient(90deg, var(--people-primary), var(--people-active));
 }
 
 .people-step-button {
@@ -259,15 +329,8 @@
   font-weight: 800;
 }
 
-[data-bs-theme="dark"] .people-create-eyebrow,
 [data-bs-theme="dark"] .people-repeat-item::before {
   color: #58c4d1;
-}
-
-[data-bs-theme="dark"] .people-progress-card {
-  background:
-    linear-gradient(135deg, rgba(69, 151, 255, 0.12), rgba(67, 174, 112, 0.1) 56%, rgba(255, 205, 86, 0.1)),
-    var(--bs-body-bg);
 }
 
 [data-bs-theme="dark"] .people-form-card {
@@ -301,6 +364,10 @@
 
   .people-step-button {
     justify-content: flex-start;
+  }
+
+  .people-create-title {
+    font-size: 1.55rem;
   }
 }
 

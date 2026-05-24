@@ -10,7 +10,6 @@
 <!-- /Breadcrumbs -->
 
 <!-- Estado -->
-<h5>Criar estado</h5>
 <form action="<?= url('state/store/'); ?>" method="POST">
   <div class="row">
 
