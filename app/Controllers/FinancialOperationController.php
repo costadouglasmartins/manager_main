@@ -10,16 +10,6 @@ use App\Models\FinancialOperationPayment;
 class FinancialOperationController extends Controller
 	{
 	/**
-	 * Route aliases for Brazilian Portuguese report URLs.
-	 *
-	 * @var array<string, string>
-	 */
-	protected $routeAliases = [
-		'contas_a_receber' => 'accountsReceivable',
-		'contas_a_pagar'   => 'accountsPayable',
-	];
-
-	/**
 	 * Index method
 	 */
 	public function index()
@@ -137,30 +127,6 @@ class FinancialOperationController extends Controller
 			'paymentTypes' => FinancialOperationPayment::typeOptions(),
 			'sessionUser' => $_SESSION['manager_main']['user'] ?? [],
 		]);
-		}
-
-	/**
-	 * Accounts receivable report method.
-	 */
-	public function accountsReceivable()
-		{
-		$this->renderAccountsReport(
-			'CREDIT',
-			'financial_operations/accounts_receivable',
-			'Relatório de contas a receber'
-		);
-		}
-
-	/**
-	 * Accounts payable report method.
-	 */
-	public function accountsPayable()
-		{
-		$this->renderAccountsReport(
-			'DEBIT',
-			'financial_operations/accounts_payable',
-			'Relatório de contas a pagar'
-		);
 		}
 
 	/**
@@ -370,68 +336,6 @@ class FinancialOperationController extends Controller
 			}
 		}
 
-	/**
-	 * Renders a paginated financial accounts report.
-	 *
-	 * @param string $operationType Financial operation type (`CREDIT` or `DEBIT`).
-	 * @param string $view View path.
-	 * @param string $title Page title.
-	 * @return void
-	 */
-	private function renderAccountsReport(string $operationType, string $view, string $title): void
-		{
-		$this->requirePermission('financial_operation.index');
-
-		$payment = new FinancialOperationPayment();
-		$category = new FinancialOperationCategory();
-
-		$filters = [
-			'due_date_start'                  => isset($_GET['due_date_start']) ? trim($_GET['due_date_start']) : '',
-			'due_date_end'                    => isset($_GET['due_date_end']) ? trim($_GET['due_date_end']) : '',
-			'financial_operation_category_id' => isset($_GET['financial_operation_category_id']) ? trim($_GET['financial_operation_category_id']) : '',
-		];
-
-		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-		if ($page < 1)
-			{
-			$page = 1;
-			}
-
-		$perPage = 10;
-		$offset = ($page - 1) * $perPage;
-
-		$accounts = $payment->searchAccountsReport($operationType, $filters, $perPage, $offset);
-		$total = $payment->countAccountsReport($operationType, $filters);
-		$totalPages = (int) ceil($total / $perPage);
-		if ($totalPages < 1)
-			{
-			$totalPages = 1;
-			}
-
-		if ($this->wantsJson())
-			{
-			$this->json([
-				'filters'       => $filters,
-				'operationType' => $operationType,
-				'page'          => $page,
-				'perPage'       => $perPage,
-				'total'         => $total,
-				'totalPages'    => $totalPages,
-				'data'          => $accounts,
-			]);
-			}
-
-		$this->view($view, [
-			'accounts'     => $accounts,
-			'title'        => $title,
-			'filters'      => $filters,
-			'categories'   => $category->getAll(),
-			'paymentTypes' => FinancialOperationPayment::typeOptions(),
-			'page'         => $page,
-			'totalPages'   => $totalPages,
-			'total'        => $total,
-		]);
-		}
 	}
 
 ?>

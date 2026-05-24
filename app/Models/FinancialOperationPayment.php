@@ -206,68 +206,6 @@ class FinancialOperationPayment extends Model
 		}
 
 	/**
-	 * Searches accounts report rows by financial operation type.
-	 *
-	 * @param string $operationType Financial operation type (`CREDIT` or `DEBIT`).
-	 * @param array<string, mixed> $filters Search filters.
-	 * @param int $limit Rows per page.
-	 * @param int $offset Query offset.
-	 * @return array<int, array<string, mixed>>
-	 */
-	public function searchAccountsReport(string $operationType, array $filters = [], int $limit = 10, int $offset = 0): array
-		{
-		if (!$this->isValidOperationType($operationType))
-			{
-			return [];
-			}
-
-		$sql = $this->accountsReportSelect() . " WHERE FinancialOperation.`type` = :operation_type";
-		$params = ['operation_type' => $operationType];
-
-		$this->applyAccountsReportFilters($sql, $params, $filters);
-
-		$sql .= " ORDER BY FinancialOperationPayment.due_date ASC, FinancialOperationPayment.id ASC LIMIT :limit OFFSET :offset";
-
-		$stmt = $this->db->prepare($sql);
-		$this->bindParams($stmt, $params);
-		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-		$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-		$stmt->execute();
-
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}
-
-	/**
-	 * Counts accounts report rows by financial operation type.
-	 *
-	 * @param string $operationType Financial operation type (`CREDIT` or `DEBIT`).
-	 * @param array<string, mixed> $filters Search filters.
-	 * @return int
-	 */
-	public function countAccountsReport(string $operationType, array $filters = []): int
-		{
-		if (!$this->isValidOperationType($operationType))
-			{
-			return 0;
-			}
-
-		$sql = "SELECT COUNT(FinancialOperationPayment.id) AS total
-		        FROM financial_operations_payments AS FinancialOperationPayment
-		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
-		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		        WHERE FinancialOperation.`type` = :operation_type";
-		$params = ['operation_type' => $operationType];
-
-		$this->applyAccountsReportFilters($sql, $params, $filters);
-
-		$stmt = $this->db->prepare($sql);
-		$this->bindParams($stmt, $params);
-		$stmt->execute();
-
-		return (int) $stmt->fetchColumn();
-		}
-
-	/**
 	 * Find all by payment id.
 	 *
 	 * @param int|string $id Payment ID.
@@ -331,44 +269,6 @@ class FinancialOperationPayment extends Model
 		}
 
 	/**
-	 * Returns the joined select used by accounts reports.
-	 *
-	 * @return string
-	 */
-	private function accountsReportSelect(): string
-		{
-		return "SELECT FinancialOperationPayment.id,
-		               FinancialOperationPayment.financial_operation_id,
-		               FinancialOperationPayment.type,
-		               FinancialOperationPayment.value,
-		               FinancialOperationPayment.payment_date,
-		               FinancialOperationPayment.due_date,
-		               FinancialOperationPayment.created,
-		               FinancialOperationPayment.modified,
-		               FinancialOperation.type AS financial_operation_type,
-		               FinancialOperation.total_value AS financial_operation_total_value,
-		               FinancialOperation.user_id,
-		               Category.id AS category_id,
-		               Category.name AS category_name,
-		               Category.description AS category_description,
-		               CONCAT(
-		                 COALESCE(NULLIF(TRIM(Category.name), ''), 'Sem categoria'),
-		                 CASE
-		                   WHEN Category.description IS NOT NULL AND TRIM(Category.description) <> ''
-		                   THEN CONCAT(' - ', TRIM(Category.description))
-		                   ELSE ''
-		                 END
-		               ) AS category_label,
-		               User.username,
-		               Person.name AS user_name
-		        FROM financial_operations_payments AS FinancialOperationPayment
-		        INNER JOIN financial_operations AS FinancialOperation ON FinancialOperation.id = FinancialOperationPayment.financial_operation_id
-		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
-		        LEFT JOIN people AS Person ON Person.id = User.person_id";
-		}
-
-	/**
 	 * Applies list filters to a SQL statement.
 	 *
 	 * @param string $sql SQL statement passed by reference.
@@ -406,38 +306,6 @@ class FinancialOperationPayment extends Model
 			{
 			$sql .= " AND FinancialOperationPayment.due_date = :due_date";
 			$params['due_date'] = $this->normalizeDate($filters['due_date']);
-			}
-		}
-
-	/**
-	 * Applies accounts report filters to a SQL statement.
-	 *
-	 * @param string $sql SQL statement passed by reference.
-	 * @param array<string, mixed> $params Bound parameters passed by reference.
-	 * @param array<string, mixed> $filters Search filters.
-	 * @return void
-	 */
-	private function applyAccountsReportFilters(string &$sql, array &$params, array $filters): void
-		{
-		$categoryId = (int) ($filters['financial_operation_category_id'] ?? 0);
-		if ($categoryId > 0)
-			{
-			$sql .= " AND FinancialOperation.financial_operation_category_id = :financial_operation_category_id";
-			$params['financial_operation_category_id'] = $categoryId;
-			}
-
-		$dueDateStart = $this->normalizeDateFilter($filters['due_date_start'] ?? null);
-		if ($dueDateStart !== null)
-			{
-			$sql .= " AND FinancialOperationPayment.due_date >= :due_date_start";
-			$params['due_date_start'] = $dueDateStart;
-			}
-
-		$dueDateEnd = $this->normalizeDateFilter($filters['due_date_end'] ?? null);
-		if ($dueDateEnd !== null)
-			{
-			$sql .= " AND FinancialOperationPayment.due_date <= :due_date_end";
-			$params['due_date_end'] = $dueDateEnd;
 			}
 		}
 
@@ -494,34 +362,6 @@ class FinancialOperationPayment extends Model
 		}
 
 	/**
-	 * Normalizes report date filters to `Y-m-d`.
-	 *
-	 * @param mixed $value Raw date value.
-	 * @return string|null
-	 */
-	private function normalizeDateFilter($value): ?string
-		{
-		$value = trim((string) $value);
-		if ($value === '')
-			{
-			return null;
-			}
-
-		$date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-		$errors = \DateTimeImmutable::getLastErrors();
-		$hasErrors = is_array($errors) && (
-			($errors['warning_count'] ?? 0) > 0
-			|| ($errors['error_count'] ?? 0) > 0
-		);
-		if ($date === false || $hasErrors)
-			{
-			return null;
-			}
-
-		return $date->format('Y-m-d');
-		}
-
-	/**
 	 * Normalizes datetime-local input to `Y-m-d H:i:s`.
 	 *
 	 * @param mixed $value Raw datetime value.
@@ -544,16 +384,6 @@ class FinancialOperationPayment extends Model
 		return $value;
 		}
 
-	/**
-	 * Checks whether a financial operation type can be used by reports.
-	 *
-	 * @param string $operationType Financial operation type.
-	 * @return bool
-	 */
-	private function isValidOperationType(string $operationType): bool
-		{
-		return in_array($operationType, ['CREDIT', 'DEBIT'], true);
-		}
 	}
 
 ?>
