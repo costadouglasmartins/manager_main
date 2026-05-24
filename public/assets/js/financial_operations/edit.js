@@ -20,8 +20,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
+   * Builds and validates a local date.
+   * @param {number} year Year.
+   * @param {number} month Month from 1 to 12.
+   * @param {number} day Day of month.
+   * @returns {Date|null}
+   */
+  function buildLocalDate(year, month, day) {
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
+  }
+
+  /**
    * Parses a date input as a local date.
-   * @param {string} value Date in YYYY-MM-DD format.
+   * @param {string} value Date in YYYY-MM-DD or DD/MM/YYYY format.
    * @returns {Date|null}
    */
   function parseDate(value) {
@@ -29,12 +49,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-    const parts = value.split("-").map((part) => Number.parseInt(part, 10));
-    if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) {
-      return null;
+    const normalizedValue = value.trim();
+    const isoMatch = normalizedValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return buildLocalDate(
+        Number.parseInt(isoMatch[1], 10),
+        Number.parseInt(isoMatch[2], 10),
+        Number.parseInt(isoMatch[3], 10)
+      );
     }
 
-    return new Date(parts[0], parts[1] - 1, parts[2]);
+    const brMatch = normalizedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (brMatch) {
+      return buildLocalDate(
+        Number.parseInt(brMatch[3], 10),
+        Number.parseInt(brMatch[2], 10),
+        Number.parseInt(brMatch[1], 10)
+      );
+    }
+
+    return null;
   }
 
   /**
@@ -48,6 +82,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const day = String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Formats a local date for the user interface.
+   * @param {Date} date Date to format.
+   * @returns {string}
+   */
+  function formatDateDisplay(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Formats a text field value as DD/MM/YYYY while the user types.
+   * @param {string} value Raw input value.
+   * @returns {string}
+   */
+  function formatDateTextValue(value) {
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+    if (digits.length > 4) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    }
+    if (digits.length > 2) {
+      return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+
+    return digits;
+  }
+
+  /**
+   * Returns a comparable month index for a date.
+   * @param {Date} date Date to index.
+   * @returns {number}
+   */
+  function getMonthIndex(date) {
+    return (date.getFullYear() * 12) + date.getMonth();
   }
 
   /**
@@ -155,15 +228,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (endDate > maxEndDate) {
       endDate = maxEndDate;
-      endDateInput.value = formatDateInput(maxEndDate);
+      endDateInput.value = formatDateDisplay(maxEndDate);
     }
 
     const preferredDay = startDate.getDate();
+    const endMonthIndex = getMonthIndex(endDate);
     const dueDates = [];
 
     for (let monthOffset = 0; monthOffset <= 60; monthOffset++) {
       const candidateDate = addMonthsKeepingPreferredDay(startDate, monthOffset, preferredDay);
-      if (candidateDate > endDate) {
+      if (getMonthIndex(candidateDate) > endMonthIndex) {
         break;
       }
 
@@ -223,24 +297,19 @@ document.addEventListener("DOMContentLoaded", () => {
       field.required = enabled;
     });
 
-    if (enabled && startDateInput.value) {
-      const startDate = parseDate(startDateInput.value);
-      if (startDate) {
-        const maxEndDate = new Date(startDate);
-        maxEndDate.setFullYear(maxEndDate.getFullYear() + 5);
-        endDateInput.min = startDateInput.value;
-        endDateInput.max = formatDateInput(maxEndDate);
-      }
-    } else {
-      endDateInput.removeAttribute("min");
-      endDateInput.removeAttribute("max");
-    }
-
     updatePreview();
   }
 
   recurrenceInput.addEventListener("change", syncRecurrence);
   installmentValueInput.addEventListener("input", updatePreview);
+  startDateInput.addEventListener("input", () => {
+    startDateInput.value = formatDateTextValue(startDateInput.value);
+    syncRecurrence();
+  });
+  endDateInput.addEventListener("input", () => {
+    endDateInput.value = formatDateTextValue(endDateInput.value);
+    updatePreview();
+  });
   startDateInput.addEventListener("change", syncRecurrence);
   endDateInput.addEventListener("change", updatePreview);
 

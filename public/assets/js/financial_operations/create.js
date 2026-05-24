@@ -9,9 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const recurrenceInput = document.getElementById("generate_installments");
   const recurrenceFields = document.getElementById("recurrenceFields");
   const installmentValueInput = document.getElementById("installment_value");
+  const paymentTypeInput = document.getElementById("payment_type");
   const startDateInput = document.getElementById("recurrence_start_date");
   const endDateInput = document.getElementById("recurrence_end_date");
   const preview = document.getElementById("recurrencePreview");
+  const installmentsPreview = document.getElementById("recurrenceInstallments");
   const recurrenceControls = form.querySelectorAll("[data-recurrence-field]");
   const moneyFormatter = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -19,8 +21,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
+   * Builds and validates a local date.
+   * @param {number} year Year.
+   * @param {number} month Month from 1 to 12.
+   * @param {number} day Day of month.
+   * @returns {Date|null}
+   */
+  function buildLocalDate(year, month, day) {
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
+  }
+
+  /**
    * Parses a date input as a local date.
-   * @param {string} value Date in YYYY-MM-DD format.
+   * @param {string} value Date in YYYY-MM-DD or DD/MM/YYYY format.
    * @returns {Date|null}
    */
   function parseDate(value) {
@@ -28,12 +50,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-    const parts = value.split("-").map((part) => Number.parseInt(part, 10));
-    if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) {
-      return null;
+    const normalizedValue = value.trim();
+    const isoMatch = normalizedValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return buildLocalDate(
+        Number.parseInt(isoMatch[1], 10),
+        Number.parseInt(isoMatch[2], 10),
+        Number.parseInt(isoMatch[3], 10)
+      );
     }
 
-    return new Date(parts[0], parts[1] - 1, parts[2]);
+    const brMatch = normalizedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (brMatch) {
+      return buildLocalDate(
+        Number.parseInt(brMatch[3], 10),
+        Number.parseInt(brMatch[2], 10),
+        Number.parseInt(brMatch[1], 10)
+      );
+    }
+
+    return null;
   }
 
   /**
@@ -47,6 +83,54 @@ document.addEventListener("DOMContentLoaded", () => {
     const day = String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Returns a comparable month index for a date.
+   * @param {Date} date Date to index.
+   * @returns {number}
+   */
+  function getMonthIndex(date) {
+    return (date.getFullYear() * 12) + date.getMonth();
+  }
+
+  /**
+   * Formats a local date for the user interface.
+   * @param {Date} date Date to format.
+   * @returns {string}
+   */
+  function formatDateDisplay(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
+  /**
+   * Formats a text field value as DD/MM/YYYY while the user types.
+   * @param {string} value Raw input value.
+   * @returns {string}
+   */
+  function formatDateTextValue(value) {
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+    if (digits.length > 4) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    }
+    if (digits.length > 2) {
+      return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+
+    return digits;
+  }
+
+  /**
+   * Parses a money input value.
+   * @param {string} value Money input value.
+   * @returns {number}
+   */
+  function parseMoney(value) {
+    return Number.parseFloat(String(value || "0").replace(",", "."));
   }
 
   /**
@@ -154,15 +238,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (endDate > maxEndDate) {
       endDate = maxEndDate;
-      endDateInput.value = formatDateInput(maxEndDate);
+      endDateInput.value = formatDateDisplay(maxEndDate);
     }
 
     const preferredDay = startDate.getDate();
+    const endMonthIndex = getMonthIndex(endDate);
     const dueDates = [];
 
     for (let monthOffset = 0; monthOffset <= 60; monthOffset++) {
       const candidateDate = addMonthsKeepingPreferredDay(startDate, monthOffset, preferredDay);
-      if (candidateDate > endDate) {
+      if (getMonthIndex(candidateDate) > endMonthIndex) {
         break;
       }
 
@@ -173,35 +258,151 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Updates total value and preview text.
+   * Clears generated installments from the preview.
    */
-  function updatePreview() {
-    if (!recurrenceInput.checked) {
-      preview.querySelector("span").textContent = "Informe a faixa para calcular as parcelas mensais.";
+  function clearInstallmentsPreview() {
+    if (!installmentsPreview) {
       return;
     }
 
-    const installmentValue = Number.parseFloat(installmentValueInput.value || "0");
+    installmentsPreview.innerHTML = "";
+    installmentsPreview.classList.add("d-none");
+  }
+
+  /**
+   * Renders generated installments in the preview area.
+   * @param {Date[]} dueDates Generated due dates.
+   * @param {number} installmentValue Installment amount.
+   */
+  function renderInstallmentsPreview(dueDates, installmentValue) {
+    if (!installmentsPreview) {
+      return;
+    }
+
+    clearInstallmentsPreview();
+
+    if (!recurrenceInput.checked || dueDates.length === 0 || !Number.isFinite(installmentValue) || installmentValue <= 0) {
+      return;
+    }
+
+    const title = document.createElement("div");
+    title.className = "financial-operation-recurrence-installments-title";
+    title.textContent = "Parcelas geradas";
+
+    const list = document.createElement("div");
+    list.className = "financial-operation-recurrence-installments-list";
+
+    const paymentTypeLabel = paymentTypeInput.options[paymentTypeInput.selectedIndex]?.textContent.trim() || "";
+
+    dueDates.forEach((dueDate, index) => {
+      const row = document.createElement("div");
+      row.className = "financial-operation-recurrence__installment";
+
+      const number = document.createElement("span");
+      number.className = "financial-operation-recurrence__installment-number";
+      number.textContent = String(index + 1).padStart(2, "0");
+
+      const date = document.createElement("span");
+      date.textContent = formatDateDisplay(dueDate);
+
+      const type = document.createElement("span");
+      type.textContent = paymentTypeLabel;
+
+      const value = document.createElement("strong");
+      value.textContent = moneyFormatter.format(installmentValue);
+
+      row.append(number, date, type, value);
+      list.append(row);
+    });
+
+    installmentsPreview.append(title, list);
+    installmentsPreview.classList.remove("d-none");
+  }
+
+  /**
+   * Syncs custom validation for recurrence fields.
+   * @param {Date[]} dueDates Generated due dates.
+   * @param {number} installmentValue Installment amount.
+   */
+  function syncRecurrenceValidation(dueDates, installmentValue) {
+    installmentValueInput.setCustomValidity("");
+    paymentTypeInput.setCustomValidity("");
+    startDateInput.setCustomValidity("");
+    endDateInput.setCustomValidity("");
+
+    if (!recurrenceInput.checked) {
+      return;
+    }
+
+    const startDate = parseDate(startDateInput.value);
+    const endDate = parseDate(endDateInput.value);
+
+    if (!Number.isFinite(installmentValue) || installmentValue <= 0) {
+      installmentValueInput.setCustomValidity("Informe um valor de parcela maior que zero.");
+    }
+
+    if (!paymentTypeInput.value) {
+      paymentTypeInput.setCustomValidity("Informe o tipo do pagamento.");
+    }
+
+    if (!startDate) {
+      startDateInput.setCustomValidity("Informe a data inicial.");
+    }
+
+    if (!endDate) {
+      endDateInput.setCustomValidity("Informe a data final.");
+    } else if (startDate && endDate < startDate) {
+      endDateInput.setCustomValidity("A data final deve ser igual ou posterior à data inicial.");
+    } else if (startDate && dueDates.length === 0) {
+      endDateInput.setCustomValidity("A faixa selecionada não gerou parcelas.");
+    }
+  }
+
+  /**
+   * Updates total value and preview text.
+   * @returns {boolean} Whether recurrence data is valid.
+   */
+  function updatePreview() {
+    const previewLabel = preview.querySelector("span");
+
+    if (!recurrenceInput.checked) {
+      if (previewLabel) {
+        previewLabel.textContent = "Informe a faixa para calcular as parcelas mensais.";
+      }
+      clearInstallmentsPreview();
+      syncRecurrenceValidation([], 0);
+      return true;
+    }
+
+    const installmentValue = parseMoney(installmentValueInput.value);
     const dueDates = buildDueDates();
     const total = dueDates.length * installmentValue;
+    const isValid = Number.isFinite(installmentValue)
+      && installmentValue > 0
+      && paymentTypeInput.value !== ""
+      && dueDates.length > 0;
 
-    if (Number.isFinite(total) && total > 0) {
+    syncRecurrenceValidation(dueDates, installmentValue);
+
+    if (isValid && Number.isFinite(total) && total > 0) {
       totalInput.value = total.toFixed(2);
     } else {
       totalInput.value = "";
     }
 
-    const previewLabel = preview.querySelector("span");
     if (!previewLabel) {
-      return;
+      return isValid;
     }
 
-    if (!Number.isFinite(installmentValue) || installmentValue <= 0 || dueDates.length === 0) {
+    if (!isValid) {
       previewLabel.textContent = "Informe valor, data inicial e data final para calcular.";
-      return;
+      clearInstallmentsPreview();
+      return false;
     }
 
     previewLabel.textContent = `${dueDates.length} parcela(s) de ${moneyFormatter.format(installmentValue)}. Total: ${moneyFormatter.format(total)}.`;
+    renderInstallmentsPreview(dueDates, installmentValue);
+    return true;
   }
 
   /**
@@ -218,26 +419,28 @@ document.addEventListener("DOMContentLoaded", () => {
       field.required = enabled;
     });
 
-    if (enabled && startDateInput.value) {
-      const startDate = parseDate(startDateInput.value);
-      if (startDate) {
-        const maxEndDate = new Date(startDate);
-        maxEndDate.setFullYear(maxEndDate.getFullYear() + 5);
-        endDateInput.min = startDateInput.value;
-        endDateInput.max = formatDateInput(maxEndDate);
-      }
-    } else {
-      endDateInput.removeAttribute("min");
-      endDateInput.removeAttribute("max");
-    }
-
     updatePreview();
   }
 
   recurrenceInput.addEventListener("change", syncRecurrence);
   installmentValueInput.addEventListener("input", updatePreview);
+  paymentTypeInput.addEventListener("change", updatePreview);
+  startDateInput.addEventListener("input", () => {
+    startDateInput.value = formatDateTextValue(startDateInput.value);
+    syncRecurrence();
+  });
+  endDateInput.addEventListener("input", () => {
+    endDateInput.value = formatDateTextValue(endDateInput.value);
+    updatePreview();
+  });
   startDateInput.addEventListener("change", syncRecurrence);
   endDateInput.addEventListener("change", updatePreview);
+  form.addEventListener("submit", (event) => {
+    if (!updatePreview()) {
+      event.preventDefault();
+      form.reportValidity();
+    }
+  });
 
   syncRecurrence();
 });

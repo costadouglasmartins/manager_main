@@ -55,9 +55,74 @@
   background: rgba(69, 181, 196, 0.14);
 }
 
+.financial-operation-recurrence-installments {
+  margin-top: 0.75rem;
+}
+
+.financial-operation-recurrence-installments-title {
+  margin-bottom: 0.45rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.financial-operation-recurrence-installments-list {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+
+.financial-operation-recurrence__installment {
+  display: flex;
+  align-items: center;
+  column-gap: 0.7rem;
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  min-height: 2.45rem;
+  min-width: 0;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.12);
+  border-radius: 8px;
+  background: var(--bs-body-bg);
+  font-size: 0.86rem;
+}
+
+.financial-operation-recurrence__installment-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #1f7a8c;
+  border-radius: 50%;
+  background: rgba(31, 122, 140, 0.1);
+  font-weight: 800;
+}
+
+.financial-operation-recurrence__installment > span:not(.financial-operation-recurrence__installment-number) {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.financial-operation-recurrence__installment strong {
+  margin-left: auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
 @media (max-width: 767.98px) {
   .financial-operation-recurrence__header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .financial-operation-recurrence-installments-list {
+    grid-template-columns: 1fr;
+  }
+
+  .financial-operation-recurrence__installment strong {
+    margin-left: 0;
   }
 }

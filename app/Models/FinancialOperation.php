@@ -725,11 +725,13 @@ class FinancialOperation extends Model
 
 		$installments = [];
 		$preferredDay = (int) $startDate->format('d');
+		$endMonthIndex = ((int) $endDate->format('Y') * 12) + (int) $endDate->format('n');
 
 		for ($monthOffset = 0; $monthOffset <= 60; $monthOffset++)
 			{
 			$candidateDate = $this->addMonthsKeepingPreferredDay($startDate, $monthOffset, $preferredDay);
-			if ($candidateDate > $endDate)
+			$candidateMonthIndex = ((int) $candidateDate->format('Y') * 12) + (int) $candidateDate->format('n');
+			if ($candidateMonthIndex > $endMonthIndex)
 				{
 				break;
 				}
@@ -982,7 +984,7 @@ class FinancialOperation extends Model
 		}
 
 	/**
-	 * Parses a `Y-m-d` date input.
+	 * Parses a date input.
 	 *
 	 * @param mixed $value Raw date value.
 	 * @return \DateTimeImmutable|null
@@ -995,18 +997,21 @@ class FinancialOperation extends Model
 			return null;
 			}
 
-		$date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-		$errors = \DateTimeImmutable::getLastErrors();
-		$hasErrors = is_array($errors) && (
-			($errors['warning_count'] ?? 0) > 0
-			|| ($errors['error_count'] ?? 0) > 0
-		);
-		if ($date === false || $hasErrors)
+		foreach (['!Y-m-d', '!d/m/Y'] as $format)
 			{
-			return null;
+			$date = \DateTimeImmutable::createFromFormat($format, $value);
+			$errors = \DateTimeImmutable::getLastErrors();
+			$hasErrors = is_array($errors) && (
+				($errors['warning_count'] ?? 0) > 0
+				|| ($errors['error_count'] ?? 0) > 0
+			);
+			if ($date !== false && !$hasErrors)
+				{
+				return $date;
+				}
 			}
 
-		return $date;
+		return null;
 		}
 
 	/**

@@ -15,7 +15,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/create.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/create.css?v=3'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -100,12 +100,12 @@ if ($sessionUserLabel === '')
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_start_date">Data inicial</label>
-        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" type="date" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
       </div>
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_end_date">Data final</label>
-        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" type="date" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
       </div>
     </div>
 
@@ -113,6 +113,8 @@ if ($sessionUserLabel === '')
       <i class="bi bi-calendar-check"></i>
       <span>Informe a faixa para calcular as parcelas mensais.</span>
     </div>
+
+    <div class="financial-operation-recurrence-installments d-none" id="recurrenceInstallments"></div>
   </div>
 
   <br>
@@ -125,4 +127,4 @@ if ($sessionUserLabel === '')
   </div>
 </form>
 
-<script src="<?= url('assets/js/financial_operations/create.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/create.js?v=3'); ?>"></script>

@@ -15,7 +15,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/edit.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/edit.css?v=2'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -101,12 +101,12 @@ if ($sessionUserLabel === '')
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_start_date">Data inicial</label>
-        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" type="date" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
       </div>
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_end_date">Data final</label>
-        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" type="date" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
       </div>
     </div>
 
@@ -126,4 +126,4 @@ if ($sessionUserLabel === '')
   </div>
 </form>
 
-<script src="<?= url('assets/js/financial_operations/edit.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/edit.js?v=3'); ?>"></script>
