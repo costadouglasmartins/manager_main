@@ -162,7 +162,9 @@ class FinancialOperationCategory extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(FinancialOperationCategory.id) AS total FROM financial_operations_categories WHERE 1 = 1";
+		$sql = "SELECT COUNT(FinancialOperationCategory.id) AS total
+		        FROM financial_operations_categories AS FinancialOperationCategory
+		        WHERE 1 = 1";
 		$params = [];
 
 		$this->applyFilters($sql, $params, $filters);
