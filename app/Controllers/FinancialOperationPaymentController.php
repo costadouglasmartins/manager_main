@@ -18,11 +18,14 @@ class FinancialOperationPaymentController extends Controller
 		$payment = new FinancialOperationPayment();
 
 		$filters = [
-			'id'                     => isset($_GET['id'])                     ? trim($_GET['id'])                     : '',
-			'financial_operation_id' => isset($_GET['financial_operation_id']) ? trim($_GET['financial_operation_id']) : '',
-			'type'                   => isset($_GET['type'])                   ? trim($_GET['type'])                   : '',
-			'payment_date'           => isset($_GET['payment_date'])           ? trim($_GET['payment_date'])           : '',
-			'due_date'               => isset($_GET['due_date'])               ? trim($_GET['due_date'])               : '',
+			'id'                       => isset($_GET['id'])                       ? trim($_GET['id'])                       : '',
+			'financial_operation_id'   => isset($_GET['financial_operation_id'])   ? trim($_GET['financial_operation_id'])   : '',
+			'financial_operation_type' => isset($_GET['financial_operation_type']) ? trim($_GET['financial_operation_type']) : '',
+			'type'                     => isset($_GET['type'])                     ? trim($_GET['type'])                     : '',
+			'payment_date'             => $this->normalizeDateFilter($_GET['payment_date'] ?? ''),
+			'due_date_start'           => $this->normalizeDateFilter($_GET['due_date_start'] ?? ''),
+			'due_date_end'             => $this->normalizeDateFilter($_GET['due_date_end'] ?? ''),
+			'due_date'                 => $this->normalizeDateFilter($_GET['due_date'] ?? ''),
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -192,6 +195,37 @@ class FinancialOperationPaymentController extends Controller
 			}
 
 		return $redirectPath;
+		}
+
+	/**
+	 * Normalizes date filters for HTML date inputs and SQL comparisons.
+	 *
+	 * @param mixed $value Date filter value.
+	 * @return string
+	 */
+	private function normalizeDateFilter($value): string
+		{
+		$value = trim((string) $value);
+		if ($value === '')
+			{
+			return '';
+			}
+
+		foreach (['!Y-m-d', '!d/m/Y'] as $format)
+			{
+			$date = \DateTimeImmutable::createFromFormat($format, $value);
+			$errors = \DateTimeImmutable::getLastErrors();
+			$hasErrors = is_array($errors) && (
+				($errors['warning_count'] ?? 0) > 0
+				|| ($errors['error_count'] ?? 0) > 0
+			);
+			if ($date !== false && !$hasErrors)
+				{
+				return $date->format('Y-m-d');
+				}
+			}
+
+		return '';
 		}
 	}
 

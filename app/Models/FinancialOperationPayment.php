@@ -290,6 +290,12 @@ class FinancialOperationPayment extends Model
 			$params['financial_operation_id'] = (int) $filters['financial_operation_id'];
 			}
 
+		if (isset($filters['financial_operation_type']) && $filters['financial_operation_type'] !== '')
+			{
+			$sql .= " AND FinancialOperation.`type` = :financial_operation_type";
+			$params['financial_operation_type'] = $filters['financial_operation_type'];
+			}
+
 		if (isset($filters['type']) && $filters['type'] !== '')
 			{
 			$sql .= " AND FinancialOperationPayment.`type` = :type";
@@ -302,7 +308,24 @@ class FinancialOperationPayment extends Model
 			$params['payment_date'] = $this->normalizeDate($filters['payment_date']);
 			}
 
-		if (isset($filters['due_date']) && $filters['due_date'] !== '')
+		if (isset($filters['due_date_start']) && $filters['due_date_start'] !== '')
+			{
+			$sql .= " AND FinancialOperationPayment.due_date >= :due_date_start";
+			$params['due_date_start'] = $this->normalizeDate($filters['due_date_start']);
+			}
+
+		if (isset($filters['due_date_end']) && $filters['due_date_end'] !== '')
+			{
+			$sql .= " AND FinancialOperationPayment.due_date <= :due_date_end";
+			$params['due_date_end'] = $this->normalizeDate($filters['due_date_end']);
+			}
+
+		if (
+			(!isset($filters['due_date_start']) || $filters['due_date_start'] === '')
+			&& (!isset($filters['due_date_end']) || $filters['due_date_end'] === '')
+			&& isset($filters['due_date'])
+			&& $filters['due_date'] !== ''
+		)
 			{
 			$sql .= " AND FinancialOperationPayment.due_date = :due_date";
 			$params['due_date'] = $this->normalizeDate($filters['due_date']);
@@ -358,7 +381,26 @@ class FinancialOperationPayment extends Model
 	private function normalizeDate($value): ?string
 		{
 		$value = trim((string) $value);
-		return $value === '' ? null : $value;
+		if ($value === '')
+			{
+			return null;
+			}
+
+		foreach (['!Y-m-d', '!d/m/Y'] as $format)
+			{
+			$date = \DateTimeImmutable::createFromFormat($format, $value);
+			$errors = \DateTimeImmutable::getLastErrors();
+			$hasErrors = is_array($errors) && (
+				($errors['warning_count'] ?? 0) > 0
+				|| ($errors['error_count'] ?? 0) > 0
+			);
+			if ($date !== false && !$hasErrors)
+				{
+				return $date->format('Y-m-d');
+				}
+			}
+
+		return $value;
 		}
 
 	/**

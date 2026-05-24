@@ -1,5 +1,5 @@
 <?php
-$filters = $filters ?? ['id' => '', 'financial_operation_id' => '', 'type' => '', 'payment_date' => '', 'due_date' => ''];
+$filters = $filters ?? ['id' => '', 'financial_operation_id' => '', 'financial_operation_type' => '', 'type' => '', 'payment_date' => '', 'due_date_start' => '', 'due_date_end' => '', 'due_date' => ''];
 $types = $types ?? [];
 $operationTypes = $operationTypes ?? [];
 $page = $page ?? 1;
@@ -8,11 +8,13 @@ $total = $total ?? (is_array($financial_operations_payments) ? count($financial_
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
-  'id'                     => $filters['id'],
-  'financial_operation_id' => $filters['financial_operation_id'],
-  'type'                   => $filters['type'],
-  'payment_date'           => $filters['payment_date'],
-  'due_date'               => $filters['due_date'],
+  'id'                       => $filters['id'],
+  'financial_operation_id'   => $filters['financial_operation_id'],
+  'financial_operation_type' => $filters['financial_operation_type'],
+  'type'                     => $filters['type'],
+  'payment_date'             => $filters['payment_date'],
+  'due_date_start'           => $filters['due_date_start'],
+  'due_date_end'             => $filters['due_date_end'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
@@ -32,17 +34,28 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <div class="col-12 col-lg-9">
     <div class="row g-3">
 
-      <div class="col-12 col-md-6 col-lg-3">
+      <div class="col-12 col-md-4">
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-3">
+      <div class="col-12 col-md-4">
         <input class="form-control" id="financial_operation_id" name="financial_operation_id" type="text" placeholder="Operação" value="<?= htmlspecialchars($filters['financial_operation_id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-2">
+      <div class="col-12 col-md-4">
+        <select class="form-select" id="financial_operation_type" name="financial_operation_type">
+          <option value="">Tipo operação</option>
+          <?php foreach ($operationTypes as $value => $label): ?>
+            <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $filters['financial_operation_type'] === $value ? 'selected' : '' ?>>
+              <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
         <select class="form-select" id="type" name="type">
-          <option value="">Tipo</option>
+          <option value="">Tipo pagamento</option>
           <?php foreach ($types as $value => $label): ?>
             <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $filters['type'] === $value ? 'selected' : '' ?>>
               <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
@@ -51,12 +64,16 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         </select>
       </div>
 
-      <div class="col-12 col-md-6 col-lg-2">
+      <div class="col-12 col-md-4">
         <input class="form-control" id="payment_date" name="payment_date" type="date" value="<?= htmlspecialchars($filters['payment_date'], ENT_QUOTES, 'UTF-8') ?>" title="Data de pagamento">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-2">
-        <input class="form-control" id="due_date" name="due_date" type="date" value="<?= htmlspecialchars($filters['due_date'], ENT_QUOTES, 'UTF-8') ?>" title="Data de vencimento">
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <input autocomplete="off" class="form-control mask-date" id="due_date_start" name="due_date_start" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" value="<?= htmlspecialchars(maskDateBr($filters['due_date_start']) ?? '', ENT_QUOTES, 'UTF-8') ?>" title="Vencimento inicial" aria-label="Vencimento inicial">
+          <span class="input-group-text">até</span>
+          <input autocomplete="off" class="form-control mask-date" id="due_date_end" name="due_date_end" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" value="<?= htmlspecialchars(maskDateBr($filters['due_date_end']) ?? '', ENT_QUOTES, 'UTF-8') ?>" title="Vencimento final" aria-label="Vencimento final">
+        </div>
       </div>
 
     </div>
@@ -162,4 +179,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
+<script src="<?= url('assets/js/masks.js?v=5'); ?>"></script>
 <script src="<?= url('assets/js/financial_operations_payments/index.js?v=1'); ?>"></script>
