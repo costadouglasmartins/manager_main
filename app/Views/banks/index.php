@@ -25,10 +25,10 @@ $activeLabel = static function ($value): string {
   </ol>
 </nav>
 
-<h5>Lista de Bancos</h5>
-
-<form action="<?= url('bank'); ?>" class="row g-3 mb-3 index-search-card" method="get">
+<form action="<?= url('bank'); ?>" class="index-search-card mb-4" method="get">
   <?= sortHiddenInputs($sort) ?>
+
+  <div class="row g-3 align-items-center">
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -64,6 +64,8 @@ $activeLabel = static function ($value): string {
         <a href="<?= url('bank/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>
     </div>
+  </div>
+
   </div>
 
 </form>

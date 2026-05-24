@@ -22,50 +22,52 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </ol>
 </nav>
 
-<h5>Lista de Endereços</h5>
-
-<form action="<?= url('address'); ?>" class="row g-3 mb-3 index-search-card" method="get">
+<form action="<?= url('address'); ?>" class="index-search-card mb-4" method="get">
   <?= sortHiddenInputs($sort) ?>
 
-  <div class="col-12 col-lg-9">
-    <div class="row g-3">
+  <div class="row g-3 align-items-center">
 
-      <div class="col-12 col-md-6 col-lg-3">
-        <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+    <div class="col-12 col-lg-9">
+      <div class="row g-3">
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <input class="form-control" id="zip_code" name="zip_code" type="text" placeholder="CEP" value="<?= htmlspecialchars($filters['zip_code'], ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <input class="form-control" id="street" name="street" type="text" placeholder="Logradouro" value="<?= htmlspecialchars($filters['street'], ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3 position-relative">
+          <input type="hidden" id="person_id" name="person_id" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
+          <input id="person_name" name="person_name" type="text" class="form-control js-autocomplete" autocomplete="off"
+            placeholder="Digite o nome da pessoa..."
+            data-endpoint="<?= url('person/autocomplete'); ?>"
+            data-results="#personResults"
+            data-hidden="#person_id"
+            data-minlen="1"
+            data-param="term"
+            value="<?= htmlspecialchars($filters['person_name'], ENT_QUOTES, 'UTF-8') ?>">
+          <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+        </div>
+
       </div>
-
-      <div class="col-12 col-md-6 col-lg-3">
-        <input class="form-control" id="zip_code" name="zip_code" type="text" placeholder="CEP" value="<?= htmlspecialchars($filters['zip_code'], ENT_QUOTES, 'UTF-8') ?>">
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-3">
-        <input class="form-control" id="street" name="street" type="text" placeholder="Logradouro" value="<?= htmlspecialchars($filters['street'], ENT_QUOTES, 'UTF-8') ?>">
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-3 position-relative">
-        <input type="hidden" id="person_id" name="person_id" value="<?= htmlspecialchars($filters['person_id'], ENT_QUOTES, 'UTF-8') ?>">
-        <input id="person_name" name="person_name" type="text" class="form-control js-autocomplete" autocomplete="off"
-          placeholder="Digite o nome da pessoa..."
-          data-endpoint="<?= url('person/autocomplete'); ?>"
-          data-results="#personResults"
-          data-hidden="#person_id"
-          data-minlen="1"
-          data-param="term"
-          value="<?= htmlspecialchars($filters['person_name'], ENT_QUOTES, 'UTF-8') ?>">
-        <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
-      </div>
-
     </div>
-  </div>
 
-  <div class="col-12 col-lg-3">
-    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
-      <a href="<?= url('address'); ?>" class="btn btn-secondary w-100">Limpar</a>
-      <?php if (authCan('address.create')): ?>
-        <a href="<?= url('address/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
-      <?php endif; ?>
+    <div class="col-12 col-lg-3">
+      <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
+        <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
+        <a href="<?= url('address'); ?>" class="btn btn-secondary w-100">Limpar</a>
+        <?php if (authCan('address.create')): ?>
+          <a href="<?= url('address/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
+        <?php endif; ?>
+      </div>
     </div>
+
   </div>
 
 </form>

@@ -1,22 +1,43 @@
 body { padding-top: 70px; transition: background-color 0.3s ease, color 0.3s ease; touch-action: pan-x pan-y; }
 
 .index-search-card {
-  margin-top: 0.5rem !important;
-  padding: 1.15rem;
+  position: relative;
+  margin-top: 0.5rem;
+  padding: 1.35rem;
+  overflow: hidden;
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.12);
+  border-bottom: 4px solid #3b82f6;
   border-radius: 8px;
+  box-shadow: 0 14px 32px rgba(20, 28, 35, 0.1);
   background:
-    linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(25, 135, 84, 0.06) 56%, rgba(255, 193, 7, 0.08)),
+    linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(56, 189, 248, 0.08)),
+    linear-gradient(90deg, rgba(var(--bs-body-bg-rgb), 0.88), rgba(var(--bs-body-bg-rgb), 0.72)),
     var(--bs-body-bg);
 }
 
-.index-search-card.row {
-  margin-left: 0;
-  margin-right: 0;
+.index-search-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+}
+
+.index-search-card > .row {
+  position: relative;
+  z-index: 1;
 }
 
 [data-bs-theme="dark"] .index-search-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
   background:
-    linear-gradient(135deg, rgba(69, 151, 255, 0.12), rgba(67, 174, 112, 0.1) 56%, rgba(255, 205, 86, 0.1)),
-    var(--bs-body-bg);
+    linear-gradient(135deg, rgba(147, 197, 253, 0.12), rgba(103, 232, 249, 0.1)),
+    linear-gradient(90deg, rgba(21, 26, 31, 0.9), rgba(21, 26, 31, 0.76)),
+    #151a1f;
 }

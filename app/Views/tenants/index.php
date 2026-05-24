@@ -23,11 +23,11 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </nav>
 <!-- /Breadcrumbs -->
 
-<h5>Lista de tenants</h5>
-
 <!-- Search form -->
-<form action="<?= url('tenant'); ?>" class="row g-3 mb-3 index-search-card">
+<form action="<?= url('tenant'); ?>" class="index-search-card mb-4">
   <?= sortHiddenInputs($sort) ?>
+
+  <div class="row g-3 align-items-center">
   <div class="col-12 col-lg-9">
     <div class="row g-3">
       <div class="col-12 col-md-6 col-lg-3">
@@ -59,6 +59,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <?php endif; ?>
     </div>
   </div>
+  </div>
+
 </form>
 
 <hr>

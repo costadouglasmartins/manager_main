@@ -20,10 +20,10 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </ol>
 </nav>
 
-<h5>Lista de Países</h5>
-
-<form action="<?= url('country'); ?>" class="row g-3 mb-3 index-search-card" method="get">
+<form action="<?= url('country'); ?>" class="index-search-card mb-4" method="get">
   <?= sortHiddenInputs($sort) ?>
+
+  <div class="row g-3 align-items-center">
 
   <div class="col-12 col-lg-9">
     <div class="row g-3">
@@ -52,6 +52,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <a href="<?= url('country/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>
     </div>
+  </div>
+
   </div>
 
 </form>

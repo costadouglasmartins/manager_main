@@ -26,11 +26,11 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </nav>
 <!-- /Breadcrumbs -->
 
-<h5>Lista de usuários</h5>
-
 <!-- Search form -->
-<form action="<?= url('user'); ?>" class="row g-3 mb-3 index-search-card">
+<form action="<?= url('user'); ?>" class="index-search-card mb-4">
   <?= sortHiddenInputs($sort) ?>
+
+  <div class="row g-3 align-items-center">
   <div class="col-12 col-lg-9">
     <div class="row g-3">
       <!-- Linha 1 -->
@@ -122,6 +122,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <a href="<?= url('person/create'); ?>" class="btn btn-success w-100" target="_blank">Novo(a) usuário(a)</a>
     </div>
   </div>
+  </div>
+
 </form>
 
 <hr>

@@ -26,10 +26,11 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </ol>
 </nav>
 <!-- /Breadcrumbs -->
-<h5>Lista de Pessoas</h5>
 <!-- Search form -->
-<form action="<?= url('person'); ?>" class="row g-3 mb-3 index-search-card" method="get">
+<form action="<?= url('person'); ?>" class="index-search-card mb-4" method="get">
   <?= sortHiddenInputs($sort) ?>
+
+  <div class="row g-3 align-items-center">
   <div class="col-12 col-lg-9">
     <div class="row g-3">
       <div class="col-12 col-md-6 col-lg-4">
