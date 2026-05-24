@@ -31,44 +31,45 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <?= sortHiddenInputs($sort) ?>
 
   <div class="row g-3 align-items-center">
-  <div class="col-12 col-lg-9">
-    <div class="row g-3">
-      <div class="col-12 col-md-6 col-lg-4">
-        <input class="form-control" id="id" name="id" type="text" placeholder="Código pessoa" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
-      </div>
-      <div class="col-12 col-md-6 col-lg-4 position-relative">
-				<input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da pessoa..." name="name" data-endpoint="<?= url('person/autocomplete'); ?>" data-results="#personResults" data-hidden="#id" data-minlen="1" data-param="term" value="<?= $filters['name']; ?>">
-        <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
-      </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <select autocomplete="off" class="form-control" id="type" name="type">
-          <option value="">Selecione um tipo de pessoa...</option>
-          <option value="individual" <?= ($filters['type'] == 'individual' ? 'selected="selected"' : ''); ?>>Pessoa física</option>
-          <option value="company" <?= ($filters['type'] == 'company' ? 'selected="selected"' : ''); ?>>Pessoa jurídica</option>
-        </select>
-      </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <input autocomplete="off" class="form-control mask-cpf-cnpj" id="document" placeholder="Digite o CPF ou CNPJ..." name="document" value="<?= htmlspecialchars(maskCpfCnpj($filters['document']), ENT_QUOTES, 'UTF-8') ?>">
-      </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <input autocomplete="off" class="form-control mask-date" id="birthdate" placeholder="Data de nascimento" name="birthdate" value="<?= htmlspecialchars(maskCpfCnpj($filters['birthdate']), ENT_QUOTES, 'UTF-8') ?>">
-      </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <select autocomplete="off" class="form-control" id="active" name="active">
-          <option value="">Selecione uma situação...</option>
-          <option value="1" <?= ($filters['active'] === '1' ? 'selected="selected"' : ''); ?>>Ativa</option>
-          <option value="0" <?= ($filters['active'] === '0' ? 'selected="selected"' : ''); ?>>Inativa</options>
-        </select>
+    <div class="col-12 col-lg-9">
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4">
+          <input class="form-control" id="id" name="id" type="text" placeholder="Código pessoa" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="col-12 col-md-6 col-lg-4 position-relative">
+          <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da pessoa..." name="name" data-endpoint="<?= url('person/autocomplete'); ?>" data-results="#personResults" data-hidden="#id" data-minlen="1" data-param="term" value="<?= $filters['name']; ?>">
+          <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <select autocomplete="off" class="form-control" id="type" name="type">
+            <option value="">Selecione um tipo de pessoa...</option>
+            <option value="individual" <?= ($filters['type'] == 'individual' ? 'selected="selected"' : ''); ?>>Pessoa física</option>
+            <option value="company" <?= ($filters['type'] == 'company' ? 'selected="selected"' : ''); ?>>Pessoa jurídica</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <input autocomplete="off" class="form-control mask-cpf-cnpj" id="document" placeholder="Digite o CPF ou CNPJ..." name="document" value="<?= htmlspecialchars(maskCpfCnpj($filters['document']), ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <input autocomplete="off" class="form-control mask-date" id="birthdate" placeholder="Data de nascimento" name="birthdate" value="<?= htmlspecialchars(maskCpfCnpj($filters['birthdate']), ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <select autocomplete="off" class="form-control" id="active" name="active">
+            <option value="">Selecione uma situação...</option>
+            <option value="1" <?= ($filters['active'] === '1' ? 'selected="selected"' : ''); ?>>Ativa</option>
+            <option value="0" <?= ($filters['active'] === '0' ? 'selected="selected"' : ''); ?>>Inativa</options>
+          </select>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="col-12 col-lg-3">
-    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
-      <a href="<?= url('person'); ?>" class="btn btn-secondary w-100">Limpar</a>
-			<?php if (authCan('person.create')): ?>
-				<a href="<?= url('person/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
-			<?php endif; ?>
+    <div class="col-12 col-lg-3">
+      <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
+        <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
+        <a href="<?= url('person'); ?>" class="btn btn-secondary w-100">Limpar</a>
+        <?php if (authCan('person.create')): ?>
+          <a href="<?= url('person/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </form>
