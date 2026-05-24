@@ -54,11 +54,11 @@ if (!function_exists('homeDashboardTenantBadgeClass'))
 		switch ($status)
 			{
 			case 'active':
-				return 'text-bg-success';
+				return 'home-status-badge home-status-active';
 			case 'suspended':
-				return 'text-bg-danger';
+				return 'home-status-badge home-status-suspended';
 			default:
-				return 'text-bg-warning';
+				return 'home-status-badge home-status-pending';
 			}
 		}
 	}
@@ -117,17 +117,17 @@ $privilegedPercent = homeDashboardPercent($privilegedUsers, $usersTotal);
 $contactDensityPercent = min(100, (int) round($contactAverage * 25));
 
 $peopleChart = [
-	['label' => 'Pessoas ativas', 'value' => $peopleActive, 'icon' => 'bi-check2-circle', 'tone' => 'success'],
-	['label' => 'Pessoas inativas', 'value' => $peopleInactive, 'icon' => 'bi-pause-circle', 'tone' => 'secondary'],
+	['label' => 'Pessoas ativas', 'value' => $peopleActive, 'icon' => 'bi-check2-circle', 'tone' => 'active'],
+	['label' => 'Pessoas inativas', 'value' => $peopleInactive, 'icon' => 'bi-pause-circle', 'tone' => 'muted'],
 	['label' => 'Pessoas físicas', 'value' => $peopleIndividual, 'icon' => 'bi-person', 'tone' => 'primary'],
-	['label' => 'Pessoas jurídicas', 'value' => $peopleCompany, 'icon' => 'bi-buildings', 'tone' => 'warning'],
+	['label' => 'Pessoas jurídicas', 'value' => $peopleCompany, 'icon' => 'bi-buildings', 'tone' => 'amber'],
 ];
 $peopleChartMax = max(1, $peopleActive, $peopleInactive, $peopleIndividual, $peopleCompany);
 
 $contactChart = [
-	['label' => 'E-mails', 'value' => $emailsTotal, 'icon' => 'bi-envelope'],
-	['label' => 'Telefones', 'value' => $phonesTotal, 'icon' => 'bi-telephone'],
-	['label' => 'Endereços', 'value' => $addressesTotal, 'icon' => 'bi-signpost-split'],
+	['label' => 'E-mails', 'value' => $emailsTotal, 'icon' => 'bi-envelope', 'tone' => 'primary'],
+	['label' => 'Telefones', 'value' => $phonesTotal, 'icon' => 'bi-telephone', 'tone' => 'active'],
+	['label' => 'Endereços', 'value' => $addressesTotal, 'icon' => 'bi-signpost-split', 'tone' => 'amber'],
 ];
 $contactChartMax = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
 
@@ -138,7 +138,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
 ?>
 
 <!-- Css -->
-<link rel="stylesheet" href="<?= url('assets/css/home/index.css?v=2'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/home/index.css?v=4'); ?>">
 <!-- /Css -->
 
 <!-- Breadcrumbs -->
@@ -149,109 +149,105 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
 </nav>
 <!-- /Breadcrumbs -->
 
-<section class="home-dashboard">
-  <div class="home-hero mb-4">
-    <div class="row g-4 align-items-center">
-      <div class="col-12 col-xl-7">
+<section class="home-dashboard container-fluid px-0">
+  <div class="home-hero home-card-accent-primary mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-12">
         <span class="home-kicker">Visão geral</span>
         <h1 class="home-title">Dashboard operacional</h1>
         <p class="home-subtitle mb-0">
           Acompanhe cadastros, tenants, usuários e canais de contato em uma tela única.
         </p>
-        <div class="home-hero-metrics">
-          <span>
-            <i class="bi bi-people"></i>
-            <strong><?= number_format($peopleTotal, 0, ',', '.'); ?></strong>
-            <small>pessoas</small>
-          </span>
-          <span>
-            <i class="bi bi-person-lock"></i>
-            <strong><?= number_format($usersTotal, 0, ',', '.'); ?></strong>
-            <small>usuários</small>
-          </span>
-          <span>
-            <i class="bi bi-hdd-network"></i>
-            <strong><?= number_format($tenantsTotal, 0, ',', '.'); ?></strong>
-            <small>tenants</small>
-          </span>
-        </div>
-      </div>
-      <div class="col-12 col-xl-5">
-        <div class="home-hero-actions">
-          <?php if (homeDashboardCan('person.create')): ?>
-            <a class="btn btn-light" href="<?= url('person/create'); ?>">
-              <i class="bi bi-person-plus me-1"></i>Nova pessoa
-            </a>
-          <?php endif; ?>
-          <?php if (homeDashboardCan('person.index')): ?>
-            <a class="btn btn-outline-light" href="<?= url('person'); ?>">
-              <i class="bi bi-people me-1"></i>Pessoas
-            </a>
-          <?php endif; ?>
-          <?php if (homeDashboardCan('tenant.index')): ?>
-            <a class="btn btn-outline-light" href="<?= url('tenant'); ?>">
-              <i class="bi bi-database me-1"></i>Tenants
-            </a>
-          <?php endif; ?>
-        </div>
       </div>
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi" style="--kpi-progress: <?= $peopleActivePercent; ?>%;">
-        <div class="home-kpi-top">
-          <div class="home-kpi-icon text-bg-primary"><i class="bi bi-people-fill"></i></div>
-          <span class="home-kpi-pill"><?= $peopleActivePercent; ?>%</span>
+  <div class="row g-4 mb-4 align-items-stretch">
+    <aside class="col-12 col-lg-4 col-xl-3 d-lg-flex">
+      <div class="home-panel home-panel-menu home-card-accent-primary w-100">
+        <div class="home-panel-header mb-3">
+          <div>
+            <span class="home-kicker">Ações rápidas</span>
+            <h2 class="home-panel-title">Menu operacional</h2>
+          </div>
         </div>
-        <span class="home-kpi-label">Pessoas ativas</span>
-        <strong class="home-kpi-value home-counter" data-target="<?= $peopleActive; ?>"><?= number_format($peopleActive, 0, ',', '.'); ?></strong>
-        <span class="home-kpi-meta"><?= $peopleActivePercent; ?>% do cadastro total</span>
-        <span class="home-kpi-track"><span></span></span>
+        <nav class="nav nav-pills flex-column gap-2 home-side-menu" aria-label="Ações do dashboard">
+          <?php if (homeDashboardCan('person.create')): ?>
+            <a class="btn btn-primary text-start" href="<?= url('person/create'); ?>">
+              <i class="bi bi-person-plus me-2"></i>Nova pessoa
+            </a>
+          <?php endif; ?>
+          <?php if (homeDashboardCan('person.index')): ?>
+            <a class="btn btn-outline-primary text-start" href="<?= url('person'); ?>">
+              <i class="bi bi-people me-2"></i>Pessoas
+            </a>
+          <?php endif; ?>
+          <?php if (homeDashboardCan('tenant.index')): ?>
+            <a class="btn btn-outline-primary text-start" href="<?= url('tenant'); ?>">
+              <i class="bi bi-database me-2"></i>Tenants
+            </a>
+          <?php endif; ?>
+        </nav>
       </div>
-    </div>
-    <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi" style="--kpi-progress: <?= $tenantActivePercent; ?>%;">
-        <div class="home-kpi-top">
-          <div class="home-kpi-icon text-bg-success"><i class="bi bi-database-check"></i></div>
-          <span class="home-kpi-pill"><?= $tenantActivePercent; ?>%</span>
+    </aside>
+
+    <div class="col-12 col-lg-8 col-xl-9 d-flex">
+      <div class="row g-3 w-100">
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="home-kpi home-kpi-primary home-card-accent-primary" style="--kpi-progress: <?= $peopleActivePercent; ?>%;">
+            <div class="home-kpi-top">
+              <div class="home-kpi-icon"><i class="bi bi-people-fill"></i></div>
+              <span class="home-kpi-pill"><?= $peopleActivePercent; ?>%</span>
+            </div>
+            <span class="home-kpi-label">Pessoas ativas</span>
+            <strong class="home-kpi-value home-counter" data-target="<?= $peopleActive; ?>"><?= number_format($peopleActive, 0, ',', '.'); ?></strong>
+            <span class="home-kpi-meta"><?= $peopleActivePercent; ?>% do cadastro total</span>
+            <span class="home-kpi-track"><span></span></span>
+          </div>
         </div>
-        <span class="home-kpi-label">Tenants ativos</span>
-        <strong class="home-kpi-value home-counter" data-target="<?= $tenantsActive; ?>"><?= number_format($tenantsActive, 0, ',', '.'); ?></strong>
-        <span class="home-kpi-meta"><?= $tenantActivePercent; ?>% operacionais</span>
-        <span class="home-kpi-track"><span></span></span>
-      </div>
-    </div>
-    <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi" style="--kpi-progress: <?= $usersActivePercent; ?>%;">
-        <div class="home-kpi-top">
-          <div class="home-kpi-icon text-bg-info"><i class="bi bi-person-gear"></i></div>
-          <span class="home-kpi-pill"><?= $usersActivePercent; ?>%</span>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="home-kpi home-kpi-active home-card-accent-active" style="--kpi-progress: <?= $tenantActivePercent; ?>%;">
+            <div class="home-kpi-top">
+              <div class="home-kpi-icon"><i class="bi bi-database-check"></i></div>
+              <span class="home-kpi-pill"><?= $tenantActivePercent; ?>%</span>
+            </div>
+            <span class="home-kpi-label">Tenants ativos</span>
+            <strong class="home-kpi-value home-counter" data-target="<?= $tenantsActive; ?>"><?= number_format($tenantsActive, 0, ',', '.'); ?></strong>
+            <span class="home-kpi-meta"><?= $tenantActivePercent; ?>% operacionais</span>
+            <span class="home-kpi-track"><span></span></span>
+          </div>
         </div>
-        <span class="home-kpi-label">Usuários ativos</span>
-        <strong class="home-kpi-value home-counter" data-target="<?= $usersActive; ?>"><?= number_format($usersActive, 0, ',', '.'); ?></strong>
-        <span class="home-kpi-meta"><?= $privilegedPercent; ?>% com perfil admin/root</span>
-        <span class="home-kpi-track"><span></span></span>
-      </div>
-    </div>
-    <div class="col-12 col-md-6 col-xl-3">
-      <div class="home-kpi" style="--kpi-progress: <?= $contactDensityPercent; ?>%;">
-        <div class="home-kpi-top">
-          <div class="home-kpi-icon text-bg-warning"><i class="bi bi-broadcast-pin"></i></div>
-          <span class="home-kpi-pill"><?= number_format($contactAverage, 1, ',', '.'); ?>/pessoa</span>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="home-kpi home-kpi-indigo home-card-accent-indigo" style="--kpi-progress: <?= $usersActivePercent; ?>%;">
+            <div class="home-kpi-top">
+              <div class="home-kpi-icon"><i class="bi bi-person-gear"></i></div>
+              <span class="home-kpi-pill"><?= $usersActivePercent; ?>%</span>
+            </div>
+            <span class="home-kpi-label">Usuários ativos</span>
+            <strong class="home-kpi-value home-counter" data-target="<?= $usersActive; ?>"><?= number_format($usersActive, 0, ',', '.'); ?></strong>
+            <span class="home-kpi-meta"><?= $privilegedPercent; ?>% com perfil admin/root</span>
+            <span class="home-kpi-track"><span></span></span>
+          </div>
         </div>
-        <span class="home-kpi-label">Canais de contato</span>
-        <strong class="home-kpi-value home-counter" data-target="<?= $contactTotal; ?>"><?= number_format($contactTotal, 0, ',', '.'); ?></strong>
-        <span class="home-kpi-meta"><?= number_format($contactAverage, 1, ',', '.'); ?> por pessoa</span>
-        <span class="home-kpi-track"><span></span></span>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="home-kpi home-kpi-amber home-card-accent-amber" style="--kpi-progress: <?= $contactDensityPercent; ?>%;">
+            <div class="home-kpi-top">
+              <div class="home-kpi-icon"><i class="bi bi-broadcast-pin"></i></div>
+              <span class="home-kpi-pill"><?= number_format($contactAverage, 1, ',', '.'); ?>/pessoa</span>
+            </div>
+            <span class="home-kpi-label">Canais de contato</span>
+            <strong class="home-kpi-value home-counter" data-target="<?= $contactTotal; ?>"><?= number_format($contactTotal, 0, ',', '.'); ?></strong>
+            <span class="home-kpi-meta"><?= number_format($contactAverage, 1, ',', '.'); ?> por pessoa</span>
+            <span class="home-kpi-track"><span></span></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="row g-4 mb-4">
     <div class="col-12 col-xl-8">
-      <div class="home-panel h-100">
+      <div class="home-panel home-card-accent-primary h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-kicker">Cadastros</span>
@@ -263,9 +259,9 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
         <div class="home-chart-list">
           <?php foreach ($peopleChart as $row): ?>
             <?php $barPercent = homeDashboardPercent((int) $row['value'], $peopleChartMax); ?>
-            <div class="home-bar-row" data-chart-row style="--bar-value: <?= $barPercent; ?>%;">
+            <div class="home-bar-row home-chart-<?= htmlspecialchars($row['tone'], ENT_QUOTES, 'UTF-8'); ?>" data-chart-row style="--bar-value: <?= $barPercent; ?>%;">
               <div class="home-bar-meta">
-                <span class="home-bar-icon home-tone-<?= htmlspecialchars($row['tone'], ENT_QUOTES, 'UTF-8'); ?>"><i class="bi <?= htmlspecialchars($row['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i></span>
+                <span class="home-bar-icon"><i class="bi <?= htmlspecialchars($row['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i></span>
                 <span><?= htmlspecialchars($row['label'], ENT_QUOTES, 'UTF-8'); ?></span>
                 <strong><?= number_format((int) $row['value'], 0, ',', '.'); ?></strong>
               </div>
@@ -279,7 +275,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="home-panel h-100">
+      <div class="home-panel home-card-accent-active h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-kicker">Tenants</span>
@@ -295,7 +291,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
         </div>
 
         <div class="home-legend">
-          <span><i class="home-dot home-dot-success"></i>Ativos: <?= number_format($tenantsActive, 0, ',', '.'); ?></span>
+          <span><i class="home-dot home-dot-active"></i>Ativos: <?= number_format($tenantsActive, 0, ',', '.'); ?></span>
           <span><i class="home-dot home-dot-warning"></i>Pendentes: <?= number_format($tenantsPending, 0, ',', '.'); ?></span>
           <span><i class="home-dot home-dot-danger"></i>Suspensos: <?= number_format($tenantsSuspended, 0, ',', '.'); ?></span>
         </div>
@@ -305,7 +301,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
 
   <div class="row g-4">
     <div class="col-12 col-xl-4">
-      <div class="home-panel h-100">
+      <div class="home-panel home-card-accent-amber h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-kicker">Contato</span>
@@ -316,7 +312,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
         <div class="home-contact-stack">
           <?php foreach ($contactChart as $row): ?>
             <?php $contactPercent = homeDashboardPercent((int) $row['value'], $contactChartMax); ?>
-            <div class="home-contact-item" data-chart-row style="--bar-value: <?= $contactPercent; ?>%;">
+            <div class="home-contact-item home-chart-<?= htmlspecialchars($row['tone'], ENT_QUOTES, 'UTF-8'); ?>" data-chart-row style="--bar-value: <?= $contactPercent; ?>%;">
               <div>
                 <i class="bi <?= htmlspecialchars($row['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
                 <span><?= htmlspecialchars($row['label'], ENT_QUOTES, 'UTF-8'); ?></span>
@@ -335,7 +331,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="home-panel h-100">
+      <div class="home-panel home-card-accent-indigo h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-kicker">Últimos registros</span>
@@ -368,7 +364,7 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="home-panel h-100">
+      <div class="home-panel home-card-accent-rose h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-kicker">Infraestrutura</span>
@@ -405,5 +401,5 @@ $tenantSuspendedAngle = $tenantPendingAngle + (homeDashboardPercent($tenantsSusp
   </div>
 </section>
 <!-- Js -->
-<script src="<?= url('assets/js/home/index.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/home/index.js?v=4'); ?>"></script>
 <!-- /Js -->
