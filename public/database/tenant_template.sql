@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `schema_versions_version_unique` (`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 INSERT IGNORE INTO `schema_versions` (
@@ -53,22 +53,23 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `agency` VARCHAR(6) NOT NULL,
   `account` VARCHAR(50) NOT NULL,
   `pix_key_type` ENUM('CPF','CNPJ','EMAIL','PHONE','RANDOM') NULL DEFAULT NULL,
-	`pix_key` VARCHAR(255) NULL DEFAULT NULL,
-	`bank_slip_instructions_line_1` VARCHAR(255) NULL DEFAULT NULL,
-	`bank_slip_instructions_line_2` VARCHAR(255) NULL DEFAULT NULL,
-	`bank_slip_instructions_line_3` VARCHAR(255) NULL DEFAULT NULL,
-	`bank_slip_instructions_line_4` VARCHAR(255) NULL DEFAULT NULL,
-	`bank_slip_protest` TINYINT(1) NULL DEFAULT NULL,
-	`bank_slip_protest_number_of_days` TINYINT(2) NULL DEFAULT NULL,
-	`bank_slip_wallet` VARCHAR(50) NULL DEFAULT NULL,
-	`bank_slip_species_title` VARCHAR(50) NULL DEFAULT NULL,
-	`bank_slip_interest_type` ENUM('DAILY','MONTHLY') NULL DEFAULT NULL,
-	`bank_slip_interest_amount_type` ENUM('PERCENTAGE','FIXED_AMOUNT') NULL DEFAULT NULL,
-	`bank_slip_interest` DECIMAL(10,2) NULL DEFAULT NULL,
-	`bank_slip_late_fee_amount` DECIMAL(10,2) NULL DEFAULT NULL,
+  `pix_key` VARCHAR(255) NULL DEFAULT NULL,
+  `bank_slip_instructions_line_1` VARCHAR(255) NULL DEFAULT NULL,
+  `bank_slip_instructions_line_2` VARCHAR(255) NULL DEFAULT NULL,
+  `bank_slip_instructions_line_3` VARCHAR(255) NULL DEFAULT NULL,
+  `bank_slip_instructions_line_4` VARCHAR(255) NULL DEFAULT NULL,
+  `bank_slip_protest` TINYINT(1) NULL DEFAULT NULL,
+  `bank_slip_protest_number_of_days` TINYINT(2) NULL DEFAULT NULL,
+  `bank_slip_wallet` VARCHAR(50) NULL DEFAULT NULL,
+  `bank_slip_species_title` VARCHAR(50) NULL DEFAULT NULL,
+  `bank_slip_interest_type` ENUM('DAILY','MONTHLY') NULL DEFAULT NULL,
+  `bank_slip_interest_amount_type` ENUM('PERCENTAGE','FIXED_AMOUNT') NULL DEFAULT NULL,
+  `bank_slip_interest` DECIMAL(10,2) NULL DEFAULT NULL,
+  `bank_slip_late_fee_amount` DECIMAL(10,2) NULL DEFAULT NULL,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
 
   INDEX `fk_bank_accounts_manager_main_banks_idx` (`bank_id`),
@@ -78,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
     REFERENCES `manager_main`.`banks` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -86,9 +87,11 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `name` VARCHAR(255) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
+
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
@@ -97,6 +100,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   `name` VARCHAR(255) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
 
   UNIQUE KEY `financial_operations_subcategories_category_name_unique` (
@@ -113,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
     REFERENCES `financial_operations_categories` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -123,6 +127,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   `total_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
 
   INDEX `fk_financial_operations_categories_idx` (
@@ -144,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
     REFERENCES `financial_operations_subcategories` (`id`)
     ON DELETE SET NULL
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -153,6 +158,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   `value` DECIMAL(10,2) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
 
   INDEX `fk_financial_operations_payments_operations_idx` (
@@ -164,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
     REFERENCES `financial_operations` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `bank_files` (
@@ -176,6 +182,7 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   `file_hash` CHAR(64) DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
 
   UNIQUE KEY `uq_bank_files_path` (`file_path`),
@@ -188,7 +195,7 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
     REFERENCES `bank_accounts` (`id`)
     ON DELETE SET NULL
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS `bank_slips` (
@@ -288,4 +295,144 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
     REFERENCES `financial_operations_payments` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Store module
+-- products pertence a manager_main.users
+-- manager_main.users has many products
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `products_categories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(120) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_products_categories_name` (`name`),
+  KEY `idx_products_categories_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+
+  `user_id` INT NOT NULL,
+
+  `product_category_id` INT DEFAULT NULL,
+  `sku` VARCHAR(60) DEFAULT NULL,
+  `barcode` VARCHAR(80) DEFAULT NULL,
+  `name` VARCHAR(160) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `cost_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `sale_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `stock_quantity` DECIMAL(12,3) NOT NULL DEFAULT 0.000,
+  `minimum_stock` DECIMAL(12,3) NOT NULL DEFAULT 0.000,
+  `unit` VARCHAR(20) NOT NULL DEFAULT 'UN',
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_products_sku` (`sku`),
+  UNIQUE KEY `uq_products_barcode` (`barcode`),
+
+  KEY `idx_products_user_id` (`user_id`),
+  KEY `idx_products_category` (`product_category_id`),
+  KEY `idx_products_name` (`name`),
+  KEY `idx_products_active` (`active`),
+  KEY `idx_products_stock_quantity` (`stock_quantity`),
+
+  CONSTRAINT `fk_products_manager_main_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_products_categories`
+    FOREIGN KEY (`product_category_id`)
+    REFERENCES `products_categories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `products_images` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_id` INT NOT NULL,
+  `original_name` VARCHAR(255) DEFAULT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `thumb_path` VARCHAR(255) DEFAULT NULL,
+  `mime_type` VARCHAR(100) NOT NULL,
+  `file_size` INT UNSIGNED DEFAULT NULL,
+  `width` INT UNSIGNED DEFAULT NULL,
+  `height` INT UNSIGNED DEFAULT NULL,
+  `position` INT NOT NULL DEFAULT 0,
+  `is_main` TINYINT(1) NOT NULL DEFAULT 0,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_products_images_file_path` (`file_path`),
+  KEY `idx_products_images_product` (`product_id`),
+  KEY `idx_products_images_main` (`product_id`, `is_main`),
+
+  CONSTRAINT `fk_products_images_products`
+    FOREIGN KEY (`product_id`)
+    REFERENCES `products` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_id` INT NOT NULL,
+  `movement_type` ENUM('IN','OUT','ADJUSTMENT') NOT NULL,
+  `quantity` DECIMAL(12,3) NOT NULL,
+  `previous_quantity` DECIMAL(12,3) NOT NULL,
+  `new_quantity` DECIMAL(12,3) NOT NULL,
+  `unit_cost` DECIMAL(12,2) DEFAULT NULL,
+  `unit_price` DECIMAL(12,2) DEFAULT NULL,
+  `reference` VARCHAR(120) DEFAULT NULL,
+  `observations` VARCHAR(255) DEFAULT NULL,
+  `movement_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_products_stocks_movements_product` (`product_id`),
+  KEY `idx_products_stocks_movements_type` (`movement_type`),
+  KEY `idx_products_stocks_movements_date` (`movement_date`),
+
+  CONSTRAINT `fk_products_stocks_movements_products`
+    FOREIGN KEY (`product_id`)
+    REFERENCES `products` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO `schema_versions` (
+  `version`,
+  `description`,
+  `created`,
+  `modified`
+)
+VALUES (
+  'store-001',
+  'Store products, images and stock module',
+  NOW(),
+  NOW()
+)
+ON DUPLICATE KEY UPDATE
+  `description` = VALUES(`description`),
+  `modified` = NOW();
