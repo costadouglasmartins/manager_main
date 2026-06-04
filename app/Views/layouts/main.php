@@ -269,6 +269,8 @@
                     <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
                     <li><hr class="dropdown-divider" /></li>
                   <?php endif; ?>
+                  <li><a class="dropdown-item" href="<?= url('tool/zipCodeSearch'); ?>"><i class="bi bi-geo-alt-fill me-2"></i>Pesquisa de CEP</a></li>
+                  <li><hr class="dropdown-divider" /></li>
                   <?php $canToolDocuments = authCan('tool.documents'); ?>
                   <?php $canToolEmailValidation = authCan('tool.email_validation'); ?>
                   <?php if ($canToolDocuments): ?>

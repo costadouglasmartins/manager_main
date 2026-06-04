@@ -3,8 +3,8 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Helpers\ViaCepHelper;
 use App\Models\Address;
+use App\Services\ZipCodeSearchService;
 
 class AddressController extends Controller
 	{
@@ -91,7 +91,8 @@ class AddressController extends Controller
 		$this->requireAuth();
 
 		$zipCode = (string) ($_GET['zip_code'] ?? ($_GET['cep'] ?? ''));
-		$result = ViaCepHelper::lookup($zipCode);
+		$service = new ZipCodeSearchService();
+		$result = $service->searchAndSave($zipCode);
 
 		if (empty($result['success']))
 			{
@@ -101,19 +102,34 @@ class AddressController extends Controller
 			], (int) ($result['status'] ?? 502));
 			}
 
-		$data = $result['data'];
+		$data = $result['data'] ?? [];
+		$savedNeighborhood = $data['saved']['neighborhood'] ?? null;
+		$neighborhoodId = is_array($savedNeighborhood) && isset($savedNeighborhood['id'])
+			? (int) $savedNeighborhood['id']
+			: null;
+		$neighborhoodLabel = (string) ($data['neighborhood'] ?? '');
 
-		$address = new Address();
-		$neighborhood = $address->findNeighborhoodByLocation(
-			(string) ($data['neighborhood'] ?? ''),
-			(string) ($data['city'] ?? ''),
-			(string) ($data['state'] ?? '')
-		);
+		if ($neighborhoodId === null)
+			{
+			$address = new Address();
+			$neighborhood = $address->findNeighborhoodByLocation(
+				(string) ($data['neighborhood'] ?? ''),
+				(string) ($data['city'] ?? ''),
+				(string) ($data['state'] ?? '')
+			);
 
-		$data['neighborhood_id'] = $neighborhood ? (int) $neighborhood['id'] : null;
-		$data['neighborhood_label'] = $neighborhood
-			? $neighborhood['name'] . ' - ' . $neighborhood['city_name']
-			: (string) ($data['neighborhood'] ?? '');
+			$neighborhoodId = $neighborhood ? (int) $neighborhood['id'] : null;
+			$neighborhoodLabel = $neighborhood
+				? $neighborhood['name'] . ' - ' . $neighborhood['city_name']
+				: (string) ($data['neighborhood'] ?? '');
+			}
+		else
+			{
+			$neighborhoodLabel = (string) ($savedNeighborhood['name'] ?? $neighborhoodLabel);
+			}
+
+		$data['neighborhood_id'] = $neighborhoodId;
+		$data['neighborhood_label'] = $neighborhoodLabel;
 
 		$this->json(['data' => $data]);
 		}

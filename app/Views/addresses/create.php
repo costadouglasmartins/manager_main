@@ -22,7 +22,7 @@
 
     <div class="mb-2 col-md-6 col-lg-3">
       <label class="form-label" for="zip_code">CEP</label>
-      <input autocomplete="off" class="form-control mask-cep" id="zip_code" name="zip_code" maxlength="9" placeholder="00000-000" type="text" data-viacep="zip" data-viacep-endpoint="<?= url('address/lookupZipCode'); ?>" data-viacep-street="#street" data-viacep-neighborhood="#neighborhoodName" data-viacep-neighborhood-id="#neighborhood_id" data-viacep-status="#zipCodeFeedback">
+      <input autocomplete="off" class="form-control mask-cep" id="zip_code" name="zip_code" maxlength="9" placeholder="00000-000" type="text" data-viacep="zip" data-viacep-endpoint="<?= url('tool/searchZipCode'); ?>" data-viacep-street="#street" data-viacep-neighborhood="#neighborhoodName" data-viacep-neighborhood-id="#neighborhood_id" data-viacep-status="#zipCodeFeedback">
       <div id="zipCodeFeedback" class="form-text"></div>
     </div>
 

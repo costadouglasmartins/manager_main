@@ -48,7 +48,6 @@ require_once ROOT_PATH . '/app/Core/Model.php';
 require_once ROOT_PATH . '/app/Helpers/Helper.php';
 require_once ROOT_PATH . '/app/Helpers/PaginationHelper.php';
 require_once ROOT_PATH . '/app/Helpers/SortingHelper.php';
-require_once ROOT_PATH . '/app/Helpers/ViaCepHelper.php';
 
 // Autoload dos namespaces
 spl_autoload_register(function ($class) 
