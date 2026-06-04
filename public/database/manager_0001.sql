@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   CONSTRAINT `fk_financial_operations_subcategories` FOREIGN KEY (`financial_operation_subcategory_id`) REFERENCES `financial_operations_subcategories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations: ~0 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations: ~2 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `financial_operation_subcategory_id`, `total_amount`, `created`, `modified`) VALUES
 	(1, 7, NULL, 6000.00, '2026-06-01 12:00:00', '2026-06-03 00:51:42'),
 	(2, 1, NULL, 766.50, '2026-06-01 12:00:00', '2026-06-03 00:52:09');
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_categories: ~0 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_categories: ~8 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `created`, `modified`) VALUES
 	(1, 'Ajuda financeira', '2026-06-02 23:21:58', '2026-06-02 23:21:58'),
 	(2, 'Alimentação', '2026-06-02 23:22:18', '2026-06-02 23:22:18'),
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   CONSTRAINT `fk_financial_operations_payments_operations` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_payments: ~0 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_payments: ~2 rows (approximately)
 INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `value`, `created`, `modified`) VALUES
 	(1, 1, 6000.00, '2026-06-01 12:00:00', '2026-06-03 00:51:42'),
 	(2, 2, 766.50, '2026-06-01 12:00:00', '2026-06-03 00:52:09');
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_subcategories: ~0 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_subcategories: ~21 rows (approximately)
 INSERT INTO `financial_operations_subcategories` (`id`, `financial_operation_category_id`, `name`, `created`, `modified`) VALUES
 	(1, 2, 'Café da manhã fins de semana', '2026-06-02 23:24:42', '2026-06-02 23:24:42'),
 	(2, 2, 'Café da manhã segunda à sexta', '2026-06-02 23:25:11', '2026-06-02 23:25:11'),

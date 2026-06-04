@@ -13,7 +13,11 @@ Este documento registra as convenções de desenvolvimento que devem ser seguida
 - Escreva nomes de métodos em inglês.
 - Use `camelCase` em nomes de métodos quando a convenção do PHP/framework ao redor pedir esse padrão.
 - Prefira nomes claros para models, controllers e services, sempre alinhados com a entidade de domínio.
-- Mantenha rótulos e textos visíveis ao usuário em português quando a view atual já estiver em português.
+- Crie novos arquivos, classes, métodos, funções e variáveis com nomes em inglês.
+- Em comentários e docblocks, descreva o tipo do dado, o nome do parâmetro e quando houver referência, mantendo a documentação objetiva em inglês.
+- Use comentários de bloco no formato `/**` e `*/`, com cada linha intermediária iniciada por `*` e alinhada à margem do bloco.
+- Separe novos métodos e funções com o bloco de comentário padrão do projeto, mantendo uma seção clara antes de cada grupo de responsabilidades.
+- Ao criar variáveis, adicione um comentário explicativo imediatamente acima da declaração, sempre em inglês.
 
 ## Estrutura PHP
 
@@ -36,7 +40,7 @@ Este documento registra as convenções de desenvolvimento que devem ser seguida
   `?v={numero}`
 - Escape saídas em views com `htmlspecialchars()` ou com o padrão local de helper `$e()`.
 - Mantenha nomes de campos agrupados por entidade, como `person[name]`, `user[type]`, `emails[0][address]`.
-- Em campos HTML, mantenha os atributos na mesma linha separados por espaços; não quebre cada atributo em uma linha separada.
+- Em HTML, mantenha cada elemento em uma única linha e separe os atributos por espaços, sem quebrar cada atributo em linhas separadas.
 
 ## Regras para SQL
 
