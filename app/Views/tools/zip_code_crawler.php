@@ -1,5 +1,5 @@
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=2'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -104,7 +104,7 @@
 
     <div class="col-12 col-xxl-8">
       <div class="card shadow-sm h-100">
-        <div class="card-body">
+        <div class="card-body d-flex flex-column">
           <div class="d-flex align-items-center gap-2 mb-3">
             <span class="zip-code-crawler-icon text-bg-success"><i class="bi bi-graph-up-arrow"></i></span>
             <h2 class="zip-code-crawler-title mb-0">Acompanhamento em tempo real</h2>
@@ -125,30 +125,29 @@
             Defina um intervalo de CEP e inicie a pesquisa.
           </div>
 
-          <div class="table-responsive zip-code-crawler-table-wrap">
-            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-              <div class="form-check">
-                <input class="form-check-input" id="crawlerSelectAllResults" type="checkbox">
-                <label class="form-check-label" for="crawlerSelectAllResults">Selecionar todos os resultados encontrados</label>
+          <div class="crawler-console">
+            <div class="crawler-console-titlebar">
+              <div class="crawler-console-dots" aria-hidden="true">
+                <span class="dot-red"></span>
+                <span class="dot-yellow"></span>
+                <span class="dot-green"></span>
               </div>
-              <button class="btn btn-success" type="button" id="crawlerBatchSaveButton"><i class="bi bi-save2 me-1"></i>Salvar selecionados</button>
+              <span class="crawler-console-title">WEBCRAWLER TERMINAL</span>
+              <div class="crawler-console-titlebar-actions">
+                <div class="form-check mb-0">
+                  <input class="form-check-input" id="crawlerSelectAllResults" type="checkbox">
+                  <label class="form-check-label" for="crawlerSelectAllResults">Selecionar todos</label>
+                </div>
+                <button class="btn-console-action" type="button" id="crawlerBatchSaveButton">Salvar selecionados</button>
+              </div>
             </div>
-            <table class="table table-sm table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Selecionar</th>
-                  <th>CEP</th>
-                  <th>Resultado</th>
-                  <th>Fonte</th>
-                  <th>Localização</th>
-                  <th>Detalhes</th>
-                  <th>Salvar</th>
-                </tr>
-              </thead>
-              <tbody id="crawlerResultsBody">
-                <tr><td colspan="7" class="text-center text-secondary">Nenhuma pesquisa em andamento.</td></tr>
-              </tbody>
-            </table>
+            <div class="crawler-console-body" id="crawlerResultsBody">
+              <div class="crawler-console-line crawler-console-line--idle">
+                <span class="ccl-prompt">›</span>
+                <span class="ccl-text">Aguardando início — defina um intervalo de CEP e execute o crawler.</span>
+                <span class="crawler-console-cursor" aria-hidden="true"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -156,4 +155,4 @@
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=2'); ?>"></script>

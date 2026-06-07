@@ -116,7 +116,7 @@
 
 		function clearResults()
 			{
-				resultsBody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">Nenhuma pesquisa em andamento.</td></tr>';
+				resultsBody.innerHTML = '<div class="crawler-console-line crawler-console-line--idle"><span class="ccl-prompt">›</span><span class="ccl-text">Aguardando início — defina um intervalo de CEP e execute o crawler.</span><span class="crawler-console-cursor" aria-hidden="true"></span></div>';
 				resultRegistry = new Map();
 				selectedZipCodes = new Set();
 				if (selectAllResultsInput)
@@ -132,13 +132,7 @@
 
 		function scrollResultsToBottom()
 			{
-				const tableWrap = resultsBody.closest(".zip-code-crawler-table-wrap");
-				if (!tableWrap)
-					{
-						return;
-					}
-
-				tableWrap.scrollTop = tableWrap.scrollHeight;
+				resultsBody.scrollTop = resultsBody.scrollHeight;
 			}
 
 		function updateBatchControls()
@@ -147,9 +141,9 @@
 				if (batchSaveButton)
 					{
 						batchSaveButton.disabled = selectedCount === 0;
-						batchSaveButton.innerHTML = selectedCount > 0
-							? '<i class="bi bi-save2 me-1"></i>Salvar selecionados (' + selectedCount + ')'
-							: '<i class="bi bi-save2 me-1"></i>Salvar selecionados';
+						batchSaveButton.textContent = selectedCount > 0
+							? "Salvar selecionados (" + selectedCount + ")"
+							: "Salvar selecionados";
 					}
 
 				if (selectAllResultsInput)
@@ -182,14 +176,6 @@
 				updateBatchControls();
 			}
 
-		function getSelectableResultEntries()
-			{
-				return Array.from(resultRegistry.entries()).filter(function (entry)
-					{
-						return entry[1].canSave;
-					});
-			}
-
 		function buildBatchItems()
 			{
 				return getCheckedResultCheckboxes().map(function (checkbox)
@@ -215,12 +201,49 @@
 				};
 			}
 
-		function createSaveStatusBadge(type, text)
+		function nowTimestamp()
 			{
-				const badge = document.createElement("span");
-				badge.className = "badge text-bg-" + type;
-				badge.textContent = text;
-				return badge;
+				const d = new Date();
+				return [
+					String(d.getHours()).padStart(2, "0"),
+					String(d.getMinutes()).padStart(2, "0"),
+					String(d.getSeconds()).padStart(2, "0")
+				].join(":");
+			}
+
+		function clearIdleLine()
+			{
+				const idleLine = resultsBody.querySelector(".crawler-console-line--idle");
+				if (idleLine)
+					{
+						idleLine.remove();
+					}
+			}
+
+		function appendSystemLine(type, text)
+			{
+				clearIdleLine();
+
+				const line = document.createElement("div");
+				line.className = "crawler-console-line crawler-console-line--system";
+
+				const tsSpan = document.createElement("span");
+				tsSpan.className = "ccl-ts";
+				tsSpan.textContent = "[" + nowTimestamp() + "]";
+
+				const statusSpan = document.createElement("span");
+				statusSpan.className = "ccl-status ccl-status--system";
+				statusSpan.textContent = type;
+
+				const textSpan = document.createElement("span");
+				textSpan.className = "ccl-system-text";
+				textSpan.textContent = text;
+
+				line.appendChild(tsSpan);
+				line.appendChild(statusSpan);
+				line.appendChild(textSpan);
+				resultsBody.appendChild(line);
+				scrollResultsToBottom();
 			}
 
 		function saveCrawlerResult(payload, button, statusNode, onSaved)
@@ -235,7 +258,7 @@
 					}
 
 				button.disabled = true;
-				statusNode.textContent = "Salvando...";
+				statusNode.textContent = "salvando...";
 
 				fetch(saveUrl, {
 					method: "POST",
@@ -269,10 +292,9 @@
 									throw new Error(responseData.message || "Falha ao salvar o resultado.");
 								}
 
-							statusNode.innerHTML = "";
-							statusNode.appendChild(createSaveStatusBadge("success", "Salvo"));
+							statusNode.textContent = "✓ SALVO";
 							button.disabled = true;
-							button.innerHTML = '<i class="bi bi-check2-circle me-1"></i>Salvo';
+							button.textContent = "[SALVO]";
 							if (typeof onSaved === "function")
 								{
 									onSaved(payload, responseData);
@@ -282,7 +304,7 @@
 					.catch(function (error)
 						{
 							button.disabled = false;
-							statusNode.textContent = "Erro";
+							statusNode.textContent = "ERRO";
 							setMessage("danger", error.message || "Não foi possível salvar o resultado.");
 						});
 			}
@@ -305,7 +327,7 @@
 					}
 
 				batchSaveButton.disabled = true;
-				batchSaveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Salvando';
+				batchSaveButton.textContent = "Salvando...";
 				setMessage("info", "Salvando " + items.length + " resultado(s) selecionado(s)...");
 
 				fetch(batchSaveUrl, {
@@ -357,10 +379,9 @@
 									if (registryItem && result && result.success)
 										{
 											registryItem.saved = true;
-											registryItem.saveStatusNode.innerHTML = "";
-											registryItem.saveStatusNode.appendChild(createSaveStatusBadge("success", "Salvo"));
+											registryItem.saveStatusNode.textContent = "✓ SALVO";
 											registryItem.saveButton.disabled = true;
-											registryItem.saveButton.innerHTML = '<i class="bi bi-check2-circle me-1"></i>Salvo';
+											registryItem.saveButton.textContent = "[SALVO]";
 										}
 								});
 
@@ -390,7 +411,6 @@
 					.finally(function ()
 						{
 							updateBatchControls();
-							batchSaveButton.innerHTML = '<i class="bi bi-save2 me-1"></i>Salvar selecionados';
 						});
 			}
 
@@ -399,63 +419,69 @@
 				const result = payload.result || {};
 				const data = result.data || {};
 				const zipCode = payload.zip_code || "";
-				const row = document.createElement("tr");
 				const canSave = !!result.success && !!zipCode;
+				const isFound = !!result.success;
 
-				const selectCell = document.createElement("td");
+				const line = document.createElement("div");
+				line.className = "crawler-console-line " + (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound");
+
 				const selectCheckbox = document.createElement("input");
-				selectCheckbox.className = "form-check-input";
+				selectCheckbox.className = "form-check-input crawler-console-checkbox";
 				selectCheckbox.type = "checkbox";
 				selectCheckbox.dataset.zipCode = zipCode;
 				selectCheckbox.disabled = !canSave;
-				selectCheckbox.checked = false;
-				selectCell.appendChild(selectCheckbox);
 
-				const zipCell = document.createElement("td");
-				zipCell.textContent = zipCode || "-";
+				const tsSpan = document.createElement("span");
+				tsSpan.className = "ccl-ts";
+				tsSpan.textContent = "[" + nowTimestamp() + "]";
 
-				const resultCell = document.createElement("td");
-				resultCell.innerHTML = result.success
-					? '<span class="zip-code-crawler-result-success">Encontrado</span>'
-					: '<span class="zip-code-crawler-result-failure">Não encontrado</span>';
+				const statusSpan = document.createElement("span");
+				statusSpan.className = "ccl-status " + (isFound ? "ccl-status--found" : "ccl-status--notfound");
+				statusSpan.textContent = isFound ? "FOUND" : "MISS ";
 
-				const sourceCell = document.createElement("td");
-				sourceCell.textContent = result.source ? String(result.source).toUpperCase() : "-";
+				const zipSpan = document.createElement("span");
+				zipSpan.className = "ccl-zip";
+				zipSpan.textContent = zipCode || "-";
 
-				const locationCell = document.createElement("td");
-				locationCell.textContent = [
-					data.neighborhood || "-",
-					data.city || "-",
-					data.state || "-"
-				].join(" - ");
+				const arrowSpan = document.createElement("span");
+				arrowSpan.className = "ccl-arrow";
+				arrowSpan.textContent = "›";
 
-				const detailsCell = document.createElement("td");
-				detailsCell.className = "zip-code-crawler-row-muted";
-				const details = [];
-				if (result.message)
+				const sourceSpan = document.createElement("span");
+				sourceSpan.className = "ccl-source";
+				sourceSpan.textContent = result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]";
+
+				const locationSpan = document.createElement("span");
+				locationSpan.className = "ccl-location";
+				if (isFound)
 					{
-						details.push(result.message);
-					}
-				detailsCell.textContent = details.length ? details.join(" | ") : "-";
-
-				const saveCell = document.createElement("td");
-				saveCell.className = "zip-code-crawler-row-actions";
-
-				const saveStatus = document.createElement("div");
-				saveStatus.className = "zip-code-crawler-row-save-status";
-				saveStatus.textContent = "Não salvo";
-
-				const saveButton = document.createElement("button");
-				saveButton.className = "btn btn-sm btn-outline-primary";
-				saveButton.type = "button";
-				saveButton.innerHTML = '<i class="bi bi-save2 me-1"></i>Salvar';
-
-				if (!result.success)
-					{
-						saveButton.disabled = true;
-						saveButton.title = "Somente resultados encontrados podem ser salvos.";
+						const parts = [data.neighborhood, data.city, data.state].filter(Boolean);
+						locationSpan.textContent = parts.length ? parts.join(" · ") : "-";
 					}
 				else
+					{
+						locationSpan.textContent = result.message || "CEP não encontrado";
+					}
+
+				const saveButton = document.createElement("button");
+				saveButton.className = "btn-console-save";
+				saveButton.type = "button";
+				saveButton.textContent = "[SAVE]";
+
+				if (!isFound)
+					{
+						saveButton.disabled = true;
+					}
+
+				const saveStatus = document.createElement("span");
+				saveStatus.className = "ccl-save-status";
+
+				const actionsSpan = document.createElement("span");
+				actionsSpan.className = "ccl-actions";
+				actionsSpan.appendChild(saveButton);
+				actionsSpan.appendChild(saveStatus);
+
+				if (isFound)
 					{
 						saveButton.addEventListener("click", function ()
 							{
@@ -470,25 +496,14 @@
 							});
 					}
 
-				saveCell.appendChild(saveButton);
-				saveCell.appendChild(saveStatus);
-
-				if (canSave)
-					{
-						selectCheckbox.addEventListener("change", function ()
-							{
-								if (selectCheckbox.checked)
-									{
-										selectedZipCodes.add(zipCode);
-									}
-								else
-									{
-										selectedZipCodes.delete(zipCode);
-									}
-
-								setSelectedZipCode(zipCode, selectCheckbox.checked);
-							});
-					}
+				line.appendChild(selectCheckbox);
+				line.appendChild(tsSpan);
+				line.appendChild(statusSpan);
+				line.appendChild(zipSpan);
+				line.appendChild(arrowSpan);
+				line.appendChild(sourceSpan);
+				line.appendChild(locationSpan);
+				line.appendChild(actionsSpan);
 
 				resultRegistry.set(zipCode, {
 					payload: payload,
@@ -500,20 +515,16 @@
 					saved: false
 				});
 
-				row.appendChild(zipCell);
-				row.appendChild(selectCell);
-				row.appendChild(resultCell);
-				row.appendChild(sourceCell);
-				row.appendChild(locationCell);
-				row.appendChild(detailsCell);
-				row.appendChild(saveCell);
-
-				if (resultsBody.querySelector("td[colspan]"))
+				if (canSave)
 					{
-						resultsBody.innerHTML = "";
+						selectCheckbox.addEventListener("change", function ()
+							{
+								setSelectedZipCode(zipCode, selectCheckbox.checked);
+							});
 					}
 
-				resultsBody.appendChild(row);
+				clearIdleLine();
+				resultsBody.appendChild(line);
 				scrollResultsToBottom();
 			}
 
@@ -558,6 +569,7 @@
 						statusText.textContent = "Em execução";
 						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs usando " + (payload.provider_mode || providerMode).toUpperCase() + ".");
 						updateProgress(0, payload.total || 1);
+						appendSystemLine("INIT", "scanner ativo | " + (payload.total || 0) + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | delay: " + delayMs + "ms");
 					});
 
 				eventSource.addEventListener("progress", function (event)
@@ -576,6 +588,7 @@
 						updateProgress(payload.total || 1, payload.total || 1);
 						statusText.textContent = "Concluído";
 						setMessage("success", "Pesquisa concluída com " + (payload.found || 0) + " CEP(s) encontrados.");
+						appendSystemLine("DONE", "scan completo | " + (payload.found || 0) + " encontrado(s) | " + (payload.failed || 0) + " não encontrado(s)");
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
@@ -591,6 +604,7 @@
 
 						setMessage("danger", "A conexão da pesquisa foi interrompida.");
 						statusText.textContent = "Interrompido";
+						appendSystemLine("ERROR", "conexão interrompida — verifique a rede e tente novamente");
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
@@ -651,6 +665,7 @@
 						eventSource = null;
 					}
 
+				appendSystemLine("STOP", "pesquisa interrompida pelo usuário");
 				setMessage("warning", "Pesquisa interrompida pelo usuário.");
 				statusText.textContent = "Parado";
 				setLoading(false);
