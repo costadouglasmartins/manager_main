@@ -6514,8 +6514,8 @@ INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `ten
 	(1, 2, 1, 1, '0001', 'closed', '2026-06-07 09:48:54', '2026-06-07 09:48:54', '2026-06-07 09:48:41', '2026-06-07 09:49:24', 1, '2026-06-07 09:45:32', '2026-06-07 09:49:24'),
 	(2, 2, 1, 1, '0001', 'closed', '2026-06-07 07:10:06', '2026-06-07 10:04:13', '2026-06-07 07:10:06', '2026-06-07 07:10:14', 1, '2026-06-07 10:03:48', '2026-06-07 07:10:14');
 
--- Dumping structure for table manager_main.support_chat_messages
-CREATE TABLE IF NOT EXISTS `support_chat_messages` (
+-- Dumping structure for table manager_main.support_chats_messages
+CREATE TABLE IF NOT EXISTS `support_chats_messages` (
   `id` int NOT NULL AUTO_INCREMENT,
   `support_chat_id` int NOT NULL,
   `sender_user_id` int NOT NULL,
@@ -6524,14 +6524,14 @@ CREATE TABLE IF NOT EXISTS `support_chat_messages` (
   `message_text` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_support_chat_messages_chat_id` (`support_chat_id`,`id`),
-  KEY `idx_support_chat_messages_sender` (`sender_user_id`),
-  CONSTRAINT `fk_support_chat_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `idx_support_chats_messages_chat_id` (`support_chat_id`,`id`),
+  KEY `idx_support_chats_messages_sender` (`sender_user_id`),
+  CONSTRAINT `fk_support_chats_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_support_chats_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.support_chat_messages: ~0 rows (approximately)
-INSERT INTO `support_chat_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
+-- Dumping data for table manager_main.support_chats_messages: ~0 rows (approximately)
+INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
 	(1, 1, 2, 'customer', 'Emma Watson', 'bom dia', '2026-06-07 09:45:32'),
 	(2, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:46:29'),
 	(3, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:48:41'),

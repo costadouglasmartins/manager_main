@@ -224,7 +224,7 @@ class SupportChat extends Model
 		               Message.sender_name,
 		               Message.message_text,
 		               Message.created
-		        FROM support_chat_messages AS Message
+		        FROM support_chats_messages AS Message
 		        WHERE Message.support_chat_id = :chat_id
 		        ORDER BY Message.id ASC
 		        LIMIT :limit";

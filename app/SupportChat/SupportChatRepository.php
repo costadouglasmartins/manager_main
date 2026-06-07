@@ -150,7 +150,7 @@ class SupportChatRepository
 			}
 
 		$stmt = $this->db->prepare("
-			INSERT INTO support_chat_messages (
+			INSERT INTO support_chats_messages (
 				support_chat_id,
 				sender_user_id,
 				sender_role,
@@ -205,7 +205,7 @@ class SupportChatRepository
 			       sender_name,
 			       message_text,
 			       created
-			FROM support_chat_messages
+			FROM support_chats_messages
 			WHERE id = :id
 			LIMIT 1
 		");
