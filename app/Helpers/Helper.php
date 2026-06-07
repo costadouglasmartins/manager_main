@@ -197,6 +197,44 @@ if (!function_exists('maskDateBr'))
 		}
 
 	}
+
+/**
+ * Masks date and datetime strings using the Brazilian format.
+ */
+if (!function_exists('maskDateTimeBr'))
+	{
+
+	function maskDateTimeBr(?string $input): string
+		{
+		if ($input === null)
+			{
+			return '';
+			}
+
+		$value = trim($input);
+		if ($value === '')
+			{
+			return '';
+			}
+
+		$value = str_replace('T', ' ', $value);
+		$formats = ['Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d'];
+
+		foreach ($formats as $format)
+			{
+			$date = DateTimeImmutable::createFromFormat('!' . $format, $value);
+			$errors = DateTimeImmutable::getLastErrors();
+
+			if ($date !== false && ($errors['warning_count'] ?? 0) === 0 && ($errors['error_count'] ?? 0) === 0)
+				{
+				return $format === 'Y-m-d' ? $date->format('d/m/Y') : $date->format('d/m/Y H:i');
+				}
+			}
+
+		return $input;
+		}
+
+	}
 	
 /**
  * Convers brazilian dates to american dates 

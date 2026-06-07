@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               8.0.45 - MySQL Community Server - GPL
+-- Server version:               8.0.46 - MySQL Community Server - GPL
 -- Server OS:                    Linux
 -- HeidiSQL Version:             12.17.1.1
 -- --------------------------------------------------------
@@ -5999,7 +5999,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~1 rows (approximately)
+-- Dumping data for table manager_main.emails: ~2 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'Login', 4, 1, '2026-06-01 22:34:47', '2026-06-01 22:34:47');
@@ -6020,7 +6020,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations: ~1 rows (approximately)
+-- Dumping data for table manager_main.financial_operations: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~14 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~15 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -6096,7 +6096,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~1 rows (approximately)
+-- Dumping data for table manager_main.people: ~2 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(4, 'Emma Watson', 'Emma Watson', 'company', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-01 22:34:47');
@@ -6113,7 +6113,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9669 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~232 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~256 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6482,6 +6482,66 @@ INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modifie
 	(76, 'Wisconsin', 'WI', 2, NULL, NULL),
 	(77, 'Wyoming', 'WY', 2, NULL, NULL);
 
+-- Dumping structure for table manager_main.support_chats
+CREATE TABLE IF NOT EXISTS `support_chats` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `customer_user_id` int NOT NULL,
+  `attendant_user_id` int DEFAULT NULL,
+  `tenant_id` int NOT NULL,
+  `tenant_database_number` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('pending','open','closed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `last_message_at` datetime DEFAULT NULL,
+  `customer_last_seen_at` datetime DEFAULT NULL,
+  `attendant_last_seen_at` datetime DEFAULT NULL,
+  `closed_at` datetime DEFAULT NULL,
+  `closed_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_support_chats_customer_status` (`customer_user_id`,`tenant_id`,`status`),
+  KEY `idx_support_chats_attendant_status` (`attendant_user_id`,`status`),
+  KEY `idx_support_chats_last_message_at` (`last_message_at`),
+  KEY `idx_support_chats_tenant` (`tenant_id`),
+  KEY `fk_support_chats_closed_by_user` (`closed_by_user_id`),
+  CONSTRAINT `fk_support_chats_attendant_user` FOREIGN KEY (`attendant_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_support_chats_closed_by_user` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_support_chats_customer_user` FOREIGN KEY (`customer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_support_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_main.support_chats: ~0 rows (approximately)
+INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `tenant_id`, `tenant_database_number`, `status`, `last_message_at`, `customer_last_seen_at`, `attendant_last_seen_at`, `closed_at`, `closed_by_user_id`, `created`, `modified`) VALUES
+	(1, 2, 1, 1, '0001', 'closed', '2026-06-07 09:48:54', '2026-06-07 09:48:54', '2026-06-07 09:48:41', '2026-06-07 09:49:24', 1, '2026-06-07 09:45:32', '2026-06-07 09:49:24'),
+	(2, 2, 1, 1, '0001', 'closed', '2026-06-07 07:10:06', '2026-06-07 10:04:13', '2026-06-07 07:10:06', '2026-06-07 07:10:14', 1, '2026-06-07 10:03:48', '2026-06-07 07:10:14');
+
+-- Dumping structure for table manager_main.support_chat_messages
+CREATE TABLE IF NOT EXISTS `support_chat_messages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `support_chat_id` int NOT NULL,
+  `sender_user_id` int NOT NULL,
+  `sender_role` enum('customer','attendant','system') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sender_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message_text` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_support_chat_messages_chat_id` (`support_chat_id`,`id`),
+  KEY `idx_support_chat_messages_sender` (`sender_user_id`),
+  CONSTRAINT `fk_support_chat_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_main.support_chat_messages: ~0 rows (approximately)
+INSERT INTO `support_chat_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
+	(1, 1, 2, 'customer', 'Emma Watson', 'bom dia', '2026-06-07 09:45:32'),
+	(2, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:46:29'),
+	(3, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:48:41'),
+	(4, 1, 2, 'customer', 'Emma Watson', 'Bom dia novamente', '2026-06-07 09:48:54'),
+	(5, 2, 2, 'customer', 'Emma Watson', 'eu te amo', '2026-06-07 10:03:48'),
+	(6, 2, 2, 'customer', 'Emma Watson', 'teste', '2026-06-07 10:03:57'),
+	(7, 2, 2, 'customer', 'Emma Watson', 'outro teste', '2026-06-07 10:04:13'),
+	(8, 2, 1, 'attendant', 'Douglas M. Costa', 'teste recebido', '2026-06-07 10:04:39'),
+	(9, 2, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 07:10:06');
+
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6511,7 +6571,7 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~0 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-06-01 22:34:47', '2026-06-01 22:34:47');
 
@@ -6551,7 +6611,7 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~307 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~319 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-06-04 01:30:02', '2026-06-04 01:30:02'),
 	(1, 8, '2026-06-04 01:30:02', '2026-06-04 01:30:02'),
@@ -6889,11 +6949,12 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   KEY `idx_user_remember_tokens_user` (`user_id`),
   KEY `idx_user_remember_tokens_expires` (`expires_at`),
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_remember_tokens: ~0 rows (approximately)
+-- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48');
+	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
+	(2, 1, 'c66b1f6c2bc789243d86eb787701255b', '543cd3cd78c66cc0e888716916dfca43a4243bcfd893a02a8910dbd9391d2b56', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-07 09:43:44', '2026-06-06 00:45:49', '2026-06-07 09:43:44');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

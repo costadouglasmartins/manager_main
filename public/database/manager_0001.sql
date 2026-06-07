@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               8.0.45 - MySQL Community Server - GPL
+-- Server version:               8.0.46 - MySQL Community Server - GPL
 -- Server OS:                    Linux
 -- HeidiSQL Version:             12.17.1.1
 -- --------------------------------------------------------
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   CONSTRAINT `fk_bank_files_bank_accounts` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.bank_files: ~6 rows (approximately)
+-- Dumping data for table manager_0001.bank_files: ~7 rows (approximately)
 INSERT INTO `bank_files` (`id`, `bank_account_id`, `file_type`, `file_name`, `file_path`, `file_hash`, `created`, `modified`) VALUES
 	(1, 1, 'REMITTANCE', 'C260601A.TXT', 'tenant_files/manager_0001/remittance/C260601A.TXT', '323ae468e88ea754e74bee5aab2464928229f6803a586cf4f186ed38599c8fd1', '2026-06-01 23:05:24', '2026-06-01 23:05:24'),
 	(2, 1, 'REMITTANCE', 'C260601B.TXT', 'tenant_files/manager_0001/remittance/C260601B.TXT', 'a64163b869f00bec8f0c05a8911d6b6a71fe264984c8a6a9135f0639b2d87eb0', '2026-06-01 23:09:55', '2026-06-01 23:09:55'),
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_categories: ~8 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_categories: ~9 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `created`, `modified`) VALUES
 	(1, 'Ajuda financeira', '2026-06-02 23:21:58', '2026-06-02 23:21:58'),
 	(2, 'Alimentação', '2026-06-02 23:22:18', '2026-06-02 23:22:18'),
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_subcategories: ~21 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_subcategories: ~22 rows (approximately)
 INSERT INTO `financial_operations_subcategories` (`id`, `financial_operation_category_id`, `name`, `created`, `modified`) VALUES
 	(1, 2, 'Café da manhã fins de semana', '2026-06-02 23:24:42', '2026-06-02 23:24:42'),
 	(2, 2, 'Café da manhã segunda à sexta', '2026-06-02 23:25:11', '2026-06-02 23:25:11'),

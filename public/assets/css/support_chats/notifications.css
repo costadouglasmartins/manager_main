@@ -1,0 +1,79 @@
+.support-chat-notifications {
+  position: relative;
+}
+
+.support-chat-notification-toggle {
+  position: relative;
+  min-width: 42px;
+  justify-content: center;
+}
+
+.support-chat-notification-badge {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.1rem;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 0.32rem;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.support-chat-notification-toggle.has-new-message i {
+  color: #f59e0b;
+}
+
+.support-chat-notification-menu {
+  width: min(360px, calc(100vw - 1rem));
+}
+
+.support-chat-notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0.7rem 0.15rem;
+}
+
+.support-chat-notification-list-item {
+  display: block;
+  padding: 0.6rem 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.support-chat-notification-list-item:hover,
+.support-chat-notification-list-item:focus {
+  background: rgba(var(--bs-body-color-rgb), 0.06);
+  color: inherit;
+}
+
+.support-chat-notification-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  font-weight: 700;
+}
+
+.support-chat-notification-message {
+  display: block;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.support-chat-notification-time {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

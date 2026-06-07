@@ -1,3 +1,6 @@
+<?php
+$supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && function_exists('authIsRoot') && authIsRoot();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" id="htmlRoot" data-bs-theme="light">
 <head>
@@ -13,6 +16,9 @@
   <link rel="stylesheet" href="<?= url('assets/images/bootstrap-icons.min.css'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/main.css?v=5'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=4'); ?>">
+  <?php if ($supportChatNotificationsEnabled): ?>
+    <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
+  <?php endif; ?>
   <link rel="apple-touch-icon" sizes="180x180" href="<?= url('assets/images/apple-touch-icon.png'); ?>">
   <link rel="icon" type="image/png" sizes="32x32" href="<?= url('assets/images/favicon-32x32.png'); ?>">
   <link rel="icon" type="image/png" sizes="16x16" href="<?= url('assets/images/favicon-16x16.png'); ?>">
@@ -265,6 +271,10 @@
               <li class="dropdown-submenu">
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tools me-2"></i>Ferramentas</a>
                 <ul class="dropdown-menu">
+                  <?php if (authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('support_chat'); ?>"><i class="bi bi-chat-dots me-2"></i>Atendimento ao suporte</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                  <?php endif; ?>
                   <?php if (authCan('database_manager.index') || authIsRoot()): ?>
                     <li><a class="dropdown-item" href="<?= url('database_manager'); ?>"><i class="bi bi-database-gear me-2"></i>Database manager</a></li>
                     <li><hr class="dropdown-divider" /></li>
@@ -296,6 +306,25 @@
         </ul>
         <!-- Usuário -->
         <ul class="navbar-nav mb-2 mb-lg-0">
+          <?php if ($supportChatNotificationsEnabled): ?>
+            <li class="nav-item dropdown me-lg-2 support-chat-notifications" id="supportChatNotifications" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-attend-url="<?= url('support_chat/attend'); ?>">
+              <a class="nav-link dropdown-toggle support-chat-notification-toggle" href="#" id="supportChatNotificationMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificações de suporte">
+                <i class="bi bi-bell-fill"></i>
+                <span class="support-chat-notification-badge" id="supportChatNotificationBadge" hidden>0</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end support-chat-notification-menu" aria-labelledby="supportChatNotificationMenu">
+                <li class="support-chat-notification-header">
+                  <strong>Suporte</strong>
+                  <button class="btn btn-sm btn-link" id="supportChatNotificationClear" type="button">Limpar</button>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li id="supportChatNotificationEmpty" class="dropdown-item-text text-muted">Sem novas mensagens.</li>
+                <li id="supportChatNotificationList"></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="<?= url('support_chat'); ?>"><i class="bi bi-list me-2"></i>Ver chats</a></li>
+              </ul>
+            </li>
+          <?php endif; ?>
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle me-2"></i> Usuário(a)
@@ -335,5 +364,8 @@
   <script src="<?= url('assets/js/menu.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=1'); ?>"></script>
+  <?php if ($supportChatNotificationsEnabled): ?>
+    <script src="<?= url('assets/js/support_chats/notifications.js?v=2'); ?>"></script>
+  <?php endif; ?>
 </body>
 </html>
