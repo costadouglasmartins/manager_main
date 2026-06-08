@@ -15,7 +15,18 @@ Este documento registra as convenções de desenvolvimento que devem ser seguida
 - Prefira nomes claros para models, controllers e services, sempre alinhados com a entidade de domínio.
 - Crie novos arquivos, classes, métodos, funções e variáveis com nomes em inglês.
 - Em comentários e docblocks, descreva o tipo do dado, o nome do parâmetro e quando houver referência, mantendo a documentação objetiva em inglês.
-- Use comentários de bloco no formato `/**` e `*/`, com cada linha intermediária iniciada por `*` e alinhada à margem do bloco.
+- Em novos códigos, documente métodos com comentários de bloco iniciados por `/**`, mantenha cada linha intermediária iniciada por `*` e finalize o bloco com `**/`.
+
+Exemplo recomendado para comentários de métodos:
+
+```php
+/**
+ * Describe what the method does.
+ * @param int $id Identifier used by the method.
+ * @return bool True when the operation succeeds.
+ **/
+```
+
 - Separe novos métodos e funções com o bloco de comentário padrão do projeto, mantendo uma seção clara antes de cada grupo de responsabilidades.
 - Ao criar variáveis, adicione um comentário explicativo imediatamente acima da declaração, sempre em inglês.
 
