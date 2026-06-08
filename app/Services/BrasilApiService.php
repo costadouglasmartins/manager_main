@@ -57,6 +57,11 @@ class BrasilApiService
 		$response = $this->fetch(self::BASE_URL . $digits);
 		if (!$response['ok'])
 			{
+			if ((int) ($response['status'] ?? 0) === 404)
+				{
+				return $this->failure('zip_code_not_found', 'CEP não encontrado na BrasilAPI.', 404);
+				}
+
 			return $this->failure('lookup_failed', 'Não foi possível consultar o CEP na BrasilAPI agora.', 502);
 			}
 

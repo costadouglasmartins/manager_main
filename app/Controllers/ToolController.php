@@ -10,11 +10,10 @@ use App\Services\ZipCodeSearchService;
 
 class ToolController extends Controller
 	{
-	/*
-	|--------------------------------------------------------------------------
-	| Document Tool
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Render the document tool page.
+	 * @return void
+	 **/
 	public function documents(): void
 		{
 		$this->requireAuth();
@@ -24,11 +23,10 @@ class ToolController extends Controller
 		]);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| E-mail Validation Tool
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Render the email validation page or return validation data.
+	 * @return void
+	 **/
 	public function email_validation(): void
 		{
 		$this->requireAuth();
@@ -47,11 +45,10 @@ class ToolController extends Controller
 			]);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| CEP Search Page
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Render the zip code search page.
+	 * @return void
+	 **/
 	public function zipCodeSearch(): void
 		{
 		$this->requireAuth();
@@ -61,11 +58,10 @@ class ToolController extends Controller
 		]);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Neighborhood Comparison Page
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Render the zip code neighborhood comparison page.
+	 * @return void
+	 **/
 	public function zipCodeNeighborhoodSearch(): void
 		{
 		$this->requireAuth();
@@ -77,7 +73,8 @@ class ToolController extends Controller
 
 	/**
 	 * Render the zip code crawler page.
-	 */
+	 * @return void
+	 **/
 	public function zipCodeCrawler(): void
 		{
 		$this->requireAuth();
@@ -87,11 +84,10 @@ class ToolController extends Controller
 		]);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| CEP Search Endpoint
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Search a zip code and return the lookup result.
+	 * @return void
+	 **/
 	public function searchZipCode(): void
 		{
 		$this->requireAuth();
@@ -103,11 +99,10 @@ class ToolController extends Controller
 		$this->json($result, $status);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Neighborhood Comparison Endpoint
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Compare zip code neighborhood lookup providers.
+	 * @return void
+	 **/
 	public function compareZipCodeNeighborhood(): void
 		{
 		$this->requireAuth();
@@ -119,11 +114,10 @@ class ToolController extends Controller
 		$this->json($result, $status);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Neighborhood Save Endpoint
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Save the selected zip code neighborhood lookup data.
+	 * @return void
+	 **/
 	public function saveZipCodeNeighborhood(): void
 		{
 		$this->requireAuth();
@@ -141,7 +135,8 @@ class ToolController extends Controller
 
 	/**
 	 * Stream zip code crawler progress through Server-Sent Events.
-	 */
+	 * @return void
+	 **/
 	public function streamZipCodeCrawler(): void
 		{
 		$this->requireAuth();
@@ -185,11 +180,10 @@ class ToolController extends Controller
 		exit;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Crawler Save Endpoint
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Save a single zip code crawler result.
+	 * @return void
+	 **/
 	public function saveZipCodeCrawlerResult(): void
 		{
 		$this->requireAuth();
@@ -219,11 +213,10 @@ class ToolController extends Controller
 		$this->json($result, $status);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Crawler Batch Save Endpoint
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Save selected zip code crawler results in batch.
+	 * @return void
+	 **/
 	public function saveZipCodeCrawlerResults(): void
 		{
 		$this->requireAuth();
@@ -258,11 +251,10 @@ class ToolController extends Controller
 		], $status);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| E-mail Validation Input Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the email validation input value from the request.
+	 * @return string
+	 **/
 	private function readEmailValidationInput(): string
 		{
 		if (isset($_POST['email']))
@@ -300,11 +292,10 @@ class ToolController extends Controller
 		return '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| CEP Search Input Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the zip code search input value from the request.
+	 * @return string
+	 **/
 	private function readZipCodeSearchInput(): string
 		{
 		if (isset($_POST['zip_code']))
@@ -368,11 +359,10 @@ class ToolController extends Controller
 		return '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Neighborhood Selection Input Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the zip code neighborhood selection values from the request.
+	 * @return array
+	 **/
 	private function readZipCodeNeighborhoodSelectionInput(): array
 		{
 		$selection = [];
@@ -423,11 +413,10 @@ class ToolController extends Controller
 		return $selection;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Create City Flag Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the create city flag from the request.
+	 * @return bool
+	 **/
 	private function readCreateCityFlag(): bool
 		{
 		$value = $_POST['create_city'] ?? ($_GET['create_city'] ?? null);
@@ -460,10 +449,9 @@ class ToolController extends Controller
 
 	/**
 	 * Read crawler provider mode.
-	 *
 	 * @param string $value Provider mode value.
 	 * @return string
-	 */
+	 **/
 	private function readCrawlerProviderMode(string $value): string
 		{
 		$value = strtolower(trim($value));
@@ -477,10 +465,9 @@ class ToolController extends Controller
 
 	/**
 	 * Read a boolean-like flag.
-	 *
 	 * @param mixed $value Raw flag value.
 	 * @return bool
-	 */
+	 **/
 	private function readBooleanFlag($value): bool
 		{
 		if (is_bool($value))
@@ -497,11 +484,10 @@ class ToolController extends Controller
 		return in_array($value, ['1', 'true', 'yes', 'on'], true);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Crawler Save Input Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the zip code crawler save input from the request.
+	 * @return array
+	 **/
 	private function readZipCodeCrawlerSaveInput(): array
 		{
 		$lookupData = [];
@@ -573,11 +559,10 @@ class ToolController extends Controller
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Crawler Batch Save Input Reader
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Read the zip code crawler batch save input from the request.
+	 * @return array
+	 **/
 	private function readZipCodeCrawlerBatchSaveInput(): array
 		{
 		$items = [];
@@ -651,10 +636,9 @@ class ToolController extends Controller
 
 	/**
 	 * Normalize a zip code input value.
-	 *
 	 * @param string $value Raw zip code value.
 	 * @return string
-	 */
+	 **/
 	private function normalizeZipCodeInput(string $value): string
 		{
 		return preg_replace('/\D+/', '', $value) ?? '';
@@ -662,13 +646,12 @@ class ToolController extends Controller
 
 	/**
 	 * Read a positive integer with bounds.
-	 *
 	 * @param string $value Raw numeric value.
 	 * @param int $default Default value when parsing fails.
 	 * @param int $min Minimum accepted value.
 	 * @param int $max Maximum accepted value.
 	 * @return int
-	 */
+	 **/
 	private function readPositiveInt(string $value, int $default, int $min, int $max): int
 		{
 		$parsed = (int) preg_replace('/\D+/', '', $value);
