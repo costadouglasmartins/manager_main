@@ -1,3 +1,8 @@
+<?php
+$zipCodeStateOptions = $zipCodeStateOptions ?? [];
+$zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]', ENT_QUOTES, 'UTF-8');
+?>
+
 <!-- CSS -->
 <link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=2'); ?>">
 <!-- /CSS -->
@@ -11,7 +16,7 @@
 </nav>
 <!-- /Breadcrumbs -->
 
-<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-save-url="<?= url('tool/saveZipCodeCrawlerResult'); ?>" data-batch-save-url="<?= url('tool/saveZipCodeCrawlerResults'); ?>">
+<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-save-url="<?= url('tool/saveZipCodeCrawlerResult'); ?>" data-batch-save-url="<?= url('tool/saveZipCodeCrawlerResults'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
   <div class="row g-4">
     <div class="col-12 col-xxl-4">
       <div class="card shadow-sm h-100">
@@ -35,13 +40,16 @@
             </div>
 
             <div class="col-12">
-              <label class="form-label" for="crawlerStartZipCode">CEP inicial</label>
-              <input class="form-control" id="crawlerStartZipCode" name="start_zip_code" type="text" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="00000-000" required>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label" for="crawlerEndZipCode">CEP final</label>
-              <input class="form-control" id="crawlerEndZipCode" name="end_zip_code" type="text" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="00000-000" required>
+              <label class="form-label" for="crawlerStateAcronym">Estado</label>
+              <select class="form-select" id="crawlerStateAcronym" name="state_acronym" required>
+                <option value="">Selecione o estado</option>
+                <?php foreach ($zipCodeStateOptions as $stateOption): ?>
+                  <option value="<?= htmlspecialchars((string) $stateOption['acronym'], ENT_QUOTES, 'UTF-8'); ?>"><?= htmlspecialchars((string) $stateOption['name'], ENT_QUOTES, 'UTF-8'); ?> (<?= htmlspecialchars((string) $stateOption['acronym'], ENT_QUOTES, 'UTF-8'); ?>)</option>
+                <?php endforeach; ?>
+              </select>
+              <input id="crawlerStartZipCode" name="start_zip_code" type="hidden">
+              <input id="crawlerEndZipCode" name="end_zip_code" type="hidden">
+              <div class="form-text" id="crawlerStateRangeSummary">Selecione um estado para carregar a faixa de CEP.</div>
             </div>
 
             <div class="col-12">
@@ -122,7 +130,7 @@
           </div>
 
           <div class="alert alert-secondary zip-code-crawler-message" id="crawlerMessage" role="status" aria-live="polite">
-            Defina um intervalo de CEP e inicie a pesquisa.
+            Selecione um estado e inicie a pesquisa.
           </div>
 
           <div class="crawler-console">
@@ -144,7 +152,7 @@
             <div class="crawler-console-body" id="crawlerResultsBody">
               <div class="crawler-console-line crawler-console-line--idle">
                 <span class="ccl-prompt">›</span>
-                <span class="ccl-text">Aguardando início — defina um intervalo de CEP e execute o crawler.</span>
+                <span class="ccl-text">Aguardando início — selecione um estado e execute o crawler.</span>
                 <span class="crawler-console-cursor" aria-hidden="true"></span>
               </div>
             </div>
@@ -155,4 +163,4 @@
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=4'); ?>"></script>

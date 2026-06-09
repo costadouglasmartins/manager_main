@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\State;
 use App\Services\EmailMxValidatorService;
 use App\Services\ZipCodeCrawlerService;
 use App\Services\ZipCodeNeighborhoodService;
@@ -81,6 +82,7 @@ class ToolController extends Controller
 
 		$this->view('tools/zip_code_crawler', [
 			'title' => 'Webcrawler de CEPs',
+			'zipCodeStateOptions' => $this->readZipCodeCrawlerStateOptions(),
 		]);
 		}
 
@@ -143,6 +145,7 @@ class ToolController extends Controller
 
 		$startZipCode = $this->normalizeZipCodeInput((string) ($_GET['start_zip_code'] ?? ''));
 		$endZipCode = $this->normalizeZipCodeInput((string) ($_GET['end_zip_code'] ?? ''));
+		$stateAcronym = $this->readCrawlerStateAcronym((string) ($_GET['state_acronym'] ?? ($_GET['state'] ?? '')));
 		$delayMs = $this->readPositiveInt((string) ($_GET['delay_ms'] ?? '500'), 500, 0, 10000);
 		$maxResults = $this->readPositiveInt((string) ($_GET['max_results'] ?? '100'), 100, 1, PHP_INT_MAX);
 		$providerMode = $this->readCrawlerProviderMode((string) ($_GET['provider_mode'] ?? 'fallback'));
@@ -164,8 +167,11 @@ class ToolController extends Controller
 		session_write_close();
 
 		$service = new ZipCodeCrawlerService();
+		$stream = $stateAcronym !== ''
+			? $service->crawlState($stateAcronym, $delayMs, $maxResults, $providerMode)
+			: $service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode);
 
-		foreach ($service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode) as $payload)
+		foreach ($stream as $payload)
 			{
 			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
 			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
@@ -461,6 +467,53 @@ class ToolController extends Controller
 			}
 
 		return $value;
+		}
+
+	/**
+	 * Read and normalize the selected crawler state acronym.
+	 * @param string $value Raw state acronym value.
+	 * @return string
+	 **/
+	private function readCrawlerStateAcronym(string $value): string
+		{
+		$value = strtoupper(trim($value));
+		return preg_match('/^[A-Z]{2}$/', $value) ? $value : '';
+		}
+
+	/**
+	 * Read Brazilian state options for the zip code crawler.
+	 * @return array<int, array<string, mixed>>
+	 **/
+	private function readZipCodeCrawlerStateOptions(): array
+		{
+		$stateModel = new State();
+		$states = $stateModel->search(
+			['country_id' => 1],
+			100,
+			0,
+			['sort' => 'name', 'direction' => 'asc']
+		);
+		$options = [];
+
+		foreach ($states as $state)
+			{
+			$acronym = strtoupper((string) ($state['acronym'] ?? ''));
+			$ranges = ZipCodeCrawlerService::zipCodeRangesForState($acronym);
+			if (empty($ranges))
+				{
+				continue;
+				}
+
+			$options[] = [
+				'id' => (int) ($state['id'] ?? 0),
+				'name' => (string) ($state['name'] ?? ''),
+				'acronym' => $acronym,
+				'ranges' => ZipCodeCrawlerService::zipCodeRangeOptionsForState($acronym),
+				'total' => ZipCodeCrawlerService::countZipCodeRanges($ranges),
+			];
+			}
+
+		return $options;
 		}
 
 	/**

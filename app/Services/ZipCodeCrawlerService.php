@@ -8,6 +8,92 @@ namespace App\Services;
 class ZipCodeCrawlerService
 	{
 	private const NOT_FOUND_FILE_NAME = 'zip_code_crawler_not_found.txt';
+	private const STATE_ZIP_CODE_RANGES = [
+		'AC' => [
+			['start' => '69900000', 'end' => '69999999'],
+		],
+		'AL' => [
+			['start' => '57000000', 'end' => '57999999'],
+		],
+		'AP' => [
+			['start' => '68900000', 'end' => '68999999'],
+		],
+		'AM' => [
+			['start' => '69000000', 'end' => '69299999'],
+			['start' => '69400000', 'end' => '69899999'],
+		],
+		'BA' => [
+			['start' => '40000000', 'end' => '48999999'],
+		],
+		'CE' => [
+			['start' => '60000000', 'end' => '63999999'],
+		],
+		'DF' => [
+			['start' => '70000000', 'end' => '72799999'],
+			['start' => '73000000', 'end' => '73699999'],
+		],
+		'ES' => [
+			['start' => '29000000', 'end' => '29999999'],
+		],
+		'GO' => [
+			['start' => '72800000', 'end' => '72999999'],
+			['start' => '73700000', 'end' => '76799999'],
+		],
+		'MA' => [
+			['start' => '65000000', 'end' => '65999999'],
+		],
+		'MT' => [
+			['start' => '78000000', 'end' => '78899999'],
+		],
+		'MS' => [
+			['start' => '79000000', 'end' => '79999999'],
+		],
+		'MG' => [
+			['start' => '30000000', 'end' => '39999999'],
+		],
+		'PA' => [
+			['start' => '66000000', 'end' => '68899999'],
+		],
+		'PB' => [
+			['start' => '58000000', 'end' => '58999999'],
+		],
+		'PR' => [
+			['start' => '80000000', 'end' => '87999999'],
+		],
+		'PE' => [
+			['start' => '50000000', 'end' => '56999999'],
+		],
+		'PI' => [
+			['start' => '64000000', 'end' => '64999999'],
+		],
+		'RJ' => [
+			['start' => '20000000', 'end' => '28999999'],
+		],
+		'RN' => [
+			['start' => '59000000', 'end' => '59999999'],
+		],
+		'RS' => [
+			['start' => '90000000', 'end' => '99999999'],
+		],
+		'RO' => [
+			['start' => '76800000', 'end' => '76999999'],
+		],
+		'RR' => [
+			['start' => '69300000', 'end' => '69399999'],
+		],
+		'SC' => [
+			['start' => '88000000', 'end' => '89999999'],
+		],
+		'SP' => [
+			['start' => '01000000', 'end' => '19999999'],
+		],
+		'SE' => [
+			['start' => '49000000', 'end' => '49999999'],
+		],
+		'TO' => [
+			['start' => '77000000', 'end' => '77999999'],
+		],
+	];
 
 	private ViaCepService $viaCepService;
 	private BrasilApiService $brasilApiService;
@@ -26,6 +112,67 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Return configured zip code ranges by Brazilian state acronym.
+	 * @return array<string, array<int, array{start: string, end: string}>>
+	 **/
+	public static function stateZipCodeRanges(): array
+		{
+		return self::STATE_ZIP_CODE_RANGES;
+		}
+
+	/**
+	 * Return formatted zip code range options for a Brazilian state.
+	 * @param string $stateAcronym State acronym.
+	 * @return array<int, array<string, mixed>>
+	 **/
+	public static function zipCodeRangeOptionsForState(string $stateAcronym): array
+		{
+		$ranges = self::zipCodeRangesForState($stateAcronym);
+		$options = [];
+
+		foreach ($ranges as $range)
+			{
+			$options[] = [
+				'start_digits' => $range['start'],
+				'end_digits' => $range['end'],
+				'start_zip_code' => self::formatZipCodeDigits($range['start']),
+				'end_zip_code' => self::formatZipCodeDigits($range['end']),
+				'total' => ((int) $range['end'] - (int) $range['start']) + 1,
+			];
+			}
+
+		return $options;
+		}
+
+	/**
+	 * Return the total number of zip codes covered by the ranges.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @return int
+	 **/
+	public static function countZipCodeRanges(array $ranges): int
+		{
+		$total = 0;
+
+		foreach ($ranges as $range)
+			{
+			$total += ((int) $range['end'] - (int) $range['start']) + 1;
+			}
+
+		return $total;
+		}
+
+	/**
+	 * Return configured zip code ranges for a Brazilian state.
+	 * @param string $stateAcronym State acronym.
+	 * @return array<int, array{start: string, end: string}>
+	 **/
+	public static function zipCodeRangesForState(string $stateAcronym): array
+		{
+		$stateAcronym = strtoupper(trim($stateAcronym));
+		return self::STATE_ZIP_CODE_RANGES[$stateAcronym] ?? [];
+		}
+
+	/**
 	 * Crawl a zip code range and yield progress payloads.
 	 *
 	 * @param string $startZipCode Start zip code value.
@@ -39,7 +186,6 @@ class ZipCodeCrawlerService
 		{
 		$startDigits = $this->normalizeZipCode($startZipCode);
 		$endDigits = $this->normalizeZipCode($endZipCode);
-		$delayMs = max(0, $delayMs);
 
 		if (strlen($startDigits) !== 8 || strlen($endDigits) !== 8)
 			{
@@ -59,13 +205,70 @@ class ZipCodeCrawlerService
 			$endNumber = $tmp;
 			}
 
-		$totalAvailable = $endNumber - $startNumber + 1;
+		yield from $this->crawlRanges(
+			[
+				[
+					'start' => str_pad((string) $startNumber, 8, '0', STR_PAD_LEFT),
+					'end' => str_pad((string) $endNumber, 8, '0', STR_PAD_LEFT),
+				],
+			],
+			$delayMs,
+			$maxResults,
+			$providerMode
+		);
+		}
+
+	/**
+	 * Crawl the configured zip code ranges for a Brazilian state.
+	 * @param string $stateAcronym State acronym.
+	 * @param int $delayMs Delay between lookups in milliseconds.
+	 * @param int $maxResults Maximum number of records to process.
+	 * @param string $providerMode Provider selection mode.
+	 * @return \Generator<int, array<string, mixed>, mixed, void>
+	 **/
+	public function crawlState(string $stateAcronym, int $delayMs, int $maxResults, string $providerMode = 'fallback'): \Generator
+		{
+		$stateAcronym = strtoupper(trim($stateAcronym));
+		$ranges = self::zipCodeRangesForState($stateAcronym);
+
+		if (empty($ranges))
+			{
+			yield $this->event('error', [
+				'message' => 'Selecione um estado brasileiro com faixa de CEP configurada.',
+			]);
+			return;
+			}
+
+		yield from $this->crawlRanges($ranges, $delayMs, $maxResults, $providerMode, $stateAcronym);
+		}
+
+	/**
+	 * Crawl one or more zip code ranges and yield progress payloads.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @param int $delayMs Delay between lookups in milliseconds.
+	 * @param int $maxResults Maximum number of records to process.
+	 * @param string $providerMode Provider selection mode.
+	 * @param string|null $stateAcronym Selected state acronym.
+	 * @return \Generator<int, array<string, mixed>, mixed, void>
+	 **/
+	private function crawlRanges(array $ranges, int $delayMs, int $maxResults, string $providerMode = 'fallback', ?string $stateAcronym = null): \Generator
+		{
+		$delayMs = max(0, $delayMs);
+		$totalAvailable = self::countZipCodeRanges($ranges);
 		$totalToProcess = min($totalAvailable, max(1, $maxResults));
+		$rangeOptions = $this->formatRangeEventData($ranges);
+		$notFoundZipCodes = $this->loadNotFoundZipCodes();
 
 		yield $this->event('start', [
-			'start_zip_code' => $this->formatZipCodeNumber($startNumber),
-			'end_zip_code' => $this->formatZipCodeNumber($endNumber),
+			'state' => $stateAcronym,
+			'start_zip_code' => $rangeOptions[0]['start_zip_code'] ?? '',
+			'end_zip_code' => $rangeOptions[count($rangeOptions) - 1]['end_zip_code'] ?? '',
+			'ranges' => $rangeOptions,
+			'range_count' => count($rangeOptions),
 			'total' => $totalToProcess,
+			'total_available' => $totalAvailable,
+			'not_found_file' => self::NOT_FOUND_FILE_NAME,
+			'not_found_cache_count' => count($notFoundZipCodes),
 			'delay_ms' => $delayMs,
 			'provider_mode' => $this->normalizeProviderMode($providerMode),
 		]);
@@ -75,21 +278,56 @@ class ZipCodeCrawlerService
 		$failed = 0;
 		$skipped = 0;
 
-		for ($index = 0; $index < $totalToProcess; $index++)
+		foreach ($ranges as $range)
 			{
-			$currentNumber = $startNumber + $index;
-			if ($currentNumber > $endNumber)
-				{
-				break;
-				}
+			$startNumber = (int) $range['start'];
+			$endNumber = (int) $range['end'];
 
-			$zipCode = $this->formatZipCodeNumber($currentNumber);
-
-			if ($this->hasRememberedNotFoundZipCode($zipCode))
+			for ($currentNumber = $startNumber; $currentNumber <= $endNumber; $currentNumber++)
 				{
+				if ($processed >= $totalToProcess)
+					{
+					break 2;
+					}
+
+				$zipCode = $this->formatZipCodeNumber($currentNumber);
+
+				if ($this->hasRememberedNotFoundZipCode($zipCode))
+					{
+					$processed++;
+					$failed++;
+					$skipped++;
+
+					yield $this->event('progress', [
+						'position' => $processed,
+						'total' => $totalToProcess,
+						'found' => $found,
+						'failed' => $failed,
+						'skipped' => $skipped,
+						'zip_code' => $zipCode,
+						'state' => $stateAcronym,
+						'result' => $this->buildSkippedNotFoundResult($zipCode),
+					]);
+
+					$this->waitBetweenLookups($delayMs);
+					continue;
+					}
+
+				$result = $this->lookupByMode($zipCode, $providerMode);
+
 				$processed++;
-				$failed++;
-				$skipped++;
+				if (!empty($result['success']))
+					{
+					$found++;
+					}
+				else
+					{
+					$failed++;
+					if ($this->shouldRememberNotFoundZipCode($result))
+						{
+						$this->rememberNotFoundZipCode($zipCode);
+						}
+					}
 
 				yield $this->event('progress', [
 					'position' => $processed,
@@ -98,48 +336,22 @@ class ZipCodeCrawlerService
 					'failed' => $failed,
 					'skipped' => $skipped,
 					'zip_code' => $zipCode,
-					'result' => $this->buildSkippedNotFoundResult($zipCode),
+					'state' => $stateAcronym,
+					'result' => $result,
 				]);
 
 				$this->waitBetweenLookups($delayMs);
-				continue;
 				}
-
-			$result = $this->lookupByMode($zipCode, $providerMode);
-
-			$processed++;
-			if (!empty($result['success']))
-				{
-				$found++;
-				}
-			else
-				{
-				$failed++;
-				if ($this->shouldRememberNotFoundZipCode($result))
-					{
-					$this->rememberNotFoundZipCode($zipCode);
-					}
-				}
-
-			yield $this->event('progress', [
-				'position' => $processed,
-				'total' => $totalToProcess,
-				'found' => $found,
-				'failed' => $failed,
-				'skipped' => $skipped,
-				'zip_code' => $zipCode,
-				'result' => $result,
-			]);
-
-			$this->waitBetweenLookups($delayMs);
 			}
 
 		yield $this->event('done', [
+			'state' => $stateAcronym,
 			'processed' => $processed,
 			'found' => $found,
 			'failed' => $failed,
 			'skipped' => $skipped,
 			'total' => $totalToProcess,
+			'total_available' => $totalAvailable,
 		]);
 		}
 
@@ -374,7 +586,7 @@ class ZipCodeCrawlerService
 	private function rememberNotFoundZipCode(string $zipCode): void
 		{
 		$digits = $this->normalizeZipCode($zipCode);
-		if (strlen($digits) !== 8 || $this->hasRememberedNotFoundZipCode($digits))
+		if (strlen($digits) !== 8)
 			{
 			return;
 			}
@@ -402,18 +614,15 @@ class ZipCodeCrawlerService
 			$contents = stream_get_contents($handle);
 			$contents = is_string($contents) ? $contents : '';
 			$notFoundZipCodes = $this->parseNotFoundZipCodeContents($contents);
-			$written = true;
+			$notFoundZipCodes[$digits] = true;
 
-			if (!isset($notFoundZipCodes[$digits]))
-				{
-				fseek($handle, 0, SEEK_END);
-				$separator = ($contents !== '' && !in_array(substr($contents, -1), ["\n", "\r"], true)) ? PHP_EOL : '';
-				$written = fwrite($handle, $separator . $digits . PHP_EOL) !== false;
-				}
+			$sortedContents = $this->serializeNotFoundZipCodes($notFoundZipCodes);
+			rewind($handle);
+			ftruncate($handle, 0);
+			$written = fwrite($handle, $sortedContents) !== false;
 
 			if ($written)
 				{
-				$notFoundZipCodes[$digits] = true;
 				$this->notFoundZipCodes = $notFoundZipCodes;
 				}
 			}
@@ -469,13 +678,26 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Serialize zip codes in ascending order, one per line.
+	 * @param array<string, bool> $notFoundZipCodes Parsed zip code set.
+	 * @return string
+	 **/
+	private function serializeNotFoundZipCodes(array $notFoundZipCodes): string
+		{
+		$zipCodes = array_keys($notFoundZipCodes);
+		sort($zipCodes, SORT_STRING);
+
+		return empty($zipCodes) ? '' : implode(PHP_EOL, $zipCodes) . PHP_EOL;
+		}
+
+	/**
 	 * Resolve the default not found zip code file path.
 	 * @return string
 	 **/
 	private function defaultNotFoundFilePath(): string
 		{
-		$publicPath = defined('PUBLIC_PATH') ? (string) PUBLIC_PATH : dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public';
-		return rtrim($publicPath, '/\\') . DIRECTORY_SEPARATOR . self::NOT_FOUND_FILE_NAME;
+		$rootPath = defined('ROOT_PATH') ? (string) ROOT_PATH : dirname(__DIR__, 2);
+		return rtrim($rootPath, '/\\') . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . self::NOT_FOUND_FILE_NAME;
 		}
 
 	/**
@@ -491,6 +713,45 @@ class ZipCodeCrawlerService
 			}
 
 		usleep($delayMs * 1000);
+		}
+
+	/**
+	 * Format range data for SSE and frontend options.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @return array<int, array<string, mixed>>
+	 **/
+	private function formatRangeEventData(array $ranges): array
+		{
+		$rangeData = [];
+
+		foreach ($ranges as $range)
+			{
+			$rangeData[] = [
+				'start_digits' => $range['start'],
+				'end_digits' => $range['end'],
+				'start_zip_code' => self::formatZipCodeDigits($range['start']),
+				'end_zip_code' => self::formatZipCodeDigits($range['end']),
+				'total' => ((int) $range['end'] - (int) $range['start']) + 1,
+			];
+			}
+
+		return $rangeData;
+		}
+
+	/**
+	 * Format an eight-digit zip code value.
+	 * @param string $digits Zip code digits.
+	 * @return string
+	 **/
+	private static function formatZipCodeDigits(string $digits): string
+		{
+		$digits = preg_replace('/\D+/', '', $digits) ?? '';
+		if (strlen($digits) !== 8)
+			{
+			return $digits;
+			}
+
+		return preg_replace('/(\d{5})(\d{3})/', '$1-$2', $digits) ?? $digits;
 		}
 
 	/**

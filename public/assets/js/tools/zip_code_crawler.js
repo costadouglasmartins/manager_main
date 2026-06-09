@@ -8,8 +8,10 @@
 
 		const form = document.getElementById("zipCodeCrawlerForm");
 		const providerModeInput = document.getElementById("crawlerProviderMode");
+		const stateInput = document.getElementById("crawlerStateAcronym");
 		const startInput = document.getElementById("crawlerStartZipCode");
 		const endInput = document.getElementById("crawlerEndZipCode");
+		const stateRangeSummary = document.getElementById("crawlerStateRangeSummary");
 		const delayInput = document.getElementById("crawlerDelayMs");
 		const delayLabel = document.getElementById("crawlerDelayLabel");
 		const maxResultsInput = document.getElementById("crawlerMaxResults");
@@ -31,6 +33,8 @@
 		const streamUrl = app.dataset.streamUrl || "";
 		const saveUrl = app.dataset.saveUrl || "";
 		const batchSaveUrl = app.dataset.batchSaveUrl || "";
+		const stateOptions = parseStateOptions();
+		const stateOptionRegistry = buildStateOptionRegistry(stateOptions);
 
 		let eventSource = null;
 		let resultRegistry = new Map();
@@ -52,23 +56,47 @@
 				return digits.slice(0, 5) + "-" + digits.slice(5, 8);
 			}
 
+		function parseStateOptions()
+			{
+				try
+					{
+						const options = JSON.parse(app.dataset.stateOptions || "[]");
+						return Array.isArray(options) ? options : [];
+					}
+				catch (error)
+					{
+						return [];
+					}
+			}
+
+		function buildStateOptionRegistry(options)
+			{
+				const registry = new Map();
+				options.forEach(function (option)
+					{
+						if (option && option.acronym)
+							{
+								registry.set(String(option.acronym).toUpperCase(), option);
+							}
+					});
+
+				return registry;
+			}
+
+		function getSelectedStateOption()
+			{
+				if (!stateInput)
+					{
+						return null;
+					}
+
+				return stateOptionRegistry.get(String(stateInput.value || "").toUpperCase()) || null;
+			}
+
 		function calculateZipCodeRangeCount()
 			{
-				const startDigits = onlyDigits(startInput.value);
-				const endDigits = onlyDigits(endInput.value);
-				if (startDigits.length !== 8 || endDigits.length !== 8)
-					{
-						return 0;
-					}
-
-				const startNumber = parseInt(startDigits, 10);
-				const endNumber = parseInt(endDigits, 10);
-				if (Number.isNaN(startNumber) || Number.isNaN(endNumber))
-					{
-						return 0;
-					}
-
-				return Math.abs(endNumber - startNumber) + 1;
+				const stateOption = getSelectedStateOption();
+				return stateOption ? Number(stateOption.total || 0) : 0;
 			}
 
 		function updateMaxResultsFromRange()
@@ -78,6 +106,58 @@
 					{
 						maxResultsInput.value = String(total);
 					}
+			}
+
+		function formatRangeList(ranges)
+			{
+				if (!Array.isArray(ranges) || ranges.length === 0)
+					{
+						return "";
+					}
+
+				return ranges.map(function (range)
+					{
+						return (range.start_zip_code || "-") + " até " + (range.end_zip_code || "-");
+					}).join("; ");
+			}
+
+		function updateStateRangeSummary()
+			{
+				const stateOption = getSelectedStateOption();
+				if (!stateOption)
+					{
+						if (startInput)
+							{
+								startInput.value = "";
+							}
+						if (endInput)
+							{
+								endInput.value = "";
+							}
+						maxResultsInput.value = "100";
+						stateRangeSummary.textContent = "Selecione um estado para carregar a faixa de CEP.";
+						return;
+					}
+
+				const ranges = Array.isArray(stateOption.ranges) ? stateOption.ranges : [];
+				const firstRange = ranges[0] || {};
+				const lastRange = ranges[ranges.length - 1] || {};
+
+				if (startInput)
+					{
+						startInput.value = firstRange.start_digits || "";
+					}
+				if (endInput)
+					{
+						endInput.value = lastRange.end_digits || "";
+					}
+
+				updateMaxResultsFromRange();
+				stateRangeSummary.textContent = (ranges.length > 1 ? "Faixas não contínuas: " : "Faixa: ")
+					+ formatRangeList(ranges)
+					+ " · "
+					+ String(stateOption.total || 0)
+					+ " CEPs";
 			}
 
 		function setMessage(type, text)
@@ -116,7 +196,7 @@
 
 		function clearResults()
 			{
-				resultsBody.innerHTML = '<div class="crawler-console-line crawler-console-line--idle"><span class="ccl-prompt">›</span><span class="ccl-text">Aguardando início — defina um intervalo de CEP e execute o crawler.</span><span class="crawler-console-cursor" aria-hidden="true"></span></div>';
+				resultsBody.innerHTML = '<div class="crawler-console-line crawler-console-line--idle"><span class="ccl-prompt">›</span><span class="ccl-text">Aguardando início — selecione um estado e execute o crawler.</span><span class="crawler-console-cursor" aria-hidden="true"></span></div>';
 				resultRegistry = new Map();
 				selectedZipCodes = new Set();
 				if (selectAllResultsInput)
@@ -421,6 +501,7 @@
 				const zipCode = payload.zip_code || "";
 				const canSave = !!result.success && !!zipCode;
 				const isFound = !!result.success;
+				const isSkipped = !isFound && (!!data.skipped || result.source === "cache" || result.error === "zip_code_already_not_found");
 
 				const line = document.createElement("div");
 				line.className = "crawler-console-line " + (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound");
@@ -437,7 +518,7 @@
 
 				const statusSpan = document.createElement("span");
 				statusSpan.className = "ccl-status " + (isFound ? "ccl-status--found" : "ccl-status--notfound");
-				statusSpan.textContent = isFound ? "FOUND" : "MISS ";
+				statusSpan.textContent = isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS ");
 
 				const zipSpan = document.createElement("span");
 				zipSpan.className = "ccl-zip";
@@ -449,7 +530,7 @@
 
 				const sourceSpan = document.createElement("span");
 				sourceSpan.className = "ccl-source";
-				sourceSpan.textContent = result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]";
+				sourceSpan.textContent = result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]");
 
 				const locationSpan = document.createElement("span");
 				locationSpan.className = "ccl-location";
@@ -460,7 +541,9 @@
 					}
 				else
 					{
-						locationSpan.textContent = result.message || "CEP não encontrado";
+						locationSpan.textContent = isSkipped
+							? "Ignorado pelo arquivo de CEPs não encontrados."
+							: (result.message || "CEP não encontrado");
 					}
 
 				const saveButton = document.createElement("button");
@@ -530,15 +613,15 @@
 
 		function openStream()
 			{
-				const startZipCode = onlyDigits(startInput.value);
-				const endZipCode = onlyDigits(endInput.value);
+				const selectedState = getSelectedStateOption();
+				const stateAcronym = selectedState ? String(selectedState.acronym || "").toUpperCase() : "";
 				const delayMs = String(delayInput.value || "500");
 				const maxResults = String(maxResultsInput.value || calculateZipCodeRangeCount() || "100");
 				const providerMode = providerModeInput.value || "fallback";
 
-				if (startZipCode.length !== 8 || endZipCode.length !== 8)
+				if (!selectedState || stateAcronym === "")
 					{
-						setMessage("warning", "Informe CEP inicial e final válidos com 8 dígitos.");
+						setMessage("warning", "Selecione um estado para iniciar a pesquisa.");
 						return;
 					}
 
@@ -555,8 +638,7 @@
 				statusText.textContent = "Conectando...";
 
 				const url = new URL(streamUrl, window.location.origin);
-				url.searchParams.set("start_zip_code", startZipCode);
-				url.searchParams.set("end_zip_code", endZipCode);
+				url.searchParams.set("state_acronym", stateAcronym);
 				url.searchParams.set("delay_ms", delayMs);
 				url.searchParams.set("max_results", maxResults);
 				url.searchParams.set("provider_mode", providerMode);
@@ -567,9 +649,12 @@
 					{
 						const payload = JSON.parse(event.data || "{}");
 						statusText.textContent = "Em execução";
-						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs usando " + (payload.provider_mode || providerMode).toUpperCase() + ".");
+						const ranges = payload.ranges || selectedState.ranges || [];
+						const rangeText = formatRangeList(ranges);
+						const cacheCount = Number(payload.not_found_cache_count || 0);
+						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Cache TXT: " + cacheCount + " CEP(s).");
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "scanner ativo | " + (payload.total || 0) + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | delay: " + delayMs + "ms");
+						appendSystemLine("INIT", "scanner ativo | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | delay: " + delayMs + "ms");
 					});
 
 				eventSource.addEventListener("progress", function (event)
@@ -622,6 +707,11 @@
 				endInput.value = formatZipCode(endInput.value);
 				updateMaxResultsFromRange();
 			});
+
+		if (stateInput)
+			{
+				stateInput.addEventListener("change", updateStateRangeSummary);
+			}
 
 		delayInput.addEventListener("input", updateDelayLabel);
 
@@ -679,6 +769,10 @@
 						eventSource = null;
 					}
 
+				if (stateInput)
+					{
+						stateInput.value = "";
+					}
 				startInput.value = "";
 				endInput.value = "";
 				delayInput.value = "500";
@@ -689,14 +783,19 @@
 				createCityInput.checked = false;
 				maxResultsInput.value = "100";
 				updateDelayLabel();
+				updateStateRangeSummary();
 				clearResults();
 				updateStats({processed: 0, found: 0, failed: 0});
 				updateProgress(0, 1);
 				statusText.textContent = "Aguardando início";
-				setMessage("secondary", "Defina um intervalo de CEP e inicie a pesquisa.");
+				setMessage("secondary", "Selecione um estado e inicie a pesquisa.");
 				setLoading(false);
-				startInput.focus();
+				if (stateInput)
+					{
+						stateInput.focus();
+					}
 			});
 
+		updateStateRangeSummary();
 		updateDelayLabel();
 	})();
