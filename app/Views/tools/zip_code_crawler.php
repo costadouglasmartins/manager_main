@@ -4,7 +4,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 ?>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=3'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=4'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -16,7 +16,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 </nav>
 <!-- /Breadcrumbs -->
 
-<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-save-url="<?= url('tool/saveZipCodeCrawlerResult'); ?>" data-batch-save-url="<?= url('tool/saveZipCodeCrawlerResults'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
+<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
   <div class="row g-4">
     <div class="col-12 col-xxl-4">
       <div class="card shadow-sm h-100">
@@ -25,7 +25,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             <span class="zip-code-crawler-icon text-bg-primary"><i class="bi bi-radar"></i></span>
             <div>
               <h1 class="zip-code-crawler-title mb-0">Webcrawler de CEPs</h1>
-              <small class="text-secondary">Consulta sequencial com ViaCEP e BrasilAPI, com salvamento manual por resultado.</small>
+              <small class="text-secondary">Consulta sequencial com ViaCEP e BrasilAPI, com salvamento automático por resultado.</small>
             </div>
           </div>
 
@@ -54,10 +54,18 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 
             <div class="col-12">
               <label class="form-label d-flex justify-content-between align-items-center" for="crawlerDelayMs">
-                <span>Intervalo entre consultas</span>
+                <span>Intervalo entre rodadas</span>
                 <strong id="crawlerDelayLabel">500 ms</strong>
               </label>
               <input class="form-range" id="crawlerDelayMs" name="delay_ms" type="range" min="250" max="5000" step="250" value="500">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label d-flex justify-content-between align-items-center" for="crawlerConcurrency">
+                <span>Consultas simultâneas</span>
+                <strong id="crawlerConcurrencyLabel">3</strong>
+              </label>
+              <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="5" step="1" value="3">
             </div>
 
             <div class="col-12">
@@ -66,29 +74,8 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             </div>
 
             <div class="col-12">
-              <div class="border rounded p-3">
-                <div class="mb-2">
-                  <strong class="d-block">Campos para salvar manualmente</strong>
-                  <small class="text-secondary">A pesquisa não grava nada sozinha. Marque os campos desejados e salve cada resultado manualmente.</small>
-                </div>
-                <div class="form-check form-switch mb-2">
-                  <input class="form-check-input" id="saveCitySwitch" name="save_city" type="checkbox" checked>
-                  <label class="form-check-label" for="saveCitySwitch">Salvar cidade</label>
-                </div>
-                <div class="form-check form-switch mb-2">
-                  <input class="form-check-input" id="saveNeighborhoodSwitch" name="save_neighborhood" type="checkbox" checked>
-                  <label class="form-check-label" for="saveNeighborhoodSwitch">Salvar bairro</label>
-                </div>
-                <div class="form-check form-switch mb-0">
-                  <input class="form-check-input" id="createCitySwitch" name="create_city" type="checkbox">
-                  <label class="form-check-label" for="createCitySwitch">Criar cidade quando necessário</label>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12">
               <div class="alert alert-warning mb-0">
-                O atraso entre consultas ajuda a reduzir riscos de bloqueio por validações automáticas.
+                O intervalo entre rodadas e o limite de consultas simultâneas ajudam a reduzir riscos de bloqueio por validações automáticas.
               </div>
             </div>
 
@@ -120,8 +107,9 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 
           <div class="zip-code-crawler-stats mb-3">
             <div class="zip-code-crawler-stat-card"><small>Processados</small><strong id="crawlerProcessedCount">0</strong></div>
-            <div class="zip-code-crawler-stat-card"><small>Encontrados</small><strong id="crawlerFoundCount">0</strong></div>
+            <div class="zip-code-crawler-stat-card"><small>Novos salvos</small><strong id="crawlerFoundCount">0</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Falhas</small><strong id="crawlerFailedCount">0</strong></div>
+            <div class="zip-code-crawler-stat-card"><small>CEPs/seg</small><strong id="crawlerLookupRateCount">0,00</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Status</small><strong id="crawlerStatusText">Aguardando início</strong></div>
           </div>
 
@@ -141,13 +129,6 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
                 <span class="dot-green"></span>
               </div>
               <span class="crawler-console-title">WEBCRAWLER TERMINAL</span>
-              <div class="crawler-console-titlebar-actions">
-                <div class="form-check mb-0">
-                  <input class="form-check-input" id="crawlerSelectAllResults" type="checkbox">
-                  <label class="form-check-label" for="crawlerSelectAllResults">Selecionar todos</label>
-                </div>
-                <button class="btn-console-action" type="button" id="crawlerBatchSaveButton">Salvar selecionados</button>
-              </div>
             </div>
             <div class="crawler-console-body" id="crawlerResultsBody">
               <div class="crawler-console-line crawler-console-line--idle">
@@ -163,4 +144,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=5'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=9'); ?>"></script>

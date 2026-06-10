@@ -14,31 +14,33 @@
 		const stateRangeSummary = document.getElementById("crawlerStateRangeSummary");
 		const delayInput = document.getElementById("crawlerDelayMs");
 		const delayLabel = document.getElementById("crawlerDelayLabel");
+		const concurrencyInput = document.getElementById("crawlerConcurrency");
+		const concurrencyLabel = document.getElementById("crawlerConcurrencyLabel");
 		const maxResultsInput = document.getElementById("crawlerMaxResults");
-		const saveCityInput = document.getElementById("saveCitySwitch");
-		const saveNeighborhoodInput = document.getElementById("saveNeighborhoodSwitch");
-		const createCityInput = document.getElementById("createCitySwitch");
 		const clearButton = document.getElementById("crawlerClearButton");
 		const stopButton = document.getElementById("crawlerStopButton");
 		const startButton = document.getElementById("crawlerStartButton");
 		const message = document.getElementById("crawlerMessage");
 		const progressBar = document.getElementById("crawlerProgressBar");
 		const resultsBody = document.getElementById("crawlerResultsBody");
-		const selectAllResultsInput = document.getElementById("crawlerSelectAllResults");
-		const batchSaveButton = document.getElementById("crawlerBatchSaveButton");
 		const processedCount = document.getElementById("crawlerProcessedCount");
 		const foundCount = document.getElementById("crawlerFoundCount");
 		const failedCount = document.getElementById("crawlerFailedCount");
+		const lookupRateCount = document.getElementById("crawlerLookupRateCount");
 		const statusText = document.getElementById("crawlerStatusText");
 		const streamUrl = app.dataset.streamUrl || "";
-		const saveUrl = app.dataset.saveUrl || "";
-		const batchSaveUrl = app.dataset.batchSaveUrl || "";
 		const stateOptions = parseStateOptions();
 		const stateOptionRegistry = buildStateOptionRegistry(stateOptions);
 
 		let eventSource = null;
-		let resultRegistry = new Map();
-		let selectedZipCodes = new Set();
+		let streamStartedAt = 0;
+		let rateTimer = null;
+		let latestStats = {
+			processed: 0,
+			found: 0,
+			failed: 0,
+			looked_up: 0
+		};
 
 		function onlyDigits(value)
 			{
@@ -180,11 +182,79 @@
 				delayLabel.textContent = delayInput.value + " ms";
 			}
 
+		function updateConcurrencyLabel()
+			{
+				concurrencyLabel.textContent = concurrencyInput.value;
+			}
+
+		function numericMetric(value)
+			{
+				const number = Number(value);
+				return Number.isFinite(number) ? number : 0;
+			}
+
+		function getLookedUpCount(payload)
+			{
+				if (payload && Object.prototype.hasOwnProperty.call(payload, "looked_up"))
+					{
+						return numericMetric(payload.looked_up);
+					}
+
+				return numericMetric(payload ? payload.processed : 0);
+			}
+
+		function formatLookupRate(value)
+			{
+				return value.toLocaleString("pt-BR", {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				});
+			}
+
+		function updateLookupRate(payload)
+			{
+				if (!lookupRateCount)
+					{
+						return;
+					}
+
+				const elapsedMs = streamStartedAt > 0 ? Date.now() - streamStartedAt : 0;
+				const lookedUp = getLookedUpCount(payload || latestStats);
+				const rate = elapsedMs > 0 ? lookedUp / (elapsedMs / 1000) : 0;
+				lookupRateCount.textContent = formatLookupRate(rate);
+			}
+
+		function stopRateTimer()
+			{
+				if (rateTimer)
+					{
+						window.clearInterval(rateTimer);
+						rateTimer = null;
+					}
+			}
+
+		function startRateTimer()
+			{
+				stopRateTimer();
+				rateTimer = window.setInterval(function ()
+					{
+						updateLookupRate(latestStats);
+					}, 1000);
+			}
+
 		function updateStats(payload)
 			{
-				processedCount.textContent = String(payload.processed || 0);
-				foundCount.textContent = String(payload.found || 0);
-				failedCount.textContent = String(payload.failed || 0);
+				latestStats = {
+					processed: numericMetric(payload.processed),
+					found: numericMetric(payload.found),
+					failed: numericMetric(payload.failed),
+					looked_up: getLookedUpCount(payload)
+				};
+
+				processedCount.textContent = String(latestStats.processed);
+				foundCount.textContent = String(latestStats.found);
+				failedCount.textContent = String(latestStats.failed);
+				updateLookupRate(latestStats);
 			}
 
 		function updateProgress(position, total)
@@ -197,88 +267,11 @@
 		function clearResults()
 			{
 				resultsBody.innerHTML = '<div class="crawler-console-line crawler-console-line--idle"><span class="ccl-prompt">›</span><span class="ccl-text">Aguardando início — selecione um estado e execute o crawler.</span><span class="crawler-console-cursor" aria-hidden="true"></span></div>';
-				resultRegistry = new Map();
-				selectedZipCodes = new Set();
-				if (selectAllResultsInput)
-					{
-						selectAllResultsInput.checked = false;
-						selectAllResultsInput.indeterminate = false;
-					}
-				if (batchSaveButton)
-					{
-						batchSaveButton.disabled = true;
-					}
 			}
 
 		function scrollResultsToBottom()
 			{
 				resultsBody.scrollTop = resultsBody.scrollHeight;
-			}
-
-		function updateBatchControls()
-			{
-				const selectedCount = getCheckedResultCheckboxes().length;
-				if (batchSaveButton)
-					{
-						batchSaveButton.disabled = selectedCount === 0;
-						batchSaveButton.textContent = selectedCount > 0
-							? "Salvar selecionados (" + selectedCount + ")"
-							: "Salvar selecionados";
-					}
-
-				if (selectAllResultsInput)
-					{
-						const selectableCount = Array.from(resultRegistry.values()).filter(function (item)
-							{
-								return item.canSave;
-							}).length;
-						selectAllResultsInput.checked = selectableCount > 0 && selectedCount === selectableCount;
-						selectAllResultsInput.indeterminate = selectedCount > 0 && selectedCount < selectableCount;
-					}
-			}
-
-		function getCheckedResultCheckboxes()
-			{
-				return Array.from(resultsBody.querySelectorAll('input[type="checkbox"][data-zip-code]:checked'));
-			}
-
-		function setSelectedZipCode(zipCode, isSelected)
-			{
-				if (isSelected)
-					{
-						selectedZipCodes.add(zipCode);
-					}
-				else
-					{
-						selectedZipCodes.delete(zipCode);
-					}
-
-				updateBatchControls();
-			}
-
-		function buildBatchItems()
-			{
-				return getCheckedResultCheckboxes().map(function (checkbox)
-					{
-						const zipCode = checkbox.dataset.zipCode || "";
-						const entry = resultRegistry.get(zipCode);
-						return entry ? {
-							lookup_data: entry.lookupData,
-							zip_code: zipCode
-						} : null;
-					}).filter(function (item)
-					{
-						return item !== null;
-					});
-			}
-
-		function getSaveOptions()
-			{
-				return {
-					save_city: saveCityInput.checked,
-					save_neighborhood: saveNeighborhoodInput.checked,
-					create_city: createCityInput.checked
-				};
 			}
 
 		function nowTimestamp()
@@ -326,177 +319,6 @@
 				scrollResultsToBottom();
 			}
 
-		function saveCrawlerResult(payload, button, statusNode, onSaved)
-			{
-				const lookupData = (payload.result && payload.result.data) ? payload.result.data : {};
-				const options = getSaveOptions();
-
-				if (!options.save_city && !options.save_neighborhood)
-					{
-						setMessage("warning", "Marque pelo menos um campo para salvar antes de gravar um resultado.");
-						return;
-					}
-
-				button.disabled = true;
-				statusNode.textContent = "salvando...";
-
-				fetch(saveUrl, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json"
-					},
-					body: JSON.stringify({
-						lookup_data: lookupData,
-						save_city: options.save_city,
-						save_neighborhood: options.save_neighborhood,
-						create_city: options.create_city
-					})
-				})
-					.then(function (response)
-						{
-							return response.json().then(function (data)
-								{
-									return {
-										ok: response.ok,
-										status: response.status,
-										data: data
-									};
-								});
-						})
-					.then(function (payloadResponse)
-						{
-							const responseData = payloadResponse.data || {};
-							if (!payloadResponse.ok || !responseData.success)
-								{
-									throw new Error(responseData.message || "Falha ao salvar o resultado.");
-								}
-
-							statusNode.textContent = "✓ SALVO";
-							button.disabled = true;
-							button.textContent = "[SALVO]";
-							if (typeof onSaved === "function")
-								{
-									onSaved(payload, responseData);
-								}
-							setMessage("success", responseData.message || "Resultado salvo com sucesso.");
-						})
-					.catch(function (error)
-						{
-							button.disabled = false;
-							statusNode.textContent = "ERRO";
-							setMessage("danger", error.message || "Não foi possível salvar o resultado.");
-						});
-			}
-
-		function saveSelectedResults()
-			{
-				const items = buildBatchItems();
-				const options = getSaveOptions();
-
-				if (!items.length)
-					{
-						setMessage("warning", "Selecione ao menos um resultado para salvar.");
-						return;
-					}
-
-				if (!options.save_city && !options.save_neighborhood)
-					{
-						setMessage("warning", "Marque pelo menos um campo para salvar antes de gravar os resultados selecionados.");
-						return;
-					}
-
-				batchSaveButton.disabled = true;
-				batchSaveButton.textContent = "Salvando...";
-				setMessage("info", "Salvando " + items.length + " resultado(s) selecionado(s)...");
-
-				fetch(batchSaveUrl, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json"
-					},
-					body: JSON.stringify({
-						items: items,
-						save_city: options.save_city,
-						save_neighborhood: options.save_neighborhood,
-						create_city: options.create_city
-					})
-				})
-					.then(function (response)
-						{
-							return response.json().then(function (data)
-								{
-									return {
-										ok: response.ok,
-										status: response.status,
-										data: data
-									};
-								});
-						})
-					.then(function (payloadResponse)
-						{
-							const responseData = payloadResponse.data || {};
-							if (!payloadResponse.ok || !responseData.success)
-								{
-									throw new Error(responseData.message || "Falha ao salvar os resultados selecionados.");
-								}
-
-							const summary = responseData.data || {};
-							const savedCount = summary.saved_count || 0;
-							const failedCount = summary.failed_count || 0;
-							const resultList = summary.results || [];
-
-							resultList.forEach(function (result, index)
-								{
-									const item = items[index];
-									if (!item)
-										{
-											return;
-										}
-
-									const registryItem = resultRegistry.get(item.zip_code);
-									if (registryItem && result && result.success)
-										{
-											registryItem.saved = true;
-											registryItem.saveStatusNode.textContent = "✓ SALVO";
-											if (registryItem.saveButton)
-												{
-													registryItem.saveButton.disabled = true;
-													registryItem.saveButton.textContent = "[SALVO]";
-												}
-										}
-								});
-
-							selectedZipCodes.clear();
-							getCheckedResultCheckboxes().forEach(function (input)
-								{
-									input.checked = false;
-								});
-							if (selectAllResultsInput)
-								{
-									selectAllResultsInput.checked = false;
-									selectAllResultsInput.indeterminate = false;
-								}
-
-							updateBatchControls();
-							setMessage(failedCount === 0
-								? "success"
-								: "warning",
-								failedCount === 0
-									? "Salvamento concluído com " + savedCount + " resultado(s)."
-									: "Salvamento concluído com " + savedCount + " sucesso(s) e " + failedCount + " falha(s).");
-						})
-					.catch(function (error)
-						{
-							setMessage("danger", error.message || "Não foi possível salvar os resultados selecionados.");
-						})
-					.finally(function ()
-						{
-							updateBatchControls();
-						});
-			}
-
 		function appendResultRow(payload)
 			{
 				const result = payload.result || {};
@@ -504,10 +326,17 @@
 				const databaseStatus = data.database_status && typeof data.database_status === "object"
 					? data.database_status
 					: {};
+				const autoSave = data.auto_save && typeof data.auto_save === "object"
+					? data.auto_save
+					: {};
 				const zipCode = payload.zip_code || "";
 				const isFound = !!result.success;
-				const alreadyInDatabase = isFound && !!databaseStatus.already_exists;
-				const canSave = isFound && !!zipCode && !alreadyInDatabase;
+				const autoSaveEnabled = isFound && !!autoSave.enabled;
+				const autoSaveStatus = String(autoSave.status || "");
+				const autoSaveExisting = autoSaveEnabled && autoSaveStatus === "already_exists";
+				const alreadyInDatabase = isFound && (!!databaseStatus.already_exists || autoSaveExisting);
+				const autoSaveSaved = autoSaveEnabled && !!autoSave.success && autoSaveStatus === "saved" && !!autoSave.created_new_record;
+				const autoSaveFailed = autoSaveEnabled && !!autoSave.attempted && !autoSave.success;
 				const isSkipped = !isFound && (!!data.skipped || result.source === "cache" || result.error === "zip_code_already_not_found");
 
 				const line = document.createElement("div");
@@ -515,25 +344,16 @@
 					+ (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound")
 					+ (alreadyInDatabase ? " crawler-console-line--existing" : "");
 
-				let selectCheckbox = null;
-				const selectControl = canSave ? document.createElement("input") : document.createElement("span");
-				selectControl.className = canSave
-					? "form-check-input crawler-console-checkbox"
-					: "crawler-console-checkbox crawler-console-checkbox--empty";
-				if (canSave)
-					{
-						selectCheckbox = selectControl;
-						selectCheckbox.type = "checkbox";
-						selectCheckbox.dataset.zipCode = zipCode;
-					}
+				const selectControl = document.createElement("span");
+				selectControl.className = "crawler-console-checkbox crawler-console-checkbox--empty";
 
 				const tsSpan = document.createElement("span");
 				tsSpan.className = "ccl-ts";
 				tsSpan.textContent = "[" + nowTimestamp() + "]";
 
 				const statusSpan = document.createElement("span");
-				statusSpan.className = "ccl-status " + (alreadyInDatabase ? "ccl-status--database" : (isFound ? "ccl-status--found" : "ccl-status--notfound"));
-				statusSpan.textContent = alreadyInDatabase ? "DB" : (isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS "));
+				statusSpan.className = "ccl-status " + (autoSaveSaved ? "ccl-status--found" : (autoSaveFailed ? "ccl-status--notfound" : (alreadyInDatabase ? "ccl-status--database" : (isFound ? "ccl-status--found" : "ccl-status--notfound"))));
+				statusSpan.textContent = autoSaveSaved ? "SAVED" : (alreadyInDatabase ? "DB" : (autoSaveFailed ? "SAVE!" : (isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS "))));
 
 				const zipSpan = document.createElement("span");
 				zipSpan.className = "ccl-zip";
@@ -545,9 +365,9 @@
 
 				const sourceSpan = document.createElement("span");
 				sourceSpan.className = "ccl-source";
-				sourceSpan.textContent = alreadyInDatabase
-					? "[DB]"
-					: (result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]"));
+				sourceSpan.textContent = autoSaveSaved
+					? "[AUTO]"
+					: (alreadyInDatabase ? "[DB]" : (result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]")));
 
 				const locationSpan = document.createElement("span");
 				locationSpan.className = "ccl-location";
@@ -555,8 +375,9 @@
 					{
 						const parts = [data.neighborhood, data.city, data.state].filter(Boolean);
 						const locationText = parts.length ? parts.join(" · ") : "-";
-						locationSpan.textContent = alreadyInDatabase && databaseStatus.message
-							? locationText + " · " + databaseStatus.message
+						const detailText = autoSave.message || (alreadyInDatabase ? databaseStatus.message : "");
+						locationSpan.textContent = detailText
+							? locationText + " · " + detailText
 							: locationText;
 					}
 				else
@@ -568,35 +389,11 @@
 
 				const saveStatus = document.createElement("span");
 				saveStatus.className = "ccl-save-status";
-				saveStatus.textContent = alreadyInDatabase ? "CADASTRADO" : "";
+				saveStatus.textContent = autoSaveSaved ? "SALVO" : (alreadyInDatabase ? "CADASTRADO" : (autoSaveFailed ? "ERRO" : ""));
 
 				const actionsSpan = document.createElement("span");
 				actionsSpan.className = "ccl-actions";
-				let saveButton = null;
-				if (canSave)
-					{
-						saveButton = document.createElement("button");
-						saveButton.className = "btn-console-save";
-						saveButton.type = "button";
-						saveButton.textContent = "[SAVE]";
-						actionsSpan.appendChild(saveButton);
-					}
 				actionsSpan.appendChild(saveStatus);
-
-				if (canSave && saveButton)
-					{
-						saveButton.addEventListener("click", function ()
-							{
-								saveCrawlerResult(payload, saveButton, saveStatus, function ()
-									{
-										const registryItem = resultRegistry.get(zipCode);
-										if (registryItem)
-											{
-												registryItem.saved = true;
-											}
-										});
-							});
-					}
 
 				line.appendChild(selectControl);
 				line.appendChild(tsSpan);
@@ -606,24 +403,6 @@
 				line.appendChild(sourceSpan);
 				line.appendChild(locationSpan);
 				line.appendChild(actionsSpan);
-
-				resultRegistry.set(zipCode, {
-					payload: payload,
-					lookupData: data,
-					canSave: canSave,
-					selectedCheckbox: selectCheckbox,
-					saveButton: saveButton,
-					saveStatusNode: saveStatus,
-					saved: false
-				});
-
-				if (canSave)
-					{
-						selectCheckbox.addEventListener("change", function ()
-							{
-								setSelectedZipCode(zipCode, selectCheckbox.checked);
-							});
-					}
 
 				clearIdleLine();
 				resultsBody.appendChild(line);
@@ -635,6 +414,7 @@
 				const selectedState = getSelectedStateOption();
 				const stateAcronym = selectedState ? String(selectedState.acronym || "").toUpperCase() : "";
 				const delayMs = String(delayInput.value || "500");
+				const concurrency = String(concurrencyInput.value || "3");
 				const maxResults = String(maxResultsInput.value || calculateZipCodeRangeCount() || "100");
 				const providerMode = providerModeInput.value || "fallback";
 
@@ -650,7 +430,9 @@
 					}
 
 				clearResults();
-				updateStats({processed: 0, found: 0, failed: 0});
+				stopRateTimer();
+				streamStartedAt = 0;
+				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
 				updateProgress(0, 1);
 				setLoading(true);
 				setMessage("info", "Iniciando webcrawler com atraso controlado entre consultas...");
@@ -659,21 +441,30 @@
 				const url = new URL(streamUrl, window.location.origin);
 				url.searchParams.set("state_acronym", stateAcronym);
 				url.searchParams.set("delay_ms", delayMs);
+				url.searchParams.set("concurrency", concurrency);
 				url.searchParams.set("max_results", maxResults);
 				url.searchParams.set("provider_mode", providerMode);
+				url.searchParams.set("save_city", "1");
+				url.searchParams.set("save_neighborhood", "1");
+				url.searchParams.set("create_city", "0");
 
 				eventSource = new EventSource(url.toString());
 
 				eventSource.addEventListener("start", function (event)
 					{
 						const payload = JSON.parse(event.data || "{}");
+						streamStartedAt = Date.now();
+						updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
+						startRateTimer();
 						statusText.textContent = "Em execução";
 						const ranges = payload.ranges || selectedState.ranges || [];
 						const rangeText = formatRangeList(ranges);
 						const cacheCount = Number(payload.not_found_cache_count || 0);
-						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Cache TXT: " + cacheCount + " CEP(s).");
+						const activeConcurrency = String(payload.concurrency || concurrency);
+						const autoSaveText = payload.auto_save_neighborhood ? "salvamento automático ativo" : "salvamento automático desativado";
+						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s).");
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "scanner ativo | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | delay: " + delayMs + "ms");
+						appendSystemLine("INIT", "scanner ativo | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | paralelo: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
 					});
 
 				eventSource.addEventListener("progress", function (event)
@@ -689,10 +480,11 @@
 					{
 						const payload = JSON.parse(event.data || "{}");
 						updateStats(payload);
+						stopRateTimer();
 						updateProgress(payload.total || 1, payload.total || 1);
 						statusText.textContent = "Concluído";
-						setMessage("success", "Pesquisa concluída com " + (payload.found || 0) + " CEP(s) encontrados.");
-						appendSystemLine("DONE", "scan completo | " + (payload.found || 0) + " encontrado(s) | " + (payload.failed || 0) + " não encontrado(s)");
+						setMessage("success", "Pesquisa concluída com " + (payload.found || 0) + " novo(s) salvo(s).");
+						appendSystemLine("DONE", "scan completo | " + (payload.found || 0) + " novo(s) salvo(s) | " + (payload.failed || 0) + " não encontrado(s) | " + (payload.looked_up || 0) + " consulta(s) em webservices");
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
@@ -709,6 +501,7 @@
 						setMessage("danger", "A conexão da pesquisa foi interrompida.");
 						statusText.textContent = "Interrompido";
 						appendSystemLine("ERROR", "conexão interrompida — verifique a rede e tente novamente");
+						stopRateTimer();
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
@@ -733,38 +526,7 @@
 			}
 
 		delayInput.addEventListener("input", updateDelayLabel);
-
-		if (selectAllResultsInput)
-			{
-				selectAllResultsInput.addEventListener("change", function ()
-					{
-						Array.from(resultRegistry.entries()).forEach(function (entry)
-							{
-								const zipCode = entry[0];
-								const resultEntry = entry[1];
-								if (!resultEntry.canSave)
-									{
-										return;
-									}
-
-								if (!resultEntry.selectedCheckbox)
-									{
-										return;
-									}
-
-								resultEntry.selectedCheckbox.checked = selectAllResultsInput.checked;
-								setSelectedZipCode(zipCode, selectAllResultsInput.checked);
-							});
-
-						updateBatchControls();
-					});
-			}
-
-		if (batchSaveButton)
-			{
-				batchSaveButton.addEventListener("click", saveSelectedResults);
-				batchSaveButton.disabled = true;
-			}
+		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
 
 		form.addEventListener("submit", function (event)
 			{
@@ -784,6 +546,7 @@
 				appendSystemLine("STOP", "pesquisa interrompida pelo usuário");
 				setMessage("warning", "Pesquisa interrompida pelo usuário.");
 				statusText.textContent = "Parado";
+				stopRateTimer();
 				setLoading(false);
 			});
 
@@ -795,6 +558,8 @@
 						eventSource = null;
 					}
 
+				stopRateTimer();
+				streamStartedAt = 0;
 				if (stateInput)
 					{
 						stateInput.value = "";
@@ -802,16 +567,15 @@
 				startInput.value = "";
 				endInput.value = "";
 				delayInput.value = "500";
+				concurrencyInput.value = "3";
 				maxResultsInput.value = "100";
 				providerModeInput.value = "fallback";
-				saveCityInput.checked = true;
-				saveNeighborhoodInput.checked = true;
-				createCityInput.checked = false;
 				maxResultsInput.value = "100";
 				updateDelayLabel();
+				updateConcurrencyLabel();
 				updateStateRangeSummary();
 				clearResults();
-				updateStats({processed: 0, found: 0, failed: 0});
+				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
 				updateProgress(0, 1);
 				statusText.textContent = "Aguardando início";
 				setMessage("secondary", "Selecione um estado e inicie a pesquisa.");
@@ -824,4 +588,5 @@
 
 		updateStateRangeSummary();
 		updateDelayLabel();
+		updateConcurrencyLabel();
 	})();

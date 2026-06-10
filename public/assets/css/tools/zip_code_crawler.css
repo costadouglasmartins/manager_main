@@ -34,7 +34,7 @@
 
 .zip-code-crawler-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -110,52 +110,6 @@
   letter-spacing: 0.12em;
   font-weight: 700;
   flex: 0 0 auto;
-}
-
-.crawler-console-titlebar-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.crawler-console-titlebar-actions .form-check-label {
-  color: #8b949e;
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-size: 0.72rem;
-  cursor: pointer;
-}
-
-.crawler-console-titlebar-actions .form-check-input {
-  background-color: transparent;
-  border-color: #484f58;
-  cursor: pointer;
-}
-
-.btn-console-action {
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-size: 0.72rem;
-  color: #58a6ff;
-  background: transparent;
-  border: 1px solid #30363d;
-  border-radius: 4px;
-  padding: 0.25rem 0.65rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
-.btn-console-action:hover:not(:disabled) {
-  background: rgba(88, 166, 255, 0.12);
-  color: #79c0ff;
-  border-color: #58a6ff;
-}
-
-.btn-console-action:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 /* Console body */
@@ -295,28 +249,6 @@
   align-items: center;
   gap: 0.4rem;
   margin-left: auto;
-}
-
-.btn-console-save {
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-size: 0.7rem;
-  color: #388bfd;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  line-height: 1;
-  transition: color 0.1s;
-}
-
-.btn-console-save:hover:not(:disabled) {
-  color: #79c0ff;
-  text-decoration: underline;
-}
-
-.btn-console-save:disabled {
-  color: #3d444d;
-  cursor: default;
 }
 
 .ccl-save-status {
