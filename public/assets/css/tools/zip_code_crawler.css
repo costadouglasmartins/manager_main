@@ -215,6 +215,11 @@
   cursor: pointer;
 }
 
+.crawler-console-checkbox--empty {
+  border-color: transparent;
+  cursor: default;
+}
+
 .ccl-ts {
   color: #3d444d;
   flex: 0 0 auto;
@@ -230,6 +235,7 @@
 
 .ccl-status--found    { color: #56d364; }
 .ccl-status--notfound { color: #f85149; }
+.ccl-status--database { color: #e3b341; }
 .ccl-status--system   { color: #e3b341; }
 
 .ccl-zip {
@@ -259,6 +265,10 @@
 
 .crawler-console-line--notfound .ccl-location {
   color: #484f58;
+}
+
+.crawler-console-line--existing .ccl-location {
+  color: #8b949e;
 }
 
 .ccl-system-text {

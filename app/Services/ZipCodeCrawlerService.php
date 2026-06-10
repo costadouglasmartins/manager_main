@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Core\Database;
+use PDO;
+
 /**
  * Brazilian zip code crawler service with provider fallback.
  */
@@ -99,6 +102,7 @@ class ZipCodeCrawlerService
 	private BrasilApiService $brasilApiService;
 	private string $notFoundFilePath;
 	private ?array $notFoundZipCodes = null;
+	private ?PDO $db = null;
 
 	/**
 	 * Build the crawler service.
@@ -783,6 +787,7 @@ class ZipCodeCrawlerService
 		{
 		$data['source'] = $source;
 		$data['attempts'] = $attempts;
+		$data['database_status'] = $this->buildDatabaseStatus($data);
 
 		return [
 			'success' => true,
@@ -791,6 +796,183 @@ class ZipCodeCrawlerService
 			'message' => 'CEP localizado com sucesso.',
 			'data' => $data,
 		];
+		}
+
+	/**
+	 * Build the local database status for a found zip code payload.
+	 * @param array<string, mixed> $data Normalized provider payload.
+	 * @return array<string, mixed>
+	 **/
+	private function buildDatabaseStatus(array $data): array
+		{
+		$cityName = trim((string) ($data['city'] ?? ''));
+		$stateAcronym = strtoupper(trim((string) ($data['state'] ?? '')));
+		$neighborhoodName = trim((string) ($data['neighborhood'] ?? ''));
+		$status = $this->emptyDatabaseStatus();
+
+		if ($cityName === '' || $stateAcronym === '')
+			{
+			$status['checked'] = false;
+			$status['message'] = 'Cidade ou estado ausente no retorno do serviço.';
+			return $status;
+			}
+
+		try
+			{
+			$state = $this->findStateByAcronym($stateAcronym);
+			if (!$state)
+				{
+				$status['message'] = 'Estado não encontrado na base.';
+				return $status;
+				}
+
+			$status['state_id'] = (int) $state['id'];
+
+			$city = $this->findCityByNameAndStateId($cityName, (int) $state['id']);
+			if (!$city)
+				{
+				$status['message'] = 'Cidade ainda não cadastrada.';
+				return $status;
+				}
+
+			$status['city_exists'] = true;
+			$status['city_id'] = (int) $city['id'];
+
+			if ($neighborhoodName === '')
+				{
+				$status['already_exists'] = true;
+				$status['message'] = 'Cidade já cadastrada; o serviço não retornou bairro.';
+				return $status;
+				}
+
+			$neighborhood = $this->findNeighborhoodByNameAndCityId($neighborhoodName, (int) $city['id']);
+			if (!$neighborhood)
+				{
+				$status['message'] = 'Bairro ainda não cadastrado para a cidade.';
+				return $status;
+				}
+
+			$status['already_exists'] = true;
+			$status['neighborhood_exists'] = true;
+			$status['neighborhood_id'] = (int) $neighborhood['id'];
+			$status['message'] = 'Cidade e bairro já cadastrados na base.';
+			return $status;
+			}
+		catch (\Throwable $e)
+			{
+			$status['checked'] = false;
+			$status['message'] = 'Não foi possível verificar a base local.';
+			return $status;
+			}
+		}
+
+	/**
+	 * Return the default local database status shape.
+	 * @return array<string, mixed>
+	 **/
+	private function emptyDatabaseStatus(): array
+		{
+		return [
+			'checked' => true,
+			'already_exists' => false,
+			'city_exists' => false,
+			'neighborhood_exists' => false,
+			'state_id' => null,
+			'city_id' => null,
+			'neighborhood_id' => null,
+			'message' => '',
+		];
+		}
+
+	/**
+	 * Return the manager database connection.
+	 * @return PDO
+	 **/
+	private function db(): PDO
+		{
+		if ($this->db === null)
+			{
+			$this->db = Database::getInstance();
+			}
+
+		return $this->db;
+		}
+
+	/**
+	 * Find a state by acronym.
+	 * @param string $acronym State acronym.
+	 * @return array<string, mixed>|null
+	 **/
+	private function findStateByAcronym(string $acronym): ?array
+		{
+		$acronym = strtoupper(trim($acronym));
+		if ($acronym === '')
+			{
+			return null;
+			}
+
+		$stmt = $this->db()->prepare("SELECT State.id, State.name, State.acronym, State.country_id
+		                              FROM states AS State
+		                              WHERE UPPER(State.acronym) = :acronym
+		                              LIMIT 1");
+		$stmt->execute(['acronym' => $acronym]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
+	 * Find a city by name and state id.
+	 * @param string $cityName City name.
+	 * @param int $stateId State id.
+	 * @return array<string, mixed>|null
+	 **/
+	private function findCityByNameAndStateId(string $cityName, int $stateId): ?array
+		{
+		$cityName = trim($cityName);
+		if ($cityName === '' || $stateId <= 0)
+			{
+			return null;
+			}
+
+		$stmt = $this->db()->prepare("SELECT City.id, City.name, City.state_id, State.name AS state_name, State.acronym AS state_acronym
+		                              FROM cities AS City
+		                              INNER JOIN states AS State ON State.id = City.state_id
+		                              WHERE City.state_id = :state_id
+		                                AND LOWER(TRIM(City.name)) = LOWER(TRIM(:city_name))
+		                              LIMIT 1");
+		$stmt->execute([
+			'state_id' => $stateId,
+			'city_name' => $cityName,
+		]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
+		}
+
+	/**
+	 * Find a neighborhood by name and city id.
+	 * @param string $neighborhoodName Neighborhood name.
+	 * @param int $cityId City id.
+	 * @return array<string, mixed>|null
+	 **/
+	private function findNeighborhoodByNameAndCityId(string $neighborhoodName, int $cityId): ?array
+		{
+		$neighborhoodName = trim($neighborhoodName);
+		if ($neighborhoodName === '' || $cityId <= 0)
+			{
+			return null;
+			}
+
+		$stmt = $this->db()->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id
+		                              FROM neighborhoods AS Neighborhood
+		                              WHERE Neighborhood.city_id = :city_id
+		                                AND LOWER(TRIM(Neighborhood.name)) = LOWER(TRIM(:neighborhood_name))
+		                              LIMIT 1");
+		$stmt->execute([
+			'city_id' => $cityId,
+			'neighborhood_name' => $neighborhoodName,
+		]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row ?: null;
 		}
 
 	/**

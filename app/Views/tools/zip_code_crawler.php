@@ -4,7 +4,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 ?>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=2'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=3'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -163,4 +163,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=4'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=5'); ?>"></script>

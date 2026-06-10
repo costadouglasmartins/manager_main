@@ -460,8 +460,11 @@
 										{
 											registryItem.saved = true;
 											registryItem.saveStatusNode.textContent = "✓ SALVO";
-											registryItem.saveButton.disabled = true;
-											registryItem.saveButton.textContent = "[SALVO]";
+											if (registryItem.saveButton)
+												{
+													registryItem.saveButton.disabled = true;
+													registryItem.saveButton.textContent = "[SALVO]";
+												}
 										}
 								});
 
@@ -498,27 +501,39 @@
 			{
 				const result = payload.result || {};
 				const data = result.data || {};
+				const databaseStatus = data.database_status && typeof data.database_status === "object"
+					? data.database_status
+					: {};
 				const zipCode = payload.zip_code || "";
-				const canSave = !!result.success && !!zipCode;
 				const isFound = !!result.success;
+				const alreadyInDatabase = isFound && !!databaseStatus.already_exists;
+				const canSave = isFound && !!zipCode && !alreadyInDatabase;
 				const isSkipped = !isFound && (!!data.skipped || result.source === "cache" || result.error === "zip_code_already_not_found");
 
 				const line = document.createElement("div");
-				line.className = "crawler-console-line " + (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound");
+				line.className = "crawler-console-line "
+					+ (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound")
+					+ (alreadyInDatabase ? " crawler-console-line--existing" : "");
 
-				const selectCheckbox = document.createElement("input");
-				selectCheckbox.className = "form-check-input crawler-console-checkbox";
-				selectCheckbox.type = "checkbox";
-				selectCheckbox.dataset.zipCode = zipCode;
-				selectCheckbox.disabled = !canSave;
+				let selectCheckbox = null;
+				const selectControl = canSave ? document.createElement("input") : document.createElement("span");
+				selectControl.className = canSave
+					? "form-check-input crawler-console-checkbox"
+					: "crawler-console-checkbox crawler-console-checkbox--empty";
+				if (canSave)
+					{
+						selectCheckbox = selectControl;
+						selectCheckbox.type = "checkbox";
+						selectCheckbox.dataset.zipCode = zipCode;
+					}
 
 				const tsSpan = document.createElement("span");
 				tsSpan.className = "ccl-ts";
 				tsSpan.textContent = "[" + nowTimestamp() + "]";
 
 				const statusSpan = document.createElement("span");
-				statusSpan.className = "ccl-status " + (isFound ? "ccl-status--found" : "ccl-status--notfound");
-				statusSpan.textContent = isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS ");
+				statusSpan.className = "ccl-status " + (alreadyInDatabase ? "ccl-status--database" : (isFound ? "ccl-status--found" : "ccl-status--notfound"));
+				statusSpan.textContent = alreadyInDatabase ? "DB" : (isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS "));
 
 				const zipSpan = document.createElement("span");
 				zipSpan.className = "ccl-zip";
@@ -530,14 +545,19 @@
 
 				const sourceSpan = document.createElement("span");
 				sourceSpan.className = "ccl-source";
-				sourceSpan.textContent = result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]");
+				sourceSpan.textContent = alreadyInDatabase
+					? "[DB]"
+					: (result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]"));
 
 				const locationSpan = document.createElement("span");
 				locationSpan.className = "ccl-location";
 				if (isFound)
 					{
 						const parts = [data.neighborhood, data.city, data.state].filter(Boolean);
-						locationSpan.textContent = parts.length ? parts.join(" · ") : "-";
+						const locationText = parts.length ? parts.join(" · ") : "-";
+						locationSpan.textContent = alreadyInDatabase && databaseStatus.message
+							? locationText + " · " + databaseStatus.message
+							: locationText;
 					}
 				else
 					{
@@ -546,25 +566,24 @@
 							: (result.message || "CEP não encontrado");
 					}
 
-				const saveButton = document.createElement("button");
-				saveButton.className = "btn-console-save";
-				saveButton.type = "button";
-				saveButton.textContent = "[SAVE]";
-
-				if (!isFound)
-					{
-						saveButton.disabled = true;
-					}
-
 				const saveStatus = document.createElement("span");
 				saveStatus.className = "ccl-save-status";
+				saveStatus.textContent = alreadyInDatabase ? "CADASTRADO" : "";
 
 				const actionsSpan = document.createElement("span");
 				actionsSpan.className = "ccl-actions";
-				actionsSpan.appendChild(saveButton);
+				let saveButton = null;
+				if (canSave)
+					{
+						saveButton = document.createElement("button");
+						saveButton.className = "btn-console-save";
+						saveButton.type = "button";
+						saveButton.textContent = "[SAVE]";
+						actionsSpan.appendChild(saveButton);
+					}
 				actionsSpan.appendChild(saveStatus);
 
-				if (isFound)
+				if (canSave && saveButton)
 					{
 						saveButton.addEventListener("click", function ()
 							{
@@ -575,11 +594,11 @@
 											{
 												registryItem.saved = true;
 											}
-									});
+										});
 							});
 					}
 
-				line.appendChild(selectCheckbox);
+				line.appendChild(selectControl);
 				line.appendChild(tsSpan);
 				line.appendChild(statusSpan);
 				line.appendChild(zipSpan);
@@ -728,9 +747,16 @@
 										return;
 									}
 
+								if (!resultEntry.selectedCheckbox)
+									{
+										return;
+									}
+
 								resultEntry.selectedCheckbox.checked = selectAllResultsInput.checked;
 								setSelectedZipCode(zipCode, selectAllResultsInput.checked);
 							});
+
+						updateBatchControls();
 					});
 			}
 
