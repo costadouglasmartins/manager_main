@@ -260,6 +260,23 @@ class State extends Model
 		}
 
 	/**
+	 * Get all by country id method
+	 * @param Integer $countryId Country id
+	 * @return array
+	 */
+	public function getAllByCountryId($countryId)
+		{
+		$stmt = $this->db->prepare("SELECT State.id,
+		                                   State.name,
+		                                   State.acronym
+		                            FROM states AS State
+		                            WHERE State.country_id = :country_id
+		                            ORDER BY State.name ASC");
+		$stmt->execute(['country_id' => $countryId]);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
 	 * Delete method - Deletes cities, neighborhoods, and addresses before deleting state
 	 * @param Integer $id State id
 	 * @throws \Exception

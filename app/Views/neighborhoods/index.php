@@ -1,14 +1,16 @@
 <?php
-$filters = $filters ?? ['id' => '', 'name' => '', 'city_id' => ''];
+$filters = $filters ?? ['id' => '', 'name' => '', 'country_id' => '', 'state_id' => '', 'city_id' => ''];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($neighborhoods) ? count($neighborhoods) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
-  'id'      => $filters['id'],
-  'name'    => $filters['name'],
-  'city_id' => $filters['city_id'],
+  'id'         => $filters['id'],
+  'name'       => $filters['name'],
+  'country_id' => $filters['country_id'],
+  'state_id'   => $filters['state_id'],
+  'city_id'    => $filters['city_id'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
@@ -28,16 +30,30 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   <div class="col-12 col-lg-9">
     <div class="row g-3">
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6">
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
+      <div class="col-12 col-md-6">
         <input class="form-control" id="name" name="name" type="text" placeholder="Nome" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <input class="form-control" id="city_id" name="city_id" type="text" placeholder="ID da cidade" value="<?= htmlspecialchars($filters['city_id'], ENT_QUOTES, 'UTF-8') ?>">
+      <div class="col-12 col-md-4">
+        <select class="form-select" id="country_id" name="country_id">
+          <option value="">País</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <select class="form-select" id="state_id" name="state_id" disabled>
+          <option value="">Estado</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <select class="form-select" id="city_id" name="city_id" disabled>
+          <option value="">Cidade</option>
+        </select>
       </div>
 
     </div>
@@ -135,4 +151,109 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
   document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
   document.getElementById('deleteForm').action = '<?= url('neighborhood/delete') ?>/' + recordId;
 });
+
+const countrySelect = document.getElementById('country_id');
+const stateSelect = document.getElementById('state_id');
+const citySelect = document.getElementById('city_id');
+
+async function loadCountries() {
+  try {
+    const response = await fetch('<?= url('neighborhood/getAllCountries') ?>');
+    const data = await response.json();
+    const currentCountryId = '<?= htmlspecialchars($filters['country_id'], ENT_QUOTES, 'UTF-8') ?>';
+
+    countrySelect.innerHTML = '<option value="">País</option>';
+    data.countries.forEach(country => {
+      const option = document.createElement('option');
+      option.value = country.id;
+      option.textContent = country.name;
+      if (country.id == currentCountryId) {
+        option.selected = true;
+      }
+      countrySelect.appendChild(option);
+    });
+
+    if (currentCountryId) {
+      await loadStatesByCountry(currentCountryId);
+    }
+  } catch (error) {
+    console.error('Error loading countries:', error);
+  }
+}
+
+async function loadStatesByCountry(countryId) {
+  const currentStateId = '<?= htmlspecialchars($filters['state_id'], ENT_QUOTES, 'UTF-8') ?>';
+
+  stateSelect.innerHTML = '<option value="">Estado</option>';
+  citySelect.innerHTML = '<option value="">Cidade</option>';
+  citySelect.disabled = true;
+
+  if (!countryId) {
+    stateSelect.disabled = true;
+    return;
+  }
+
+  try {
+    const response = await fetch('<?= url('neighborhood/getStatesByCountry') ?>?country_id=' + encodeURIComponent(countryId));
+    const data = await response.json();
+
+    data.states.forEach(state => {
+      const option = document.createElement('option');
+      option.value = state.id;
+      option.textContent = state.name;
+      if (state.id == currentStateId) {
+        option.selected = true;
+      }
+      stateSelect.appendChild(option);
+    });
+
+    stateSelect.disabled = false;
+
+    if (currentStateId) {
+      await loadCitiesByState(currentStateId);
+    }
+  } catch (error) {
+    console.error('Error loading states:', error);
+  }
+}
+
+async function loadCitiesByState(stateId) {
+  const currentCityId = '<?= htmlspecialchars($filters['city_id'], ENT_QUOTES, 'UTF-8') ?>';
+
+  citySelect.innerHTML = '<option value="">Cidade</option>';
+
+  if (!stateId) {
+    citySelect.disabled = true;
+    return;
+  }
+
+  try {
+    const response = await fetch('<?= url('neighborhood/getCitiesByState') ?>?state_id=' + encodeURIComponent(stateId));
+    const data = await response.json();
+
+    data.cities.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city.id;
+      option.textContent = city.name;
+      if (city.id == currentCityId) {
+        option.selected = true;
+      }
+      citySelect.appendChild(option);
+    });
+
+    citySelect.disabled = false;
+  } catch (error) {
+    console.error('Error loading cities:', error);
+  }
+}
+
+countrySelect.addEventListener('change', function () {
+  loadStatesByCountry(this.value);
+});
+
+stateSelect.addEventListener('change', function () {
+  loadCitiesByState(this.value);
+});
+
+loadCountries();
 </script>

@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~54 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6121,7 +6121,32 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(53, 'Loteamento Jaguar', 16, '2026-06-11 01:32:34', '2026-06-11 01:32:34'),
 	(54, 'Loteamento Santa Luzia', 16, '2026-06-11 01:33:42', '2026-06-11 01:33:42'),
 	(55, 'Aeroporto Velho', 16, '2026-06-11 01:36:21', '2026-06-11 01:36:21'),
-	(56, 'João Eduardo I', 16, '2026-06-11 17:55:06', '2026-06-11 17:55:06');
+	(56, 'João Eduardo I', 16, '2026-06-11 17:55:06', '2026-06-11 17:55:06'),
+	(57, 'Capoeira', 16, '2026-06-11 18:58:18', '2026-06-11 18:58:18'),
+	(58, 'Habitasa', 16, '2026-06-11 18:59:15', '2026-06-11 18:59:15'),
+	(59, 'Baixada da Habitasa', 16, '2026-06-11 18:59:55', '2026-06-11 18:59:55'),
+	(60, 'Cadeia Velha', 16, '2026-06-11 19:00:44', '2026-06-11 19:00:44'),
+	(61, 'Baixada da Cadeia Velha', 16, '2026-06-11 19:01:33', '2026-06-11 19:01:33'),
+	(62, 'Invasão da Seis de Agosto', 16, '2026-06-11 19:08:00', '2026-06-11 19:08:00'),
+	(63, 'Areal', 16, '2026-06-11 19:09:27', '2026-06-11 19:09:27'),
+	(64, 'Vila do DNER', 16, '2026-06-11 19:14:45', '2026-06-11 19:14:45'),
+	(65, 'Triângulo Velho', 16, '2026-06-11 19:16:06', '2026-06-11 19:16:06'),
+	(66, 'Triângulo Novo', 16, '2026-06-11 19:16:56', '2026-06-11 19:16:56'),
+	(67, 'Comara', 16, '2026-06-11 19:17:38', '2026-06-11 19:17:38'),
+	(68, 'Abraão Alab', 16, '2026-06-11 19:30:13', '2026-06-11 19:30:13'),
+	(69, 'Isaura Parente', 16, '2026-06-11 19:30:51', '2026-06-11 19:30:51'),
+	(70, 'Recanto dos Buritis', 16, '2026-06-11 19:34:07', '2026-06-11 19:34:07'),
+	(71, 'Santa Inês', 16, '2026-06-11 19:35:13', '2026-06-11 19:35:13'),
+	(72, 'Belo Jardim I', 16, '2026-06-11 19:36:46', '2026-06-11 19:36:46'),
+	(73, 'Belo Jardim II', 16, '2026-06-11 19:37:35', '2026-06-11 19:37:35'),
+	(74, 'Vila Santa Cecília', 16, '2026-06-11 19:40:10', '2026-06-11 19:40:10'),
+	(75, 'Vila Albert Sampaio', 16, '2026-06-11 19:41:49', '2026-06-11 19:41:49'),
+	(76, 'Vila Liberdade', 16, '2026-06-11 19:43:58', '2026-06-11 19:43:58'),
+	(77, 'Loteamento Santa Helena', 16, '2026-06-11 19:47:05', '2026-06-11 19:47:05'),
+	(78, 'Loteamento Santo Afonso', 16, '2026-06-11 19:49:17', '2026-06-11 19:49:17'),
+	(79, 'Rosa Linda', 16, '2026-06-11 19:51:29', '2026-06-11 19:51:29'),
+	(80, 'Cidade do Povo', 16, '2026-06-11 19:52:55', '2026-06-11 19:52:55'),
+	(81, 'Vila da Amizade', 16, '2026-06-11 19:57:53', '2026-06-11 19:57:53');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (

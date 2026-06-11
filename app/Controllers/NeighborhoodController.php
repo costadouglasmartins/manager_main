@@ -18,9 +18,11 @@ class NeighborhoodController extends Controller
 		$neighborhood = new Neighborhood();
 
 		$filters = [
-			'id'      => isset($_GET['id'])      ? trim($_GET['id'])      : '',
-			'name'    => isset($_GET['name'])    ? trim($_GET['name'])    : '',
-			'city_id' => isset($_GET['city_id']) ? trim($_GET['city_id']) : '',
+			'id'         => isset($_GET['id'])         ? trim($_GET['id'])         : '',
+			'name'       => isset($_GET['name'])       ? trim($_GET['name'])       : '',
+			'country_id' => isset($_GET['country_id']) ? trim($_GET['country_id']) : '',
+			'state_id'   => isset($_GET['state_id'])   ? trim($_GET['state_id'])   : '',
+			'city_id'    => isset($_GET['city_id'])    ? trim($_GET['city_id'])    : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -153,6 +155,61 @@ class NeighborhoodController extends Controller
 			}, $rows);
 
 		$this->json(['items' => $items]);
+		}
+
+	/**
+	 * Get states by country method
+	 */
+	public function getStatesByCountry()
+		{
+		$this->requirePermission('neighborhood.index');
+
+		$countryId = isset($_GET['country_id']) ? (int) $_GET['country_id'] : 0;
+
+		if ($countryId <= 0)
+			{
+			$this->json(['states' => []]);
+			return;
+			}
+
+		$state = new \App\Models\State();
+		$states = $state->getAllByCountryId($countryId);
+
+		$this->json(['states' => $states]);
+		}
+
+	/**
+	 * Get cities by state method
+	 */
+	public function getCitiesByState()
+		{
+		$this->requirePermission('neighborhood.index');
+
+		$stateId = isset($_GET['state_id']) ? (int) $_GET['state_id'] : 0;
+
+		if ($stateId <= 0)
+			{
+			$this->json(['cities' => []]);
+			return;
+			}
+
+		$city = new \App\Models\City();
+		$cities = $city->getAllByStateId($stateId);
+
+		$this->json(['cities' => $cities]);
+		}
+
+	/**
+	 * Get all countries method
+	 */
+	public function getAllCountries()
+		{
+		$this->requirePermission('neighborhood.index');
+
+		$country = new \App\Models\Country();
+		$countries = $country->getAll();
+
+		$this->json(['countries' => $countries]);
 		}
 
 	/**

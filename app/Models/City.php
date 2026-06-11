@@ -333,6 +333,22 @@ class City extends Model
 		}
 
 	/**
+	 * Get all by state id method
+	 * @param Integer $stateId State id
+	 * @return array
+	 */
+	public function getAllByStateId($stateId)
+		{
+		$stmt = $this->db->prepare("SELECT City.id,
+		                                   City.name
+		                            FROM cities AS City
+		                            WHERE City.state_id = :state_id
+		                            ORDER BY City.name ASC");
+		$stmt->execute(['state_id' => $stateId]);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
 	 * Delete method - Deletes neighborhoods and their addresses before deleting city
 	 * @param Integer $id City id
 	 * @throws \Exception
