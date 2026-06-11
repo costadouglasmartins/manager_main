@@ -40,7 +40,8 @@
 			processed: 0,
 			found: 0,
 			failed: 0,
-			looked_up: 0
+			looked_up: 0,
+			lookup_rate: 0
 		};
 
 		function onlyDigits(value)
@@ -201,6 +202,33 @@
 				});
 			}
 
+		function getLookupRate(payload)
+			{
+				if (payload && Object.prototype.hasOwnProperty.call(payload, "lookup_rate"))
+					{
+						return numericMetric(payload.lookup_rate);
+					}
+
+				const elapsedMs = streamStartedAt > 0 ? Date.now() - streamStartedAt : 0;
+				const lookedUp = getLookedUpCount(payload || latestStats);
+				return elapsedMs > 0 ? lookedUp / (elapsedMs / 1000) : 0;
+			}
+
+		function formatClockTimeFromTimestamp(timestamp)
+			{
+				const seconds = Number(timestamp || 0);
+				if (!Number.isFinite(seconds) || seconds <= 0)
+					{
+						return "";
+					}
+
+				return new Date(seconds * 1000).toLocaleTimeString("pt-BR", {
+					hour: "2-digit",
+					minute: "2-digit",
+					second: "2-digit"
+				});
+			}
+
 		function updateLookupRate(payload)
 			{
 				if (!lookupRateCount)
@@ -208,10 +236,7 @@
 						return;
 					}
 
-				const elapsedMs = streamStartedAt > 0 ? Date.now() - streamStartedAt : 0;
-				const lookedUp = getLookedUpCount(payload || latestStats);
-				const rate = elapsedMs > 0 ? lookedUp / (elapsedMs / 1000) : 0;
-				lookupRateCount.textContent = formatLookupRate(rate);
+				lookupRateCount.textContent = formatLookupRate(getLookupRate(payload || latestStats));
 			}
 
 		function stopRateTimer()
@@ -238,7 +263,8 @@
 					processed: numericMetric(payload.processed),
 					found: numericMetric(payload.found),
 					failed: numericMetric(payload.failed),
-					looked_up: getLookedUpCount(payload)
+					looked_up: getLookedUpCount(payload),
+					lookup_rate: getLookupRate(payload)
 				};
 
 				processedCount.textContent = String(latestStats.processed);
@@ -433,7 +459,8 @@
 
 				if (String((attempt && attempt.error) || "") === "provider_temporarily_disabled")
 					{
-						const disabledUntil = String(diagnostics.disabled_until || "");
+						const disabledUntil = formatClockTimeFromTimestamp(diagnostics.disabled_until_timestamp)
+							|| String(diagnostics.disabled_until || "");
 						return disabledUntil ? "retoma às " + disabledUntil : "";
 					}
 
@@ -665,13 +692,15 @@
 						const activeConcurrency = String(payload.concurrency || concurrency);
 						const autoSaveText = payload.auto_save_neighborhood ? "salvamento automático ativo" : "salvamento automático desativado";
 						const viaCepPaused = payload.viacep_available === false;
+						const viaCepDisabledUntil = formatClockTimeFromTimestamp(payload.viacep_disabled_until_timestamp)
+							|| String(payload.viacep_disabled_until || "");
 						const viaCepText = viaCepPaused ? " ViaCEP pausado temporariamente; usando fallback quando disponível." : "";
 						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s)." + viaCepText);
 						updateProgress(0, payload.total || 1);
 						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
 						if (viaCepPaused)
 							{
-								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (payload.viacep_disabled_until ? " até " + payload.viacep_disabled_until : "") + ".");
+								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (viaCepDisabledUntil ? " até " + viaCepDisabledUntil : "") + ".");
 							}
 					});
 

@@ -19,6 +19,7 @@ class ZipCodeCrawlerService
 	private const VIACEP_TRANSIENT_FAILURE_THRESHOLD = 1;
 	private const VIACEP_COOLDOWN_SECONDS = 300;
 	private const VIACEP_PROBE_ZIP_CODE = '01001000';
+	private const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 	private const HTTP_TIMEOUT_SECONDS = 5;
 	private const HTTP_USER_AGENT = 'Manager ZipCodeCrawler/1.0';
 	private const VIACEP_BASE_URL = 'https://viacep.com.br/ws/';
@@ -344,33 +345,58 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Trim ranges so processing starts from a specific zip code.
+	 * Rotate ranges so processing starts from a specific zip code without dropping earlier gaps.
 	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
 	 * @param string $startDigits Normalized zip code digits.
 	 * @return array<int, array{start: string, end: string}>
 	 **/
-	private function trimZipCodeRangesFrom(array $ranges, string $startDigits): array
+	private function rotateZipCodeRangesFrom(array $ranges, string $startDigits): array
 		{
 		if (strlen($startDigits) !== 8)
 			{
 			return $ranges;
 			}
 
-		$trimmedRanges = [];
+		$rotatedRanges = [];
+		$previousRanges = [];
+		$foundStart = false;
+
 		foreach ($ranges as $range)
 			{
-			if ($range['end'] < $startDigits)
+			if (!$foundStart && $startDigits >= $range['start'] && $startDigits <= $range['end'])
 				{
+				$rotatedRanges[] = [
+					'start' => $startDigits,
+					'end' => $range['end'],
+				];
+
+				if ($range['start'] < $startDigits)
+					{
+					$previousRanges[] = [
+						'start' => $range['start'],
+						'end' => str_pad((string) (((int) $startDigits) - 1), 8, '0', STR_PAD_LEFT),
+					];
+					}
+
+				$foundStart = true;
 				continue;
 				}
 
-			$trimmedRanges[] = [
-				'start' => max($range['start'], $startDigits),
-				'end' => $range['end'],
-			];
+			if ($foundStart)
+				{
+				$rotatedRanges[] = $range;
+				continue;
+				}
+
+			$previousRanges[] = $range;
 			}
 
-		return $trimmedRanges;
+		if (!$foundStart)
+			{
+			return $ranges;
+			}
+
+		return array_values(array_merge($rotatedRanges, $previousRanges));
 		}
 
 	/**
@@ -480,7 +506,7 @@ class ZipCodeCrawlerService
 		$resumeStartDigits = $this->resolveNotFoundResumeStart($notFoundZipCodes, $ranges);
 		$crawlRanges = $resumeStartDigits === null
 			? $ranges
-			: $this->trimZipCodeRangesFrom($ranges, $resumeStartDigits);
+			: $this->rotateZipCodeRangesFrom($ranges, $resumeStartDigits);
 		$totalAvailable = self::countZipCodeRanges($crawlRanges);
 		$totalToProcess = min($totalAvailable, max(1, $maxResults));
 		$rangeOptions = $this->formatRangeEventData($crawlRanges);
@@ -501,12 +527,15 @@ class ZipCodeCrawlerService
 			'delay_ms' => $delayMs,
 			'concurrency' => $concurrency,
 			'looked_up' => 0,
+			'lookup_elapsed_ms' => 0,
+			'lookup_rate' => 0.0,
 			'auto_save_city' => $autoSaveCity,
 			'auto_save_neighborhood' => $autoSaveNeighborhood,
 			'create_city' => $createCity,
 			'provider_mode' => $providerMode,
 			'viacep_available' => !$this->isViaCepTemporarilyDisabled(),
 			'viacep_disabled_until' => $this->viaCepDisabledUntilText(),
+			'viacep_disabled_until_timestamp' => $this->viaCepDisabledUntilTimestamp(),
 		]);
 
 		$stats = [
@@ -515,6 +544,7 @@ class ZipCodeCrawlerService
 			'failed' => 0,
 			'skipped' => 0,
 			'looked_up' => 0,
+			'lookup_elapsed_ms' => 0,
 		];
 		$lookupBatch = [];
 
@@ -538,6 +568,8 @@ class ZipCodeCrawlerService
 					'failed' => $stats['failed'],
 					'skipped' => $stats['skipped'],
 					'looked_up' => $stats['looked_up'],
+					'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
+					'lookup_rate' => $this->lookupRateForStats($stats),
 					'zip_code' => $zipCode,
 					'state' => $stateAcronym,
 					'result' => $this->buildSkippedNotFoundResult($zipCode),
@@ -576,6 +608,8 @@ class ZipCodeCrawlerService
 			'failed' => $stats['failed'],
 			'skipped' => $stats['skipped'],
 			'looked_up' => $stats['looked_up'],
+			'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
+			'lookup_rate' => $this->lookupRateForStats($stats),
 			'total' => $totalToProcess,
 			'total_available' => $totalAvailable,
 			'concurrency' => $concurrency,
@@ -617,7 +651,7 @@ class ZipCodeCrawlerService
 	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @param string $providerMode Provider selection mode.
 	 * @param int $delayMs Delay between lookup batches in milliseconds.
-	 * @param array<string, int> $stats Mutable crawler counters.
+	 * @param array<string, int|float> $stats Mutable crawler counters.
 	 * @param int $totalToProcess Total records to process.
 	 * @param string|null $stateAcronym Selected state acronym.
 	 * @param bool $autoSaveCity Whether city persistence is enabled.
@@ -651,7 +685,9 @@ class ZipCodeCrawlerService
 		if (!empty($lookupZipCodes))
 			{
 			$results = $this->lookupBatchByMode($lookupZipCodes, $providerMode);
+			$lookupElapsedMs = (int) max(1, round((microtime(true) - $lookupStartedAt) * 1000));
 			$stats['looked_up'] += count($lookupZipCodes);
+			$stats['lookup_elapsed_ms'] += $lookupElapsedMs;
 			}
 
 		foreach ($zipCodes as $zipCode)
@@ -691,6 +727,8 @@ class ZipCodeCrawlerService
 				'failed' => $stats['failed'],
 				'skipped' => $stats['skipped'],
 				'looked_up' => $stats['looked_up'],
+				'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
+				'lookup_rate' => $this->lookupRateForStats($stats),
 				'zip_code' => $zipCode,
 				'state' => $stateAcronym,
 				'result' => $result,
@@ -1082,6 +1120,7 @@ class ZipCodeCrawlerService
 			'curl_error' => '',
 			'cooldown_seconds' => self::VIACEP_COOLDOWN_SECONDS,
 			'disabled_until' => $this->viaCepDisabledUntilText(),
+			'disabled_until_timestamp' => $this->viaCepDisabledUntilTimestamp(),
 		];
 
 		if (!empty($this->viaCepDisabledDiagnostics))
@@ -1123,12 +1162,47 @@ class ZipCodeCrawlerService
 	 **/
 	private function viaCepDisabledUntilText(): string
 		{
-		if (!$this->isViaCepTemporarilyDisabled())
+		$timestamp = $this->viaCepDisabledUntilTimestamp();
+		if ($timestamp <= 0)
 			{
 			return '';
 			}
 
-		return date('H:i:s', (int) ceil($this->viaCepDisabledUntil));
+		return (new \DateTimeImmutable('@' . $timestamp))
+			->setTimezone($this->applicationTimeZone())
+			->format('H:i:s');
+		}
+
+	/**
+	 * Return the ViaCEP cooldown deadline as a Unix timestamp.
+	 * @return int
+	 **/
+	private function viaCepDisabledUntilTimestamp(): int
+		{
+		if (!$this->isViaCepTemporarilyDisabled())
+			{
+			return 0;
+			}
+
+		return (int) ceil($this->viaCepDisabledUntil);
+		}
+
+	/**
+	 * Return the application timezone used for server formatted times.
+	 * @return \DateTimeZone
+	 **/
+	private function applicationTimeZone(): \DateTimeZone
+		{
+		$timezoneName = (string) (getenv('APP_TIMEZONE') ?: self::DEFAULT_TIMEZONE);
+
+		try
+			{
+			return new \DateTimeZone($timezoneName);
+			}
+		catch (\Exception $exception)
+			{
+			return new \DateTimeZone(self::DEFAULT_TIMEZONE);
+			}
 		}
 
 	/**
@@ -1651,15 +1725,33 @@ class ZipCodeCrawlerService
 			return false;
 			}
 
+		$providerMode = $this->normalizeProviderMode($providerMode);
 		$attempts = $result['data']['attempts'] ?? [];
 		if (is_array($attempts) && !empty($attempts))
 			{
-			return $this->attemptsCanConfirmGlobalNotFound($attempts, $providerMode)
-				&& ($this->attemptsIndicateNotFound($attempts) || $this->attemptsIncludeNotFound($attempts));
+			if ($providerMode === 'fallback')
+				{
+				return $this->attemptsCanConfirmGlobalNotFound($attempts, $providerMode)
+					&& ($this->attemptsIndicateNotFound($attempts) || $this->attemptsIncludeNotFound($attempts));
+				}
+
+			return $this->attemptsIncludeProvider($attempts, $providerMode)
+				&& $this->attemptsIndicateNotFound($attempts);
 			}
 
-		return $this->normalizeProviderMode($providerMode) === 'fallback'
+		return $this->isProviderModeSource($providerMode, (string) ($result['source'] ?? ''))
 			&& $this->isNotFoundSignal((string) ($result['error'] ?? ''), (int) ($result['status'] ?? 0));
+		}
+
+	/**
+	 * Check whether a result source matches the selected provider mode.
+	 * @param string $providerMode Selected provider mode.
+	 * @param string $source Result source key.
+	 * @return bool
+	 **/
+	private function isProviderModeSource(string $providerMode, string $source): bool
+		{
+		return $providerMode === 'fallback' || strtolower($source) === $providerMode;
 		}
     
 	/**
@@ -2162,6 +2254,23 @@ class ZipCodeCrawlerService
 		{
 		$rootPath = defined('ROOT_PATH') ? (string) ROOT_PATH : dirname(__DIR__, 2);
 		return rtrim($rootPath, '/\\') . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . self::NOT_FOUND_JOURNAL_FILE_NAME;
+		}
+
+	/**
+	 * Calculate the zip code lookup rate using active service time.
+	 * @param array<string, int|float> $stats Mutable crawler counters.
+	 * @return float
+	 **/
+	private function lookupRateForStats(array $stats): float
+		{
+		$lookedUp = (int) ($stats['looked_up'] ?? 0);
+		$lookupElapsedMs = (int) ($stats['lookup_elapsed_ms'] ?? 0);
+		if ($lookedUp <= 0 || $lookupElapsedMs <= 0)
+			{
+			return 0.0;
+			}
+
+		return $lookedUp / ($lookupElapsedMs / 1000);
 		}
 
 	/**
