@@ -16,7 +16,6 @@
 		const delayLabel = document.getElementById("crawlerDelayLabel");
 		const concurrencyInput = document.getElementById("crawlerConcurrency");
 		const concurrencyLabel = document.getElementById("crawlerConcurrencyLabel");
-		const maxResultsInput = document.getElementById("crawlerMaxResults");
 		const clearButton = document.getElementById("crawlerClearButton");
 		const stopButton = document.getElementById("crawlerStopButton");
 		const startButton = document.getElementById("crawlerStartButton");
@@ -35,6 +34,7 @@
 		let eventSource = null;
 		let streamStartedAt = 0;
 		let rateTimer = null;
+		let resultsStickToBottom = true;
 		let latestStats = {
 			processed: 0,
 			found: 0,
@@ -101,15 +101,6 @@
 				return stateOption ? Number(stateOption.total || 0) : 0;
 			}
 
-		function updateMaxResultsFromRange()
-			{
-				const total = calculateZipCodeRangeCount();
-				if (total > 0)
-					{
-						maxResultsInput.value = String(total);
-					}
-			}
-
 		function formatRangeList(ranges)
 			{
 				if (!Array.isArray(ranges) || ranges.length === 0)
@@ -136,7 +127,6 @@
 							{
 								endInput.value = "";
 							}
-						maxResultsInput.value = "100";
 						stateRangeSummary.textContent = "Selecione um estado para carregar a faixa de CEP.";
 						return;
 					}
@@ -154,7 +144,6 @@
 						endInput.value = lastRange.end_digits || "";
 					}
 
-				updateMaxResultsFromRange();
 				stateRangeSummary.textContent = (ranges.length > 1 ? "Faixas não contínuas: " : "Faixa: ")
 					+ formatRangeList(ranges)
 					+ " · "
@@ -266,12 +255,34 @@
 
 		function clearResults()
 			{
-				resultsBody.innerHTML = '<div class="crawler-console-line crawler-console-line--idle"><span class="ccl-prompt">›</span><span class="ccl-text">Aguardando início — selecione um estado e execute o crawler.</span><span class="crawler-console-cursor" aria-hidden="true"></span></div>';
+				resultsStickToBottom = true;
+				resultsBody.innerHTML = '<div class="list-group-item text-secondary zip-code-crawler-results-empty"><div class="d-flex align-items-center gap-2"><i class="bi bi-hourglass-split"></i><span>Aguardando início - selecione um estado e execute o crawler.</span></div></div>';
+			}
+
+		function isResultsScrolledToBottom()
+			{
+				return resultsBody.scrollHeight - resultsBody.scrollTop - resultsBody.clientHeight <= 12;
+			}
+
+		function updateResultsStickiness()
+			{
+				resultsStickToBottom = isResultsScrolledToBottom();
 			}
 
 		function scrollResultsToBottom()
 			{
 				resultsBody.scrollTop = resultsBody.scrollHeight;
+				resultsStickToBottom = true;
+			}
+
+		function appendResultsElement(element)
+			{
+				const shouldStick = resultsStickToBottom || isResultsScrolledToBottom();
+				resultsBody.appendChild(element);
+				if (shouldStick)
+					{
+						scrollResultsToBottom();
+					}
 			}
 
 		function nowTimestamp()
@@ -286,10 +297,25 @@
 
 		function clearIdleLine()
 			{
-				const idleLine = resultsBody.querySelector(".crawler-console-line--idle");
+				const idleLine = resultsBody.querySelector(".zip-code-crawler-results-empty");
 				if (idleLine)
 					{
 						idleLine.remove();
+					}
+			}
+
+		function systemListGroupClass(type)
+			{
+				switch (String(type || "").toUpperCase())
+					{
+						case "DONE":
+							return "list-group-item-success";
+						case "ERROR":
+							return "list-group-item-danger";
+						case "STOP":
+							return "list-group-item-warning";
+						default:
+							return "list-group-item-info";
 					}
 			}
 
@@ -298,25 +324,28 @@
 				clearIdleLine();
 
 				const line = document.createElement("div");
-				line.className = "crawler-console-line crawler-console-line--system";
+				line.className = "list-group-item " + systemListGroupClass(type);
 
-				const tsSpan = document.createElement("span");
-				tsSpan.className = "ccl-ts";
-				tsSpan.textContent = "[" + nowTimestamp() + "]";
+				const header = document.createElement("div");
+				header.className = "d-flex flex-wrap align-items-center gap-2";
 
 				const statusSpan = document.createElement("span");
-				statusSpan.className = "ccl-status ccl-status--system";
+				statusSpan.className = "badge text-bg-secondary";
 				statusSpan.textContent = type;
 
+				const tsSpan = document.createElement("small");
+				tsSpan.className = "text-body-secondary font-monospace";
+				tsSpan.textContent = nowTimestamp();
+
 				const textSpan = document.createElement("span");
-				textSpan.className = "ccl-system-text";
+				textSpan.className = "small text-body-secondary flex-grow-1";
 				textSpan.textContent = text;
 
-				line.appendChild(tsSpan);
-				line.appendChild(statusSpan);
-				line.appendChild(textSpan);
-				resultsBody.appendChild(line);
-				scrollResultsToBottom();
+				header.appendChild(statusSpan);
+				header.appendChild(tsSpan);
+				header.appendChild(textSpan);
+				line.appendChild(header);
+				appendResultsElement(line);
 			}
 
 		function appendResultRow(payload)
@@ -339,38 +368,61 @@
 				const autoSaveFailed = autoSaveEnabled && !!autoSave.attempted && !autoSave.success;
 				const isSkipped = !isFound && (!!data.skipped || result.source === "cache" || result.error === "zip_code_already_not_found");
 
-				const line = document.createElement("div");
-				line.className = "crawler-console-line "
-					+ (isFound ? "crawler-console-line--found" : "crawler-console-line--notfound")
-					+ (alreadyInDatabase ? " crawler-console-line--existing" : "");
-
-				const selectControl = document.createElement("span");
-				selectControl.className = "crawler-console-checkbox crawler-console-checkbox--empty";
-
-				const tsSpan = document.createElement("span");
-				tsSpan.className = "ccl-ts";
-				tsSpan.textContent = "[" + nowTimestamp() + "]";
-
-				const statusSpan = document.createElement("span");
-				statusSpan.className = "ccl-status " + (autoSaveSaved ? "ccl-status--found" : (autoSaveFailed ? "ccl-status--notfound" : (alreadyInDatabase ? "ccl-status--database" : (isFound ? "ccl-status--found" : "ccl-status--notfound"))));
-				statusSpan.textContent = autoSaveSaved ? "SAVED" : (alreadyInDatabase ? "DB" : (autoSaveFailed ? "SAVE!" : (isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS "))));
-
-				const zipSpan = document.createElement("span");
-				zipSpan.className = "ccl-zip";
-				zipSpan.textContent = zipCode || "-";
-
-				const arrowSpan = document.createElement("span");
-				arrowSpan.className = "ccl-arrow";
-				arrowSpan.textContent = "›";
-
-				const sourceSpan = document.createElement("span");
-				sourceSpan.className = "ccl-source";
-				sourceSpan.textContent = autoSaveSaved
+				const statusText = autoSaveSaved
+					? "SAVED"
+					: (alreadyInDatabase ? "DB" : (autoSaveFailed ? "SAVE!" : (isFound ? "FOUND" : (isSkipped ? "CACHE" : "MISS"))));
+				const statusClass = autoSaveSaved
+					? "text-bg-success"
+					: (alreadyInDatabase ? "text-bg-warning" : (autoSaveFailed ? "text-bg-danger" : (isFound ? "text-bg-info" : (isSkipped ? "text-bg-secondary" : "text-bg-danger"))));
+				const rowClass = autoSaveSaved
+					? "list-group-item-success"
+					: (alreadyInDatabase ? "list-group-item-warning" : (autoSaveFailed ? "list-group-item-danger" : (isFound ? "list-group-item-info" : (isSkipped ? "list-group-item-secondary" : "list-group-item-danger"))));
+				const sourceText = autoSaveSaved
 					? "[AUTO]"
 					: (alreadyInDatabase ? "[DB]" : (result.source === "cache" ? "[TXT]" : (result.source ? "[" + String(result.source).toUpperCase() + "]" : "[-]")));
+				const saveStatusText = autoSaveSaved ? "SALVO" : (alreadyInDatabase ? "CADASTRADO" : (autoSaveFailed ? "ERRO" : ""));
+				const saveStatusClass = autoSaveSaved
+					? "text-bg-success"
+					: (alreadyInDatabase ? "text-bg-warning" : "text-bg-danger");
+
+				const line = document.createElement("div");
+				line.className = "list-group-item " + rowClass;
+
+				const header = document.createElement("div");
+				header.className = "d-flex flex-wrap align-items-center gap-2";
+
+				const statusSpan = document.createElement("span");
+				statusSpan.className = "badge rounded-pill " + statusClass;
+				statusSpan.textContent = statusText;
+
+				const zipSpan = document.createElement("span");
+				zipSpan.className = "font-monospace fw-semibold text-body";
+				zipSpan.textContent = zipCode || "-";
+
+				const sourceSpan = document.createElement("span");
+				sourceSpan.className = "badge text-bg-secondary";
+				sourceSpan.textContent = sourceText;
+
+				const tsSpan = document.createElement("small");
+				tsSpan.className = "text-body-secondary font-monospace ms-auto";
+				tsSpan.textContent = "[" + nowTimestamp() + "]";
+
+				header.appendChild(statusSpan);
+				header.appendChild(zipSpan);
+				header.appendChild(sourceSpan);
+
+				if (saveStatusText !== "")
+					{
+						const saveStatus = document.createElement("span");
+						saveStatus.className = "badge rounded-pill " + saveStatusClass;
+						saveStatus.textContent = saveStatusText;
+						header.appendChild(saveStatus);
+					}
+
+				header.appendChild(tsSpan);
 
 				const locationSpan = document.createElement("span");
-				locationSpan.className = "ccl-location";
+				locationSpan.className = "d-block small text-body-secondary mt-2 zip-code-crawler-result-detail";
 				if (isFound)
 					{
 						const parts = [data.neighborhood, data.city, data.state].filter(Boolean);
@@ -387,26 +439,11 @@
 							: (result.message || "CEP não encontrado");
 					}
 
-				const saveStatus = document.createElement("span");
-				saveStatus.className = "ccl-save-status";
-				saveStatus.textContent = autoSaveSaved ? "SALVO" : (alreadyInDatabase ? "CADASTRADO" : (autoSaveFailed ? "ERRO" : ""));
-
-				const actionsSpan = document.createElement("span");
-				actionsSpan.className = "ccl-actions";
-				actionsSpan.appendChild(saveStatus);
-
-				line.appendChild(selectControl);
-				line.appendChild(tsSpan);
-				line.appendChild(statusSpan);
-				line.appendChild(zipSpan);
-				line.appendChild(arrowSpan);
-				line.appendChild(sourceSpan);
+				line.appendChild(header);
 				line.appendChild(locationSpan);
-				line.appendChild(actionsSpan);
 
 				clearIdleLine();
-				resultsBody.appendChild(line);
-				scrollResultsToBottom();
+				appendResultsElement(line);
 			}
 
 		function openStream()
@@ -415,7 +452,7 @@
 				const stateAcronym = selectedState ? String(selectedState.acronym || "").toUpperCase() : "";
 				const delayMs = String(delayInput.value || "500");
 				const concurrency = String(concurrencyInput.value || "3");
-				const maxResults = String(maxResultsInput.value || calculateZipCodeRangeCount() || "100");
+				const maxResults = String(calculateZipCodeRangeCount() || "100");
 				const providerMode = providerModeInput.value || "fallback";
 
 				if (!selectedState || stateAcronym === "")
@@ -464,7 +501,7 @@
 						const autoSaveText = payload.auto_save_neighborhood ? "salvamento automático ativo" : "salvamento automático desativado";
 						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s).");
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "scanner ativo | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | provider: " + (payload.provider_mode || providerMode).toUpperCase() + " | paralelo: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
+						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
 					});
 
 				eventSource.addEventListener("progress", function (event)
@@ -484,11 +521,10 @@
 						updateProgress(payload.total || 1, payload.total || 1);
 						statusText.textContent = "Concluído";
 						setMessage("success", "Pesquisa concluída com " + (payload.found || 0) + " novo(s) salvo(s).");
-						appendSystemLine("DONE", "scan completo | " + (payload.found || 0) + " novo(s) salvo(s) | " + (payload.failed || 0) + " não encontrado(s) | " + (payload.looked_up || 0) + " consulta(s) em webservices");
+						appendSystemLine("DONE", "Pesquisa concluída | " + (payload.found || 0) + " novo(s) salvo(s) | " + (payload.failed || 0) + " não encontrado(s) | " + (payload.looked_up || 0) + " consulta(s) em webservices");
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
-						scrollResultsToBottom();
 					});
 
 				eventSource.addEventListener("error", function ()
@@ -500,7 +536,7 @@
 
 						setMessage("danger", "A conexão da pesquisa foi interrompida.");
 						statusText.textContent = "Interrompido";
-						appendSystemLine("ERROR", "conexão interrompida — verifique a rede e tente novamente");
+						appendSystemLine("ERROR", "Conexão interrompida - verifique a rede e tente novamente");
 						stopRateTimer();
 						setLoading(false);
 						eventSource.close();
@@ -511,13 +547,11 @@
 		startInput.addEventListener("input", function ()
 			{
 				startInput.value = formatZipCode(startInput.value);
-				updateMaxResultsFromRange();
 			});
 
 		endInput.addEventListener("input", function ()
 			{
 				endInput.value = formatZipCode(endInput.value);
-				updateMaxResultsFromRange();
 			});
 
 		if (stateInput)
@@ -527,11 +561,11 @@
 
 		delayInput.addEventListener("input", updateDelayLabel);
 		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
+		resultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
 
 		form.addEventListener("submit", function (event)
 			{
 				event.preventDefault();
-				updateMaxResultsFromRange();
 				openStream();
 			});
 
@@ -543,7 +577,7 @@
 						eventSource = null;
 					}
 
-				appendSystemLine("STOP", "pesquisa interrompida pelo usuário");
+				appendSystemLine("STOP", "Pesquisa interrompida pelo usuário");
 				setMessage("warning", "Pesquisa interrompida pelo usuário.");
 				statusText.textContent = "Parado";
 				stopRateTimer();
@@ -568,9 +602,7 @@
 				endInput.value = "";
 				delayInput.value = "500";
 				concurrencyInput.value = "3";
-				maxResultsInput.value = "100";
 				providerModeInput.value = "fallback";
-				maxResultsInput.value = "100";
 				updateDelayLabel();
 				updateConcurrencyLabel();
 				updateStateRangeSummary();
