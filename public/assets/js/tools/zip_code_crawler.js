@@ -20,8 +20,9 @@
 		const stopButton = document.getElementById("crawlerStopButton");
 		const startButton = document.getElementById("crawlerStartButton");
 		const message = document.getElementById("crawlerMessage");
-		const progressBar = document.getElementById("crawlerProgressBar");
 		const resultsBody = document.getElementById("crawlerResultsBody");
+		const resultsTopButton = document.getElementById("crawlerResultsTopButton");
+		const resultsBottomButton = document.getElementById("crawlerResultsBottomButton");
 		const processedCount = document.getElementById("crawlerProcessedCount");
 		const foundCount = document.getElementById("crawlerFoundCount");
 		const failedCount = document.getElementById("crawlerFailedCount");
@@ -275,9 +276,7 @@
 
 		function updateProgress(position, total)
 			{
-				const percentage = total > 0 ? Math.round((position / total) * 100) : 0;
-				progressBar.style.width = percentage + "%";
-				progressBar.textContent = percentage + "%";
+				return total > 0 ? Math.round((position / total) * 100) : 0;
 			}
 
 		function updateMonitorHeight()
@@ -322,6 +321,15 @@
 					{
 						resultsBody.scrollTop = resultsBody.scrollHeight;
 						resultsStickToBottom = true;
+					});
+			}
+
+		function scrollResultsToTop()
+			{
+				window.requestAnimationFrame(function ()
+					{
+						resultsBody.scrollTop = 0;
+						resultsStickToBottom = false;
 					});
 			}
 
@@ -762,6 +770,8 @@
 		delayInput.addEventListener("input", updateDelayLabel);
 		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
 		resultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
+		resultsTopButton.addEventListener("click", scrollResultsToTop);
+		resultsBottomButton.addEventListener("click", scrollResultsToBottom);
 		window.addEventListener("resize", updateMonitorHeight, {passive: true});
 
 		form.addEventListener("submit", function (event)

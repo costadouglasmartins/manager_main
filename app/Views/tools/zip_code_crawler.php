@@ -102,10 +102,6 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             <div class="zip-code-crawler-stat-card"><small>Status</small><strong id="crawlerStatusText">Aguardando início</strong></div>
           </div>
 
-          <div class="progress mb-3" role="progressbar" aria-label="Progresso da pesquisa">
-            <div class="progress-bar" id="crawlerProgressBar" style="width: 0%;">0%</div>
-          </div>
-
           <div class="alert alert-secondary zip-code-crawler-message" id="crawlerMessage" role="status" aria-live="polite">
             Selecione um estado e inicie a pesquisa.
           </div>
@@ -114,6 +110,16 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-body-tertiary">
               <i class="bi bi-list-check text-primary"></i>
               <span class="fw-semibold">Resultados</span>
+              <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Navegação dos resultados">
+                <button class="btn btn-outline-secondary" type="button" id="crawlerResultsTopButton" title="Ir para o início">
+                  <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                  <span class="visually-hidden">Ir para o início</span>
+                </button>
+                <button class="btn btn-outline-secondary" type="button" id="crawlerResultsBottomButton" title="Ir para o último consultado">
+                  <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                  <span class="visually-hidden">Ir para o último consultado</span>
+                </button>
+              </div>
             </div>
             <div class="list-group list-group-flush zip-code-crawler-results-body" id="crawlerResultsBody" role="log" aria-live="polite" aria-relevant="additions">
               <div class="list-group-item text-secondary zip-code-crawler-results-empty">
@@ -130,4 +136,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=19'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=21'); ?>"></script>

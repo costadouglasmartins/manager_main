@@ -563,6 +563,7 @@ class ZipCodeCrawlerService
 
 				yield $this->event('progress', [
 					'position' => $stats['processed'],
+					'processed' => $stats['processed'],
 					'total' => $totalToProcess,
 					'found' => $stats['found'],
 					'failed' => $stats['failed'],
@@ -722,6 +723,7 @@ class ZipCodeCrawlerService
 
 			yield $this->event('progress', [
 				'position' => $stats['processed'],
+				'processed' => $stats['processed'],
 				'total' => $totalToProcess,
 				'found' => $stats['found'],
 				'failed' => $stats['failed'],
