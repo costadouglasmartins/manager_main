@@ -53,6 +53,14 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             </div>
 
             <div class="col-12">
+              <label class="form-label" for="crawlerDelayMode">Tipo de intervalo</label>
+              <select class="form-select" id="crawlerDelayMode" name="delay_mode">
+                <option value="fixed">Fixo</option>
+                <option value="random">Randômico (250-750 ms)</option>
+              </select>
+            </div>
+
+            <div class="col-12">
               <label class="form-label d-flex justify-content-between align-items-center" for="crawlerDelayMs">
                 <span>Intervalo entre rodadas</span>
                 <strong id="crawlerDelayLabel">500 ms</strong>
@@ -136,4 +144,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=21'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=22'); ?>"></script>

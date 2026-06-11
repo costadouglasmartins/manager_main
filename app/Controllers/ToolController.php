@@ -146,6 +146,7 @@ class ToolController extends Controller
 		$startZipCode = $this->normalizeZipCodeInput((string) ($_GET['start_zip_code'] ?? ''));
 		$endZipCode = $this->normalizeZipCodeInput((string) ($_GET['end_zip_code'] ?? ''));
 		$stateAcronym = $this->readCrawlerStateAcronym((string) ($_GET['state_acronym'] ?? ($_GET['state'] ?? '')));
+		$delayMode = $this->readCrawlerDelayMode((string) ($_GET['delay_mode'] ?? 'fixed'));
 		$delayMs = $this->readPositiveInt((string) ($_GET['delay_ms'] ?? '500'), 500, 0, 10000);
 		$maxResults = $this->readPositiveInt((string) ($_GET['max_results'] ?? '100'), 100, 1, PHP_INT_MAX);
 		$providerMode = $this->readCrawlerProviderMode((string) ($_GET['provider_mode'] ?? 'fallback'));
@@ -172,8 +173,8 @@ class ToolController extends Controller
 
 		$service = new ZipCodeCrawlerService();
 		$stream = $stateAcronym !== ''
-			? $service->crawlState($stateAcronym, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity)
-			: $service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+			? $service->crawlState($stateAcronym, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode)
+			: $service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
 
 		foreach ($stream as $payload)
 			{
@@ -471,6 +472,17 @@ class ToolController extends Controller
 			}
 
 		return $value;
+		}
+
+	/**
+	 * Read crawler delay mode.
+	 * @param string $value Delay mode value.
+	 * @return string
+	 **/
+	private function readCrawlerDelayMode(string $value): string
+		{
+		$value = strtolower(trim($value));
+		return in_array($value, ['fixed', 'random'], true) ? $value : 'fixed';
 		}
 
 	/**

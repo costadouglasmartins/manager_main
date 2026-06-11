@@ -12,6 +12,7 @@
 		const startInput = document.getElementById("crawlerStartZipCode");
 		const endInput = document.getElementById("crawlerEndZipCode");
 		const stateRangeSummary = document.getElementById("crawlerStateRangeSummary");
+		const delayModeInput = document.getElementById("crawlerDelayMode");
 		const delayInput = document.getElementById("crawlerDelayMs");
 		const delayLabel = document.getElementById("crawlerDelayLabel");
 		const concurrencyInput = document.getElementById("crawlerConcurrency");
@@ -171,7 +172,14 @@
 
 		function updateDelayLabel()
 			{
-				delayLabel.textContent = delayInput.value + " ms";
+				const isRandomDelay = delayModeInput.value === "random";
+				delayInput.disabled = isRandomDelay;
+				delayLabel.textContent = isRandomDelay ? "250-750 ms" : delayInput.value + " ms";
+			}
+
+		function intervalSummary(delayMode, delayMs)
+			{
+				return delayMode === "random" ? "randômico 250-750ms" : "fixo " + delayMs + "ms";
 			}
 
 		function updateConcurrencyLabel()
@@ -649,10 +657,12 @@
 			{
 				const selectedState = getSelectedStateOption();
 				const stateAcronym = selectedState ? String(selectedState.acronym || "").toUpperCase() : "";
+				const delayMode = delayModeInput.value || "fixed";
 				const delayMs = String(delayInput.value || "500");
 				const concurrency = String(concurrencyInput.value || "3");
 				const maxResults = String(calculateZipCodeRangeCount() || "100");
 				const providerMode = providerModeInput.value || "fallback";
+				const delayText = intervalSummary(delayMode, delayMs);
 
 				if (!selectedState || stateAcronym === "")
 					{
@@ -671,12 +681,13 @@
 				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
 				updateProgress(0, 1);
 				setLoading(true);
-				setMessage("info", "Iniciando webcrawler com atraso controlado entre consultas...");
+				setMessage("info", "Iniciando webcrawler com intervalo " + delayText + " entre consultas...");
 				statusText.textContent = "Conectando...";
 				updateMonitorHeight();
 
 				const url = new URL(streamUrl, window.location.origin);
 				url.searchParams.set("state_acronym", stateAcronym);
+				url.searchParams.set("delay_mode", delayMode);
 				url.searchParams.set("delay_ms", delayMs);
 				url.searchParams.set("concurrency", concurrency);
 				url.searchParams.set("max_results", maxResults);
@@ -698,6 +709,7 @@
 						const rangeText = formatRangeList(ranges);
 						const cacheCount = Number(payload.not_found_cache_count || 0);
 						const activeConcurrency = String(payload.concurrency || concurrency);
+						const activeDelayText = intervalSummary(payload.delay_mode || delayMode, payload.delay_ms || delayMs);
 						const autoSaveText = payload.auto_save_neighborhood ? "salvamento automático ativo" : "salvamento automático desativado";
 						const viaCepPaused = payload.viacep_available === false;
 						const viaCepDisabledUntil = formatClockTimeFromTimestamp(payload.viacep_disabled_until_timestamp)
@@ -705,7 +717,7 @@
 						const viaCepText = viaCepPaused ? " ViaCEP pausado temporariamente; usando fallback quando disponível." : "";
 						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s)." + viaCepText);
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
+						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | intervalo: " + activeDelayText + " | " + autoSaveText);
 						if (viaCepPaused)
 							{
 								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (viaCepDisabledUntil ? " até " + viaCepDisabledUntil : "") + ".");
@@ -767,6 +779,7 @@
 				stateInput.addEventListener("change", updateStateRangeSummary);
 			}
 
+		delayModeInput.addEventListener("change", updateDelayLabel);
 		delayInput.addEventListener("input", updateDelayLabel);
 		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
 		resultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
@@ -811,6 +824,7 @@
 					}
 				startInput.value = "";
 				endInput.value = "";
+				delayModeInput.value = "fixed";
 				delayInput.value = "500";
 				concurrencyInput.value = "3";
 				providerModeInput.value = "fallback";

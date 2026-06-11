@@ -16,6 +16,8 @@ class ZipCodeCrawlerService
 	private const NOT_FOUND_RESUME_WINDOW = 5;
 	private const DEFAULT_CONCURRENCY = 3;
 	private const MAX_CONCURRENCY = 5;
+	private const RANDOM_DELAY_MIN_MS = 250;
+	private const RANDOM_DELAY_MAX_MS = 750;
 	private const VIACEP_TRANSIENT_FAILURE_THRESHOLD = 1;
 	private const VIACEP_COOLDOWN_SECONDS = 300;
 	private const VIACEP_PROBE_ZIP_CODE = '01001000';
@@ -411,9 +413,10 @@ class ZipCodeCrawlerService
 	 * @param bool $autoSaveCity Whether city persistence is enabled.
 	 * @param bool $autoSaveNeighborhood Whether neighborhood persistence is enabled.
 	 * @param bool $createCity Whether missing cities may be created.
+	 * @param string $delayMode Delay mode.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 */
-	public function crawl(string $startZipCode, string $endZipCode, int $delayMs, int $maxResults, string $providerMode = 'fallback', int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false): \Generator
+	public function crawl(string $startZipCode, string $endZipCode, int $delayMs, int $maxResults, string $providerMode = 'fallback', int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false, string $delayMode = 'fixed'): \Generator
 		{
 		$startDigits = $this->normalizeZipCode($startZipCode);
 		$endDigits = $this->normalizeZipCode($endZipCode);
@@ -450,7 +453,8 @@ class ZipCodeCrawlerService
 			$concurrency,
 			$autoSaveCity,
 			$autoSaveNeighborhood,
-			$createCity
+			$createCity,
+			$delayMode
 		);
 		}
 
@@ -464,9 +468,10 @@ class ZipCodeCrawlerService
 	 * @param bool $autoSaveCity Whether city persistence is enabled.
 	 * @param bool $autoSaveNeighborhood Whether neighborhood persistence is enabled.
 	 * @param bool $createCity Whether missing cities may be created.
+	 * @param string $delayMode Delay mode.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 **/
-	public function crawlState(string $stateAcronym, int $delayMs, int $maxResults, string $providerMode = 'fallback', int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false): \Generator
+	public function crawlState(string $stateAcronym, int $delayMs, int $maxResults, string $providerMode = 'fallback', int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false, string $delayMode = 'fixed'): \Generator
 		{
 		$stateAcronym = strtoupper(trim($stateAcronym));
 		$ranges = self::zipCodeRangesForState($stateAcronym);
@@ -479,7 +484,7 @@ class ZipCodeCrawlerService
 			return;
 			}
 
-		yield from $this->crawlRanges($ranges, $delayMs, $maxResults, $providerMode, $stateAcronym, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+		yield from $this->crawlRanges($ranges, $delayMs, $maxResults, $providerMode, $stateAcronym, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
 		}
 
 	/**
@@ -493,11 +498,13 @@ class ZipCodeCrawlerService
 	 * @param bool $autoSaveCity Whether city persistence is enabled.
 	 * @param bool $autoSaveNeighborhood Whether neighborhood persistence is enabled.
 	 * @param bool $createCity Whether missing cities may be created.
+	 * @param string $delayMode Delay mode.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 **/
-	private function crawlRanges(array $ranges, int $delayMs, int $maxResults, string $providerMode = 'fallback', ?string $stateAcronym = null, int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false): \Generator
+	private function crawlRanges(array $ranges, int $delayMs, int $maxResults, string $providerMode = 'fallback', ?string $stateAcronym = null, int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false, string $delayMode = 'fixed'): \Generator
 		{
 		$delayMs = max(0, $delayMs);
+		$delayMode = $this->normalizeDelayMode($delayMode);
 		$providerMode = $this->normalizeProviderMode($providerMode);
 		$concurrency = $this->normalizeConcurrency($concurrency);
 		$notFoundZipCodes = $this->loadNotFoundZipCodes();
@@ -524,7 +531,10 @@ class ZipCodeCrawlerService
 			'not_found_cache_count' => count($notFoundZipCodes),
 			'not_found_resume_window' => self::NOT_FOUND_RESUME_WINDOW,
 			'resume_start_zip_code' => $resumeStartDigits === null ? '' : self::formatZipCodeDigits($resumeStartDigits),
+			'delay_mode' => $delayMode,
 			'delay_ms' => $delayMs,
+			'random_delay_min_ms' => self::RANDOM_DELAY_MIN_MS,
+			'random_delay_max_ms' => self::RANDOM_DELAY_MAX_MS,
 			'concurrency' => $concurrency,
 			'looked_up' => 0,
 			'lookup_elapsed_ms' => 0,
@@ -587,14 +597,14 @@ class ZipCodeCrawlerService
 				$lookupBatch[] = $zipCode;
 				if (count($lookupBatch) >= $concurrency)
 					{
-					yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+					yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
 					$lookupBatch = [];
 					}
 				}
 
 			if (!empty($lookupBatch))
 				{
-				yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+				yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
 				}
 			}
 		finally
@@ -614,6 +624,8 @@ class ZipCodeCrawlerService
 			'total' => $totalToProcess,
 			'total_available' => $totalAvailable,
 			'concurrency' => $concurrency,
+			'delay_mode' => $delayMode,
+			'delay_ms' => $delayMs,
 			'resume_start_zip_code' => $resumeStartDigits === null ? '' : self::formatZipCodeDigits($resumeStartDigits),
 		]);
 		}
@@ -652,6 +664,7 @@ class ZipCodeCrawlerService
 	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @param string $providerMode Provider selection mode.
 	 * @param int $delayMs Delay between lookup batches in milliseconds.
+	 * @param string $delayMode Delay mode.
 	 * @param array<string, int|float> $stats Mutable crawler counters.
 	 * @param int $totalToProcess Total records to process.
 	 * @param string|null $stateAcronym Selected state acronym.
@@ -660,7 +673,7 @@ class ZipCodeCrawlerService
 	 * @param bool $createCity Whether missing cities may be created.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 **/
-	private function processLookupBatch(array $zipCodes, array &$notFoundZipCodes, string $providerMode, int $delayMs, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
+	private function processLookupBatch(array $zipCodes, array &$notFoundZipCodes, string $providerMode, int $delayMs, string $delayMode, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
 		{
 		if (empty($zipCodes))
 			{
@@ -683,8 +696,10 @@ class ZipCodeCrawlerService
 
 		$lookupStartedAt = microtime(true);
 		$results = [];
+		$roundDelayMs = 0;
 		if (!empty($lookupZipCodes))
 			{
+			$roundDelayMs = $this->resolveLookupDelayMs($delayMs, $delayMode);
 			$results = $this->lookupBatchByMode($lookupZipCodes, $providerMode);
 			$lookupElapsedMs = (int) max(1, round((microtime(true) - $lookupStartedAt) * 1000));
 			$stats['looked_up'] += count($lookupZipCodes);
@@ -731,6 +746,8 @@ class ZipCodeCrawlerService
 				'looked_up' => $stats['looked_up'],
 				'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
 				'lookup_rate' => $this->lookupRateForStats($stats),
+				'delay_mode' => $delayMode,
+				'round_delay_ms' => $roundDelayMs,
 				'zip_code' => $zipCode,
 				'state' => $stateAcronym,
 				'result' => $result,
@@ -739,7 +756,7 @@ class ZipCodeCrawlerService
 
 		if (!empty($lookupZipCodes))
 			{
-			$this->waitRemainingLookupDelay($delayMs, $lookupStartedAt);
+			$this->waitRemainingLookupDelay($roundDelayMs, $lookupStartedAt);
 			}
 		}
 
@@ -2276,6 +2293,22 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Resolve the delay to use for the current lookup round.
+	 * @param int $delayMs Fixed delay in milliseconds.
+	 * @param string $delayMode Delay mode.
+	 * @return int
+	 **/
+	private function resolveLookupDelayMs(int $delayMs, string $delayMode): int
+		{
+		if ($this->normalizeDelayMode($delayMode) === 'random')
+			{
+			return mt_rand(self::RANDOM_DELAY_MIN_MS, self::RANDOM_DELAY_MAX_MS);
+			}
+
+		return max(0, $delayMs);
+		}
+
+	/**
 	 * Wait only the remaining time before the next webservice lookup.
 	 * @param int $delayMs Delay in milliseconds.
 	 * @param float $lookupStartedAt Timestamp captured before the lookup.
@@ -2352,6 +2385,17 @@ class ZipCodeCrawlerService
 			}
 
 		return $providerMode;
+		}
+
+	/**
+	 * Normalize the delay mode value.
+	 * @param string $delayMode Raw delay mode.
+	 * @return string
+	 **/
+	private function normalizeDelayMode(string $delayMode): string
+		{
+		$delayMode = strtolower(trim($delayMode));
+		return in_array($delayMode, ['fixed', 'random'], true) ? $delayMode : 'fixed';
 		}
 
 	/**

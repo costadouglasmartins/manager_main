@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~54 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6146,7 +6146,21 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(78, 'Loteamento Santo Afonso', 16, '2026-06-11 19:49:17', '2026-06-11 19:49:17'),
 	(79, 'Rosa Linda', 16, '2026-06-11 19:51:29', '2026-06-11 19:51:29'),
 	(80, 'Cidade do Povo', 16, '2026-06-11 19:52:55', '2026-06-11 19:52:55'),
-	(81, 'Vila da Amizade', 16, '2026-06-11 19:57:53', '2026-06-11 19:57:53');
+	(81, 'Vila da Amizade', 16, '2026-06-11 19:57:53', '2026-06-11 19:57:53'),
+	(82, 'Volta Seca', 16, '2026-06-11 22:05:04', '2026-06-11 22:05:04'),
+	(83, 'Jardim Europa', 16, '2026-06-11 22:06:30', '2026-06-11 22:06:30'),
+	(84, 'Glória', 16, '2026-06-11 22:07:01', '2026-06-11 22:07:01'),
+	(85, 'Pista', 16, '2026-06-11 22:07:38', '2026-06-11 22:07:38'),
+	(86, 'Palheiral', 16, '2026-06-11 22:08:26', '2026-06-11 22:08:26'),
+	(87, 'Conjunto Castelo Branco', 16, '2026-06-11 22:08:44', '2026-06-11 22:08:44'),
+	(88, 'Conjunto Bela Vista', 16, '2026-06-11 22:09:51', '2026-06-11 22:09:51'),
+	(89, 'Novo Horizonte', 16, '2026-06-11 22:11:17', '2026-06-11 22:11:17'),
+	(90, 'João Eduardo II', 16, '2026-06-11 22:12:44', '2026-06-11 22:12:44'),
+	(91, 'Bahia Velha', 16, '2026-06-11 22:13:53', '2026-06-11 22:13:53'),
+	(92, 'Bahia Nova', 16, '2026-06-11 22:15:12', '2026-06-11 22:15:12'),
+	(93, 'Chácara Ipê', 16, '2026-06-11 22:15:56', '2026-06-11 22:15:56'),
+	(94, 'Boa União', 16, '2026-06-11 22:17:08', '2026-06-11 22:17:08'),
+	(95, 'Ayrton Senna', 16, '2026-06-11 22:17:31', '2026-06-11 22:17:31');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -7172,7 +7186,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 -- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
-	(2, 1, '07ab78213a4fe22492cabdffd784d1db', '1af939a329bdb98c5e3ca396221724a3e7a41c9c2a7f30e032cbdef99223b387', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-11 16:22:38', '2026-06-06 00:45:49', '2026-06-11 16:22:38');
+	(2, 1, '083130b1c618b1145f97e5dd87386ab1', '871b23ab56b4fed3c5fc9c4512ae1a204485ccee468a725a4272b01c8c05f7d1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-11 21:57:49', '2026-06-06 00:45:49', '2026-06-11 21:57:49');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
