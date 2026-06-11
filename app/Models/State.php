@@ -234,10 +234,14 @@ class State extends Model
 
 		$limit = max(1, min(50, (int) $limit));
 
-		$sql = "SELECT State.id, State.`name`, s.acronym, s.country_id, Country.`name` AS country_name
-			FROM states AS State
-			LEFT JOIN countries AS Country ON Country.id = State.country_id
-			WHERE State.`name` LIKE :t";
+		$sql = "SELECT  State.id, 
+                    State.`name`, 
+                    State.acronym, 
+                    State.country_id, 
+                    Country.`name` AS country_name
+			      FROM states AS State
+		  	    LEFT JOIN countries AS Country ON Country.id = State.country_id
+			      WHERE State.`name` LIKE :t";
 		$params = [':t' => '%' . $term . '%'];
 
 		if ($countryId !== null && $countryId > 0)
