@@ -336,6 +336,7 @@
 							return "list-group-item-success";
 						case "ERROR":
 							return "list-group-item-danger";
+						case "WARN":
 						case "STOP":
 							return "list-group-item-warning";
 						default:
@@ -411,7 +412,45 @@
 						return "CEP inválido";
 					}
 
+				if (error === "provider_temporarily_disabled")
+					{
+						return "pausado";
+					}
+
 				return "falhou";
+			}
+
+		function attemptDiagnosticText(attempt)
+			{
+				const diagnostics = attempt && attempt.diagnostics && typeof attempt.diagnostics === "object"
+					? attempt.diagnostics
+					: null;
+
+				if (!diagnostics)
+					{
+						return "";
+					}
+
+				if (String((attempt && attempt.error) || "") === "provider_temporarily_disabled")
+					{
+						const disabledUntil = String(diagnostics.disabled_until || "");
+						return disabledUntil ? "retoma às " + disabledUntil : "";
+					}
+
+				const curlErrorNumber = Number(diagnostics.curl_errno || 0);
+				const curlError = String(diagnostics.curl_error || "");
+				if (curlErrorNumber > 0)
+					{
+						return "curl " + curlErrorNumber + (curlError ? ": " + curlError : "");
+					}
+
+				const httpStatus = Number(diagnostics.http_status || 0);
+				if (httpStatus > 0 && httpStatus !== Number((attempt && attempt.status) || 0))
+					{
+						return "HTTP " + httpStatus;
+					}
+
+				return "";
 			}
 
 		function formatAttemptSummary(attempts)
@@ -425,8 +464,10 @@
 					{
 						const status = Number((attempt && attempt.status) || 0);
 						const statusText = status > 0 ? " (" + status + ")" : "";
+						const diagnosticText = attemptDiagnosticText(attempt);
+						const diagnosticSuffix = diagnosticText ? " - " + diagnosticText : "";
 
-						return providerLabel(attempt && attempt.source) + " " + attemptStatusText(attempt) + statusText;
+						return providerLabel(attempt && attempt.source) + " " + attemptStatusText(attempt) + statusText + diagnosticSuffix;
 					});
 
 				return "Consultas: " + labels.join(" · ");
@@ -623,9 +664,15 @@
 						const cacheCount = Number(payload.not_found_cache_count || 0);
 						const activeConcurrency = String(payload.concurrency || concurrency);
 						const autoSaveText = payload.auto_save_neighborhood ? "salvamento automático ativo" : "salvamento automático desativado";
-						setMessage("info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s).");
+						const viaCepPaused = payload.viacep_available === false;
+						const viaCepText = viaCepPaused ? " ViaCEP pausado temporariamente; usando fallback quando disponível." : "";
+						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s)." + viaCepText);
 						updateProgress(0, payload.total || 1);
 						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | rodada: " + delayMs + "ms | " + autoSaveText);
+						if (viaCepPaused)
+							{
+								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (payload.viacep_disabled_until ? " até " + payload.viacep_disabled_until : "") + ".");
+							}
 					});
 
 				eventSource.addEventListener("progress", function (event)

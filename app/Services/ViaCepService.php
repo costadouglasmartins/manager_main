@@ -9,6 +9,9 @@ class ViaCepService
 	{
 	private const BASE_URL = 'https://viacep.com.br/ws/';
 	private const TIMEOUT_SECONDS = 5;
+	private const MAX_ATTEMPTS = 3;
+	private const RETRY_DELAY_MICROSECONDS = 250000;
+	private const USER_AGENT = 'Manager ZipCodeCrawler/1.0';
 
 	/*
 	|--------------------------------------------------------------------------
@@ -24,10 +27,23 @@ class ViaCepService
 			return $this->failure('invalid_zip_code', 'Informe um CEP válido com 8 dígitos.', 422);
 			}
 
-		$response = $this->fetch(self::BASE_URL . $digits . '/json/');
+		$response = [];
+		for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++)
+			{
+			$response = $this->fetch(self::BASE_URL . $digits . '/json/');
+			$response['attempts'] = $attempt;
+
+			if (!empty($response['ok']) || !$this->shouldRetryResponse($response) || $attempt === self::MAX_ATTEMPTS)
+				{
+				break;
+				}
+
+			usleep(self::RETRY_DELAY_MICROSECONDS * $attempt);
+			}
+
 		if (!$response['ok'])
 			{
-			return $this->failure('lookup_failed', 'Não foi possível consultar o CEP no ViaCEP agora.', 502);
+			return $this->failure('lookup_failed', 'Não foi possível consultar o CEP no ViaCEP agora.', 502, $this->diagnosticsFromResponse($response, $digits));
 			}
 
 		$data = json_decode((string) $response['body'], true);
@@ -68,7 +84,19 @@ class ViaCepService
 		{
 		if (function_exists('curl_init'))
 			{
-			return $this->fetchWithCurl($url);
+			$response = $this->fetchWithCurl($url);
+			if (!$response['ok'] && $this->shouldFallbackToStream($response))
+				{
+				$streamResponse = $this->fetchWithStream($url);
+				$streamResponse['fallback_from_curl'] = [
+					'status' => (int) ($response['status'] ?? 0),
+					'curl_errno' => (int) ($response['curl_errno'] ?? 0),
+					'curl_error' => (string) ($response['curl_error'] ?? ''),
+				];
+				return $streamResponse;
+				}
+
+			return $response;
 			}
 
 		return $this->fetchWithStream($url);
@@ -87,21 +115,37 @@ class ViaCepService
 			return ['ok' => false, 'status' => 0, 'body' => null];
 			}
 
-		curl_setopt_array($ch, [
+		$options = [
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_CONNECTTIMEOUT => self::TIMEOUT_SECONDS,
 			CURLOPT_TIMEOUT        => self::TIMEOUT_SECONDS,
+			CURLOPT_USERAGENT      => self::USER_AGENT,
 			CURLOPT_HTTPHEADER     => ['Accept: application/json'],
-		]);
+		];
+
+		if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4'))
+			{
+			$options[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+			}
+
+		curl_setopt_array($ch, $options);
 
 		$body = curl_exec($ch);
 		$status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$error = curl_errno($ch);
-		curl_close($ch);
+		$errorMessage = $error !== 0 ? curl_error($ch) : '';
+		if (PHP_VERSION_ID < 80500)
+			{
+			curl_close($ch);
+			}
 
 		return [
 			'ok'     => ($error === 0 && $status >= 200 && $status < 300 && is_string($body)),
+			'transport' => 'curl',
+			'url' => $url,
 			'status' => $status,
+			'curl_errno' => $error,
+			'curl_error' => $errorMessage,
 			'body'   => is_string($body) ? $body : null,
 		];
 		}
@@ -118,7 +162,7 @@ class ViaCepService
 				'ignore_errors' => true,
 				'method'        => 'GET',
 				'timeout'       => self::TIMEOUT_SECONDS,
-				'header'        => "Accept: application/json\r\n",
+				'header'        => "Accept: application/json\r\nUser-Agent: " . self::USER_AGENT . "\r\n",
 			],
 		]);
 
@@ -127,7 +171,11 @@ class ViaCepService
 
 		return [
 			'ok'     => ($status >= 200 && $status < 300 && is_string($body)),
+			'transport' => 'stream',
+			'url' => $url,
 			'status' => $status,
+			'curl_errno' => 0,
+			'curl_error' => '',
 			'body'   => is_string($body) ? $body : null,
 		];
 		}
@@ -174,18 +222,72 @@ class ViaCepService
 
 	/*
 	|--------------------------------------------------------------------------
+	| Response Diagnostics
+	|--------------------------------------------------------------------------
+	*/
+	private function diagnosticsFromResponse(array $response, string $digits): array
+		{
+		return [
+			'request_zip_code' => $digits,
+			'request_url' => (string) ($response['url'] ?? ''),
+			'transport' => (string) ($response['transport'] ?? ''),
+			'attempts' => (int) ($response['attempts'] ?? 1),
+			'http_status' => (int) ($response['status'] ?? 0),
+			'curl_errno' => (int) ($response['curl_errno'] ?? 0),
+			'curl_error' => (string) ($response['curl_error'] ?? ''),
+			'fallback_from_curl' => $response['fallback_from_curl'] ?? null,
+		];
+		}
+
+	/*
+	|--------------------------------------------------------------------------
+	| Retry Policy
+	|--------------------------------------------------------------------------
+	*/
+	private function shouldRetryResponse(array $response): bool
+		{
+		$curlErrorNumber = (int) ($response['curl_errno'] ?? 0);
+		$status = (int) ($response['status'] ?? 0);
+
+		return in_array($curlErrorNumber, [6, 7, 28, 35, 52, 56], true)
+			|| $status === 0
+			|| $status >= 500;
+		}
+
+	/*
+	|--------------------------------------------------------------------------
+	| Stream Fallback Policy
+	|--------------------------------------------------------------------------
+	*/
+	private function shouldFallbackToStream(array $response): bool
+		{
+		$curlErrorNumber = (int) ($response['curl_errno'] ?? 0);
+		$status = (int) ($response['status'] ?? 0);
+
+		return $status === 0 || in_array($curlErrorNumber, [6, 7, 28, 35, 52, 56], true);
+		}
+
+	/*
+	|--------------------------------------------------------------------------
 	| Failure Payload
 	|--------------------------------------------------------------------------
 	*/
-	private function failure(string $error, string $message, int $status): array
+	private function failure(string $error, string $message, int $status, array $diagnostics = []): array
 		{
-		return [
+		$payload = [
 			'success' => false,
 			'status'  => $status,
 			'source'  => 'viacep',
 			'error'   => $error,
 			'message' => $message,
 		];
+
+		if (!empty($diagnostics))
+			{
+			$payload['diagnostics'] = $diagnostics;
+			}
+
+		return $payload;
 		}
 	}
 

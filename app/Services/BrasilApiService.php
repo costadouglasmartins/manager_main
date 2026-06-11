@@ -9,6 +9,7 @@ class BrasilApiService
 	{
 	private const BASE_URL = 'https://brasilapi.com.br/api/cep/v1/';
 	private const TIMEOUT_SECONDS = 5;
+	private const USER_AGENT = 'Manager ZipCodeCrawler/1.0';
 
 	private const STATE_NAMES = [
 		'AC' => 'Acre',
@@ -62,7 +63,7 @@ class BrasilApiService
 				return $this->failure('zip_code_not_found', 'CEP não encontrado na BrasilAPI.', 404);
 				}
 
-			return $this->failure('lookup_failed', 'Não foi possível consultar o CEP na BrasilAPI agora.', 502);
+			return $this->failure('lookup_failed', 'Não foi possível consultar o CEP na BrasilAPI agora.', 502, $this->diagnosticsFromResponse($response, $digits));
 			}
 
 		$data = json_decode((string) $response['body'], true);
@@ -127,17 +128,25 @@ class BrasilApiService
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_CONNECTTIMEOUT => self::TIMEOUT_SECONDS,
 			CURLOPT_TIMEOUT        => self::TIMEOUT_SECONDS,
+			CURLOPT_USERAGENT      => self::USER_AGENT,
 			CURLOPT_HTTPHEADER     => ['Accept: application/json'],
 		]);
 
 		$body = curl_exec($ch);
 		$status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$error = curl_errno($ch);
-		curl_close($ch);
+		$errorMessage = $error !== 0 ? curl_error($ch) : '';
+		if (PHP_VERSION_ID < 80500)
+			{
+			curl_close($ch);
+			}
 
 		return [
 			'ok'     => ($error === 0 && $status >= 200 && $status < 300 && is_string($body)),
+			'url' => $url,
 			'status' => $status,
+			'curl_errno' => $error,
+			'curl_error' => $errorMessage,
 			'body'   => is_string($body) ? $body : null,
 		];
 		}
@@ -154,7 +163,7 @@ class BrasilApiService
 				'ignore_errors' => true,
 				'method'        => 'GET',
 				'timeout'       => self::TIMEOUT_SECONDS,
-				'header'        => "Accept: application/json\r\n",
+				'header'        => "Accept: application/json\r\nUser-Agent: " . self::USER_AGENT . "\r\n",
 			],
 		]);
 
@@ -163,7 +172,10 @@ class BrasilApiService
 
 		return [
 			'ok'     => ($status >= 200 && $status < 300 && is_string($body)),
+			'url' => $url,
 			'status' => $status,
+			'curl_errno' => 0,
+			'curl_error' => '',
 			'body'   => is_string($body) ? $body : null,
 		];
 		}
@@ -266,18 +278,41 @@ class BrasilApiService
 
 	/*
 	|--------------------------------------------------------------------------
+	| Response Diagnostics
+	|--------------------------------------------------------------------------
+	*/
+	private function diagnosticsFromResponse(array $response, string $digits): array
+		{
+		return [
+			'request_zip_code' => $digits,
+			'request_url' => (string) ($response['url'] ?? ''),
+			'http_status' => (int) ($response['status'] ?? 0),
+			'curl_errno' => (int) ($response['curl_errno'] ?? 0),
+			'curl_error' => (string) ($response['curl_error'] ?? ''),
+		];
+		}
+
+	/*
+	|--------------------------------------------------------------------------
 	| Failure Payload
 	|--------------------------------------------------------------------------
 	*/
-	private function failure(string $error, string $message, int $status): array
+	private function failure(string $error, string $message, int $status, array $diagnostics = []): array
 		{
-		return [
+		$payload = [
 			'success' => false,
 			'status'  => $status,
 			'source'  => 'brasilapi',
 			'error'   => $error,
 			'message' => $message,
 		];
+
+		if (!empty($diagnostics))
+			{
+			$payload['diagnostics'] = $diagnostics;
+			}
+
+		return $payload;
 		}
 	}
 

@@ -13,9 +13,14 @@ class ZipCodeCrawlerService
 	private const NOT_FOUND_FILE_NAME = 'zip_code_crawler_not_found.txt';
 	private const NOT_FOUND_JOURNAL_FILE_NAME = 'zip_code_crawler_not_found_pending.txt';
 	private const NOT_FOUND_FLUSH_THRESHOLD = 5;
+	private const NOT_FOUND_RESUME_WINDOW = 5;
 	private const DEFAULT_CONCURRENCY = 3;
 	private const MAX_CONCURRENCY = 5;
+	private const VIACEP_TRANSIENT_FAILURE_THRESHOLD = 1;
+	private const VIACEP_COOLDOWN_SECONDS = 300;
+	private const VIACEP_PROBE_ZIP_CODE = '01001000';
 	private const HTTP_TIMEOUT_SECONDS = 5;
+	private const HTTP_USER_AGENT = 'Manager ZipCodeCrawler/1.0';
 	private const VIACEP_BASE_URL = 'https://viacep.com.br/ws/';
 	private const BRASILAPI_BASE_URL = 'https://brasilapi.com.br/api/cep/v1/';
 	private const STATE_NAMES = [
@@ -173,6 +178,10 @@ class ZipCodeCrawlerService
 	private ?PDO $db = null;
 	private ?ZipCodeNeighborhoodService $zipCodeNeighborhoodService = null;
 	private array $stateDatabaseCaches = [];
+	private array $activeNotFoundZipCodes = [];
+	private int $viaCepTransientFailures = 0;
+	private float $viaCepDisabledUntil = 0.0;
+	private array $viaCepDisabledDiagnostics = [];
 
 	/**
 	 * Build the crawler service.
@@ -247,6 +256,121 @@ class ZipCodeCrawlerService
 		{
 		$stateAcronym = strtoupper(trim($stateAcronym));
 		return self::STATE_ZIP_CODE_RANGES[$stateAcronym] ?? [];
+		}
+
+	/**
+	 * Iterate zip codes covered by ranges up to a processing limit.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @param int $limit Maximum number of zip codes to iterate.
+	 * @return \Generator<int, string, mixed, void>
+	 **/
+	private function iterateZipCodeRanges(array $ranges, int $limit): \Generator
+		{
+		$iterated = 0;
+		foreach ($ranges as $range)
+			{
+			$startNumber = (int) $range['start'];
+			$endNumber = (int) $range['end'];
+
+			for ($currentNumber = $startNumber; $currentNumber <= $endNumber; $currentNumber++)
+				{
+				if ($iterated >= $limit)
+					{
+					return;
+					}
+
+				$iterated++;
+				yield $this->formatZipCodeNumber($currentNumber);
+				}
+			}
+		}
+
+	/**
+	 * Resolve the restart zip code from the last not found records in range.
+	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @return string|null
+	 **/
+	private function resolveNotFoundResumeStart(array $notFoundZipCodes, array $ranges): ?string
+		{
+		if (empty($notFoundZipCodes))
+			{
+			return null;
+			}
+
+		$zipCodes = array_keys($notFoundZipCodes);
+		sort($zipCodes, SORT_STRING);
+		$zipCodesInRange = [];
+
+		foreach ($zipCodes as $zipCode)
+			{
+			if ($this->zipCodeDigitsInRanges($zipCode, $ranges))
+				{
+				$zipCodesInRange[] = $zipCode;
+				}
+			}
+
+		if (empty($zipCodesInRange))
+			{
+			return null;
+			}
+
+		$tail = array_slice($zipCodesInRange, -self::NOT_FOUND_RESUME_WINDOW);
+		return (string) ($tail[0] ?? '');
+		}
+
+	/**
+	 * Check whether normalized zip code digits are covered by any range.
+	 * @param string $zipCodeDigits Normalized zip code digits.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @return bool
+	 **/
+	private function zipCodeDigitsInRanges(string $zipCodeDigits, array $ranges): bool
+		{
+		if (strlen($zipCodeDigits) !== 8)
+			{
+			return false;
+			}
+
+		foreach ($ranges as $range)
+			{
+			if ($zipCodeDigits >= $range['start'] && $zipCodeDigits <= $range['end'])
+				{
+				return true;
+				}
+			}
+
+		return false;
+		}
+
+	/**
+	 * Trim ranges so processing starts from a specific zip code.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @param string $startDigits Normalized zip code digits.
+	 * @return array<int, array{start: string, end: string}>
+	 **/
+	private function trimZipCodeRangesFrom(array $ranges, string $startDigits): array
+		{
+		if (strlen($startDigits) !== 8)
+			{
+			return $ranges;
+			}
+
+		$trimmedRanges = [];
+		foreach ($ranges as $range)
+			{
+			if ($range['end'] < $startDigits)
+				{
+				continue;
+				}
+
+			$trimmedRanges[] = [
+				'start' => max($range['start'], $startDigits),
+				'end' => $range['end'],
+			];
+			}
+
+		return $trimmedRanges;
 		}
 
 	/**
@@ -348,11 +472,18 @@ class ZipCodeCrawlerService
 	private function crawlRanges(array $ranges, int $delayMs, int $maxResults, string $providerMode = 'fallback', ?string $stateAcronym = null, int $concurrency = self::DEFAULT_CONCURRENCY, bool $autoSaveCity = true, bool $autoSaveNeighborhood = true, bool $createCity = false): \Generator
 		{
 		$delayMs = max(0, $delayMs);
+		$providerMode = $this->normalizeProviderMode($providerMode);
 		$concurrency = $this->normalizeConcurrency($concurrency);
-		$totalAvailable = self::countZipCodeRanges($ranges);
-		$totalToProcess = min($totalAvailable, max(1, $maxResults));
-		$rangeOptions = $this->formatRangeEventData($ranges);
 		$notFoundZipCodes = $this->loadNotFoundZipCodes();
+		$this->activeNotFoundZipCodes = $notFoundZipCodes;
+		$this->prepareViaCepAvailability($providerMode);
+		$resumeStartDigits = $this->resolveNotFoundResumeStart($notFoundZipCodes, $ranges);
+		$crawlRanges = $resumeStartDigits === null
+			? $ranges
+			: $this->trimZipCodeRangesFrom($ranges, $resumeStartDigits);
+		$totalAvailable = self::countZipCodeRanges($crawlRanges);
+		$totalToProcess = min($totalAvailable, max(1, $maxResults));
+		$rangeOptions = $this->formatRangeEventData($crawlRanges);
 
 		yield $this->event('start', [
 			'state' => $stateAcronym,
@@ -365,13 +496,17 @@ class ZipCodeCrawlerService
 			'not_found_file' => self::NOT_FOUND_FILE_NAME,
 			'not_found_journal_file' => self::NOT_FOUND_JOURNAL_FILE_NAME,
 			'not_found_cache_count' => count($notFoundZipCodes),
+			'not_found_resume_window' => self::NOT_FOUND_RESUME_WINDOW,
+			'resume_start_zip_code' => $resumeStartDigits === null ? '' : self::formatZipCodeDigits($resumeStartDigits),
 			'delay_ms' => $delayMs,
 			'concurrency' => $concurrency,
 			'looked_up' => 0,
 			'auto_save_city' => $autoSaveCity,
 			'auto_save_neighborhood' => $autoSaveNeighborhood,
 			'create_city' => $createCity,
-			'provider_mode' => $this->normalizeProviderMode($providerMode),
+			'provider_mode' => $providerMode,
+			'viacep_available' => !$this->isViaCepTemporarilyDisabled(),
+			'viacep_disabled_until' => $this->viaCepDisabledUntilText(),
 		]);
 
 		$stats = [
@@ -385,59 +520,48 @@ class ZipCodeCrawlerService
 
 		try
 			{
-			foreach ($ranges as $range)
+			foreach ($this->iterateZipCodeRanges($crawlRanges, $totalToProcess) as $zipCode)
 				{
-				$startNumber = (int) $range['start'];
-				$endNumber = (int) $range['end'];
-
-				for ($currentNumber = $startNumber; $currentNumber <= $endNumber; $currentNumber++)
+				if (!$this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
 					{
-					if ($stats['processed'] + count($lookupBatch) >= $totalToProcess)
-						{
-						break 2;
-						}
+					continue;
+					}
 
-					$zipCode = $this->formatZipCodeNumber($currentNumber);
+				$stats['processed']++;
+				$stats['failed']++;
+				$stats['skipped']++;
 
-					if ($this->hasRememberedNotFoundZipCode($zipCode))
-						{
-							if (!empty($lookupBatch))
-								{
-								yield from $this->processLookupBatch($lookupBatch, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
-								$lookupBatch = [];
-								}
+				yield $this->event('progress', [
+					'position' => $stats['processed'],
+					'total' => $totalToProcess,
+					'found' => $stats['found'],
+					'failed' => $stats['failed'],
+					'skipped' => $stats['skipped'],
+					'looked_up' => $stats['looked_up'],
+					'zip_code' => $zipCode,
+					'state' => $stateAcronym,
+					'result' => $this->buildSkippedNotFoundResult($zipCode),
+				]);
+				}
 
-						$stats['processed']++;
-						$stats['failed']++;
-						$stats['skipped']++;
+			foreach ($this->iterateZipCodeRanges($crawlRanges, $totalToProcess) as $zipCode)
+				{
+				if ($this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
+					{
+					continue;
+					}
 
-						yield $this->event('progress', [
-							'position' => $stats['processed'],
-							'total' => $totalToProcess,
-							'found' => $stats['found'],
-							'failed' => $stats['failed'],
-							'skipped' => $stats['skipped'],
-							'looked_up' => $stats['looked_up'],
-							'zip_code' => $zipCode,
-							'state' => $stateAcronym,
-							'result' => $this->buildSkippedNotFoundResult($zipCode),
-						]);
-
-						continue;
-						}
-
-					$lookupBatch[] = $zipCode;
-					if (count($lookupBatch) >= $concurrency)
-						{
-						yield from $this->processLookupBatch($lookupBatch, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
-						$lookupBatch = [];
-						}
+				$lookupBatch[] = $zipCode;
+				if (count($lookupBatch) >= $concurrency)
+					{
+					yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+					$lookupBatch = [];
 					}
 				}
 
 			if (!empty($lookupBatch))
 				{
-				yield from $this->processLookupBatch($lookupBatch, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+				yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
 				}
 			}
 		finally
@@ -455,6 +579,7 @@ class ZipCodeCrawlerService
 			'total' => $totalToProcess,
 			'total_available' => $totalAvailable,
 			'concurrency' => $concurrency,
+			'resume_start_zip_code' => $resumeStartDigits === null ? '' : self::formatZipCodeDigits($resumeStartDigits),
 		]);
 		}
 
@@ -466,6 +591,11 @@ class ZipCodeCrawlerService
 	 */
 	private function lookupByMode(string $zipCode, string $providerMode): array
 		{
+		if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+			{
+			return $this->buildSkippedNotFoundResult($zipCode);
+			}
+
 		$providerMode = $this->normalizeProviderMode($providerMode);
 
 		if ($providerMode === 'viacep')
@@ -484,6 +614,7 @@ class ZipCodeCrawlerService
 	/**
 	 * Lookup a batch of zip codes and yield progress payloads in input order.
 	 * @param array<int, string> $zipCodes Zip codes to search.
+	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @param string $providerMode Provider selection mode.
 	 * @param int $delayMs Delay between lookup batches in milliseconds.
 	 * @param array<string, int> $stats Mutable crawler counters.
@@ -494,34 +625,63 @@ class ZipCodeCrawlerService
 	 * @param bool $createCity Whether missing cities may be created.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 **/
-	private function processLookupBatch(array $zipCodes, string $providerMode, int $delayMs, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
+	private function processLookupBatch(array $zipCodes, array &$notFoundZipCodes, string $providerMode, int $delayMs, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
 		{
 		if (empty($zipCodes))
 			{
 			return;
 			}
 
-		$lookupStartedAt = microtime(true);
-		$results = $this->lookupBatchByMode($zipCodes, $providerMode);
-		$stats['looked_up'] += count($zipCodes);
+		$lookupZipCodes = [];
+		$skippedResults = [];
 
 		foreach ($zipCodes as $zipCode)
 			{
-			$result = $results[$zipCode] ?? $this->buildLookupFailureResult($zipCode);
-			$result = $this->autoSaveLookupResult($result, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+			if ($this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
+				{
+				$skippedResults[$zipCode] = $this->buildSkippedNotFoundResult($zipCode);
+				continue;
+				}
+
+			$lookupZipCodes[] = $zipCode;
+			}
+
+		$lookupStartedAt = microtime(true);
+		$results = [];
+		if (!empty($lookupZipCodes))
+			{
+			$results = $this->lookupBatchByMode($lookupZipCodes, $providerMode);
+			$stats['looked_up'] += count($lookupZipCodes);
+			}
+
+		foreach ($zipCodes as $zipCode)
+			{
+			$result = $skippedResults[$zipCode] ?? null;
 
 			$stats['processed']++;
-			if (empty($result['success']))
+			if ($result !== null)
 				{
 				$stats['failed']++;
-				if ($this->shouldRememberNotFoundZipCode($result, $providerMode))
-					{
-					$this->rememberNotFoundZipCode($zipCode);
-					}
+				$stats['skipped']++;
 				}
-			elseif ($this->lookupResultSavedNewRecord($result))
+			else
 				{
-				$stats['found']++;
+				$result = $results[$zipCode] ?? $this->buildLookupFailureResult($zipCode);
+				$result = $this->autoSaveLookupResult($result, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+
+				if (empty($result['success']))
+					{
+					$stats['failed']++;
+					if ($this->shouldRememberNotFoundZipCode($result, $providerMode))
+						{
+						$this->rememberNotFoundZipCode($zipCode);
+						$this->addZipCodeToNotFoundCache($zipCode, $notFoundZipCodes);
+						}
+					}
+				elseif ($this->lookupResultSavedNewRecord($result))
+					{
+					$stats['found']++;
+					}
 				}
 
 			yield $this->event('progress', [
@@ -537,7 +697,10 @@ class ZipCodeCrawlerService
 			]);
 			}
 
-		$this->waitRemainingLookupDelay($delayMs, $lookupStartedAt);
+		if (!empty($lookupZipCodes))
+			{
+			$this->waitRemainingLookupDelay($delayMs, $lookupStartedAt);
+			}
 		}
 
 	/**
@@ -550,11 +713,29 @@ class ZipCodeCrawlerService
 		{
 		$providerMode = $this->normalizeProviderMode($providerMode);
 		$zipCodes = array_values($zipCodes);
+		$skippedResults = [];
+		$lookupZipCodes = [];
 
-		if (count($zipCodes) <= 1 || !function_exists('curl_multi_init'))
+		foreach ($zipCodes as $zipCode)
 			{
-			$results = [];
-			foreach ($zipCodes as $zipCode)
+			if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+				{
+				$skippedResults[$zipCode] = $this->buildSkippedNotFoundResult($zipCode);
+				continue;
+				}
+
+			$lookupZipCodes[] = $zipCode;
+			}
+
+		if (empty($lookupZipCodes))
+			{
+			return $skippedResults;
+			}
+
+		if (count($lookupZipCodes) <= 1 || !function_exists('curl_multi_init'))
+			{
+			$results = $skippedResults;
+			foreach ($lookupZipCodes as $zipCode)
 				{
 				$results[$zipCode] = $this->lookupByMode($zipCode, $providerMode);
 				}
@@ -564,10 +745,10 @@ class ZipCodeCrawlerService
 
 		if ($providerMode === 'viacep' || $providerMode === 'brasilapi')
 			{
-			return $this->lookupProviderBatch($zipCodes, $providerMode);
+			return $skippedResults + $this->lookupProviderBatch($lookupZipCodes, $providerMode);
 			}
 
-		return $this->lookupFallbackBatch($zipCodes);
+		return $skippedResults + $this->lookupFallbackBatch($lookupZipCodes);
 		}
 
 	/**
@@ -666,31 +847,20 @@ class ZipCodeCrawlerService
 	 **/
 	private function lookupRawProviderBatch(array $zipCodes, string $provider): array
 		{
+		if ($provider === 'viacep')
+			{
+			return $this->lookupRawProviderSequentialBatch($zipCodes, $provider);
+			}
+
 		if (!function_exists('curl_multi_init'))
 			{
-			$results = [];
-			foreach ($zipCodes as $zipCode)
-				{
-				$results[$zipCode] = $provider === 'viacep'
-					? $this->viaCepService->lookup($zipCode)
-					: $this->brasilApiService->lookup($zipCode);
-				}
-
-			return $results;
+			return $this->lookupRawProviderSequentialBatch($zipCodes, $provider);
 			}
 
 		$multiHandle = curl_multi_init();
 		if ($multiHandle === false)
 			{
-			$results = [];
-			foreach ($zipCodes as $zipCode)
-				{
-				$results[$zipCode] = $provider === 'viacep'
-					? $this->viaCepService->lookup($zipCode)
-					: $this->brasilApiService->lookup($zipCode);
-				}
-
-			return $results;
+			return $this->lookupRawProviderSequentialBatch($zipCodes, $provider);
 			}
 
 		$handles = [];
@@ -706,12 +876,20 @@ class ZipCodeCrawlerService
 				continue;
 				}
 
-			curl_setopt_array($handle, [
+			$options = [
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_CONNECTTIMEOUT => self::HTTP_TIMEOUT_SECONDS,
 				CURLOPT_TIMEOUT => self::HTTP_TIMEOUT_SECONDS,
+				CURLOPT_USERAGENT => self::HTTP_USER_AGENT,
 				CURLOPT_HTTPHEADER => ['Accept: application/json'],
-			]);
+			];
+
+			if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4'))
+				{
+				$options[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+				}
+
+			curl_setopt_array($handle, $options);
 
 			curl_multi_add_handle($multiHandle, $handle);
 			$handles[] = [
@@ -741,21 +919,216 @@ class ZipCodeCrawlerService
 			$body = curl_multi_getcontent($handle);
 			$httpStatus = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
 			$errorNumber = curl_errno($handle);
+			$errorMessage = $errorNumber !== 0 ? curl_error($handle) : '';
 
-			$results[$zipCode] = $this->parseProviderHttpResponse(
-				$provider,
-				$zipCode,
-				$httpStatus,
-				$errorNumber,
-				is_string($body) ? $body : null
-			);
+			if ($httpStatus === 0 && $errorNumber === 0)
+				{
+				$results[$zipCode] = $this->lookupProviderSequential($zipCode, $provider);
+				}
+			else
+				{
+				$results[$zipCode] = $this->parseProviderHttpResponse(
+					$provider,
+					$zipCode,
+					$httpStatus,
+					$errorNumber,
+					$errorMessage,
+					is_string($body) ? $body : null
+				);
+				}
 
 			curl_multi_remove_handle($multiHandle, $handle);
-			curl_close($handle);
+			if (PHP_VERSION_ID < 80500)
+				{
+				curl_close($handle);
+				}
 			}
 
 		curl_multi_close($multiHandle);
 		return $results;
+		}
+
+	/**
+	 * Run provider HTTP requests sequentially.
+	 * @param array<int, string> $zipCodes Zip codes to search.
+	 * @param string $provider Provider key.
+	 * @return array<string, array<string, mixed>>
+	 **/
+	private function lookupRawProviderSequentialBatch(array $zipCodes, string $provider): array
+		{
+		$results = [];
+		foreach ($zipCodes as $zipCode)
+			{
+			$results[$zipCode] = $this->lookupProviderSequential($zipCode, $provider);
+			}
+
+		return $results;
+		}
+
+	/**
+	 * Lookup one zip code through the selected provider service.
+	 * @param string $zipCode Zip code to search.
+	 * @param string $provider Provider key.
+	 * @return array<string, mixed>
+	 **/
+	private function lookupProviderSequential(string $zipCode, string $provider): array
+		{
+		if ($provider !== 'viacep')
+			{
+			return $this->brasilApiService->lookup($zipCode);
+			}
+
+		if ($this->isViaCepTemporarilyDisabled())
+			{
+			return $this->providerTemporarilyDisabledFailure('viacep', $zipCode);
+			}
+
+		$result = $this->viaCepService->lookup($zipCode);
+		$this->recordViaCepLookupResult($result);
+		return $result;
+		}
+
+	/**
+	 * Probe ViaCEP once before a crawl that may use it.
+	 * @param string $providerMode Selected provider mode.
+	 * @return void
+	 **/
+	private function prepareViaCepAvailability(string $providerMode): void
+		{
+		if ($providerMode === 'brasilapi' || $this->isViaCepTemporarilyDisabled())
+			{
+			return;
+			}
+
+		$result = $this->viaCepService->lookup(self::VIACEP_PROBE_ZIP_CODE);
+		$this->recordViaCepLookupResult($result);
+		}
+
+	/**
+	 * Check whether ViaCEP is in temporary cooldown.
+	 * @return bool
+	 **/
+	private function isViaCepTemporarilyDisabled(): bool
+		{
+		if ($this->viaCepDisabledUntil <= 0)
+			{
+			return false;
+			}
+
+		if (microtime(true) < $this->viaCepDisabledUntil)
+			{
+			return true;
+			}
+
+		$this->viaCepDisabledUntil = 0.0;
+		$this->viaCepTransientFailures = 0;
+		$this->viaCepDisabledDiagnostics = [];
+		return false;
+		}
+
+	/**
+	 * Record a ViaCEP result and pause future calls when transport keeps failing.
+	 * @param array<string, mixed> $result ViaCEP lookup result.
+	 * @return void
+	 **/
+	private function recordViaCepLookupResult(array $result): void
+		{
+		if (!empty($result['success']))
+			{
+			$this->viaCepTransientFailures = 0;
+			return;
+			}
+
+		if (!$this->isTransientProviderFailure($result))
+			{
+			$this->viaCepTransientFailures = 0;
+			return;
+			}
+
+		$this->viaCepTransientFailures++;
+		if ($this->viaCepTransientFailures >= self::VIACEP_TRANSIENT_FAILURE_THRESHOLD)
+			{
+			$diagnostics = is_array($result['diagnostics'] ?? null) ? $result['diagnostics'] : [];
+			$this->disableViaCepTemporarily($diagnostics);
+			}
+		}
+
+	/**
+	 * Pause ViaCEP calls for the current crawler request.
+	 * @param array<string, mixed> $diagnostics Last transport failure diagnostics.
+	 * @return void
+	 **/
+	private function disableViaCepTemporarily(array $diagnostics = []): void
+		{
+		$this->viaCepDisabledUntil = microtime(true) + self::VIACEP_COOLDOWN_SECONDS;
+		$this->viaCepDisabledDiagnostics = $diagnostics;
+		}
+
+	/**
+	 * Build a provider failure for a temporarily disabled provider.
+	 * @param string $provider Provider key.
+	 * @param string $zipCode Zip code that would be searched.
+	 * @return array<string, mixed>
+	 **/
+	private function providerTemporarilyDisabledFailure(string $provider, string $zipCode): array
+		{
+		$provider = strtolower($provider);
+		$digits = $this->normalizeZipCode($zipCode);
+		$diagnostics = [
+			'request_zip_code' => $digits,
+			'request_url' => $digits === '' ? '' : $this->providerUrl($provider, $digits),
+			'http_status' => 0,
+			'curl_errno' => 0,
+			'curl_error' => '',
+			'cooldown_seconds' => self::VIACEP_COOLDOWN_SECONDS,
+			'disabled_until' => $this->viaCepDisabledUntilText(),
+		];
+
+		if (!empty($this->viaCepDisabledDiagnostics))
+			{
+			$diagnostics['last_failure'] = $this->viaCepDisabledDiagnostics;
+			}
+
+		return $this->providerFailure($provider, 'provider_temporarily_disabled', 'ViaCEP pausado temporariamente por falhas de conexão.', 0, $diagnostics);
+		}
+
+	/**
+	 * Check whether a provider failure came from a transient transport problem.
+	 * @param array<string, mixed> $result Provider lookup result.
+	 * @return bool
+	 **/
+	private function isTransientProviderFailure(array $result): bool
+		{
+		if (!empty($result['success']) || (string) ($result['error'] ?? '') === 'provider_temporarily_disabled')
+			{
+			return false;
+			}
+
+		$diagnostics = is_array($result['diagnostics'] ?? null) ? $result['diagnostics'] : [];
+		$curlErrorNumber = (int) ($diagnostics['curl_errno'] ?? 0);
+		$httpStatus = (int) ($diagnostics['http_status'] ?? 0);
+		$status = (int) ($result['status'] ?? 0);
+
+		if (in_array($curlErrorNumber, [6, 7, 28, 35, 52, 56], true))
+			{
+			return true;
+			}
+
+		return $status === 0 || $status >= 500 || $httpStatus >= 500 || ($httpStatus === 0 && $status >= 500);
+		}
+
+	/**
+	 * Return the formatted ViaCEP cooldown deadline.
+	 * @return string
+	 **/
+	private function viaCepDisabledUntilText(): string
+		{
+		if (!$this->isViaCepTemporarilyDisabled())
+			{
+			return '';
+			}
+
+		return date('H:i:s', (int) ceil($this->viaCepDisabledUntil));
 		}
 
 	/**
@@ -766,7 +1139,7 @@ class ZipCodeCrawlerService
 	 */
 	private function lookupViaCepOnly(string $zipCode): array
 		{
-		$result = $this->viaCepService->lookup($zipCode);
+		$result = $this->lookupProviderSequential($zipCode, 'viacep');
 		$attempt = $this->attemptPayload($result, 'viacep');
 
 		if (!empty($result['success']))
@@ -824,7 +1197,7 @@ class ZipCodeCrawlerService
 	 */
 	private function lookupWithFallback(string $zipCode): array
 		{
-		$viaCepResult = $this->viaCepService->lookup($zipCode);
+		$viaCepResult = $this->lookupProviderSequential($zipCode, 'viacep');
 		$viaCepAttempt = $this->attemptPayload($viaCepResult, 'viacep');
 
 		if (!empty($viaCepResult['success']))
@@ -842,13 +1215,14 @@ class ZipCodeCrawlerService
 
 		$attempts = [$viaCepAttempt, $brasilApiAttempt];
 		$isNotFound = $this->attemptsIndicateNotFound($attempts);
+		$hasNotFound = $isNotFound || $this->attemptsIncludeNotFound($attempts);
 
 		return [
 			'success' => false,
-			'status' => $isNotFound ? 404 : (int) ($brasilApiResult['status'] ?? $viaCepResult['status'] ?? 502),
+			'status' => $hasNotFound ? 404 : (int) ($brasilApiResult['status'] ?? $viaCepResult['status'] ?? 502),
 			'source' => '',
-			'error' => $isNotFound ? 'zip_code_not_found' : 'lookup_failed',
-			'message' => $isNotFound ? 'CEP não encontrado nos webservices.' : $this->firstErrorMessage($viaCepResult, $brasilApiResult),
+			'error' => $hasNotFound ? 'zip_code_not_found' : 'lookup_failed',
+			'message' => $hasNotFound ? 'CEP não encontrado nos webservices consultados.' : $this->firstErrorMessage($viaCepResult, $brasilApiResult),
 			'data' => [
 				'zip_code' => $zipCode,
 				'attempts' => $attempts,
@@ -862,10 +1236,11 @@ class ZipCodeCrawlerService
 	 * @param string $zipCode Zip code searched.
 	 * @param int $httpStatus HTTP status code.
 	 * @param int $errorNumber cURL error number.
+	 * @param string $errorMessage cURL error message.
 	 * @param string|null $body Response body.
 	 * @return array<string, mixed>
 	 **/
-	private function parseProviderHttpResponse(string $provider, string $zipCode, int $httpStatus, int $errorNumber, ?string $body): array
+	private function parseProviderHttpResponse(string $provider, string $zipCode, int $httpStatus, int $errorNumber, string $errorMessage, ?string $body): array
 		{
 		if ($errorNumber !== 0 || $httpStatus < 200 || $httpStatus >= 300 || $body === null)
 			{
@@ -874,7 +1249,13 @@ class ZipCodeCrawlerService
 				return $this->providerFailure($provider, 'zip_code_not_found', 'CEP não encontrado na BrasilAPI.', 404);
 				}
 
-			return $this->providerFailure($provider, 'lookup_failed', $this->providerLookupFailedMessage($provider), 502);
+			return $this->providerFailure(
+				$provider,
+				'lookup_failed',
+				$this->providerLookupFailedMessage($provider),
+				502,
+				$this->providerFailureDiagnostics($provider, $zipCode, $httpStatus, $errorNumber, $errorMessage)
+			);
 			}
 
 		$data = json_decode($body, true);
@@ -944,6 +1325,7 @@ class ZipCodeCrawlerService
 		{
 		$attempts = [$viaCepAttempt, $brasilApiAttempt];
 		$isNotFound = $this->attemptsIndicateNotFound($attempts);
+		$hasNotFound = $isNotFound || $this->attemptsIncludeNotFound($attempts);
 		$status = (int) (
 			($brasilApiAttempt['status'] ?? 0)
 			?: ($viaCepAttempt['status'] ?? 0)
@@ -953,10 +1335,10 @@ class ZipCodeCrawlerService
 
 		return [
 			'success' => false,
-			'status' => $isNotFound ? 404 : $status,
+			'status' => $hasNotFound ? 404 : $status,
 			'source' => '',
-			'error' => $isNotFound ? 'zip_code_not_found' : 'lookup_failed',
-			'message' => $isNotFound ? 'CEP não encontrado nos webservices.' : $this->firstAttemptMessage($attempts),
+			'error' => $hasNotFound ? 'zip_code_not_found' : 'lookup_failed',
+			'message' => $hasNotFound ? 'CEP não encontrado nos webservices consultados.' : $this->firstAttemptMessage($attempts),
 			'data' => [
 				'zip_code' => $zipCode,
 				'attempts' => $attempts,
@@ -970,16 +1352,45 @@ class ZipCodeCrawlerService
 	 * @param string $error Error key.
 	 * @param string $message Error message.
 	 * @param int $status Response status.
+	 * @param array<string, mixed> $diagnostics Provider transport diagnostics.
 	 * @return array<string, mixed>
 	 **/
-	private function providerFailure(string $provider, string $error, string $message, int $status): array
+	private function providerFailure(string $provider, string $error, string $message, int $status, array $diagnostics = []): array
 		{
-		return [
+		$payload = [
 			'success' => false,
 			'status' => $status,
 			'source' => $provider,
 			'error' => $error,
 			'message' => $message,
+		];
+
+		if (!empty($diagnostics))
+			{
+			$payload['diagnostics'] = $diagnostics;
+			}
+
+		return $payload;
+		}
+
+	/**
+	 * Build provider transport diagnostics.
+	 * @param string $provider Provider key.
+	 * @param string $zipCode Zip code searched.
+	 * @param int $httpStatus HTTP status code.
+	 * @param int $errorNumber cURL error number.
+	 * @param string $errorMessage cURL error message.
+	 * @return array<string, mixed>
+	 **/
+	private function providerFailureDiagnostics(string $provider, string $zipCode, int $httpStatus, int $errorNumber, string $errorMessage): array
+		{
+		$digits = $this->normalizeZipCode($zipCode);
+		return [
+			'request_zip_code' => $digits,
+			'request_url' => $this->providerUrl($provider, $digits),
+			'http_status' => $httpStatus,
+			'curl_errno' => $errorNumber,
+			'curl_error' => $errorMessage,
 		];
 		}
 
@@ -1235,11 +1646,16 @@ class ZipCodeCrawlerService
 			return false;
 			}
 
+		if ((string) ($result['error'] ?? '') === 'zip_code_already_not_found')
+			{
+			return false;
+			}
+
 		$attempts = $result['data']['attempts'] ?? [];
 		if (is_array($attempts) && !empty($attempts))
 			{
 			return $this->attemptsCanConfirmGlobalNotFound($attempts, $providerMode)
-				&& $this->attemptsIndicateNotFound($attempts);
+				&& ($this->attemptsIndicateNotFound($attempts) || $this->attemptsIncludeNotFound($attempts));
 			}
 
 		return $this->normalizeProviderMode($providerMode) === 'fallback'
@@ -1316,6 +1732,29 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Check whether at least one provider attempt indicates a not found zip code.
+	 * @param array<int, mixed> $attempts Provider attempt payloads.
+	 * @return bool
+	 **/
+	private function attemptsIncludeNotFound(array $attempts): bool
+		{
+		foreach ($attempts as $attempt)
+			{
+			if (!is_array($attempt))
+				{
+				continue;
+				}
+
+			if ($this->isNotFoundSignal((string) ($attempt['error'] ?? ''), (int) ($attempt['status'] ?? 0)))
+				{
+				return true;
+				}
+			}
+
+		return false;
+		}
+
+	/**
 	 * Check whether a provider failure means the zip code does not exist.
 	 * @param string $error Provider error key.
 	 * @param int $status Provider response status.
@@ -1327,20 +1766,33 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Check whether the zip code is already persisted as not found.
+	 * Check whether a zip code exists in an already loaded not found cache.
 	 * @param string $zipCode Zip code to check.
+	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @return bool
 	 **/
-	private function hasRememberedNotFoundZipCode(string $zipCode): bool
+	private function isZipCodeInNotFoundCache(string $zipCode, array $notFoundZipCodes): bool
+		{
+		$digits = $this->normalizeZipCode($zipCode);
+		return strlen($digits) === 8 && isset($notFoundZipCodes[$digits]);
+		}
+
+	/**
+	 * Add a zip code to the already loaded not found cache.
+	 * @param string $zipCode Zip code to add.
+	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
+	 * @return void
+	 **/
+	private function addZipCodeToNotFoundCache(string $zipCode, array &$notFoundZipCodes): void
 		{
 		$digits = $this->normalizeZipCode($zipCode);
 		if (strlen($digits) !== 8)
 			{
-			return false;
+			return;
 			}
 
-		$notFoundZipCodes = $this->loadNotFoundZipCodes();
-		return isset($notFoundZipCodes[$digits]);
+		$notFoundZipCodes[$digits] = true;
+		$this->activeNotFoundZipCodes[$digits] = true;
 		}
 
 	/**
@@ -1811,6 +2263,12 @@ class ZipCodeCrawlerService
 	 */
 	private function buildSuccessResult(string $source, array $data, array $attempts): array
 		{
+		$zipCode = (string) ($data['zip_code'] ?? '');
+		if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+			{
+			return $this->buildSkippedNotFoundResult($zipCode);
+			}
+
 		$data['source'] = $source;
 		$data['attempts'] = $attempts;
 		$data['database_status'] = $this->buildDatabaseStatus($data);
@@ -2176,13 +2634,20 @@ class ZipCodeCrawlerService
 	 */
 	private function attemptPayload(array $result, string $source): array
 		{
-		return [
+		$attempt = [
 			'source' => $source,
 			'success' => !empty($result['success']),
 			'status' => (int) ($result['status'] ?? 0),
 			'error' => (string) ($result['error'] ?? ''),
 			'message' => (string) ($result['message'] ?? ''),
 		];
+
+		if (is_array($result['diagnostics'] ?? null))
+			{
+			$attempt['diagnostics'] = $result['diagnostics'];
+			}
+
+		return $attempt;
 		}
 
 	/**

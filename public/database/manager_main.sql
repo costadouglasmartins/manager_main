@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~54 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6120,7 +6120,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(52, 'Conjunto Ouricurí', 16, '2026-06-11 01:31:19', '2026-06-11 01:31:19'),
 	(53, 'Loteamento Jaguar', 16, '2026-06-11 01:32:34', '2026-06-11 01:32:34'),
 	(54, 'Loteamento Santa Luzia', 16, '2026-06-11 01:33:42', '2026-06-11 01:33:42'),
-	(55, 'Aeroporto Velho', 16, '2026-06-11 01:36:21', '2026-06-11 01:36:21');
+	(55, 'Aeroporto Velho', 16, '2026-06-11 01:36:21', '2026-06-11 01:36:21'),
+	(56, 'João Eduardo I', 16, '2026-06-11 17:55:06', '2026-06-11 17:55:06');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -7146,7 +7147,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 -- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
-	(2, 1, '35584362d57a4603c5c2deaa499af845', '29df8285bab82c57b6874f1991908b6d7ad76ee3ac89d56a589f23ead51f3dc5', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-10 21:49:25', '2026-06-06 00:45:49', '2026-06-10 21:49:25');
+	(2, 1, '07ab78213a4fe22492cabdffd784d1db', '1af939a329bdb98c5e3ca396221724a3e7a41c9c2a7f30e032cbdef99223b387', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-11 16:22:38', '2026-06-06 00:45:49', '2026-06-11 16:22:38');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
