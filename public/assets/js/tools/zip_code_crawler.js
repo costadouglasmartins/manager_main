@@ -27,6 +27,7 @@
 		const failedCount = document.getElementById("crawlerFailedCount");
 		const lookupRateCount = document.getElementById("crawlerLookupRateCount");
 		const statusText = document.getElementById("crawlerStatusText");
+		const monitorCard = document.querySelector(".zip-code-crawler-monitor-card");
 		const streamUrl = app.dataset.streamUrl || "";
 		const stateOptions = parseStateOptions();
 		const stateOptionRegistry = buildStateOptionRegistry(stateOptions);
@@ -253,6 +254,26 @@
 				progressBar.textContent = percentage + "%";
 			}
 
+		function updateMonitorHeight()
+			{
+				if (!monitorCard)
+					{
+						return;
+					}
+
+				const appRect = app.getBoundingClientRect();
+				const cardRect = monitorCard.getBoundingClientRect();
+				const isSideBySideLayout = cardRect.left > appRect.left + 24;
+				if (!isSideBySideLayout)
+					{
+						monitorCard.style.removeProperty("--zip-code-crawler-monitor-height");
+						return;
+					}
+
+				const availableHeight = Math.max(640, window.innerHeight - cardRect.top - 16);
+				monitorCard.style.setProperty("--zip-code-crawler-monitor-height", availableHeight + "px");
+			}
+
 		function clearResults()
 			{
 				resultsStickToBottom = true;
@@ -271,8 +292,11 @@
 
 		function scrollResultsToBottom()
 			{
-				resultsBody.scrollTop = resultsBody.scrollHeight;
-				resultsStickToBottom = true;
+				window.requestAnimationFrame(function ()
+					{
+						resultsBody.scrollTop = resultsBody.scrollHeight;
+						resultsStickToBottom = true;
+					});
 			}
 
 		function appendResultsElement(element)
@@ -348,6 +372,92 @@
 				appendResultsElement(line);
 			}
 
+		function providerLabel(source)
+			{
+				const normalized = String(source || "").toLowerCase();
+				if (normalized === "viacep")
+					{
+						return "ViaCEP";
+					}
+
+				if (normalized === "brasilapi")
+					{
+						return "BrasilAPI";
+					}
+
+				return source ? String(source).toUpperCase() : "Webservice";
+			}
+
+		function attemptStatusText(attempt)
+			{
+				if (attempt && attempt.success)
+					{
+						return "ok";
+					}
+
+				const error = String((attempt && attempt.error) || "");
+				if (error === "zip_code_not_found")
+					{
+						return "não encontrado";
+					}
+
+				if (error === "invalid_response")
+					{
+						return "resposta inválida";
+					}
+
+				if (error === "invalid_zip_code")
+					{
+						return "CEP inválido";
+					}
+
+				return "falhou";
+			}
+
+		function formatAttemptSummary(attempts)
+			{
+				if (!Array.isArray(attempts) || !attempts.length)
+					{
+						return "";
+					}
+
+				const labels = attempts.map(function (attempt)
+					{
+						const status = Number((attempt && attempt.status) || 0);
+						const statusText = status > 0 ? " (" + status + ")" : "";
+
+						return providerLabel(attempt && attempt.source) + " " + attemptStatusText(attempt) + statusText;
+					});
+
+				return "Consultas: " + labels.join(" · ");
+			}
+
+		function buildAjaxReturnDetails(payload)
+			{
+				const details = document.createElement("details");
+				details.className = "zip-code-crawler-ajax-return mt-2";
+
+				const summary = document.createElement("summary");
+				summary.className = "small text-body-secondary";
+				summary.textContent = "Retorno";
+
+				const pre = document.createElement("pre");
+				pre.className = "bg-body-tertiary border rounded p-2 mt-2 mb-0 small font-monospace overflow-auto";
+				pre.textContent = "";
+
+				details.appendChild(summary);
+				details.appendChild(pre);
+				details.addEventListener("toggle", function ()
+					{
+						if (details.open && pre.textContent === "")
+							{
+								pre.textContent = JSON.stringify(payload, null, 2);
+							}
+					});
+
+				return details;
+			}
+
 		function appendResultRow(payload)
 			{
 				const result = payload.result || {};
@@ -367,6 +477,7 @@
 				const autoSaveSaved = autoSaveEnabled && !!autoSave.success && autoSaveStatus === "saved" && !!autoSave.created_new_record;
 				const autoSaveFailed = autoSaveEnabled && !!autoSave.attempted && !autoSave.success;
 				const isSkipped = !isFound && (!!data.skipped || result.source === "cache" || result.error === "zip_code_already_not_found");
+				const attemptSummary = formatAttemptSummary(data.attempts);
 
 				const statusText = autoSaveSaved
 					? "SAVED"
@@ -428,19 +539,31 @@
 						const parts = [data.neighborhood, data.city, data.state].filter(Boolean);
 						const locationText = parts.length ? parts.join(" · ") : "-";
 						const detailText = autoSave.message || (alreadyInDatabase ? databaseStatus.message : "");
-						locationSpan.textContent = detailText
+						const locationDetail = detailText
 							? locationText + " · " + detailText
 							: locationText;
+						locationSpan.textContent = attemptSummary
+							? locationDetail + " · " + attemptSummary
+							: locationDetail;
 					}
 				else
 					{
-						locationSpan.textContent = isSkipped
-							? "Ignorado pelo arquivo de CEPs não encontrados."
-							: (result.message || "CEP não encontrado");
+						if (isSkipped)
+							{
+								locationSpan.textContent = "Ignorado pelo arquivo de CEPs não encontrados.";
+							}
+						else
+							{
+								locationSpan.textContent = [
+									attemptSummary,
+									result.message || "CEP não encontrado",
+								].filter(Boolean).join(" · ");
+							}
 					}
 
 				line.appendChild(header);
 				line.appendChild(locationSpan);
+				line.appendChild(buildAjaxReturnDetails(payload));
 
 				clearIdleLine();
 				appendResultsElement(line);
@@ -474,6 +597,7 @@
 				setLoading(true);
 				setMessage("info", "Iniciando webcrawler com atraso controlado entre consultas...");
 				statusText.textContent = "Conectando...";
+				updateMonitorHeight();
 
 				const url = new URL(streamUrl, window.location.origin);
 				url.searchParams.set("state_acronym", stateAcronym);
@@ -562,6 +686,7 @@
 		delayInput.addEventListener("input", updateDelayLabel);
 		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
 		resultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
+		window.addEventListener("resize", updateMonitorHeight, {passive: true});
 
 		form.addEventListener("submit", function (event)
 			{
@@ -621,4 +746,5 @@
 		updateStateRangeSummary();
 		updateDelayLabel();
 		updateConcurrencyLabel();
+		updateMonitorHeight();
 	})();

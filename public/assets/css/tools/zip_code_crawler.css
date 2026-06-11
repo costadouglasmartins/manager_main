@@ -61,6 +61,14 @@
   min-height: 3.35rem;
 }
 
+.zip-code-crawler-monitor-card {
+  height: var(--zip-code-crawler-monitor-height, auto) !important;
+}
+
+.zip-code-crawler-monitor-card > .card-body {
+  min-height: 0;
+}
+
 .zip-code-crawler-results {
   flex: 1 1 0;
   min-height: 0;
@@ -71,12 +79,23 @@
   overflow-y: auto;
   min-height: 24rem;
   max-height: none;
+  padding-bottom: 0.75rem;
   scrollbar-width: thin;
   scrollbar-color: var(--bs-border-color) transparent;
 }
 
 .zip-code-crawler-result-detail {
   overflow-wrap: anywhere;
+}
+
+.zip-code-crawler-ajax-return summary {
+  cursor: pointer;
+}
+
+.zip-code-crawler-ajax-return pre {
+  max-height: 14rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 @media (max-width: 991.98px) {
@@ -86,12 +105,11 @@
 }
 
 @media (min-width: 1400px) {
-  .zip-code-crawler-tool > .row {
-    min-height: calc(100dvh - 9.5rem);
+  .zip-code-crawler-monitor-card {
+    height: var(--zip-code-crawler-monitor-height, calc(100dvh - 10.5rem)) !important;
   }
 
-  .zip-code-crawler-monitor-card,
-  .zip-code-crawler-monitor-card > .card-body {
+  .zip-code-crawler-results-body {
     min-height: 0;
   }
 }

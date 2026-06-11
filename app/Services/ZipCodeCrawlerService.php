@@ -514,7 +514,7 @@ class ZipCodeCrawlerService
 			if (empty($result['success']))
 				{
 				$stats['failed']++;
-				if ($this->shouldRememberNotFoundZipCode($result))
+				if ($this->shouldRememberNotFoundZipCode($result, $providerMode))
 					{
 					$this->rememberNotFoundZipCode($zipCode);
 					}
@@ -1225,27 +1225,66 @@ class ZipCodeCrawlerService
 	/**
 	 * Decide whether a failed lookup should be persisted as not found.
 	 * @param array<string, mixed> $result Lookup result payload.
+	 * @param string $providerMode Provider selection mode.
 	 * @return bool
 	 **/
-	private function shouldRememberNotFoundZipCode(array $result): bool
+	private function shouldRememberNotFoundZipCode(array $result, string $providerMode): bool
 		{
 		if (!empty($result['success']))
 			{
 			return false;
 			}
 
-		if ($this->isNotFoundSignal((string) ($result['error'] ?? ''), (int) ($result['status'] ?? 0)))
+		$attempts = $result['data']['attempts'] ?? [];
+		if (is_array($attempts) && !empty($attempts))
 			{
-			return true;
+			return $this->attemptsCanConfirmGlobalNotFound($attempts, $providerMode)
+				&& $this->attemptsIndicateNotFound($attempts);
 			}
 
-		$attempts = $result['data']['attempts'] ?? [];
-		if (!is_array($attempts))
+		return $this->normalizeProviderMode($providerMode) === 'fallback'
+			&& $this->isNotFoundSignal((string) ($result['error'] ?? ''), (int) ($result['status'] ?? 0));
+		}
+    
+	/**
+	 * Check whether the attempts can safely feed the global not found cache.
+	 * @param array<int, mixed> $attempts Provider attempt payloads.
+	 * @param string $providerMode Provider selection mode.
+	 * @return bool
+	 **/
+	private function attemptsCanConfirmGlobalNotFound(array $attempts, string $providerMode): bool
+		{
+		if ($this->normalizeProviderMode($providerMode) !== 'fallback')
 			{
 			return false;
 			}
 
-		return $this->attemptsIndicateNotFound($attempts);
+		return $this->attemptsIncludeProvider($attempts, 'viacep')
+			&& $this->attemptsIncludeProvider($attempts, 'brasilapi');
+		}
+
+	/**
+	 * Check whether provider attempts include a specific provider.
+	 * @param array<int, mixed> $attempts Provider attempt payloads.
+	 * @param string $provider Provider key.
+	 * @return bool
+	 **/
+	private function attemptsIncludeProvider(array $attempts, string $provider): bool
+		{
+		foreach ($attempts as $attempt)
+			{
+			if (!is_array($attempt))
+				{
+				continue;
+				}
+
+			if (strtolower((string) ($attempt['source'] ?? '')) === $provider)
+				{
+				return true;
+				}
+			}
+
+		return false;
 		}
 
 	/**
@@ -1450,10 +1489,14 @@ class ZipCodeCrawlerService
 			return $this->notFoundZipCodes;
 			}
 
-		$contents = $this->readTextFile($this->notFoundFilePath);
-		$journalContents = $this->readTextFile($this->notFoundJournalFilePath);
-		$this->notFoundZipCodes = $this->parseNotFoundZipCodeContents($contents);
-		$journalZipCodes = $this->parseNotFoundZipCodeContents($journalContents);
+		$mainFileNeedsRewrite = false;
+		$this->notFoundZipCodes = $this->loadNotFoundZipCodeFile($this->notFoundFilePath, $mainFileNeedsRewrite);
+
+		$journalHasContents = $this->fileHasContents($this->notFoundJournalFilePath);
+		$journalNeedsRewrite = false;
+		$journalZipCodes = $journalHasContents
+			? $this->loadNotFoundZipCodeFile($this->notFoundJournalFilePath, $journalNeedsRewrite)
+			: [];
 
 		foreach ($journalZipCodes as $digits => $exists)
 			{
@@ -1463,10 +1506,7 @@ class ZipCodeCrawlerService
 				}
 			}
 
-		if (
-			$contents !== $this->serializeNotFoundZipCodes($this->notFoundZipCodes)
-			|| trim($journalContents) !== ''
-		)
+		if ($mainFileNeedsRewrite || $journalHasContents || $journalNeedsRewrite)
 			{
 			$this->notFoundZipCodesDirty = true;
 			$this->flushNotFoundZipCodes();
@@ -1517,22 +1557,6 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Read a text file safely.
-	 * @param string $path File path.
-	 * @return string
-	 **/
-	private function readTextFile(string $path): string
-		{
-		if (!is_file($path))
-			{
-			return '';
-			}
-
-		$contents = @file_get_contents($path);
-		return is_string($contents) ? $contents : '';
-		}
-
-	/**
 	 * Check whether a file exists and has content.
 	 * @param string $path File path.
 	 * @return bool
@@ -1549,6 +1573,69 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Load a not found zip code file using a streaming parser.
+	 * @param string $path File path.
+	 * @param bool $needsRewrite Whether the file should be rewritten normalized.
+	 * @return array<string, bool>
+	 **/
+	private function loadNotFoundZipCodeFile(string $path, bool &$needsRewrite): array
+		{
+		$needsRewrite = false;
+		$notFoundZipCodes = [];
+
+		if (!is_file($path))
+			{
+			return $notFoundZipCodes;
+			}
+
+		$handle = @fopen($path, 'rb');
+		if (!is_resource($handle))
+			{
+			return $notFoundZipCodes;
+			}
+
+		$previousDigits = null;
+
+		try
+			{
+			while (($line = fgets($handle)) !== false)
+				{
+				$rawLine = rtrim($line, "\r\n");
+				$digits = $this->normalizeNotFoundZipCodeLine($rawLine);
+
+				if ($digits === '')
+					{
+					if (trim($rawLine) !== '')
+						{
+						$needsRewrite = true;
+						}
+
+					continue;
+					}
+
+				if ($rawLine !== $digits || isset($notFoundZipCodes[$digits]))
+					{
+					$needsRewrite = true;
+					}
+
+				if ($previousDigits !== null && strcmp($digits, $previousDigits) < 0)
+					{
+					$needsRewrite = true;
+					}
+
+				$notFoundZipCodes[$digits] = true;
+				$previousDigits = $digits;
+				}
+			}
+		finally
+			{
+			fclose($handle);
+			}
+
+		return $notFoundZipCodes;
+		}
+
+	/**
 	 * Parse zip code file contents into a lookup set.
 	 * @param string $contents Raw file contents.
 	 * @return array<string, bool>
@@ -1560,14 +1647,36 @@ class ZipCodeCrawlerService
 
 		foreach ($lines as $line)
 			{
-			$digits = $this->normalizeZipCode((string) $line);
-			if (strlen($digits) === 8)
+			$digits = $this->normalizeNotFoundZipCodeLine((string) $line);
+			if ($digits !== '')
 				{
 				$notFoundZipCodes[$digits] = true;
 				}
 			}
 
 		return $notFoundZipCodes;
+		}
+
+	/**
+	 * Normalize one not found zip code file line.
+	 * @param string $line Raw file line.
+	 * @return string
+	 **/
+	private function normalizeNotFoundZipCodeLine(string $line): string
+		{
+		$line = trim($line);
+		if ($line === '')
+			{
+			return '';
+			}
+
+		if (strlen($line) === 8 && ctype_digit($line))
+			{
+			return $line;
+			}
+
+		$digits = preg_replace('/\D+/', '', $line) ?? '';
+		return strlen($digits) === 8 ? $digits : '';
 		}
 
 	/**
