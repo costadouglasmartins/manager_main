@@ -82,6 +82,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?= sortableTh('neighborhood', 'id', '#', $sort, $queryFilters) ?>
         <?= sortableTh('neighborhood', 'name', 'Nome', $sort, $queryFilters) ?>
         <?= sortableTh('neighborhood', 'city_name', 'Cidade', $sort, $queryFilters) ?>
+        <?= sortableTh('neighborhood', 'state_name', 'Estado', $sort, $queryFilters) ?>
         <th class="text-end">Ações</th>
       </tr>
     </thead>
@@ -92,6 +93,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
             <td style="width:1%;"><?= $row['id'] ?></td>
             <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($row['city_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($row['state_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
             <td style="width:1%;" class="text-nowrap text-end">
               <?php if (authCan('neighborhood.edit')): ?>
                 <a href="<?= url('neighborhood/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
@@ -109,7 +111,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="4" class="text-center">Nenhum registro encontrado.</td>
+          <td colspan="5" class="text-center">Nenhum registro encontrado.</td>
         </tr>
       <?php endif; ?>
     </tbody>

@@ -15,9 +15,10 @@ class Neighborhood extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'        => 'Neighborhood.id',
-			'name'      => 'Neighborhood.`name`',
-			'city_name' => 'City.`name`',
+			'id'         => 'Neighborhood.id',
+			'name'       => 'Neighborhood.`name`',
+			'city_name'  => 'City.`name`',
+			'state_name' => 'State.`name`',
 		];
 		}
 
@@ -26,7 +27,7 @@ class Neighborhood extends Model
 	 */
 	public function getAll()
 		{
-		$stmt = $this->db->query("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id ORDER BY Neighborhood.id DESC");
+		$stmt = $this->db->query("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name, State.name AS state_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id ORDER BY Neighborhood.id DESC");
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}
 
@@ -65,7 +66,7 @@ class Neighborhood extends Model
 	 */
 	public function find($id)
 		{
-		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE Neighborhood.id = :id");
+		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name, State.name AS state_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id WHERE Neighborhood.id = :id");
 		$stmt->execute(['id' => $id]);
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 		}
@@ -97,7 +98,7 @@ class Neighborhood extends Model
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
 		{
-		$sql = "SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE 1 = 1";
+		$sql = "SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name, State.name AS state_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
 		if (isset($filters['id']) && $filters['id'] !== '')
@@ -110,6 +111,18 @@ class Neighborhood extends Model
 			{
 			$sql .= " AND Neighborhood.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
+			}
+
+		if (isset($filters['country_id']) && $filters['country_id'] !== '')
+			{
+			$sql .= " AND Country.id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+
+		if (isset($filters['state_id']) && $filters['state_id'] !== '')
+			{
+			$sql .= " AND State.id = :state_id";
+			$params['state_id'] = (int) $filters['state_id'];
 			}
 
 		if (isset($filters['city_id']) && $filters['city_id'] !== '')
@@ -142,7 +155,7 @@ class Neighborhood extends Model
 	 */
 	public function count(array $filters = []): int
 		{
-		$sql = "SELECT COUNT(Neighborhood.id) AS total FROM neighborhoods AS Neighborhood WHERE 1 = 1";
+		$sql = "SELECT COUNT(Neighborhood.id) AS total FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
 		if (!empty($filters['id']))
@@ -155,6 +168,18 @@ class Neighborhood extends Model
 			{
 			$sql .= " AND Neighborhood.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
+			}
+
+		if (!empty($filters['country_id']))
+			{
+			$sql .= " AND Country.id = :country_id";
+			$params['country_id'] = (int) $filters['country_id'];
+			}
+
+		if (!empty($filters['state_id']))
+			{
+			$sql .= " AND State.id = :state_id";
+			$params['state_id'] = (int) $filters['state_id'];
 			}
 
 		if (!empty($filters['city_id']))
@@ -181,7 +206,7 @@ class Neighborhood extends Model
 	 */
 	public function findAllByNeighborhoodId($id)
 		{
-		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id WHERE Neighborhood.id = :id");
+		$stmt = $this->db->prepare("SELECT Neighborhood.id, Neighborhood.name, Neighborhood.city_id, Neighborhood.created, Neighborhood.modified, City.name AS city_name, State.name AS state_name FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id WHERE Neighborhood.id = :id");
 		$stmt->execute(['id' => $id]);
 		$data = $stmt->fetch(PDO::FETCH_ASSOC);
 		return ['neighborhood' => $data];
