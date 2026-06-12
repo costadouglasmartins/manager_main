@@ -345,6 +345,13 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
             </ul>
           </li>
 
+          <!-- Botão Home -->
+          <li class="nav-item d-lg-flex align-items-lg-center me-lg-2">
+            <a class="nav-link d-flex align-items-center" href="<?= url('/'); ?>" target="_blank" title="Abrir home em nova aba">
+              <i class="bi bi-house-fill"></i>
+            </a>
+          </li>
+
           <!-- Botão de tema -->
           <li class="nav-item d-lg-flex align-items-lg-center">
             <button id="themeToggle" class="nav-link btn-theme d-flex align-items-center" type="button" title="Alternar tema">
