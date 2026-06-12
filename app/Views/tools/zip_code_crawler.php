@@ -76,6 +76,10 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
               <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="5" step="1" value="3">
             </div>
 
+            <div class="alert alert-secondary zip-code-crawler-message" id="crawlerMessage" role="status" aria-live="polite">
+              Selecione um estado e inicie a pesquisa.
+            </div>
+            
             <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center">
               <button class="btn btn-secondary" type="button" id="crawlerClearButton">
                 <i class="bi bi-eraser me-1"></i>Limpar
@@ -110,10 +114,6 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             <div class="zip-code-crawler-stat-card"><small>Status</small><strong id="crawlerStatusText">Aguardando início</strong></div>
           </div>
 
-          <div class="alert alert-secondary zip-code-crawler-message" id="crawlerMessage" role="status" aria-live="polite">
-            Selecione um estado e inicie a pesquisa.
-          </div>
-
           <div class="border rounded overflow-hidden zip-code-crawler-results d-flex flex-column">
             <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-body-tertiary">
               <i class="bi bi-list-check text-primary"></i>
@@ -144,4 +144,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=22'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=23'); ?>"></script>

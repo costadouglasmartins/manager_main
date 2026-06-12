@@ -62,6 +62,13 @@
 				return digits.slice(0, 5) + "-" + digits.slice(5, 8);
 			}
 
+		function formatInteger(value)
+			{
+				return numericMetric(value).toLocaleString("pt-BR", {
+					maximumFractionDigits: 0
+				});
+			}
+
 		function parseStateOptions()
 			{
 				try
@@ -151,7 +158,7 @@
 				stateRangeSummary.textContent = (ranges.length > 1 ? "Faixas não contínuas: " : "Faixa: ")
 					+ formatRangeList(ranges)
 					+ " · "
-					+ String(stateOption.total || 0)
+					+ formatInteger(stateOption.total || 0)
 					+ " CEPs";
 			}
 
@@ -715,9 +722,9 @@
 						const viaCepDisabledUntil = formatClockTimeFromTimestamp(payload.viacep_disabled_until_timestamp)
 							|| String(payload.viacep_disabled_until || "");
 						const viaCepText = viaCepPaused ? " ViaCEP pausado temporariamente; usando fallback quando disponível." : "";
-						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + (payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + cacheCount + " CEP(s)." + viaCepText);
+						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + formatInteger(payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + formatInteger(cacheCount) + " CEP(s)." + viaCepText);
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + (payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + cacheCount + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | intervalo: " + activeDelayText + " | " + autoSaveText);
+						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + formatInteger(payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + formatInteger(cacheCount) + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | intervalo: " + activeDelayText + " | " + autoSaveText);
 						if (viaCepPaused)
 							{
 								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (viaCepDisabledUntil ? " até " + viaCepDisabledUntil : "") + ".");
