@@ -20,10 +20,10 @@ class TenantProvisioner
 	private $dbPrefix   = 'manager_';
 
 	/**
-	 * Provision method
-	 * @param string $databaseNumber Formatted number (e.g.: '0001')
-	 * @return bool
-	 */
+	 * Provision a tenant database from the template schema file.
+	 * @param string $databaseNumber Formatted database number such as 0001.
+	 * @return bool True when the tenant database is provisioned successfully.
+	 **/
 	public function provision(string $databaseNumber): bool
 		{
 		$dbName = $this->dbPrefix . $databaseNumber;
@@ -65,10 +65,10 @@ class TenantProvisioner
 		}
 
 	/**
-	 * Database exists method
-	 * @param string $databaseNumber Formatted number (e.g.: '0001')
-	 * @return bool
-	 */
+	 * Check whether a tenant database already exists.
+	 * @param string $databaseNumber Formatted database number such as 0001.
+	 * @return bool True when the tenant database exists.
+	 **/
 	public function databaseExists(string $databaseNumber): bool
 		{
 		$dbName = $this->dbPrefix . $databaseNumber;
@@ -89,6 +89,11 @@ class TenantProvisioner
 			}
 		}
 
+	/**
+	 * Create a PDO connection using the informed DSN.
+	 * @param string $dsn Data source name used to create the connection.
+	 * @return PDO Configured PDO connection instance.
+	 **/
 	private function createConnection(string $dsn): PDO
 		{
 		$options = [

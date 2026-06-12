@@ -13,11 +13,10 @@ class ZipCodeSearchService extends Model
 	private $viaCepService;
 	private $brasilApiService;
 
-	/*
-	|--------------------------------------------------------------------------
-	| Constructor
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Initialize the service dependencies used for postal code lookups.
+	 * @return void Service constructor.
+	 **/
 	public function __construct()
 		{
 		parent::__construct();
@@ -25,11 +24,11 @@ class ZipCodeSearchService extends Model
 		$this->brasilApiService = new BrasilApiService();
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Search and Save
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Search for a postal code and persist the related location records.
+	 * @param string $zipCode Postal code informed by the caller.
+	 * @return array Lookup and persistence result payload.
+	 **/
 	public function searchAndSave(string $zipCode): array
 		{
 		$normalizedZipCode = $this->normalizeZipCode($zipCode);
@@ -86,11 +85,11 @@ class ZipCodeSearchService extends Model
 			}
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Fallback Lookup
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Look up a postal code using ViaCEP first and BrasilAPI as fallback.
+	 * @param string $zipCode Normalized postal code with digits only.
+	 * @return array Lookup result with provider metadata and attempts.
+	 **/
 	private function lookupWithFallback(string $zipCode): array
 		{
 		$attempts = [];
@@ -137,11 +136,13 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Metadata
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Append source metadata and attempt history to the lookup data.
+	 * @param array $data Normalized lookup data.
+	 * @param string $source Provider identifier used for the successful lookup.
+	 * @param array $attempts Lookup attempts performed before success.
+	 * @return array Lookup data enriched with metadata fields.
+	 **/
 	private function appendLookupMetadata(array $data, string $source, array $attempts): array
 		{
 		$data['source'] = $source;
@@ -149,11 +150,12 @@ class ZipCodeSearchService extends Model
 		return $data;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Attempts
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build a summarized payload for a single lookup attempt.
+	 * @param array $result Raw lookup result returned by a provider service.
+	 * @param string $label Human-readable provider label.
+	 * @return array Attempt payload used by the response contract.
+	 **/
 	private function attemptPayload(array $result, string $label): array
 		{
 		return [
@@ -166,11 +168,11 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Persistence
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Persist the normalized lookup data into country, state, city and neighborhood records.
+	 * @param array $data Normalized lookup data to be persisted.
+	 * @return array Information about the reused or created records.
+	 **/
 	private function persistLookup(array $data): array
 		{
 		$countryId = $this->findOrCreateBrazilCountry();
@@ -202,11 +204,10 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Country
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Find the Brazil country record or create it when missing.
+	 * @return int Identifier of the Brazil country record.
+	 **/
 	private function findOrCreateBrazilCountry(): int
 		{
 		$stmt = $this->db->prepare("SELECT Country.id FROM countries AS Country WHERE Country.acronym = :acronym OR Country.`name` = :name LIMIT 1");
@@ -232,11 +233,13 @@ class ZipCodeSearchService extends Model
 		return (int) $this->db->lastInsertId();
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| State
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Find a state by acronym or create it for the given country.
+	 * @param string $acronym State acronym returned by the provider.
+	 * @param string $name State name returned by the provider.
+	 * @param int $countryId Country identifier that owns the state.
+	 * @return array State data including creation status.
+	 **/
 	private function findOrCreateState(string $acronym, string $name, int $countryId): array
 		{
 		$acronym = strtoupper(trim($acronym));
@@ -273,11 +276,12 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| City
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Find a city by name and state or create it when missing.
+	 * @param string $name City name returned by the provider.
+	 * @param int $stateId State identifier that owns the city.
+	 * @return array City data including creation status.
+	 **/
 	private function findOrCreateCity(string $name, int $stateId): array
 		{
 		$name = trim($name);
@@ -312,11 +316,12 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Neighborhood
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Find a neighborhood by name and city or create it when missing.
+	 * @param string $name Neighborhood name returned by the provider.
+	 * @param int $cityId City identifier that owns the neighborhood.
+	 * @return array Neighborhood data including creation status.
+	 **/
 	private function findOrCreateNeighborhood(string $name, int $cityId): array
 		{
 		$name = trim($name);
@@ -350,11 +355,11 @@ class ZipCodeSearchService extends Model
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Success Message
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build the success message based on the records created during persistence.
+	 * @param array $saved Saved record metadata returned by persistence.
+	 * @return string Success message for the final response.
+	 **/
 	private function buildSuccessMessage(array $saved): string
 		{
 		$neighborhoodCreated = !empty($saved['neighborhood']['created']);
@@ -374,21 +379,23 @@ class ZipCodeSearchService extends Model
 		return 'CEP consultado com sucesso e registros já existentes reaproveitados.';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Normalization
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Remove every non-digit character from the provided postal code.
+	 * @param string $value Raw postal code value.
+	 * @return string Postal code containing digits only.
+	 **/
 	private function normalizeZipCode(string $value): string
 		{
 		return preg_replace('/\D+/', '', $value) ?? '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Failure Payload
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build the standardized failure payload returned by the service.
+	 * @param string $error Error identifier for the failure scenario.
+	 * @param string $message User-facing error message.
+	 * @param int $status HTTP status code associated with the failure.
+	 * @return array Failure payload following the service response contract.
+	 **/
 	private function failure(string $error, string $message, int $status): array
 		{
 		return [

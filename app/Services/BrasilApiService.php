@@ -41,11 +41,11 @@ class BrasilApiService
 		'TO' => 'Tocantins',
 	];
 
-	/*
-	|--------------------------------------------------------------------------
-	| Lookup
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Look up a postal code using BrasilAPI and normalize the response payload.
+	 * @param string $zipCode Postal code informed by the caller.
+	 * @return array Lookup result with normalized address data or an error payload.
+	 **/
 	public function lookup(string $zipCode): array
 		{
 		$digits = $this->onlyDigits($zipCode);
@@ -86,21 +86,21 @@ class BrasilApiService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Input Normalization
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Remove every non-digit character from the provided value.
+	 * @param string $value Raw value that may contain non-digit characters.
+	 * @return string Value containing digits only.
+	 **/
 	private function onlyDigits(string $value): string
 		{
 		return preg_replace('/\D+/', '', $value) ?? '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| HTTP Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using the available HTTP transport.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with request metadata and response body.
+	 **/
 	private function fetch(string $url): array
 		{
 		if (function_exists('curl_init'))
@@ -111,11 +111,11 @@ class BrasilApiService
 		return $this->fetchWithStream($url);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| cURL Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using cURL when the extension is available.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with cURL diagnostics and response body.
+	 **/
 	private function fetchWithCurl(string $url): array
 		{
 		$ch = curl_init($url);
@@ -151,11 +151,11 @@ class BrasilApiService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Stream Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using the stream wrapper fallback.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with HTTP status and response body.
+	 **/
 	private function fetchWithStream(string $url): array
 		{
 		$context = stream_context_create([
@@ -180,11 +180,11 @@ class BrasilApiService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Status
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Extract the HTTP status code from the response headers.
+	 * @param array $headers Response headers returned by the stream wrapper.
+	 * @return int Parsed HTTP status code or zero when unavailable.
+	 **/
 	private function statusFromHeaders(array $headers): int
 		{
 		$statusLine = $headers[0] ?? '';
@@ -196,11 +196,11 @@ class BrasilApiService
 		return 0;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Normalization
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Normalize the BrasilAPI response into the project address structure.
+	 * @param array $data Raw response data returned by BrasilAPI.
+	 * @return array Normalized address data expected by the application.
+	 **/
 	private function normalize(array $data): array
 		{
 		$state = strtoupper((string) ($data['state'] ?? ''));
@@ -220,11 +220,11 @@ class BrasilApiService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zip Code Formatting
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Format a postal code into the standard XXXXX-XXX representation.
+	 * @param string $value Postal code value that may contain extra characters.
+	 * @return string Formatted postal code or an empty string when invalid.
+	 **/
 	private function formatZipCode(string $value): string
 		{
 		$digits = $this->onlyDigits($value);
@@ -236,11 +236,11 @@ class BrasilApiService
 		return preg_replace('/(\d{5})(\d{3})/', '$1-$2', $digits) ?? $digits;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Region Mapping
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Resolve the Brazilian region name from the state abbreviation.
+	 * @param string $state Two-letter state abbreviation.
+	 * @return string Region name associated with the state.
+	 **/
 	private function regionFromState(string $state): string
 		{
 		$regions = [
@@ -276,11 +276,12 @@ class BrasilApiService
 		return $regions[$state] ?? '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Diagnostics
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build diagnostic data based on the transport response.
+	 * @param array $response Transport response metadata.
+	 * @param string $digits Sanitized postal code used in the request.
+	 * @return array Diagnostic payload for troubleshooting failed lookups.
+	 **/
 	private function diagnosticsFromResponse(array $response, string $digits): array
 		{
 		return [
@@ -292,11 +293,14 @@ class BrasilApiService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Failure Payload
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build the standardized failure payload returned by the service.
+	 * @param string $error Error identifier for the failure scenario.
+	 * @param string $message User-facing error message.
+	 * @param int $status HTTP status code associated with the failure.
+	 * @param array $diagnostics Optional diagnostics included in the response.
+	 * @return array Failure payload following the service response contract.
+	 **/
 	private function failure(string $error, string $message, int $status, array $diagnostics = []): array
 		{
 		$payload = [

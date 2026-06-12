@@ -13,11 +13,11 @@ class ViaCepService
 	private const RETRY_DELAY_MICROSECONDS = 250000;
 	private const USER_AGENT = 'Manager ZipCodeCrawler/1.0';
 
-	/*
-	|--------------------------------------------------------------------------
-	| Lookup
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Look up a postal code using ViaCEP and normalize the response payload.
+	 * @param string $zipCode Postal code informed by the caller.
+	 * @return array Lookup result with normalized address data or an error payload.
+	 **/
 	public function lookup(string $zipCode): array
 		{
 		$digits = $this->onlyDigits($zipCode);
@@ -65,21 +65,21 @@ class ViaCepService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Input Normalization
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Remove every non-digit character from the provided value.
+	 * @param string $value Raw value that may contain non-digit characters.
+	 * @return string Value containing digits only.
+	 **/
 	private function onlyDigits(string $value): string
 		{
 		return preg_replace('/\D+/', '', $value) ?? '';
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| HTTP Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using the available HTTP transport.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with request metadata and response body.
+	 **/
 	private function fetch(string $url): array
 		{
 		if (function_exists('curl_init'))
@@ -102,11 +102,11 @@ class ViaCepService
 		return $this->fetchWithStream($url);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| cURL Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using cURL when the extension is available.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with cURL diagnostics and response body.
+	 **/
 	private function fetchWithCurl(string $url): array
 		{
 		$ch = curl_init($url);
@@ -150,11 +150,11 @@ class ViaCepService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Stream Transport
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Fetch the provided URL using the stream wrapper fallback.
+	 * @param string $url Endpoint URL to be requested.
+	 * @return array Transport result with HTTP status and response body.
+	 **/
 	private function fetchWithStream(string $url): array
 		{
 		$context = stream_context_create([
@@ -180,11 +180,11 @@ class ViaCepService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Status
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Extract the HTTP status code from the response headers.
+	 * @param array $headers Response headers returned by the stream wrapper.
+	 * @return int Parsed HTTP status code or zero when unavailable.
+	 **/
 	private function statusFromHeaders(array $headers): int
 		{
 		$statusLine = $headers[0] ?? '';
@@ -196,11 +196,11 @@ class ViaCepService
 		return 0;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Normalization
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Normalize the ViaCEP response into the project address structure.
+	 * @param array $data Raw response data returned by ViaCEP.
+	 * @return array Normalized address data expected by the application.
+	 **/
 	private function normalize(array $data): array
 		{
 		$state = strtoupper((string) ($data['uf'] ?? ''));
@@ -220,11 +220,12 @@ class ViaCepService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Response Diagnostics
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build diagnostic data based on the transport response.
+	 * @param array $response Transport response metadata.
+	 * @param string $digits Sanitized postal code used in the request.
+	 * @return array Diagnostic payload for troubleshooting failed lookups.
+	 **/
 	private function diagnosticsFromResponse(array $response, string $digits): array
 		{
 		return [
@@ -239,11 +240,11 @@ class ViaCepService
 		];
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Retry Policy
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Determine whether the transport response should be retried.
+	 * @param array $response Transport response metadata.
+	 * @return bool True when the lookup should be retried.
+	 **/
 	private function shouldRetryResponse(array $response): bool
 		{
 		$curlErrorNumber = (int) ($response['curl_errno'] ?? 0);
@@ -254,11 +255,11 @@ class ViaCepService
 			|| $status >= 500;
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Stream Fallback Policy
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Determine whether the request should fallback from cURL to stream transport.
+	 * @param array $response Transport response metadata.
+	 * @return bool True when the fallback transport should be attempted.
+	 **/
 	private function shouldFallbackToStream(array $response): bool
 		{
 		$curlErrorNumber = (int) ($response['curl_errno'] ?? 0);
@@ -267,11 +268,14 @@ class ViaCepService
 		return $status === 0 || in_array($curlErrorNumber, [6, 7, 28, 35, 52, 56], true);
 		}
 
-	/*
-	|--------------------------------------------------------------------------
-	| Failure Payload
-	|--------------------------------------------------------------------------
-	*/
+	/**
+	 * Build the standardized failure payload returned by the service.
+	 * @param string $error Error identifier for the failure scenario.
+	 * @param string $message User-facing error message.
+	 * @param int $status HTTP status code associated with the failure.
+	 * @param array $diagnostics Optional diagnostics included in the response.
+	 * @return array Failure payload following the service response contract.
+	 **/
 	private function failure(string $error, string $message, int $status, array $diagnostics = []): array
 		{
 		$payload = [

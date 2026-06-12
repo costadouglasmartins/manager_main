@@ -15,6 +15,10 @@ class DatabaseManagerService
 	private string $dbPrefix = 'manager_';
 	private int $maxResultRows = 200;
 
+	/**
+	 * Retrieve the catalog of tenant databases and linked tenant metadata.
+	 * @return array Available tenant databases with tenant information.
+	 **/
 	public function getCatalog(): array
 		{
 		$pdo = $this->getAdminConnection();
@@ -69,6 +73,11 @@ class DatabaseManagerService
 		return $catalog;
 		}
 
+	/**
+	 * Summarize the tenant catalog counts used by the management screen.
+	 * @param array $catalog Tenant catalog returned by the service.
+	 * @return array Aggregated counters for the informed catalog.
+	 **/
 	public function summarizeCatalog(array $catalog): array
 		{
 		$linkedTenants = 0;
@@ -100,6 +109,13 @@ class DatabaseManagerService
 		];
 		}
 
+	/**
+	 * Resolve the tenant databases targeted by the selected execution scope.
+	 * @param string $scope Execution scope selected by the caller.
+	 * @param string|null $databaseStart Initial database number for range execution.
+	 * @param string|null $databaseEnd Final database number for range execution.
+	 * @return array Catalog rows that match the selected scope.
+	 **/
 	public function resolveTargets(string $scope, ?string $databaseStart = null, ?string $databaseEnd = null): array
 		{
 		$catalog = $this->getCatalog();
@@ -151,6 +167,11 @@ class DatabaseManagerService
 		return $targets;
 		}
 
+	/**
+	 * Normalize a database number into the project four-digit format.
+	 * @param string|null $value Raw database number informed by the caller.
+	 * @return string|null Normalized database number or null when invalid.
+	 **/
 	public function normalizeDatabaseNumber(?string $value): ?string
 		{
 		$digits = preg_replace('/\D+/', '', (string) $value);
@@ -169,6 +190,11 @@ class DatabaseManagerService
 		return str_pad($trimmed, 4, '0', STR_PAD_LEFT);
 		}
 
+	/**
+	 * Validate the SQL script before it is executed against tenant databases.
+	 * @param string $sql SQL script informed by the caller.
+	 * @return string|null Validation error message or null when the script is valid.
+	 **/
 	public function validateSql(string $sql): ?string
 		{
 		$sql = trim($sql);
@@ -191,6 +217,11 @@ class DatabaseManagerService
 		return null;
 		}
 
+	/**
+	 * Build a compact preview of the SQL script for confirmations and logs.
+	 * @param string $sql SQL script informed by the caller.
+	 * @return string Short single-line preview of the SQL script.
+	 **/
 	public function buildSqlPreview(string $sql): string
 		{
 		$preview = preg_replace('/\s+/', ' ', trim($sql));
@@ -207,6 +238,12 @@ class DatabaseManagerService
 		return $preview;
 		}
 
+	/**
+	 * Execute a SQL script against the selected tenant database.
+	 * @param string $databaseName Database name that will receive the execution.
+	 * @param string $sql SQL script to be executed.
+	 * @return array Execution result payload with result sets and diagnostics.
+	 **/
 	public function executeScript(string $databaseName, string $sql): array
 		{
 		$startedAt = microtime(true);
@@ -264,12 +301,11 @@ class DatabaseManagerService
 		}
 
 	/**
-	 * Fetches a single SQL result set while limiting rows sent back to the browser.
-	 *
+	 * Fetch a single SQL result set while limiting rows sent back to the browser.
 	 * @param \PDOStatement $stmt Executed statement positioned on a rowset.
 	 * @param int $statementIndex Statement index inside the submitted SQL script.
-	 * @return array<string, mixed>
-	 */
+	 * @return array Result set payload prepared for the browser response.
+	 **/
 	private function fetchResultSet(\PDOStatement $stmt, int $statementIndex): array
 		{
 		$columns = [];
@@ -304,11 +340,10 @@ class DatabaseManagerService
 		}
 
 	/**
-	 * Normalizes database values for JSON streaming.
-	 *
-	 * @param array<int, mixed> $row Database result row.
-	 * @return array<int, mixed>
-	 */
+	 * Normalize database values so they can be streamed as JSON safely.
+	 * @param array $row Database result row.
+	 * @return array Normalized database result row.
+	 **/
 	private function normalizeResultRow(array $row): array
 		{
 		foreach ($row as $key => $value)
@@ -326,11 +361,11 @@ class DatabaseManagerService
 		}
 
 	/**
-	 * Builds the execution message shown in the real-time stream.
-	 *
-	 * @param array<int, array<string, mixed>> $resultSets SELECT-like result sets.
+	 * Build the execution message shown in the real-time stream.
+	 * @param array $resultSets SELECT-like result sets.
 	 * @param int $affectedRows Number of affected rows for write statements.
-	 */
+	 * @return string Message summarizing the script execution.
+	 **/
 	private function buildSuccessMessage(array $resultSets, int $affectedRows): string
 		{
 		if (!empty($resultSets))
@@ -351,6 +386,10 @@ class DatabaseManagerService
 		return sprintf('Script executado com sucesso. %d linha(s) afetada(s).', $affectedRows);
 		}
 
+	/**
+	 * Create the administrative connection used to inspect tenant databases.
+	 * @return PDO Administrative database connection.
+	 **/
 	private function getAdminConnection(): PDO
 		{
 		$dsn = sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset);
@@ -367,6 +406,11 @@ class DatabaseManagerService
 		return new PDO($dsn, $this->dbUser, $this->dbPassword, $options);
 		}
 
+	/**
+	 * Create a connection for the informed tenant database.
+	 * @param string $databaseName Database name that should be connected.
+	 * @return PDO Tenant database connection.
+	 **/
 	private function getDatabaseConnection(string $databaseName): PDO
 		{
 		$dsn = sprintf(
