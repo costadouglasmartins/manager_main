@@ -4,7 +4,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 ?>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=10'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=11'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -17,6 +17,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 <!-- /Breadcrumbs -->
 
 <section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
+  <div class="zip-code-crawler-busy-overlay" aria-hidden="true"></div>
   <div class="row g-4">
     <div class="col-12 col-xxl-4">
       <div class="card shadow-sm h-100">
@@ -80,7 +81,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
               Selecione um estado e inicie a pesquisa.
             </div>
             
-            <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center zip-code-crawler-actions">
               <button class="btn btn-secondary" type="button" id="crawlerClearButton">
                 <i class="bi bi-eraser me-1"></i>Limpar
               </button>
@@ -144,4 +145,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=23'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=24'); ?>"></script>

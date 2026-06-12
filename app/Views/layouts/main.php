@@ -306,25 +306,6 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
         </ul>
         <!-- Usuário -->
         <ul class="navbar-nav mb-2 mb-lg-0">
-          <?php if ($supportChatNotificationsEnabled): ?>
-            <li class="nav-item dropdown me-lg-2 support-chat-notifications" id="supportChatNotifications" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-attend-url="<?= url('support_chat/attend'); ?>">
-              <a class="nav-link dropdown-toggle support-chat-notification-toggle" href="#" id="supportChatNotificationMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificações de suporte">
-                <i class="bi bi-bell-fill"></i>
-                <span class="support-chat-notification-badge" id="supportChatNotificationBadge" hidden>0</span>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end support-chat-notification-menu" aria-labelledby="supportChatNotificationMenu">
-                <li class="support-chat-notification-header">
-                  <strong>Suporte</strong>
-                  <button class="btn btn-sm btn-link" id="supportChatNotificationClear" type="button">Limpar</button>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li id="supportChatNotificationEmpty" class="dropdown-item-text text-muted">Sem novas mensagens.</li>
-                <li id="supportChatNotificationList"></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="<?= url('support_chat'); ?>"><i class="bi bi-list me-2"></i>Ver chats</a></li>
-              </ul>
-            </li>
-          <?php endif; ?>
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle me-2"></i> Usuário(a)
@@ -344,11 +325,29 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
               <?php endif; ?>
             </ul>
           </li>
-
+          <?php if ($supportChatNotificationsEnabled): ?>
+            <li class="nav-item dropdown me-lg-2 support-chat-notifications" id="supportChatNotifications" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-attend-url="<?= url('support_chat/attend'); ?>">
+              <a class="nav-link dropdown-toggle support-chat-notification-toggle" href="#" id="supportChatNotificationMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificações de suporte">
+                <i class="bi bi-bell-fill"></i>
+                <span class="support-chat-notification-badge" id="supportChatNotificationBadge" hidden>0</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end support-chat-notification-menu" aria-labelledby="supportChatNotificationMenu">
+                <li class="support-chat-notification-header">
+                  <strong>Suporte</strong>
+                  <button class="btn btn-sm btn-link" id="supportChatNotificationClear" type="button">Limpar</button>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li id="supportChatNotificationEmpty" class="dropdown-item-text text-muted">Sem novas mensagens.</li>
+                <li id="supportChatNotificationList"></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="<?= url('support_chat'); ?>"><i class="bi bi-list me-2"></i>Ver chats</a></li>
+              </ul>
+            </li>
+          <?php endif; ?>
           <!-- Botão Home -->
           <li class="nav-item d-lg-flex align-items-lg-center me-lg-2">
             <a class="nav-link d-flex align-items-center" href="<?= url('/'); ?>" target="_blank" title="Abrir home em nova aba">
-              <i class="bi bi-house-fill"></i>
+              <i class="bi bi-house-add-fill"></i>
             </a>
           </li>
 

@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=186 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=198 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~160 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6250,7 +6250,19 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(182, 'Vila Caquetá', 14, '2026-06-12 15:47:36', '2026-06-12 15:47:36'),
 	(183, 'Vila do Incra', 14, '2026-06-12 15:49:49', '2026-06-12 15:49:49'),
 	(184, 'Vila do V', 14, '2026-06-12 15:52:12', '2026-06-12 15:52:12'),
-	(185, 'Área Rural de Porto Acre', 14, '2026-06-12 16:05:15', '2026-06-12 16:05:15');
+	(185, 'Área Rural de Porto Acre', 14, '2026-06-12 16:05:15', '2026-06-12 16:05:15'),
+	(186, 'Centro', 13, '2026-06-12 16:30:15', '2026-06-12 16:30:15'),
+	(187, 'Campinas', 13, '2026-06-12 16:31:22', '2026-06-12 16:31:22'),
+	(188, 'Centro', 22, '2026-06-12 17:11:50', '2026-06-12 17:11:50'),
+	(189, 'Conquista', 5, '2026-06-12 17:12:32', '2026-06-12 17:12:32'),
+	(190, 'Edson Barbosa 1', 5, '2026-06-12 17:13:44', '2026-06-12 17:13:44'),
+	(191, 'Edson Barbosa 2', 5, '2026-06-12 17:14:57', '2026-06-12 17:14:57'),
+	(192, 'Quixadá Amorim', 5, '2026-06-12 17:15:58', '2026-06-12 17:15:58'),
+	(193, 'Paraíso', 5, '2026-06-12 17:18:02', '2026-06-12 17:18:02'),
+	(194, 'Hélio Tessinari', 5, '2026-06-12 17:18:19', '2026-06-12 17:18:19'),
+	(195, 'Centro', 3, '2026-06-12 17:47:29', '2026-06-12 17:47:29'),
+	(196, 'Centro', 7, '2026-06-12 18:24:27', '2026-06-12 18:24:27'),
+	(197, 'Centro', 2, '2026-06-12 18:40:07', '2026-06-12 18:40:07');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (

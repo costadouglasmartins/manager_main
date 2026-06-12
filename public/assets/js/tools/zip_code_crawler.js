@@ -170,6 +170,7 @@
 
 		function setLoading(isLoading)
 			{
+				app.classList.toggle("is-busy", isLoading);
 				startButton.disabled = isLoading;
 				startButton.innerHTML = isLoading
 					? '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Pesquisando'
