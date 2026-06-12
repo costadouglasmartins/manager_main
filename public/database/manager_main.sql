@@ -2,7 +2,7 @@
 -- Host:                         127.0.0.1
 -- Server version:               8.0.46 - MySQL Community Server - GPL
 -- Server OS:                    Linux
--- HeidiSQL Version:             12.17.1.1
+-- HeidiSQL Version:             12.18.1.1
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -6063,7 +6063,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=198 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=200 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~160 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6262,7 +6262,9 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(194, 'Hélio Tessinari', 5, '2026-06-12 17:18:19', '2026-06-12 17:18:19'),
 	(195, 'Centro', 3, '2026-06-12 17:47:29', '2026-06-12 17:47:29'),
 	(196, 'Centro', 7, '2026-06-12 18:24:27', '2026-06-12 18:24:27'),
-	(197, 'Centro', 2, '2026-06-12 18:40:07', '2026-06-12 18:40:07');
+	(197, 'Centro', 2, '2026-06-12 18:40:07', '2026-06-12 18:40:07'),
+	(198, 'Terra Indígena Mamoadate', 2, '2026-06-12 21:40:01', '2026-06-12 21:40:01'),
+	(199, 'Centro', 19, '2026-06-12 21:52:14', '2026-06-12 21:52:14');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -7288,7 +7290,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 -- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
-	(2, 1, 'ad2a5564804cc2c0c1d5f536ea428380', 'd5fd5fe7618424ed35f273faa885ab69a493fe59176e850dac1234c67d1b8d84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-12 10:52:36', '2026-06-06 00:45:49', '2026-06-12 10:52:36');
+	(2, 1, '99c8eba01cd9a9fc41a1a38980835f8f', 'b691595fa51baa31ec2a148b69734dda2af1d79a2be0a77d92fed79c2a83427c', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-12 21:18:07', '2026-06-06 00:45:49', '2026-06-12 21:18:07');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
