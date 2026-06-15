@@ -189,61 +189,71 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <i class="bi bi-cash-coin me-1"></i> Financeiro
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="financeMenu">
-                  <?php if (authCan('financial_operation_category.index')): ?>
-                    <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Operações financeiras categorias</a>
-                      <ul class="dropdown-menu">
-                        <?php if (authCan('financial_operation_category.create')): ?>
-                          <li><a class="dropdown-item" href="<?= url('financial_operation_category/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
-                          <li><hr class="dropdown-divider" /></li>
-                        <?php endif; ?>
-                        <li><a class="dropdown-item" href="<?= url('financial_operation_category'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
-                      </ul>
-                    </li>
-                  <?php endif; ?>
+                  <!-- Unified financial operations menu -->
+                  <li class="dropdown-submenu">
+                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-cash-stack me-2"></i>Operações financeiras</a>
+                    <ul class="dropdown-menu">
+                      <?php if (authCan('financial_operation.index')): ?>
+                        <li class="dropdown-submenu">
+                          <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-receipt me-2"></i>Operações financeiras</a>
+                          <ul class="dropdown-menu">
+                            <?php if (authCan('financial_operation.create')): ?>
+                              <li><a class="dropdown-item" href="<?= url('financial_operation/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                              <li><hr class="dropdown-divider" /></li>
+                            <?php endif; ?>
+                            <li><a class="dropdown-item" href="<?= url('financial_operation'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                          </ul>
+                        </li>
+                      <?php endif; ?>
 
-                  <?php if (authCan('financial_operation_category.index') && (authCan('financial_operation.index') || authCan('financial_operation_payment.index'))): ?>
-                    <li><hr class="dropdown-divider" /></li>
-                  <?php endif; ?>
+                      <?php if (authCan('financial_operation.index') && (authCan('financial_operation_category.index') || authCan('financial_operation_payment.index'))): ?>
+                        <li><hr class="dropdown-divider" /></li>
+                      <?php endif; ?>
+
+                      <?php if (authCan('financial_operation_category.index')): ?>
+                        <li class="dropdown-submenu">
+                          <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Categorias</a>
+                          <ul class="dropdown-menu">
+                            <?php if (authCan('financial_operation_category.create')): ?>
+                              <li><a class="dropdown-item" href="<?= url('financial_operation_category/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                              <li><hr class="dropdown-divider" /></li>
+                            <?php endif; ?>
+                            <li><a class="dropdown-item" href="<?= url('financial_operation_category'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                          </ul>
+                        </li>
+                      <?php endif; ?>
+
+                      <?php if (authCan('financial_operation_category.index') && authCan('financial_operation_payment.index')): ?>
+                        <li><hr class="dropdown-divider" /></li>
+                      <?php endif; ?>
+
+                      <?php if (authCan('financial_operation_payment.index')): ?>
+                        <li class="dropdown-submenu">
+                          <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-credit-card me-2"></i>Pagamentos</a>
+                          <ul class="dropdown-menu">
+                            <?php if (authCan('financial_operation_payment.create')): ?>
+                              <li><a class="dropdown-item" href="<?= url('financial_operation_payment/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                              <li><hr class="dropdown-divider" /></li>
+                            <?php endif; ?>
+                            <li><a class="dropdown-item" href="<?= url('financial_operation_payment'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                          </ul>
+                        </li>
+                      <?php endif; ?>
+
+                    </ul>
+                  </li>
+                  <!-- /Unified financial operations menu -->
 
                   <?php if (authCan('financial_operation.index')): ?>
-                    <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-receipt me-2"></i>Operações financeiras</a>
-                      <ul class="dropdown-menu">
-                        <?php if (authCan('financial_operation.create')): ?>
-                          <li><a class="dropdown-item" href="<?= url('financial_operation/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
-                          <li><hr class="dropdown-divider" /></li>
-                        <?php endif; ?>
-                        <li><a class="dropdown-item" href="<?= url('financial_operation'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
-                      </ul>
-                    </li>
-                  <?php endif; ?>
-
-                  <?php if (authCan('financial_operation.index') && authCan('financial_operation_payment.index')): ?>
                     <li><hr class="dropdown-divider" /></li>
-                  <?php endif; ?>
-
-                  <?php if (authCan('financial_operation_payment.index')): ?>
-                    <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-credit-card me-2"></i>Pagamentos</a>
-                      <ul class="dropdown-menu">
-                        <?php if (authCan('financial_operation_payment.create')): ?>
-                          <li><a class="dropdown-item" href="<?= url('financial_operation_payment/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
-                          <li><hr class="dropdown-divider" /></li>
-                        <?php endif; ?>
-                        <li><a class="dropdown-item" href="<?= url('financial_operation_payment'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
-                      </ul>
-                    </li>
-                  <?php endif; ?>
-
-                  <?php if (authCan('financial_operation.index')): ?>
-                    <li><hr class="dropdown-divider" /></li>
+                    <!-- Reports menu -->
                     <li class="dropdown-submenu">
                       <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-stack me-2"></i>Relatórios</a>
                       <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?= url('financial_operation/sheet'); ?>"><i class="bi bi-table me-2"></i>Planilha anual</a></li>
                       </ul>
                     </li>
+                    <!-- /Reports menu -->
                   <?php endif; ?>
                 </ul>
               </li>
@@ -368,7 +378,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   </div>
   
   <script src="<?= url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
-  <script src="<?= url('assets/js/menu.js?v=2'); ?>"></script>
+  <script src="<?= url('assets/js/menu.js?v=3'); ?>"></script>
   <script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=2'); ?>"></script>
   <?php if ($supportChatNotificationsEnabled): ?>

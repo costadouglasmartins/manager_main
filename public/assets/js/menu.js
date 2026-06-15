@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Time to open menu when mouse is hovering
-  const HOVER_DELAY = 2000;
+  const OPEN_DELAY = 2000;
+  const CLOSE_DELAY = 2000;
 
   /**
    * Theme
@@ -104,9 +105,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
   /**
+   * Checks whether a desktop menu should use hover and delayed close behavior.
+   * @return {boolean}
+   */
+  function isDesktopMenu()
+    {
+    return window.innerWidth >= 992;
+    }
+
+  /**
+   * Checks whether pointer or keyboard focus is still inside an element.
+   * @param {HTMLElement} element
+   * @return {boolean}
+   */
+  function hasPointerOrFocusInside(element)
+    {
+    return element.matches(":hover") || element.contains(document.activeElement);
+    }
+
+  /**
    * Main dropdowns — level 1 (navbar → dropdown)
-   * Desktop: hovering for 2 seconds opens it; moving the pointer away closes it if it was opened by hover.
-   * Click: Bootstrap already handles it; we set openedByHover = false.
+   * Desktop: hovering for 2 seconds opens it; moving the pointer/focus away closes it after 2 seconds.
+   * Click: Bootstrap opens immediately and the same delayed close behavior is applied.
    */
   document.querySelectorAll(".nav-item.dropdown").forEach(navItem => {
     const toggle = navItem.querySelector("[data-bs-toggle='dropdown']");
@@ -115,45 +135,115 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
       }
 
-    let hoverTimer  = null;
-    let openedByHover = false;
+    const menu = navItem.querySelector(":scope > .dropdown-menu");
+    let openTimer = null;
+    let closeTimer = null;
 
-    navItem.addEventListener("mouseenter", () => {
-      if (window.innerWidth < 992)
+    function isDropdownOpen()
+      {
+      return toggle.classList.contains("show") || (menu && menu.classList.contains("show"));
+      }
+
+    function cancelOpenTimer()
+      {
+      clearTimeout(openTimer);
+      openTimer = null;
+      }
+
+    function cancelCloseTimer()
+      {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+      }
+
+    function scheduleClose()
+      {
+      if (!isDesktopMenu())
         {
         return;
         }
-      hoverTimer = setTimeout(() => {
-        openedByHover = true;
+
+      cancelCloseTimer();
+      closeTimer = setTimeout(() => {
+        closeTimer = null;
+
+        if (!isDropdownOpen() || hasPointerOrFocusInside(navItem))
+          {
+          return;
+          }
+
+        navItem.querySelectorAll(".dropdown-submenu.show").forEach(closeSubmenu);
+        bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+      }, CLOSE_DELAY);
+      }
+
+    navItem.addEventListener("mouseenter", () => {
+      if (!isDesktopMenu())
+        {
+        return;
+        }
+
+      cancelCloseTimer();
+      cancelOpenTimer();
+
+      if (isDropdownOpen())
+        {
+        return;
+        }
+
+      openTimer = setTimeout(() => {
+        openTimer = null;
         bootstrap.Dropdown.getOrCreateInstance(toggle).show();
-      }, HOVER_DELAY);
+      }, OPEN_DELAY);
     });
 
     navItem.addEventListener("mouseleave", () => {
-      if (window.innerWidth < 992)
+      if (!isDesktopMenu())
         {
         return;
         }
-      clearTimeout(hoverTimer);
-      hoverTimer = null;
-      if (openedByHover) 
+
+      cancelOpenTimer();
+      scheduleClose();
+    });
+
+    navItem.addEventListener("focusin", () => {
+      if (isDesktopMenu())
         {
-        bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
-        openedByHover = false;
+        cancelCloseTimer();
         }
     });
 
-    // The click already is treated by Bootstrap, we just reset the flag
+    navItem.addEventListener("focusout", () => {
+      if (!isDesktopMenu())
+        {
+        return;
+        }
+
+      window.setTimeout(() => {
+        if (!hasPointerOrFocusInside(navItem))
+          {
+          scheduleClose();
+          }
+      }, 0);
+    });
+
+    // Bootstrap handles the click. We only cancel pending hover/close timers.
     toggle.addEventListener("click", () => {
-      clearTimeout(hoverTimer);
-      hoverTimer = null;
-      openedByHover = false;
+      cancelOpenTimer();
+      cancelCloseTimer();
+    });
+
+    toggle.addEventListener("hidden.bs.dropdown", () => {
+      cancelOpenTimer();
+      cancelCloseTimer();
+      navItem.querySelectorAll(".dropdown-submenu.show").forEach(closeSubmenu);
     });
   });
 
   /**
    * Submenus - nested dropdown items
-   * Desktop: hovering for 2 seconds opens it; moving the pointer away closes it immediately.
+   * Desktop: hovering for 2 seconds opens it; moving the pointer/focus away closes it after 2 seconds.
    * Clicking opens it right away (toggle).
    * Mobile:  click only (toggle), no timer.
    */
@@ -164,33 +254,99 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
       }
 
-    let hoverTimer = null;
+    let openTimer = null;
+    let closeTimer = null;
+
+    function cancelOpenTimer()
+      {
+      clearTimeout(openTimer);
+      openTimer = null;
+      }
+
+    function cancelCloseTimer()
+      {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+      }
+
+    function scheduleClose()
+      {
+      if (!isDesktopMenu())
+        {
+        return;
+        }
+
+      cancelCloseTimer();
+      closeTimer = setTimeout(() => {
+        closeTimer = null;
+
+        if (!submenu.classList.contains("show") || hasPointerOrFocusInside(submenu))
+          {
+          return;
+          }
+
+        closeSubmenu(submenu);
+      }, CLOSE_DELAY);
+      }
 
     // Desktop: hover
     submenu.addEventListener("mouseenter", () => {
-      if (window.innerWidth < 992)
+      if (!isDesktopMenu())
         {
         return;
         }
-      hoverTimer = setTimeout(() => openSubmenu(submenu), HOVER_DELAY);
+
+      cancelCloseTimer();
+      cancelOpenTimer();
+
+      if (submenu.classList.contains("show"))
+        {
+        return;
+        }
+
+      openTimer = setTimeout(() => {
+        openTimer = null;
+        openSubmenu(submenu);
+      }, OPEN_DELAY);
     });
 
     submenu.addEventListener("mouseleave", () => {
-      if (window.innerWidth < 992)
+      if (!isDesktopMenu())
         {
         return;
         }
-      clearTimeout(hoverTimer);
-      hoverTimer = null;
-      closeSubmenu(submenu);
+
+      cancelOpenTimer();
+      scheduleClose();
+    });
+
+    submenu.addEventListener("focusin", () => {
+      if (isDesktopMenu())
+        {
+        cancelCloseTimer();
+        }
+    });
+
+    submenu.addEventListener("focusout", () => {
+      if (!isDesktopMenu())
+        {
+        return;
+        }
+
+      window.setTimeout(() => {
+        if (!hasPointerOrFocusInside(submenu))
+          {
+          scheduleClose();
+          }
+      }, 0);
     });
 
     // Click: opens immediately (desktop and mobile)
     toggle.addEventListener("click", e => {
       e.preventDefault();
       e.stopPropagation();
-      clearTimeout(hoverTimer);
-      hoverTimer = null;
+      cancelOpenTimer();
+      cancelCloseTimer();
       if (submenu.classList.contains("show")) 
         {
         closeSubmenu(submenu);
