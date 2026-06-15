@@ -141,8 +141,18 @@ class AddressController extends Controller
 		{
 		$this->requirePermission('address.store');
 		$address = new Address();
-		$address->create($_POST);
-		$this->redirect('address');
+
+		try
+			{
+			$address->create($_POST);
+			setFlashMessage('success', 'Endereço cadastrado com sucesso.');
+			$this->redirect('address');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o endereço. Verifique os dados e tente novamente.');
+			$this->redirect('address/create');
+			}
 		}
 
 	/**
@@ -165,8 +175,18 @@ class AddressController extends Controller
 		{
 		$this->requirePermission('address.update');
 		$address = new Address();
-		$address->update($id, $_POST);
-		$this->redirect('address');
+
+		try
+			{
+			$address->update($id, $_POST);
+			setFlashMessage('success', 'Endereço atualizado com sucesso.');
+			$this->redirect('address');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o endereço. Verifique os dados e tente novamente.');
+			$this->redirect('address/edit/' . $id);
+			}
 		}
 
 	/**
@@ -193,8 +213,10 @@ class AddressController extends Controller
 			$address = new Address();
 			try {
 				$address->delete($id);
+				setFlashMessage('success', 'Endereço excluído com sucesso.');
 				$this->redirect('address');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o endereço.');
 				$this->redirect('address');
 			}
 		}

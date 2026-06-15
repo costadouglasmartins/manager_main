@@ -81,8 +81,18 @@ class BankController extends Controller
 		{
 		$this->requirePermission('bank.store');
 		$bank = new Bank();
-		$bank->create($_POST);
-		$this->redirect('bank');
+
+		try
+			{
+			$bank->create($_POST);
+			setFlashMessage('success', 'Banco cadastrado com sucesso.');
+			$this->redirect('bank');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o banco. Verifique os dados e tente novamente.');
+			$this->redirect('bank/create');
+			}
 		}
 
 	/**
@@ -112,8 +122,18 @@ class BankController extends Controller
 		{
 		$this->requirePermission('bank.update');
 		$bank = new Bank();
-		$bank->update($id, $_POST);
-		$this->redirect('bank');
+
+		try
+			{
+			$bank->update($id, $_POST);
+			setFlashMessage('success', 'Banco atualizado com sucesso.');
+			$this->redirect('bank');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o banco. Verifique os dados e tente novamente.');
+			$this->redirect('bank/edit/' . $id);
+			}
 		}
 
 	/**
@@ -149,10 +169,12 @@ class BankController extends Controller
 			try
 				{
 				$bank->delete($id);
+				setFlashMessage('success', 'Banco excluído com sucesso.');
 				$this->redirect('bank');
 				}
 			catch (\Exception $e)
 				{
+				setFlashMessage('danger', 'Não foi possível excluir o banco.');
 				$this->redirect('bank');
 				}
 			}

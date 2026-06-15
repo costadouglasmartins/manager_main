@@ -1,7 +1,6 @@
 <?php
 $tenantUsers    = $tenantUsers    ?? [];
 $availableUsers = $availableUsers ?? [];
-$flash          = $flash          ?? null;
 ?>
 
 <!-- Breadcrumbs -->
@@ -15,13 +14,6 @@ $flash          = $flash          ?? null;
 <!-- /Breadcrumbs -->
 
 <h5>Editar tenant #<?= $tenant['id'] ?></h5>
-
-<?php if (!empty($flash)): ?>
-  <div class="alert alert-<?= htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8') ?> alert-dismissible fade show" role="alert">
-    <?= htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8') ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-  </div>
-<?php endif; ?>
 
 <form action="<?= url('tenant/update/' . $tenant['id']); ?>" method="POST" class="needs-validation" novalidate>
   <div class="card shadow-sm">

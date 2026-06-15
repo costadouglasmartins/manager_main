@@ -71,10 +71,7 @@ class TenantController extends Controller
 			'tenant'         => $tenant,
 			'tenantUsers'    => $tenantUsers,
 			'availableUsers' => $availableUsers,
-			'flash'          => $_SESSION['manager_main']['flash'] ?? null,
 		]);
-
-		unset($_SESSION['manager_main']['flash']);
 		}
 
 	/**
@@ -91,9 +88,17 @@ class TenantController extends Controller
 			'observations' => isset($_POST['observations']) ? trim($_POST['observations']) : null,
 		];
 
-		$tenantModel->update((int) $id, $data);
-
-		$this->redirect('tenant');
+		try
+			{
+			$tenantModel->update((int) $id, $data);
+			setFlashMessage('success', 'Tenant atualizado com sucesso.');
+			$this->redirect('tenant');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o tenant. Verifique os dados e tente novamente.');
+			$this->redirect('tenant/edit/' . $id);
+			}
 		}
 
 	/**
@@ -149,12 +154,12 @@ class TenantController extends Controller
 
 			if ($tenantModel->hasUser($tenantId, $userId))
 				{
-				$this->flash('warning', 'Este usuario ja esta vinculado a este tenant.');
+				setFlashMessage('warning', 'Este usuário já está vinculado a este tenant.');
 				}
 			else
 				{
 				$tenantModel->linkUser($tenantId, $userId, $role);
-				$this->flash('success', 'Usuario vinculado ao tenant com sucesso.');
+				setFlashMessage('success', 'Usuário vinculado ao tenant com sucesso.');
 				}
 			}
 
@@ -201,14 +206,14 @@ class TenantController extends Controller
 
 				if (!empty($current) && $current[0]['role'] === 'owner' && $tenantModel->countOwners($tenantId) <= 1)
 					{
-					$this->flash('danger', 'Nao e possivel rebaixar o ultimo owner do tenant.');
+					setFlashMessage('danger', 'Não é possível rebaixar o último owner do tenant.');
 					$this->redirect('tenant/edit/' . $tenantId);
 					return;
 					}
 				}
 
 			$tenantModel->updateUserLink($tenantId, $userId, $role);
-			$this->flash('success', 'Vinculo atualizado com sucesso.');
+			setFlashMessage('success', 'Vínculo atualizado com sucesso.');
 			}
 
 		$this->redirect('tenant/edit/' . $tenantId);
@@ -251,30 +256,16 @@ class TenantController extends Controller
 
 			if ($target && $target['role'] === 'owner' && $tenantModel->countOwners($tenantId) <= 1)
 				{
-				$this->flash('danger', 'Nao e possivel remover o ultimo owner do tenant.');
+				setFlashMessage('danger', 'Não é possível remover o último owner do tenant.');
 				}
 			else
 				{
 				$tenantModel->unlinkUser($tenantId, $userId);
-				$this->flash('success', 'Usuario removido do tenant.');
+				setFlashMessage('success', 'Usuário removido do tenant.');
 				}
 			}
 
 		$this->redirect('tenant/edit/' . $tenantId);
-		}
-
-	/**
-	 * Tiny flash helper (stored in session and read on the next request)
-	 * @param string $type
-	 * @param string $message
-	 */
-	private function flash(string $type, string $message): void
-		{
-		if (!isset($_SESSION['manager_main']))
-			{
-			$_SESSION['manager_main'] = [];
-			}
-		$_SESSION['manager_main']['flash'] = ['type' => $type, 'message' => $message];
 		}
 
 	/**
@@ -289,8 +280,10 @@ class TenantController extends Controller
 			$tenant = new Tenant();
 			try {
 				$tenant->delete($id);
+				setFlashMessage('success', 'Tenant excluído com sucesso.');
 				$this->redirect('tenant');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o tenant.');
 				$this->redirect('tenant');
 			}
 		}

@@ -1,4 +1,3 @@
-<?php $formError = $formError ?? null; ?>
 <link rel="stylesheet" href="<?= url('assets/css/people/create.css?v=4'); ?>">
 
 <div class="people-create-page">
@@ -11,12 +10,6 @@
   </ol>
 </nav>
 <!-- /Breadcrumbs -->
-
-<?php if (!empty($formError)): ?>
-	<div class="alert alert-danger" role="alert">
-		<?= htmlspecialchars($formError, ENT_QUOTES, 'UTF-8'); ?>
-	</div>
-<?php endif; ?>
 
 <!-- Progress -->
 <div class="people-progress-card people-card-accent-primary mb-4">

@@ -89,8 +89,18 @@ class UserController extends Controller
 		{
 		$this->requirePermission('user.update');
 		$user = new User();
-		$user->update($id, $_POST);
-		$this->redirect('user');
+
+		try
+			{
+			$user->update($id, $_POST);
+			setFlashMessage('success', 'Usuário atualizado com sucesso.');
+			$this->redirect('user');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o usuário. Verifique os dados e tente novamente.');
+			$this->redirect('user/edit/' . $id);
+			}
 		}
 
 	/**
@@ -189,8 +199,10 @@ class UserController extends Controller
 			$user = new User();
 			try {
 				$user->delete($id);
+				setFlashMessage('success', 'Usuário excluído com sucesso.');
 				$this->redirect('user');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o usuário.');
 				$this->redirect('user');
 			}
 		}

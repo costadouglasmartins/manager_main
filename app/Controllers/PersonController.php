@@ -363,6 +363,7 @@ class PersonController extends Controller
 		try
 			{
 			$person->create($_POST);
+			setFlashMessage('success', 'Pessoa cadastrada com sucesso.');
 			}
 		catch (\InvalidArgumentException $e)
 			{
@@ -374,8 +375,14 @@ class PersonController extends Controller
 				], 422);
 				}
 
-			http_response_code(422);
-			$this->renderCreateFormWithError($e->getMessage());
+			setFlashMessage('danger', $e->getMessage());
+			$this->redirect('person/create');
+			return;
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar a pessoa. Verifique os dados e tente novamente.');
+			$this->redirect('person/create');
 			return;
 			}
 
@@ -502,8 +509,18 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.update');
 		$person = new Person();
-		$person->update($id, $_POST);
-		$this->redirect('person');
+
+		try
+			{
+			$person->update($id, $_POST);
+			setFlashMessage('success', 'Pessoa atualizada com sucesso.');
+			$this->redirect('person');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar a pessoa. Verifique os dados e tente novamente.');
+			$this->redirect('person/edit/' . $id);
+			}
 		}
 
 	/**
@@ -583,28 +600,14 @@ class PersonController extends Controller
 			$person = new Person();
 			try {
 				$person->delete($id);
+				setFlashMessage('success', 'Pessoa excluída com sucesso.');
 				$this->redirect('person');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir a pessoa.');
 				$this->redirect('person');
 			}
 			}
 		}
 
-	/**
-	 * Renders the create form with a validation error message.
-	 *
-	 * @param string $message Message displayed above the form.
-	 * @return void
-	 */
-	private function renderCreateFormWithError(string $message): void
-		{
-		$tenantModel = new Tenant();
-		$this->view('people/create', [
-			'title'              => 'Nova pessoa',
-			'nextDatabaseNumber' => $tenantModel->nextDatabaseNumber(),
-			'tenants'            => $tenantModel->getAll(),
-			'formError'          => $message,
-		]);
-		}
 	}
 ?>

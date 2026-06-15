@@ -82,8 +82,18 @@ class PhoneNumberController extends Controller
 		{
 		$this->requirePermission('phone_number.store');
 		$phoneNumber = new PhoneNumber();
-		$phoneNumber->create($_POST);
-		$this->redirect('phone_number');
+
+		try
+			{
+			$phoneNumber->create($_POST);
+			setFlashMessage('success', 'Telefone cadastrado com sucesso.');
+			$this->redirect('phone_number');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o telefone. Verifique os dados e tente novamente.');
+			$this->redirect('phone_number/create');
+			}
 		}
 
 	/**
@@ -106,8 +116,18 @@ class PhoneNumberController extends Controller
 		{
 		$this->requirePermission('phone_number.update');
 		$phoneNumber = new PhoneNumber();
-		$phoneNumber->update($id, $_POST);
-		$this->redirect('phone_number');
+
+		try
+			{
+			$phoneNumber->update($id, $_POST);
+			setFlashMessage('success', 'Telefone atualizado com sucesso.');
+			$this->redirect('phone_number');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o telefone. Verifique os dados e tente novamente.');
+			$this->redirect('phone_number/edit/' . $id);
+			}
 		}
 
 	/**
@@ -134,8 +154,10 @@ class PhoneNumberController extends Controller
 			$phoneNumber = new PhoneNumber();
 			try {
 				$phoneNumber->delete($id);
+				setFlashMessage('success', 'Telefone excluído com sucesso.');
 				$this->redirect('phone_number');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o telefone.');
 				$this->redirect('phone_number');
 			}
 		}

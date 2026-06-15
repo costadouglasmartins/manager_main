@@ -95,8 +95,18 @@ class FinancialOperationPaymentController extends Controller
 		{
 		$this->requirePermission('financial_operation_payment.store');
 		$payment = new FinancialOperationPayment();
-		$payment->create($_POST);
-		$this->redirect('financial_operation_payment');
+
+		try
+			{
+			$payment->create($_POST);
+			setFlashMessage('success', 'Pagamento financeiro cadastrado com sucesso.');
+			$this->redirect('financial_operation_payment');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o pagamento financeiro. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation_payment/create');
+			}
 		}
 
 	/**
@@ -129,8 +139,18 @@ class FinancialOperationPaymentController extends Controller
 		{
 		$this->requirePermission('financial_operation_payment.update');
 		$payment = new FinancialOperationPayment();
-		$payment->update($id, $_POST);
-		$this->redirect('financial_operation_payment');
+
+		try
+			{
+			$payment->update($id, $_POST);
+			setFlashMessage('success', 'Pagamento financeiro atualizado com sucesso.');
+			$this->redirect('financial_operation_payment');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o pagamento financeiro. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation_payment/edit/' . $id);
+			}
 		}
 
 	/**
@@ -167,10 +187,12 @@ class FinancialOperationPaymentController extends Controller
 			try
 				{
 				$payment->delete($id);
+				setFlashMessage('success', 'Pagamento financeiro excluído com sucesso.');
 				$this->redirect($redirectPath);
 				}
 			catch (\Exception $e)
 				{
+				setFlashMessage('danger', 'Não foi possível excluir o pagamento financeiro.');
 				$this->redirect($redirectPath);
 				}
 			}

@@ -83,8 +83,18 @@ class NeighborhoodController extends Controller
 		{
 		$this->requirePermission('neighborhood.store');
 		$neighborhood = new Neighborhood();
-		$neighborhood->create($_POST);
-		$this->redirect('neighborhood');
+
+		try
+			{
+			$neighborhood->create($_POST);
+			setFlashMessage('success', 'Bairro cadastrado com sucesso.');
+			$this->redirect('neighborhood');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o bairro. Verifique os dados e tente novamente.');
+			$this->redirect('neighborhood/create');
+			}
 		}
 
 	/**
@@ -107,8 +117,18 @@ class NeighborhoodController extends Controller
 		{
 		$this->requirePermission('neighborhood.update');
 		$neighborhood = new Neighborhood();
-		$neighborhood->update($id, $_POST);
-		$this->redirect('neighborhood');
+
+		try
+			{
+			$neighborhood->update($id, $_POST);
+			setFlashMessage('success', 'Bairro atualizado com sucesso.');
+			$this->redirect('neighborhood');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o bairro. Verifique os dados e tente novamente.');
+			$this->redirect('neighborhood/edit/' . $id);
+			}
 		}
 
 	/**
@@ -224,8 +244,10 @@ class NeighborhoodController extends Controller
 			$neighborhood = new Neighborhood();
 			try {
 				$neighborhood->delete($id);
+				setFlashMessage('success', 'Bairro excluído com sucesso.');
 				$this->redirect('neighborhood');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o bairro.');
 				$this->redirect('neighborhood');
 			}
 		}

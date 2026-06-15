@@ -83,8 +83,18 @@ class StateController extends Controller
 		{
 		$this->requirePermission('state.store');
 		$state = new State();
-		$state->create($_POST);
-		$this->redirect('state');
+
+		try
+			{
+			$state->create($_POST);
+			setFlashMessage('success', 'Estado cadastrado com sucesso.');
+			$this->redirect('state');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o estado. Verifique os dados e tente novamente.');
+			$this->redirect('state/create');
+			}
 		}
 
 	/**
@@ -107,8 +117,18 @@ class StateController extends Controller
 		{
 		$this->requirePermission('state.update');
 		$state = new State();
-		$state->update($id, $_POST);
-		$this->redirect('state');
+
+		try
+			{
+			$state->update($id, $_POST);
+			setFlashMessage('success', 'Estado atualizado com sucesso.');
+			$this->redirect('state');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o estado. Verifique os dados e tente novamente.');
+			$this->redirect('state/edit/' . $id);
+			}
 		}
 
 	/**
@@ -170,8 +190,10 @@ class StateController extends Controller
 			$state = new State();
 			try {
 				$state->delete($id);
+				setFlashMessage('success', 'Estado excluído com sucesso.');
 				$this->redirect('state');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o estado.');
 				$this->redirect('state');
 			}
 		}

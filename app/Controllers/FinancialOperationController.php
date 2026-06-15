@@ -222,8 +222,18 @@ class FinancialOperationController extends Controller
 		$financialOperation = new FinancialOperation();
 		$data = $_POST;
 		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
-		$financialOperation->create($data);
-		$this->redirect('financial_operation');
+
+		try
+			{
+			$financialOperation->create($data);
+			setFlashMessage('success', 'Operação financeira cadastrada com sucesso.');
+			$this->redirect('financial_operation');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar a operação financeira. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation/create');
+			}
 		}
 
 	/**
@@ -260,8 +270,18 @@ class FinancialOperationController extends Controller
 		$financialOperation = new FinancialOperation();
 		$data = $_POST;
 		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
-		$financialOperation->update($id, $data);
-		$this->redirect('financial_operation');
+
+		try
+			{
+			$financialOperation->update($id, $data);
+			setFlashMessage('success', 'Operação financeira atualizada com sucesso.');
+			$this->redirect('financial_operation');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar a operação financeira. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation/edit/' . $id);
+			}
 		}
 
 	/**
@@ -327,10 +347,12 @@ class FinancialOperationController extends Controller
 			try
 				{
 				$financialOperation->delete($id);
+				setFlashMessage('success', 'Operação financeira excluída com sucesso.');
 				$this->redirect('financial_operation');
 				}
 			catch (\Exception $e)
 				{
+				setFlashMessage('danger', 'Não foi possível excluir a operação financeira.');
 				$this->redirect('financial_operation');
 				}
 			}

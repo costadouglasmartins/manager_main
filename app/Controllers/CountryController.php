@@ -87,8 +87,18 @@ class CountryController extends Controller
 		{
 		$this->requirePermission('country.store');
 		$country = new Country();
-		$country->create($_POST);
-		$this->redirect('country');
+
+		try
+			{
+			$country->create($_POST);
+			setFlashMessage('success', 'País cadastrado com sucesso.');
+			$this->redirect('country');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o país. Verifique os dados e tente novamente.');
+			$this->redirect('country/create');
+			}
 		}
 
 	/**
@@ -111,8 +121,18 @@ class CountryController extends Controller
 		{
 		$this->requirePermission('country.update');
 		$country = new Country();
-		$country->update($id, $_POST);
-		$this->redirect('country');
+
+		try
+			{
+			$country->update($id, $_POST);
+			setFlashMessage('success', 'País atualizado com sucesso.');
+			$this->redirect('country');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o país. Verifique os dados e tente novamente.');
+			$this->redirect('country/edit/' . $id);
+			}
 		}
 
 	/**
@@ -170,8 +190,10 @@ class CountryController extends Controller
 			$country = new Country();
 			try {
 				$country->delete($id);
+				setFlashMessage('success', 'País excluído com sucesso.');
 				$this->redirect('country');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o país.');
 				$this->redirect('country');
 			}
 		}

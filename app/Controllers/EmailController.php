@@ -82,8 +82,18 @@ class EmailController extends Controller
 		{
 		$this->requirePermission('email.store');
 		$email = new Email();
-		$email->create($_POST);
-		$this->redirect('email');
+
+		try
+			{
+			$email->create($_POST);
+			setFlashMessage('success', 'E-mail cadastrado com sucesso.');
+			$this->redirect('email');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar o e-mail. Verifique os dados e tente novamente.');
+			$this->redirect('email/create');
+			}
 		}
 
 	/**
@@ -106,8 +116,18 @@ class EmailController extends Controller
 		{
 		$this->requirePermission('email.update');
 		$email = new Email();
-		$email->update($id, $_POST);
-		$this->redirect('email');
+
+		try
+			{
+			$email->update($id, $_POST);
+			setFlashMessage('success', 'E-mail atualizado com sucesso.');
+			$this->redirect('email');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar o e-mail. Verifique os dados e tente novamente.');
+			$this->redirect('email/edit/' . $id);
+			}
 		}
 
 	/**
@@ -134,8 +154,10 @@ class EmailController extends Controller
 			$email = new Email();
 			try {
 				$email->delete($id);
+				setFlashMessage('success', 'E-mail excluído com sucesso.');
 				$this->redirect('email');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir o e-mail.');
 				$this->redirect('email');
 			}
 		}

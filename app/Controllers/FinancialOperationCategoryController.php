@@ -80,8 +80,18 @@ class FinancialOperationCategoryController extends Controller
 		{
 		$this->requirePermission('financial_operation_category.store');
 		$category = new FinancialOperationCategory();
-		$category->create($_POST);
-		$this->redirect('financial_operation_category');
+
+		try
+			{
+			$category->create($_POST);
+			setFlashMessage('success', 'Categoria financeira cadastrada com sucesso.');
+			$this->redirect('financial_operation_category');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar a categoria financeira. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation_category/create');
+			}
 		}
 
 	/**
@@ -109,8 +119,18 @@ class FinancialOperationCategoryController extends Controller
 		{
 		$this->requirePermission('financial_operation_category.update');
 		$category = new FinancialOperationCategory();
-		$category->update($id, $_POST);
-		$this->redirect('financial_operation_category');
+
+		try
+			{
+			$category->update($id, $_POST);
+			setFlashMessage('success', 'Categoria financeira atualizada com sucesso.');
+			$this->redirect('financial_operation_category');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar a categoria financeira. Verifique os dados e tente novamente.');
+			$this->redirect('financial_operation_category/edit/' . $id);
+			}
 		}
 
 	/**
@@ -144,10 +164,12 @@ class FinancialOperationCategoryController extends Controller
 			try
 				{
 				$category->delete($id);
+				setFlashMessage('success', 'Categoria financeira excluída com sucesso.');
 				$this->redirect('financial_operation_category');
 				}
 			catch (\Exception $e)
 				{
+				setFlashMessage('danger', 'Não foi possível excluir a categoria financeira.');
 				$this->redirect('financial_operation_category');
 				}
 			}

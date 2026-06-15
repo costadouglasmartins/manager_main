@@ -363,13 +363,14 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   </nav>
 
   <div class="container-fluid">
+    <?= renderFlashMessages() ?>
     <?= $content ?>
   </div>
   
   <script src="<?= url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
   <script src="<?= url('assets/js/menu.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
-  <script src="<?= url('assets/js/main.js?v=1'); ?>"></script>
+  <script src="<?= url('assets/js/main.js?v=2'); ?>"></script>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>
   <?php endif; ?>

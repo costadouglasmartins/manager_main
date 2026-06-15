@@ -84,8 +84,18 @@ class CityController extends Controller
 		{
 		$this->requirePermission('city.store');
 		$city = new City();
-		$city->create($_POST);
-		$this->redirect('city');
+
+		try
+			{
+			$city->create($_POST);
+			setFlashMessage('success', 'Cidade cadastrada com sucesso.');
+			$this->redirect('city');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível cadastrar a cidade. Verifique os dados e tente novamente.');
+			$this->redirect('city/create');
+			}
 		}
 
 	/**
@@ -108,8 +118,18 @@ class CityController extends Controller
 		{
 		$this->requirePermission('city.update');
 		$city = new City();
-		$city->update($id, $_POST);
-		$this->redirect('city');
+
+		try
+			{
+			$city->update($id, $_POST);
+			setFlashMessage('success', 'Cidade atualizada com sucesso.');
+			$this->redirect('city');
+			}
+		catch (\Throwable $e)
+			{
+			setFlashMessage('danger', 'Não foi possível atualizar a cidade. Verifique os dados e tente novamente.');
+			$this->redirect('city/edit/' . $id);
+			}
 		}
 
 	/**
@@ -178,8 +198,10 @@ class CityController extends Controller
 			$city = new City();
 			try {
 				$city->delete($id);
+				setFlashMessage('success', 'Cidade excluída com sucesso.');
 				$this->redirect('city');
 			} catch (\Exception $e) {
+				setFlashMessage('danger', 'Não foi possível excluir a cidade.');
 				$this->redirect('city');
 			}
 		}
