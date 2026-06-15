@@ -117,7 +117,8 @@ class SupportChatController extends Controller
 		$this->requireRoot();
 
 		$model = new SupportChat();
-		$chat = $model->findChatById((int) $chatId);
+		$chatId = (int) $chatId;
+		$chat = $model->findChatById($chatId);
 
 		if (!$chat)
 			{
@@ -127,10 +128,25 @@ class SupportChatController extends Controller
 			], 404);
 			}
 
+		$messages = $model->getMessages($chatId);
+		$model->markAttendantMessagesSeen($chatId, $messages);
+		$chat = $model->findChatById($chatId) ?? $chat;
+
 		$this->json([
 			'chat' => $chat,
-			'messages' => $model->getMessages((int) $chatId),
+			'messages' => $messages,
 		]);
+		}
+
+	/**
+	 * Returns unread customer messages for the support notification bell.
+	 */
+	public function notifications()
+		{
+		$this->requireRoot();
+
+		$model = new SupportChat();
+		$this->json($model->getUnreadCustomerNotifications());
 		}
 
 	/**

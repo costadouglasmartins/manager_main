@@ -62,4 +62,4 @@
   </div>
 </section>
 
-<script src="<?= url('assets/js/support_chats/attend.js?v=2'); ?>"></script>
+<script src="<?= url('assets/js/support_chats/attend.js?v=3'); ?>"></script>

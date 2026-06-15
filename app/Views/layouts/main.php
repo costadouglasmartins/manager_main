@@ -326,7 +326,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
             </ul>
           </li>
           <?php if ($supportChatNotificationsEnabled): ?>
-            <li class="nav-item dropdown me-lg-2 support-chat-notifications" id="supportChatNotifications" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-attend-url="<?= url('support_chat/attend'); ?>">
+            <li class="nav-item dropdown me-lg-2 support-chat-notifications" id="supportChatNotifications" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-attend-url="<?= url('support_chat/attend'); ?>" data-notifications-url="<?= url('support_chat/notifications'); ?>">
               <a class="nav-link dropdown-toggle support-chat-notification-toggle" href="#" id="supportChatNotificationMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificações de suporte">
                 <i class="bi bi-bell-fill"></i>
                 <span class="support-chat-notification-badge" id="supportChatNotificationBadge" hidden>0</span>
@@ -334,7 +334,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
               <ul class="dropdown-menu dropdown-menu-end support-chat-notification-menu" aria-labelledby="supportChatNotificationMenu">
                 <li class="support-chat-notification-header">
                   <strong>Suporte</strong>
-                  <button class="btn btn-sm btn-link" id="supportChatNotificationClear" type="button">Limpar</button>
+                  <button class="btn btn-sm btn-link" id="supportChatNotificationRefresh" type="button">Atualizar</button>
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li id="supportChatNotificationEmpty" class="dropdown-item-text text-muted">Sem novas mensagens.</li>
@@ -371,7 +371,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   <script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=1'); ?>"></script>
   <?php if ($supportChatNotificationsEnabled): ?>
-    <script src="<?= url('assets/js/support_chats/notifications.js?v=2'); ?>"></script>
+    <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>
   <?php endif; ?>
 </body>
 </html>

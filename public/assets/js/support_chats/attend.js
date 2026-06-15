@@ -282,6 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     state.currentChat = await fetchJson(`${chatUrlBase}/${encodeURIComponent(chatId)}`);
     renderMessages();
+    window.dispatchEvent(new CustomEvent("supportChatNotifications:refresh"));
   }
 
   function sendSocketMessage(payload) {

@@ -7,6 +7,8 @@ use PDO;
 
 class SupportChat extends Model
 	{
+	private const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
+
 	/**
 	 * Returns the support attendants list (root users only).
 	 *
@@ -235,6 +237,116 @@ class SupportChat extends Model
 		$stmt->execute();
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Returns customer messages that have not been seen by an attendant yet.
+	 *
+	 * @return array{count: int, notifications: array<int, array<string, mixed>>}
+	 */
+	public function getUnreadCustomerNotifications(int $limit = 8): array
+		{
+		$limit = max(1, min(50, $limit));
+		$where = "Message.sender_role = 'customer'
+		          AND Chat.status IN ('pending', 'open')
+		          AND (
+		            Chat.attendant_last_seen_at IS NULL
+		            OR Message.created > Chat.attendant_last_seen_at
+		          )";
+
+		$countSql = "SELECT COUNT(*) AS total
+		             FROM support_chats_messages AS Message
+		             INNER JOIN support_chats AS Chat ON Chat.id = Message.support_chat_id
+		             WHERE {$where}";
+		$countStmt = $this->db->query($countSql);
+		$count = (int) $countStmt->fetchColumn();
+
+		$sql = "SELECT Message.id AS message_id,
+		               Message.support_chat_id AS chat_id,
+		               Message.sender_name,
+		               Message.message_text,
+		               Message.created,
+		               Chat.status,
+		               Chat.tenant_database_number,
+		               CustomerPerson.name AS customer_name,
+		               CustomerUser.username AS customer_username,
+		               Tenant.observations AS tenant_name
+		        FROM support_chats_messages AS Message
+		        INNER JOIN support_chats AS Chat ON Chat.id = Message.support_chat_id
+		        INNER JOIN users AS CustomerUser ON CustomerUser.id = Chat.customer_user_id
+		        INNER JOIN people AS CustomerPerson ON CustomerPerson.id = CustomerUser.person_id
+		        LEFT JOIN tenants AS Tenant ON Tenant.id = Chat.tenant_id
+		        WHERE {$where}
+		        ORDER BY Message.created DESC, Message.id DESC
+		        LIMIT :limit";
+
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+		$stmt->execute();
+
+		return [
+			'count' => $count,
+			'notifications' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+		];
+		}
+
+	/**
+	 * Marks the messages displayed to an attendant as seen.
+	 *
+	 * @param array<int, array<string, mixed>> $messages
+	 */
+	public function markAttendantMessagesSeen(int $chatId, array $messages = []): void
+		{
+		$seenAt = null;
+		foreach ($messages as $message)
+			{
+			$created = trim((string) ($message['created'] ?? ''));
+			if ($created !== '' && ($seenAt === null || $created > $seenAt))
+				{
+				$seenAt = $created;
+				}
+			}
+
+		if ($seenAt === null)
+			{
+			$seenAt = $this->now();
+			}
+
+		$stmt = $this->db->prepare("
+			UPDATE support_chats
+			SET attendant_last_seen_at = CASE
+			      WHEN attendant_last_seen_at IS NULL OR attendant_last_seen_at < :seen_at THEN :seen_at
+			      ELSE attendant_last_seen_at
+			    END,
+			    modified = :modified
+			WHERE id = :chat_id
+		");
+		$stmt->execute([
+			'seen_at' => $seenAt,
+			'modified' => $this->now(),
+			'chat_id' => $chatId,
+		]);
+		}
+
+	/**
+	 * Returns the support chat local timestamp used for MySQL DATETIME fields.
+	 */
+	private function now(): string
+		{
+		$timezoneName = defined('SUPPORT_CHAT_TIMEZONE')
+			? (string) SUPPORT_CHAT_TIMEZONE
+			: (string) (getenv('SUPPORT_CHAT_TIMEZONE') ?: getenv('APP_TIMEZONE') ?: self::DEFAULT_TIMEZONE);
+
+		try
+			{
+			$timezone = new \DateTimeZone($timezoneName);
+			}
+		catch (\Exception $exception)
+			{
+			$timezone = new \DateTimeZone(self::DEFAULT_TIMEZONE);
+			}
+
+		return (new \DateTimeImmutable('now', $timezone))->format('Y-m-d H:i:s');
 		}
 	}
 

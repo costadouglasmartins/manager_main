@@ -7,10 +7,11 @@
 
   const wsAuthUrl = root.dataset.wsAuthUrl || "";
   const attendUrl = (root.dataset.attendUrl || "").replace(/\/$/, "");
+  const notificationsUrl = root.dataset.notificationsUrl || "";
   const badge = document.getElementById("supportChatNotificationBadge");
   const list = document.getElementById("supportChatNotificationList");
   const empty = document.getElementById("supportChatNotificationEmpty");
-  const clearButton = document.getElementById("supportChatNotificationClear");
+  const refreshButton = document.getElementById("supportChatNotificationRefresh") || document.getElementById("supportChatNotificationClear");
   const toggle = root.querySelector(".support-chat-notification-toggle");
 
   let socket = null;
@@ -83,6 +84,51 @@
     return payload;
   }
 
+  function normalizeNotification(payload) {
+    const message = payload.message || payload;
+    const senderRole = String(message.sender_role || payload.sender_role || "").toLowerCase();
+
+    if (senderRole && senderRole !== "customer") {
+      return null;
+    }
+
+    return {
+      messageId: Number(payload.message_id || payload.messageId || message.id || 0),
+      chatId: Number(payload.chat_id || payload.chatId || message.support_chat_id || message.chat_id || 0),
+      senderName: message.sender_name || payload.sender_name || payload.customer_name || payload.customer_username || "Cliente",
+      message: message.message_text || payload.message_text || payload.message || "",
+      created: message.created || payload.created || null,
+    };
+  }
+
+  function setNotifications(payload) {
+    const items = Array.isArray(payload.notifications) ? payload.notifications : [];
+    notifications.splice(0);
+
+    items.forEach((item) => {
+      const notification = normalizeNotification(item);
+      if (notification) {
+        notifications.push(notification);
+      }
+    });
+
+    count = Number(payload.count || notifications.length || 0);
+    render();
+  }
+
+  async function loadNotifications() {
+    if (!notificationsUrl) {
+      return;
+    }
+
+    try {
+      const payload = await fetchJson(notificationsUrl);
+      setNotifications(payload);
+    } catch (error) {
+      render();
+    }
+  }
+
   function render() {
     if (!badge || !list || !empty || !toggle) {
       return;
@@ -109,22 +155,27 @@
   }
 
   function pushNotification(payload) {
-    const message = payload.message || {};
+    const notification = normalizeNotification(payload);
 
-    if (message.sender_role !== "customer") {
-      return;
+    if (!notification) {
+      return false;
     }
 
-    count++;
-    notifications.unshift({
-      chatId: Number(payload.chat_id || message.support_chat_id || 0),
-      senderName: message.sender_name || "Cliente",
-      message: message.message_text || "",
-      created: message.created || null,
-    });
+    const duplicateIndex = notification.messageId > 0
+      ? notifications.findIndex((item) => Number(item.messageId) === notification.messageId)
+      : -1;
+
+    if (duplicateIndex >= 0) {
+      notifications.splice(duplicateIndex, 1);
+    } else {
+      count++;
+    }
+
+    notifications.unshift(notification);
 
     notifications.splice(8);
     render();
+    return true;
   }
 
   function scheduleReconnect() {
@@ -172,7 +223,14 @@
         }
 
         if (authenticated && payload.type === "message_created") {
-          pushNotification(payload);
+          if (!pushNotification(payload)) {
+            loadNotifications();
+          }
+          return;
+        }
+
+        if (authenticated && (payload.type === "chat_closed" || payload.type === "chat_assigned")) {
+          loadNotifications();
         }
       });
 
@@ -189,15 +247,18 @@
     }
   }
 
-  if (clearButton) {
-    clearButton.addEventListener("click", (event) => {
+  if (refreshButton) {
+    refreshButton.addEventListener("click", (event) => {
       event.preventDefault();
-      count = 0;
-      notifications.splice(0);
-      render();
+      loadNotifications();
     });
   }
 
+  window.addEventListener("supportChatNotifications:refresh", () => {
+    loadNotifications();
+  });
+
   render();
+  loadNotifications();
   connect();
 })();
