@@ -4,7 +4,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 ?>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=11'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=12'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -130,6 +130,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
                 </button>
               </div>
             </div>
+            <div class="list-group list-group-flush zip-code-crawler-results-info d-none" id="crawlerResultsInfo" aria-live="polite"></div>
             <div class="list-group list-group-flush zip-code-crawler-results-body" id="crawlerResultsBody" role="log" aria-live="polite" aria-relevant="additions">
               <div class="list-group-item text-secondary zip-code-crawler-results-empty">
                 <div class="d-flex align-items-center gap-2">
@@ -145,4 +146,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=24'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=25'); ?>"></script>

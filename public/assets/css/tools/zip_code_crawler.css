@@ -74,6 +74,11 @@
   min-height: 0;
 }
 
+.zip-code-crawler-results-info {
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
 .zip-code-crawler-results-body {
   flex: 1 1 0;
   overflow-y: auto;

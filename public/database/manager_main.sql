@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~1 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~3 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(1, '88130-743', 'Rua Maria Soares', '141', 'Prédio da ECG', 4, 4, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
 	(2, '88137-335', 'Rua do amor perfeito', '266', 'Prédio', 5, 3, '2026-06-08 23:48:09', '2026-06-15 22:02:19'),
@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5822 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 801 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 821 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -6001,7 +6001,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~3 rows (approximately)
+-- Dumping data for table manager_main.emails: ~4 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'costadouglasmartins@gmail.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'Login', 4, 1, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
@@ -6067,7 +6067,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~177 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~204 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -6272,7 +6272,13 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(202, 'Centro', 10, '2026-06-15 17:38:01', '2026-06-15 17:38:01'),
 	(203, 'Centro', 18, '2026-06-15 18:20:12', '2026-06-15 18:20:12'),
 	(204, 'Terra Indígena Riozinho do Alto Envira', 18, '2026-06-15 18:52:39', '2026-06-15 18:52:39'),
-	(205, 'Centro', 8, '2026-06-15 19:02:09', '2026-06-15 21:54:32');
+	(205, 'Centro', 8, '2026-06-15 19:02:09', '2026-06-15 21:54:32'),
+	(206, 'Terra Indígena Alto Tarauacá', 8, '2026-06-15 22:48:53', '2026-06-15 22:48:53'),
+	(207, 'Terra Indígena Kampa e Isolados do Rio Envira', 8, '2026-06-15 22:48:58', '2026-06-15 22:48:58'),
+	(208, 'Terra Indígena Kaxinawá do Rio Humaitá', 8, '2026-06-15 22:49:35', '2026-06-15 22:49:35'),
+	(209, 'Terra Indígena Kulina do Rio Envira', 8, '2026-06-15 22:50:00', '2026-06-15 22:50:00'),
+	(210, 'Terra Indígena Riozinho do Alto Envira', 8, '2026-06-15 22:50:08', '2026-06-15 22:50:08'),
+	(211, 'Centro', 21, '2026-06-15 23:00:55', '2026-06-15 23:00:55');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -6289,7 +6295,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~3 rows (approximately)
+-- Dumping data for table manager_main.people: ~4 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(4, 'Emma Watson', 'Emma Watson', 'company', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
@@ -6308,7 +6314,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10198 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~256 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~269 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -6593,7 +6599,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~1 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~3 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(1, '554930331033', 'Comercial', 4, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
 	(2, '5548991908908', 'Celular', 5, '2026-06-08 23:48:09', '2026-06-08 23:48:09'),
@@ -6743,7 +6749,7 @@ CREATE TABLE IF NOT EXISTS `support_chats_messages` (
   CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.support_chats_messages: ~17 rows (approximately)
+-- Dumping data for table manager_main.support_chats_messages: ~19 rows (approximately)
 INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
 	(1, 1, 2, 'customer', 'Emma Watson', 'bom dia', '2026-06-07 09:45:32'),
 	(2, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:46:29'),
@@ -6777,7 +6783,7 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~0 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~2 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson', '2026-06-01 22:34:47', '2026-06-01 22:34:48'),
 	(2, '0002', 'active', 'Banco de dados da Angelina.', '2026-06-08 23:48:09', '2026-06-08 23:48:09');
@@ -6795,7 +6801,7 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~3 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
 	(1, 4, 'admin', '2026-06-15 22:43:15', '2026-06-15 22:43:15'),
@@ -7317,7 +7323,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 -- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
-	(2, 1, 'acc1378a52859095ab0bf093a5484f13', 'dc6bfb7f19354da94cf0432356b9d6d1e778a1321a72a6c073ea86038b6e088b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-15 21:46:30', '2026-06-06 00:45:49', '2026-06-15 21:46:30');
+	(2, 1, '69319bfbff3fce43e1f910efd0eca14b', 'e03f28460c87d73a885cc3c06e7fbe2e409cf4af386d469bbc60d01717fc4dc6', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-15 23:14:54', '2026-06-06 00:45:49', '2026-06-15 23:14:54');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

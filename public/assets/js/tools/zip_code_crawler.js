@@ -22,6 +22,7 @@
 		const startButton = document.getElementById("crawlerStartButton");
 		const message = document.getElementById("crawlerMessage");
 		const resultsBody = document.getElementById("crawlerResultsBody");
+		const resultsInfo = document.getElementById("crawlerResultsInfo");
 		const resultsTopButton = document.getElementById("crawlerResultsTopButton");
 		const resultsBottomButton = document.getElementById("crawlerResultsBottomButton");
 		const processedCount = document.getElementById("crawlerProcessedCount");
@@ -318,6 +319,7 @@
 		function clearResults()
 			{
 				resultsStickToBottom = true;
+				clearResultsInfo();
 				resultsBody.innerHTML = '<div class="list-group-item text-secondary zip-code-crawler-results-empty"><div class="d-flex align-items-center gap-2"><i class="bi bi-hourglass-split"></i><span>Aguardando início - selecione um estado e execute o crawler.</span></div></div>';
 			}
 
@@ -394,10 +396,8 @@
 					}
 			}
 
-		function appendSystemLine(type, text)
+		function buildSystemLine(type, text)
 			{
-				clearIdleLine();
-
 				const line = document.createElement("div");
 				line.className = "list-group-item " + systemListGroupClass(type);
 
@@ -420,7 +420,36 @@
 				header.appendChild(tsSpan);
 				header.appendChild(textSpan);
 				line.appendChild(header);
-				appendResultsElement(line);
+				return line;
+			}
+
+		function appendSystemLine(type, text)
+			{
+				clearIdleLine();
+				appendResultsElement(buildSystemLine(type, text));
+			}
+
+		function setResultsInfo(type, text)
+			{
+				if (!resultsInfo)
+					{
+						return;
+					}
+
+				resultsInfo.innerHTML = "";
+				resultsInfo.appendChild(buildSystemLine(type, text));
+				resultsInfo.classList.remove("d-none");
+			}
+
+		function clearResultsInfo()
+			{
+				if (!resultsInfo)
+					{
+						return;
+					}
+
+				resultsInfo.innerHTML = "";
+				resultsInfo.classList.add("d-none");
 			}
 
 		function providerLabel(source)
@@ -725,7 +754,7 @@
 						const viaCepText = viaCepPaused ? " ViaCEP pausado temporariamente; usando fallback quando disponível." : "";
 						setMessage(viaCepPaused ? "warning" : "info", "Pesquisa iniciada para " + formatInteger(payload.total || 0) + " CEPs em " + stateAcronym + " usando " + (payload.provider_mode || providerMode).toUpperCase() + ". Paralelo: " + activeConcurrency + ". " + autoSaveText + ". Cache TXT: " + formatInteger(cacheCount) + " CEP(s)." + viaCepText);
 						updateProgress(0, payload.total || 1);
-						appendSystemLine("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + formatInteger(payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + formatInteger(cacheCount) + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | intervalo: " + activeDelayText + " | " + autoSaveText);
+						setResultsInfo("INIT", "Pesquisa iniciada | UF: " + stateAcronym + " | " + formatInteger(payload.total || 0) + " CEPs | faixas: " + rangeText + " | cache TXT: " + formatInteger(cacheCount) + " CEPs | webservice: " + (payload.provider_mode || providerMode).toUpperCase() + " | consultas simultâneas: " + activeConcurrency + " | intervalo: " + activeDelayText + " | " + autoSaveText);
 						if (viaCepPaused)
 							{
 								appendSystemLine("WARN", "ViaCEP pausado temporariamente por falhas de conexão" + (viaCepDisabledUntil ? " até " + viaCepDisabledUntil : "") + ".");
