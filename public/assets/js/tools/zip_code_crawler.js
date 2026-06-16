@@ -167,6 +167,11 @@
 
 		function setMessage(type, text)
 			{
+				if (!message)
+					{
+						return;
+					}
+
 				message.className = "alert zip-code-crawler-message alert-" + type;
 				message.textContent = text;
 			}
