@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const operationIdInput = document.getElementById("sheet_operation_id");
   const paymentIdInput = document.getElementById("sheet_payment_id");
   const categoryInput = document.getElementById("sheet_financial_operation_category_id");
+  const subcategoryInput = document.getElementById("sheet_financial_operation_subcategory_id");
   const operationTypeInput = document.getElementById("sheet_type");
   const totalValueInput = document.getElementById("sheet_total_value");
   const paymentFields = document.getElementById("financialSheetPaymentFields");
@@ -93,6 +94,31 @@ document.addEventListener("DOMContentLoaded", () => {
     totalValueInput.readOnly = hasPayment;
   }
 
+  function syncSubcategoryOptions() {
+    if (!categoryInput || !subcategoryInput) {
+      return;
+    }
+
+    const categoryId = categoryInput.value;
+    subcategoryInput.disabled = categoryId === "";
+
+    Array.from(subcategoryInput.options).forEach((option) => {
+      if (option.value === "") {
+        option.hidden = false;
+        option.disabled = false;
+        return;
+      }
+
+      const belongsToCategory = option.dataset.categoryId === categoryId;
+      option.hidden = !belongsToCategory;
+      option.disabled = !belongsToCategory;
+    });
+
+    if (subcategoryInput.selectedOptions.length > 0 && subcategoryInput.selectedOptions[0].disabled) {
+      subcategoryInput.value = "";
+    }
+  }
+
   function resetModal() {
     state.entries = [];
     form.reset();
@@ -102,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setStatus("", "");
     setFormVisible(false);
     syncPaymentFields(false);
+    syncSubcategoryOptions();
   }
 
   function buildEntryLabel(entry) {
@@ -153,6 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
     operationIdInput.value = entry.operation_id || "";
     paymentIdInput.value = entry.payment_id || "";
     categoryInput.value = entry.financial_operation_category_id || "";
+    syncSubcategoryOptions();
+    subcategoryInput.value = entry.financial_operation_subcategory_id || "";
+    syncSubcategoryOptions();
     operationTypeInput.value = entry.operation_type || "";
     totalValueInput.value = entry.operation_total_value || "0.00";
     paymentTypeInput.value = entry.payment_type || "";
@@ -258,6 +288,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       selectEntry(Number.parseInt(trigger.dataset.entryIndex || "0", 10));
     });
+  }
+
+  if (categoryInput) {
+    categoryInput.addEventListener("change", syncSubcategoryOptions);
   }
 
   form.addEventListener("submit", async (event) => {

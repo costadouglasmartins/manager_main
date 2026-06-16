@@ -10,6 +10,7 @@ use App\Models\Email;
 use App\Models\FinancialOperation;
 use App\Models\FinancialOperationCategory;
 use App\Models\FinancialOperationPayment;
+use App\Models\FinancialOperationSubcategory;
 use App\Models\Neighborhood;
 use App\Models\Person;
 use App\Models\PhoneNumber;
@@ -114,9 +115,10 @@ class RecordListExportService
 				['label' => 'Pessoa', 'field' => 'person_name'],
 				['label' => 'Observações', 'field' => 'observations'],
 			]),
-			'financial_operation' => $this->standardDefinition(FinancialOperation::class, 'Lista de operações financeiras', 'operacoes_financeiras', ['id', 'financial_operation_category_id', 'category_name', 'user_id', 'user_name', 'type', 'total_value'], [FinancialOperation::class, 'sortableColumns'], [
+			'financial_operation' => $this->standardDefinition(FinancialOperation::class, 'Lista de operações financeiras', 'operacoes_financeiras', ['id', 'financial_operation_category_id', 'category_name', 'financial_operation_subcategory_id', 'subcategory_name', 'user_id', 'user_name', 'type', 'total_value'], [FinancialOperation::class, 'sortableColumns'], [
 				['label' => '#', 'field' => 'id', 'align' => 'right'],
 				['label' => 'Categoria', 'callback' => fn (array $row): string => $this->categoryLabel($row)],
+				['label' => 'Subcategoria', 'callback' => fn (array $row): string => $this->subcategoryLabel($row)],
 				['label' => 'Usuário', 'callback' => fn (array $row): string => $this->userLabel($row)],
 				['label' => 'Tipo', 'callback' => fn (array $row): string => $this->optionLabel($row['type'] ?? '', FinancialOperation::typeOptions())],
 				['label' => 'Valor total', 'callback' => fn (array $row): string => $this->money($row['total_value'] ?? 0), 'align' => 'right'],
@@ -126,6 +128,11 @@ class RecordListExportService
 				['label' => '#', 'field' => 'id', 'align' => 'right'],
 				['label' => 'Nome', 'field' => 'name'],
 				['label' => 'Descrição', 'field' => 'description'],
+			]),
+			'financial_operation_subcategory' => $this->standardDefinition(FinancialOperationSubcategory::class, 'Lista de subcategorias financeiras', 'subcategorias_financeiras', ['id', 'financial_operation_category_id', 'category_name', 'name'], [FinancialOperationSubcategory::class, 'sortableColumns'], [
+				['label' => '#', 'field' => 'id', 'align' => 'right'],
+				['label' => 'Categoria', 'callback' => fn (array $row): string => $this->categoryLabel($row)],
+				['label' => 'Nome', 'field' => 'name'],
 			]),
 			'financial_operation_payment' => $this->standardDefinition(FinancialOperationPayment::class, 'Lista de pagamentos financeiros', 'pagamentos_financeiros', ['id', 'financial_operation_id', 'financial_operation_type', 'type', 'payment_date', 'due_date_start', 'due_date_end', 'due_date'], [FinancialOperationPayment::class, 'sortableColumns'], [
 				['label' => '#', 'field' => 'id', 'align' => 'right'],
@@ -347,6 +354,8 @@ class RecordListExportService
 			'description' => 'Descrição',
 			'financial_operation_category_id' => 'Categoria',
 			'category_name' => 'Categoria',
+			'financial_operation_subcategory_id' => 'Subcategoria',
+			'subcategory_name' => 'Subcategoria',
 			'user_id' => 'Usuário',
 			'user_name' => 'Usuário',
 			'total_value' => 'Valor total',
@@ -459,6 +468,11 @@ class RecordListExportService
 			}
 
 		return $label;
+		}
+
+	private function subcategoryLabel(array $row): string
+		{
+		return trim((string) ($row['subcategory_name'] ?? ''));
 		}
 
 	private function userLabel(array $row): string

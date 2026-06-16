@@ -1,6 +1,7 @@
 <?php
-$filters = $filters ?? ['id' => '', 'financial_operation_category_id' => '', 'category_name' => '', 'user_id' => '', 'user_name' => '', 'type' => '', 'total_value' => ''];
+$filters = $filters ?? ['id' => '', 'financial_operation_category_id' => '', 'category_name' => '', 'financial_operation_subcategory_id' => '', 'subcategory_name' => '', 'user_id' => '', 'user_name' => '', 'type' => '', 'total_value' => ''];
 $categories = $categories ?? [];
+$subcategories = $subcategories ?? [];
 $types = $types ?? [];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
@@ -11,6 +12,8 @@ $queryFilters = http_build_query([
   'id'                              => $filters['id'],
   'financial_operation_category_id' => $filters['financial_operation_category_id'],
   'category_name'                   => $filters['category_name'],
+  'financial_operation_subcategory_id' => $filters['financial_operation_subcategory_id'],
+  'subcategory_name'                => $filters['subcategory_name'],
   'user_id'                         => $filters['user_id'],
   'user_name'                       => $filters['user_name'],
   'type'                            => $filters['type'],
@@ -38,7 +41,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-3">
+      <div class="col-12 col-md-6 col-lg-2">
         <select class="form-select" id="financial_operation_category_id" name="financial_operation_category_id">
           <option value="">Categoria</option>
           <?php foreach ($categories as $category): ?>
@@ -51,6 +54,21 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
             ?>
             <option value="<?= (int) $category['id'] ?>" <?= (string) $filters['financial_operation_category_id'] === (string) $category['id'] ? 'selected' : '' ?>>
               <?= htmlspecialchars($categoryOptionLabel, ENT_QUOTES, 'UTF-8') ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-2">
+        <select class="form-select" id="financial_operation_subcategory_id" name="financial_operation_subcategory_id">
+          <option value="">Subcategoria</option>
+          <?php foreach ($subcategories as $subcategory): ?>
+            <option
+              value="<?= (int) $subcategory['id'] ?>"
+              data-category-id="<?= (int) ($subcategory['financial_operation_category_id'] ?? 0); ?>"
+              <?= (string) $filters['financial_operation_subcategory_id'] === (string) $subcategory['id'] ? 'selected' : '' ?>
+            >
+              <?= htmlspecialchars(trim((string) ($subcategory['name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -71,7 +89,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         </select>
       </div>
 
-      <div class="col-12 col-md-6 col-lg-3">
+      <div class="col-12 col-md-6 col-lg-2">
         <input class="form-control" id="total_value" name="total_value" type="number" step="0.01" min="0" placeholder="Valor total" value="<?= htmlspecialchars($filters['total_value'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
@@ -102,6 +120,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <tr>
         <?= sortableTh('financial_operation', 'id', '#', $sort, $queryFilters) ?>
         <?= sortableTh('financial_operation', 'category_name', 'Categoria', $sort, $queryFilters) ?>
+        <?= sortableTh('financial_operation', 'subcategory_name', 'Subcategoria', $sort, $queryFilters) ?>
         <?= sortableTh('financial_operation', 'user_name', 'Usuário', $sort, $queryFilters) ?>
         <?= sortableTh('financial_operation', 'type', 'Tipo', $sort, $queryFilters) ?>
         <?= sortableTh('financial_operation', 'total_value', 'Valor total', $sort, $queryFilters) ?>
@@ -119,11 +138,13 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
             {
             $categoryLabel .= ' - ' . trim((string) $row['category_description']);
             }
+          $subcategoryLabel = trim((string) ($row['subcategory_name'] ?? ''));
           $created = !empty($row['created']) ? date('d/m/Y H:i', strtotime($row['created'])) : '';
           ?>
           <tr>
             <td style="width:1%;"><?= (int) $row['id'] ?></td>
             <td><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($subcategoryLabel, ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($types[$row['type']] ?? $row['type'], ENT_QUOTES, 'UTF-8') ?></td>
             <td>R$ <?= number_format((float) $row['total_value'], 2, ',', '.') ?></td>
@@ -145,7 +166,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="7" class="text-center">Nenhum registro encontrado.</td>
+          <td colspan="8" class="text-center">Nenhum registro encontrado.</td>
         </tr>
       <?php endif; ?>
     </tbody>
@@ -179,4 +200,4 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script src="<?= url('assets/js/financial_operations/index.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/index.js?v=2'); ?>"></script>

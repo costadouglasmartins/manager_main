@@ -6012,6 +6012,7 @@ INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `c
 CREATE TABLE IF NOT EXISTS `financial_operations` (
   `id` int NOT NULL AUTO_INCREMENT,
   `financial_operation_category_id` int NOT NULL,
+  `financial_operation_subcategory_id` int DEFAULT NULL,
   `type` enum('CREDIT','DEBIT') NOT NULL,
   `total_value` float(10,2) NOT NULL,
   `user_id` int NOT NULL,
@@ -6020,6 +6021,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   PRIMARY KEY (`id`),
   KEY `fk_financial_operations_users1_idx` (`user_id`),
   KEY `fk_financial_operations_financial_operations_categories1_idx` (`financial_operation_category_id`),
+  KEY `fk_financial_operations_financial_operations_subcategories1_idx` (`financial_operation_subcategory_id`),
   CONSTRAINT `fk_financial_operations_financial_operations_categories1` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`),
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -6037,6 +6039,27 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~0 rows (approximately)
+
+-- Dumping structure for table manager_main.financial_operations_subcategories
+CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `financial_operations_subcategories_category_name_unique` (`financial_operation_category_id`,`name`),
+  KEY `fk_financial_operations_subcategories_categories_idx` (`financial_operation_category_id`),
+  CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.financial_operations_subcategories: ~0 rows (approximately)
+
+ALTER TABLE `financial_operations`
+  ADD CONSTRAINT `fk_financial_operations_financial_operations_subcategories1`
+  FOREIGN KEY (`financial_operation_subcategory_id`)
+  REFERENCES `financial_operations_subcategories` (`id`)
+  ON DELETE SET NULL;
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -6524,6 +6547,7 @@ INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, 
 	(6720, 'financial_operation_subcategory.informations', 'manager', 'Acesso: financial_operation_subcategory -> informations', '2026-05-14 23:39:50', '2026-05-14 23:39:50'),
 	(6721, 'financial_operation_subcategory.store', 'manager', 'Acesso: financial_operation_subcategory -> store', '2026-05-14 23:39:50', '2026-05-14 23:39:50'),
 	(6722, 'financial_operation_subcategory.update', 'manager', 'Acesso: financial_operation_subcategory -> update', '2026-05-14 23:39:50', '2026-05-14 23:39:50'),
+	(6723, 'financial_operation_subcategory.delete', 'manager', 'Acesso: financial_operation_subcategory -> delete', '2026-05-14 23:39:50', '2026-05-14 23:39:50'),
 	(6930, 'bank_slip.create', 'manager', 'Acesso: bank_slip -> create', '2026-05-18 22:19:44', '2026-05-18 22:19:44'),
 	(6931, 'bank_slip.generateRemittance', 'manager', 'Acesso: bank_slip -> generateRemittance', '2026-05-18 22:19:44', '2026-05-18 22:19:44'),
 	(6932, 'bank_slip.index', 'manager', 'Acesso: bank_slip -> index', '2026-05-18 22:19:44', '2026-05-18 22:19:44'),
