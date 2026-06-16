@@ -39,6 +39,8 @@
 		let streamStartedAt = 0;
 		let rateTimer = null;
 		let resultsStickToBottom = true;
+		let queuedResults = [];
+		let resultsFlushScheduled = false;
 		let latestStats = {
 			processed: 0,
 			found: 0,
@@ -247,6 +249,80 @@
 				});
 			}
 
+		function formatElapsedMs(value)
+			{
+				const milliseconds = numericMetric(value);
+				if (milliseconds < 1000)
+					{
+						return formatInteger(milliseconds) + " ms";
+					}
+
+				return (milliseconds / 1000).toLocaleString("pt-BR", {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				}) + " s";
+			}
+
+		function cacheStatusText(payload)
+			{
+				const stage = String(payload.stage || "");
+				const sizeText = String(payload.formatted_size || "");
+				const fileText = String(payload.file || "zip_code_crawler_not_found.txt");
+
+				if (stage === "reading_main")
+					{
+						return "Lendo arquivo principal "
+							+ fileText
+							+ (sizeText ? " (" + sizeText + ")" : "")
+							+ ".";
+					}
+
+				if (stage === "main_loaded")
+					{
+						return "Arquivo principal carregado: "
+							+ formatInteger(payload.count || 0)
+							+ " CEP(s) em "
+							+ formatElapsedMs(payload.elapsed_ms || 0)
+							+ ".";
+					}
+
+				if (stage === "reading_journal")
+					{
+						return "Lendo CEPs pendentes de sincronização do TXT.";
+					}
+
+				if (stage === "journal_loaded")
+					{
+						return "Pendências carregadas: "
+							+ formatInteger(payload.count || 0)
+							+ " CEP(s); total em memória: "
+							+ formatInteger(payload.total_count || 0)
+							+ ".";
+					}
+
+				if (stage === "normalization_pending")
+					{
+						return "Cache TXT carregado; sincronização em ordem crescente será feita sem bloquear o início da pesquisa.";
+					}
+
+				if (stage === "loaded")
+					{
+						return "Leitura concluída: "
+							+ formatInteger(payload.count || 0)
+							+ " CEP(s) carregado(s) de "
+							+ fileText
+							+ (sizeText ? " (" + sizeText + ")" : "")
+							+ " em "
+							+ formatElapsedMs(payload.elapsed_ms || 0)
+							+ ".";
+					}
+
+				return "Lendo "
+					+ fileText
+					+ (sizeText ? " (" + sizeText + ")" : "")
+					+ " para evitar consultas repetidas.";
+			}
+
 		function updateLookupRate(payload)
 			{
 				if (!lookupRateCount)
@@ -319,6 +395,8 @@
 		function clearResults()
 			{
 				resultsStickToBottom = true;
+				queuedResults = [];
+				resultsFlushScheduled = false;
 				clearResultsInfo();
 				resultsBody.innerHTML = '<div class="list-group-item text-secondary zip-code-crawler-results-empty"><div class="d-flex align-items-center gap-2"><i class="bi bi-hourglass-split"></i><span>Aguardando início - selecione um estado e execute o crawler.</span></div></div>';
 			}
@@ -351,7 +429,7 @@
 					});
 			}
 
-		function appendResultsElement(element)
+		function appendResultsElement(element, immediate)
 			{
 				const shouldStick = resultsStickToBottom || isResultsScrolledToBottom();
 				resultsBody.appendChild(element);
@@ -359,6 +437,53 @@
 					{
 						scrollResultsToBottom();
 					}
+			}
+
+		function flushQueuedResults()
+			{
+				resultsFlushScheduled = false;
+
+				if (queuedResults.length === 0)
+					{
+						return;
+					}
+
+				const shouldStick = resultsStickToBottom || isResultsScrolledToBottom();
+				const fragment = document.createDocumentFragment();
+				const batch = queuedResults.splice(0, 120);
+
+				batch.forEach(function (element)
+					{
+						fragment.appendChild(element);
+					});
+
+				resultsBody.appendChild(fragment);
+				if (shouldStick)
+					{
+						scrollResultsToBottom();
+					}
+
+				if (queuedResults.length > 0)
+					{
+						scheduleQueuedResultsFlush();
+					}
+			}
+
+		function scheduleQueuedResultsFlush()
+			{
+				if (resultsFlushScheduled)
+					{
+						return;
+					}
+
+				resultsFlushScheduled = true;
+				window.requestAnimationFrame(flushQueuedResults);
+			}
+
+		function queueResultsElement(element)
+			{
+				queuedResults.push(element);
+				scheduleQueuedResultsFlush();
 			}
 
 		function nowTimestamp()
@@ -687,7 +812,7 @@
 				line.appendChild(buildAjaxReturnDetails(payload));
 
 				clearIdleLine();
-				appendResultsElement(line);
+				queueResultsElement(line);
 			}
 
 		function openStream()
@@ -734,6 +859,18 @@
 				url.searchParams.set("create_city", "0");
 
 				eventSource = new EventSource(url.toString());
+
+				eventSource.addEventListener("cache", function (event)
+					{
+						const payload = JSON.parse(event.data || "{}");
+						const text = cacheStatusText(payload);
+						const isDone = String(payload.stage || "") === "loaded";
+
+						statusText.textContent = isDone ? "TXT carregado" : "Lendo TXT";
+						setMessage(isDone ? "success" : "info", text);
+						setResultsInfo(isDone ? "CACHE" : "TXT", text);
+						appendSystemLine(isDone ? "CACHE" : "TXT", text);
+					});
 
 				eventSource.addEventListener("start", function (event)
 					{

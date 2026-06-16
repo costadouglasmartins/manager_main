@@ -507,8 +507,10 @@ class ZipCodeCrawlerService
 		$delayMode = $this->normalizeDelayMode($delayMode);
 		$providerMode = $this->normalizeProviderMode($providerMode);
 		$concurrency = $this->normalizeConcurrency($concurrency);
-		$notFoundZipCodes = $this->loadNotFoundZipCodes();
+
+		$notFoundZipCodes = yield from $this->loadNotFoundZipCodesWithProgress();
 		$this->activeNotFoundZipCodes = $notFoundZipCodes;
+
 		$this->prepareViaCepAvailability($providerMode);
 		$resumeStartDigits = $this->resolveNotFoundResumeStart($notFoundZipCodes, $ranges);
 		$crawlRanges = $resumeStartDigits === null
@@ -2072,8 +2074,110 @@ class ZipCodeCrawlerService
 		if ($mainFileNeedsRewrite || $journalHasContents || $journalNeedsRewrite)
 			{
 			$this->notFoundZipCodesDirty = true;
-			$this->flushNotFoundZipCodes();
 			}
+
+		return $this->notFoundZipCodes;
+		}
+
+	/**
+	 * Load not found zip codes and report cache progress through SSE events.
+	 * @return \Generator<int, array<string, mixed>, mixed, array<string, bool>>
+	 **/
+	private function loadNotFoundZipCodesWithProgress(): \Generator
+		{
+		$startedAt = microtime(true);
+		$cacheFileSize = $this->notFoundCacheFileSize();
+
+		yield $this->cacheEvent('reading', 'running', [
+			'percent' => $cacheFileSize > 0 ? 0 : 100,
+			'message' => 'Lendo arquivo de CEPs não encontrados...',
+		]);
+
+		if ($this->notFoundZipCodes !== null)
+			{
+			yield $this->cacheEvent('loaded', 'done', [
+				'percent' => 100,
+				'count' => count($this->notFoundZipCodes),
+				'elapsed_ms' => $this->elapsedMilliseconds($startedAt),
+				'message' => 'Arquivo de CEPs não encontrados já estava carregado em memória.',
+			]);
+
+			return $this->notFoundZipCodes;
+			}
+
+		if (!is_file($this->notFoundFilePath) && !is_file($this->notFoundJournalFilePath))
+			{
+			$this->notFoundZipCodes = [];
+			yield $this->cacheEvent('loaded', 'done', [
+				'percent' => 100,
+				'count' => 0,
+				'elapsed_ms' => $this->elapsedMilliseconds($startedAt),
+				'message' => 'Nenhum arquivo de CEPs não encontrados foi localizado.',
+			]);
+
+			return $this->notFoundZipCodes;
+			}
+
+		$mainStartedAt = microtime(true);
+		yield $this->cacheEvent('reading_main', 'running', [
+			'percent' => 20,
+			'message' => 'Lendo arquivo principal de CEPs não encontrados...',
+		]);
+
+		$mainFileNeedsRewrite = false;
+		$this->notFoundZipCodes = $this->loadNotFoundZipCodeFile($this->notFoundFilePath, $mainFileNeedsRewrite);
+
+		yield $this->cacheEvent('main_loaded', 'running', [
+			'percent' => 65,
+			'count' => count($this->notFoundZipCodes),
+			'elapsed_ms' => $this->elapsedMilliseconds($mainStartedAt),
+			'message' => 'Arquivo principal de CEPs não encontrados carregado.',
+		]);
+
+		$journalHasContents = $this->fileHasContents($this->notFoundJournalFilePath);
+		$journalNeedsRewrite = false;
+		if ($journalHasContents)
+			{
+			$journalStartedAt = microtime(true);
+			yield $this->cacheEvent('reading_journal', 'running', [
+				'percent' => 75,
+				'message' => 'Lendo CEPs pendentes de sincronização...',
+			]);
+
+			$journalZipCodes = $this->loadNotFoundZipCodeFile($this->notFoundJournalFilePath, $journalNeedsRewrite);
+			foreach ($journalZipCodes as $digits => $exists)
+				{
+				if ($exists)
+					{
+					$this->notFoundZipCodes[$digits] = true;
+					}
+				}
+
+			yield $this->cacheEvent('journal_loaded', 'running', [
+				'percent' => 90,
+				'count' => count($journalZipCodes),
+				'total_count' => count($this->notFoundZipCodes),
+				'elapsed_ms' => $this->elapsedMilliseconds($journalStartedAt),
+				'message' => 'CEPs pendentes de sincronização carregados.',
+			]);
+			}
+
+		if ($mainFileNeedsRewrite || $journalHasContents || $journalNeedsRewrite)
+			{
+			$this->notFoundZipCodesDirty = true;
+			yield $this->cacheEvent('normalization_pending', 'running', [
+				'percent' => 95,
+				'count' => count($this->notFoundZipCodes),
+				'message' => 'Cache carregado; sincronização do TXT será feita sem bloquear o início da pesquisa.',
+			]);
+			}
+
+		yield $this->cacheEvent('loaded', 'done', [
+			'percent' => 100,
+			'count' => count($this->notFoundZipCodes),
+			'elapsed_ms' => $this->elapsedMilliseconds($startedAt),
+			'message' => 'Arquivo de CEPs não encontrados carregado.',
+		]);
 
 		return $this->notFoundZipCodes;
 		}
@@ -2144,58 +2248,143 @@ class ZipCodeCrawlerService
 	private function loadNotFoundZipCodeFile(string $path, bool &$needsRewrite): array
 		{
 		$needsRewrite = false;
-		$notFoundZipCodes = [];
 
 		if (!is_file($path))
 			{
-			return $notFoundZipCodes;
+			return [];
 			}
 
-		$handle = @fopen($path, 'rb');
-		if (!is_resource($handle))
+		$contents = @file_get_contents($path);
+		if (!is_string($contents) || $contents === '')
+			{
+			return [];
+			}
+
+		$notFoundZipCodes = $this->loadNormalizedNotFoundZipCodeContents($contents, $needsRewrite);
+		if (!$needsRewrite)
 			{
 			return $notFoundZipCodes;
 			}
 
-		$previousDigits = null;
+		return $this->parseNotFoundZipCodeContents($contents);
+		}
 
-		try
+	/**
+	 * Load already normalized not found zip code contents using the fast path.
+	 * @param string $contents Raw file contents.
+	 * @param bool $needsRewrite Whether the file should be rewritten normalized.
+	 * @return array<string, bool>
+	 **/
+	private function loadNormalizedNotFoundZipCodeContents(string $contents, bool &$needsRewrite): array
+		{
+		$needsRewrite = false;
+		$normalizedContents = str_replace(["\r\n", "\r"], "\n", $contents);
+		if ($normalizedContents !== $contents)
 			{
-			while (($line = fgets($handle)) !== false)
-				{
-				$rawLine = rtrim($line, "\r\n");
-				$digits = $this->normalizeNotFoundZipCodeLine($rawLine);
-
-				if ($digits === '')
-					{
-					if (trim($rawLine) !== '')
-						{
-						$needsRewrite = true;
-						}
-
-					continue;
-					}
-
-				if ($rawLine !== $digits || isset($notFoundZipCodes[$digits]))
-					{
-					$needsRewrite = true;
-					}
-
-				if ($previousDigits !== null && strcmp($digits, $previousDigits) < 0)
-					{
-					$needsRewrite = true;
-					}
-
-				$notFoundZipCodes[$digits] = true;
-				$previousDigits = $digits;
-				}
+			$needsRewrite = true;
+			return [];
 			}
-		finally
+
+		$contents = rtrim($contents, "\n");
+
+		if ($contents === '')
 			{
-			fclose($handle);
+			return [];
+			}
+
+		$newLineCount = substr_count($contents, "\n");
+		$lineCount = $newLineCount + 1;
+		$expectedLength = ($lineCount * 8) + $newLineCount;
+		if (strspn($contents, "0123456789\n") !== strlen($contents) || strlen($contents) !== $expectedLength)
+			{
+			$needsRewrite = true;
+			return [];
+			}
+
+		$lines = explode("\n", $contents);
+		$notFoundZipCodes = array_fill_keys($lines, true);
+		if (count($notFoundZipCodes) !== count($lines))
+			{
+			$needsRewrite = true;
 			}
 
 		return $notFoundZipCodes;
+		}
+
+	/**
+	 * Return the total size of not found cache files.
+	 * @return int
+	 **/
+	private function notFoundCacheFileSize(): int
+		{
+		return $this->safeFileSize($this->notFoundFilePath) + $this->safeFileSize($this->notFoundJournalFilePath);
+		}
+
+	/**
+	 * Return a file size without raising warnings.
+	 * @param string $path File path.
+	 * @return int
+	 **/
+	private function safeFileSize(string $path): int
+		{
+		if (!is_file($path))
+			{
+			return 0;
+			}
+
+		clearstatcache(true, $path);
+		$size = @filesize($path);
+		return is_int($size) ? max(0, $size) : 0;
+		}
+
+	/**
+	 * Format a byte count for display.
+	 * @param int $bytes Byte count.
+	 * @return string
+	 **/
+	private function formatByteCount(int $bytes): string
+		{
+		if ($bytes < 1024)
+			{
+			return $bytes . ' B';
+			}
+
+		if ($bytes < 1048576)
+			{
+			return number_format($bytes / 1024, 1, ',', '.') . ' KB';
+			}
+
+		return number_format($bytes / 1048576, 2, ',', '.') . ' MB';
+		}
+
+	/**
+	 * Build a cache progress SSE event.
+	 * @param string $stage Cache loading stage.
+	 * @param string $status Stage status.
+	 * @param array<string, mixed> $data Additional event data.
+	 * @return array<string, mixed>
+	 **/
+	private function cacheEvent(string $stage, string $status, array $data = []): array
+		{
+		$cacheFileSize = $this->notFoundCacheFileSize();
+		return $this->event('cache', array_merge([
+			'stage' => $stage,
+			'status' => $status,
+			'file' => self::NOT_FOUND_FILE_NAME,
+			'journal_file' => self::NOT_FOUND_JOURNAL_FILE_NAME,
+			'bytes' => $cacheFileSize,
+			'formatted_size' => $this->formatByteCount($cacheFileSize),
+		], $data));
+		}
+
+	/**
+	 * Return elapsed milliseconds since a timestamp.
+	 * @param float $startedAt Start timestamp from microtime.
+	 * @return int
+	 **/
+	private function elapsedMilliseconds(float $startedAt): int
+		{
+		return (int) max(1, round((microtime(true) - $startedAt) * 1000));
 		}
 
 	/**

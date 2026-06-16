@@ -146,4 +146,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=25'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=27'); ?>"></script>
