@@ -119,6 +119,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <!--<label>&nbsp;</label>-->
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('user'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?= pdfExportButton('user', $paginationQuery); ?>
+      <?= excelExportButton('user', $paginationQuery); ?>
       <a href="<?= url('person/create'); ?>" class="btn btn-success w-100" target="_blank">Novo(a) usuário(a)</a>
     </div>
   </div>

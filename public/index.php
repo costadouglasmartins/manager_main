@@ -40,6 +40,12 @@ if (session_status() === PHP_SESSION_NONE)
   {
   session_start();
   }
+
+$composerAutoload = ROOT_PATH . '/vendor/autoload.php';
+if (file_exists($composerAutoload))
+  {
+  require_once $composerAutoload;
+  }
 	
 require_once ROOT_PATH . '/app/Core/App.php';
 require_once ROOT_PATH . '/app/Core/Controller.php';
@@ -49,6 +55,8 @@ require_once ROOT_PATH . '/app/Helpers/Helper.php';
 require_once ROOT_PATH . '/app/Helpers/FlashMessageHelper.php';
 require_once ROOT_PATH . '/app/Helpers/PaginationHelper.php';
 require_once ROOT_PATH . '/app/Helpers/SortingHelper.php';
+require_once ROOT_PATH . '/app/Helpers/ExcelExportHelper.php';
+require_once ROOT_PATH . '/app/Helpers/PdfExportHelper.php';
 
 // Autoload dos namespaces
 spl_autoload_register(function ($class) 

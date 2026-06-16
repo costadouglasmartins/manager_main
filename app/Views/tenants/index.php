@@ -54,6 +54,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('tenant'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?= pdfExportButton('tenant', $paginationQuery); ?>
+      <?= excelExportButton('tenant', $paginationQuery); ?>
       <?php if (authCan('tenant.create')): ?>
         <a href="<?= url('tenant/create'); ?>" class="btn btn-success w-100">Novo tenant</a>
       <?php endif; ?>

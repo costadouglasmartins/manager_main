@@ -60,9 +60,13 @@ $queryFilters = http_build_query([
 
 <div class="support-chat-toolbar mb-3">
   <p class="text-muted mb-0"><?= (int) $total; ?> chat(s) encontrado(s)</p>
-  <a class="btn btn-success" href="<?= url('support_chat/attend'); ?>">
-    <i class="bi bi-headset me-1"></i> Abrir atendimento
-  </a>
+  <div class="d-flex flex-wrap gap-2 justify-content-end">
+    <?= pdfExportButton('support_chat', $queryFilters, 'Exportar PDF', 'btn btn-outline-danger'); ?>
+    <?= excelExportButton('support_chat', $queryFilters, 'Exportar Excel', 'btn btn-outline-success'); ?>
+    <a class="btn btn-success" href="<?= url('support_chat/attend'); ?>">
+      <i class="bi bi-headset me-1"></i> Abrir atendimento
+    </a>
+  </div>
 </div>
 
 <div class="table-responsive support-chat-table-wrap">

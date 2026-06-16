@@ -47,6 +47,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('financial_operation_category'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?= pdfExportButton('financial_operation_category', $paginationQuery); ?>
+      <?= excelExportButton('financial_operation_category', $paginationQuery); ?>
       <?php if (authCan('financial_operation_category.create')): ?>
         <a href="<?= url('financial_operation_category/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>

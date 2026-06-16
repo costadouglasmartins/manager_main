@@ -63,6 +63,8 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('neighborhood'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?= pdfExportButton('neighborhood', $paginationQuery); ?>
+      <?= excelExportButton('neighborhood', $paginationQuery); ?>
       <?php if (authCan('neighborhood.create')): ?>
         <a href="<?= url('neighborhood/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>

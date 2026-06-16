@@ -3,6 +3,8 @@
 namespace App\Core;
 
 use App\Core\Authorization;
+use App\Services\RecordListExcelExportService;
+use App\Services\RecordListPdfExportService;
 
 class Controller
 	{
@@ -11,7 +13,10 @@ class Controller
 	 *
 	 * @var array<string, string>
 	 */
-	protected $routeAliases = [];
+	protected $routeAliases = [
+		'export-excel' => 'exportExcel',
+		'export-pdf' => 'exportPdf',
+	];
 
 	/**
 	 * Resolve a route method alias to the controller method that should run.
@@ -27,6 +32,79 @@ class Controller
 			}
 
 		return $routeMethod;
+		}
+
+	/**
+	 * Exports the current controller's filtered record listing to PDF.
+	 */
+	public function exportPdf(): void
+		{
+		$resource = $this->resourceNameFromController();
+		$service = new RecordListPdfExportService();
+
+		if (!$service->supports($resource))
+			{
+			http_response_code(404);
+			echo 'PDF export is not configured for this listing.';
+			exit;
+			}
+
+		$this->authorizeListExport($resource);
+		$service->stream($resource, $_GET);
+		}
+
+	/**
+	 * Exports the current controller's filtered record listing to Excel.
+	 */
+	public function exportExcel(): void
+		{
+		$resource = $this->resourceNameFromController();
+		$service = new RecordListExcelExportService();
+
+		if (!$service->supports($resource))
+			{
+			http_response_code(404);
+			echo 'Excel export is not configured for this listing.';
+			exit;
+			}
+
+		$this->authorizeListExport($resource);
+		$service->stream($resource, $_GET);
+		}
+
+	/**
+	 * Derives the resource key from the concrete controller class.
+	 */
+	private function resourceNameFromController(): string
+		{
+		$parts = explode('\\', static::class);
+		$className = end($parts) ?: '';
+		$baseName = preg_replace('/Controller$/', '', $className) ?: $className;
+		$resource = preg_replace('/(?<!^)[A-Z]/', '_$0', $baseName) ?: $baseName;
+
+		return strtolower($resource);
+		}
+
+	/**
+	 * Authorizes list exports using the same access level as the list screen.
+	 */
+	private function authorizeListExport(string $resource): void
+		{
+		if ($resource === 'support_chat')
+			{
+			$this->requireAuth();
+
+			if (Authorization::isRoot())
+				{
+				return;
+				}
+
+			http_response_code(403);
+			$this->view('errors/403', ['title' => 'Acesso negado', 'ability' => 'support_chat.root']);
+			exit;
+			}
+
+		$this->requirePermission($resource . '.index');
 		}
 
 	/**

@@ -60,6 +60,8 @@ $activeLabel = static function ($value): string {
     <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
       <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
       <a href="<?= url('bank'); ?>" class="btn btn-secondary w-100">Limpar</a>
+      <?= pdfExportButton('bank', $paginationQuery); ?>
+      <?= excelExportButton('bank', $paginationQuery); ?>
       <?php if (authCan('bank.create')): ?>
         <a href="<?= url('bank/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
       <?php endif; ?>

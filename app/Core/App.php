@@ -75,7 +75,18 @@ class App
 			}
 
 		$reflection = new \ReflectionMethod($this->controller, $method);
-		return $reflection->isPublic() && $reflection->getDeclaringClass()->getName() !== Controller::class;
+		if (!$reflection->isPublic())
+			{
+			return false;
+			}
+
+		$declaringClass = $reflection->getDeclaringClass()->getName();
+		if ($declaringClass === Controller::class && !in_array($method, ['exportPdf', 'exportExcel'], true))
+			{
+			return false;
+			}
+
+		return true;
 		}
 	}
 
