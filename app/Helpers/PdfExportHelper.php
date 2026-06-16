@@ -44,7 +44,7 @@ if (!function_exists('pdfExportButton'))
 		string $route,
 		string $queryString = '',
 		string $label = 'Exportar PDF',
-		string $class = 'btn btn-outline-danger w-100'
+		string $class = 'btn btn-danger w-100'
 	): string
 		{
 		$href = pdfExportUrl($route, $queryString);

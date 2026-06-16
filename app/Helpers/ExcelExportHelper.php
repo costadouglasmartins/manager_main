@@ -44,7 +44,7 @@ if (!function_exists('excelExportButton'))
 		string $route,
 		string $queryString = '',
 		string $label = 'Exportar Excel',
-		string $class = 'btn btn-outline-success w-100'
+		string $class = 'btn btn-success w-100'
 	): string
 		{
 		$href = excelExportUrl($route, $queryString);
