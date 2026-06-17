@@ -144,9 +144,8 @@ class FinancialOperationCategoryController extends Controller
 		$category = new FinancialOperationCategory();
 		$data = $category->findAllByFinancialOperationCategoryId($id);
 		$this->view('financial_operations_categories/informations', [
-			'title'                             => 'Informações sobre a categoria financeira',
-			'financial_operation_category'      => $data['financial_operation_category'],
-			'financial_operation_subcategories' => $data['financial_operation_subcategories'],
+			'title'                        => 'Informações sobre a categoria financeira',
+			'financial_operation_category' => $data['financial_operation_category'],
 		]);
 		}
 

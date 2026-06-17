@@ -15,15 +15,13 @@ class FinancialOperation extends Model
 	public static function sortableColumns(): array
 		{
 		return [
-			'id'                                 => 'FinancialOperation.id',
-			'financial_operation_category_id'    => 'FinancialOperation.financial_operation_category_id',
-			'category_name'                      => 'Category.`name`',
-			'financial_operation_subcategory_id' => 'FinancialOperation.financial_operation_subcategory_id',
-			'subcategory_name'                   => 'Subcategory.`name`',
-			'user_name'                          => 'Person.`name`',
-			'type'                               => 'FinancialOperation.`type`',
-			'total_value'                        => 'FinancialOperation.`total_value`',
-			'created'                            => 'FinancialOperation.`created`',
+			'id'                              => 'FinancialOperation.id',
+			'financial_operation_category_id' => 'FinancialOperation.financial_operation_category_id',
+			'category_name'                   => 'Category.`name`',
+			'user_name'                       => 'Person.`name`',
+			'type'                            => 'FinancialOperation.`type`',
+			'total_value'                     => 'FinancialOperation.`total_value`',
+			'created'                         => 'FinancialOperation.`created`',
 		];
 		}
 
@@ -72,7 +70,6 @@ class FinancialOperation extends Model
 		{
 		$stmt = $this->db->query("SELECT FinancialOperation.id,
 		                                 FinancialOperation.financial_operation_category_id,
-		                                 FinancialOperation.financial_operation_subcategory_id,
 		                                 FinancialOperation.type,
 		                                 FinancialOperation.total_value,
 		                                 FinancialOperation.user_id,
@@ -80,12 +77,10 @@ class FinancialOperation extends Model
 		                                 FinancialOperation.modified,
 		                                 Category.name AS category_name,
 		                                 Category.description AS category_description,
-		                                 Subcategory.name AS subcategory_name,
 		                                 User.username,
 		                                 Person.name AS user_name
 		                          FROM financial_operations AS FinancialOperation
 		                          LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		                          LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 		                          INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		                          LEFT JOIN people AS Person ON Person.id = User.person_id
 		                          ORDER BY FinancialOperation.id DESC");
@@ -139,7 +134,6 @@ class FinancialOperation extends Model
 				{
 				throw new \InvalidArgumentException('Financial operation category is required.');
 				}
-			$subcategoryId = $this->normalizeSubcategoryId($categoryId, $data['financial_operation_subcategory_id'] ?? null);
 
 			$installments = $this->buildMonthlyInstallments($data);
 			$totalValue = !empty($installments)
@@ -147,18 +141,17 @@ class FinancialOperation extends Model
 				: $this->normalizeMoney($data['total_value'] ?? '0');
 
 			$sql = "INSERT INTO financial_operations
-						(`financial_operation_category_id`, `financial_operation_subcategory_id`, `type`, `total_value`, `user_id`, `created`, `modified`)
+						(`financial_operation_category_id`, `type`, `total_value`, `user_id`, `created`, `modified`)
 					VALUES
-						(:financial_operation_category_id, :financial_operation_subcategory_id, :type, :total_value, :user_id, :created, :modified)";
+						(:financial_operation_category_id, :type, :total_value, :user_id, :created, :modified)";
 			$stmt = $this->db->prepare($sql);
 			$stmt->execute([
-				'financial_operation_category_id'    => $categoryId,
-				'financial_operation_subcategory_id' => $subcategoryId,
-				'type'                               => $data['type'],
-				'total_value'                        => $totalValue,
-				'user_id'                            => $userId,
-				'created'                            => date('Y-m-d H:i:s'),
-				'modified'                           => date('Y-m-d H:i:s'),
+				'financial_operation_category_id' => $categoryId,
+				'type'                            => $data['type'],
+				'total_value'                     => $totalValue,
+				'user_id'                         => $userId,
+				'created'                         => date('Y-m-d H:i:s'),
+				'modified'                        => date('Y-m-d H:i:s'),
 			]);
 
 			$financialOperationId = $this->db->lastInsertId();
@@ -184,7 +177,6 @@ class FinancialOperation extends Model
 		{
 		$stmt = $this->db->prepare("SELECT FinancialOperation.id,
 		                                   FinancialOperation.financial_operation_category_id,
-		                                   FinancialOperation.financial_operation_subcategory_id,
 		                                   FinancialOperation.type,
 		                                   FinancialOperation.total_value,
 		                                   FinancialOperation.user_id,
@@ -192,12 +184,10 @@ class FinancialOperation extends Model
 		                                   FinancialOperation.modified,
 		                                   Category.name AS category_name,
 		                                   Category.description AS category_description,
-		                                   Subcategory.name AS subcategory_name,
 		                                   User.username,
 		                                   Person.name AS user_name
 		                            FROM financial_operations AS FinancialOperation
 		                            LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		                            LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 		                            INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		                            LEFT JOIN people AS Person ON Person.id = User.person_id
 		                            WHERE FinancialOperation.id = :id");
@@ -228,7 +218,6 @@ class FinancialOperation extends Model
 				{
 				throw new \InvalidArgumentException('Financial operation category is required.');
 				}
-			$subcategoryId = $this->normalizeSubcategoryId($categoryId, $data['financial_operation_subcategory_id'] ?? null);
 			$installments = $this->buildMonthlyInstallments($data);
 			$totalValue = !empty($installments)
 				? $this->calculateInstallmentTotal($installments)
@@ -237,23 +226,21 @@ class FinancialOperation extends Model
 			$stmt = $this->db->prepare("
 				UPDATE financial_operations
 				SET
-					`financial_operation_category_id`    = :financial_operation_category_id,
-					`financial_operation_subcategory_id` = :financial_operation_subcategory_id,
-					`type`                               = :type,
-					`total_value`                        = :total_value,
-					`user_id`                            = :user_id,
-					`modified`                           = :modified
+					`financial_operation_category_id` = :financial_operation_category_id,
+					`type`                            = :type,
+					`total_value`                     = :total_value,
+					`user_id`                         = :user_id,
+					`modified`                        = :modified
 				WHERE id = :id
 			");
 
 			$stmt->execute([
-				'financial_operation_category_id'    => $categoryId,
-				'financial_operation_subcategory_id' => $subcategoryId,
-				'type'                               => $data['type'],
-				'total_value'                        => $totalValue,
-				'user_id'                            => $userId,
-				'modified'                           => date('Y-m-d H:i:s'),
-				'id'                                 => $id,
+				'financial_operation_category_id' => $categoryId,
+				'type'                            => $data['type'],
+				'total_value'                     => $totalValue,
+				'user_id'                         => $userId,
+				'modified'                        => date('Y-m-d H:i:s'),
+				'id'                              => $id,
 			]);
 
 			if (!empty($installments))
@@ -296,7 +283,6 @@ class FinancialOperation extends Model
 			{
 			throw new \InvalidArgumentException('Financial operation type is invalid.');
 			}
-		$subcategoryId = $this->normalizeSubcategoryId($categoryId, $data['financial_operation_subcategory_id'] ?? null);
 
 		try
 			{
@@ -311,22 +297,20 @@ class FinancialOperation extends Model
 			$stmt = $this->db->prepare("
 				UPDATE financial_operations
 				SET
-					`financial_operation_category_id`    = :financial_operation_category_id,
-					`financial_operation_subcategory_id` = :financial_operation_subcategory_id,
-					`type`                               = :type,
-					`total_value`                        = :total_value,
-					`user_id`                            = :user_id,
-					`modified`                           = :modified
+					`financial_operation_category_id` = :financial_operation_category_id,
+					`type`                            = :type,
+					`total_value`                     = :total_value,
+					`user_id`                         = :user_id,
+					`modified`                        = :modified
 				WHERE id = :id
 			");
 			$stmt->execute([
-				'financial_operation_category_id'    => $categoryId,
-				'financial_operation_subcategory_id' => $subcategoryId,
-				'type'                               => $operationType,
-				'total_value'                        => $totalValue,
-				'user_id'                            => $userId,
-				'modified'                           => date('Y-m-d H:i:s'),
-				'id'                                 => $id,
+				'financial_operation_category_id' => $categoryId,
+				'type'                            => $operationType,
+				'total_value'                     => $totalValue,
+				'user_id'                         => $userId,
+				'modified'                        => date('Y-m-d H:i:s'),
+				'id'                              => $id,
 			]);
 
 			if (!empty($installments))
@@ -374,7 +358,6 @@ class FinancialOperation extends Model
 		{
 		$sql = "SELECT FinancialOperation.id,
 		               FinancialOperation.financial_operation_category_id,
-		               FinancialOperation.financial_operation_subcategory_id,
 		               FinancialOperation.type,
 		               FinancialOperation.total_value,
 		               FinancialOperation.user_id,
@@ -382,12 +365,10 @@ class FinancialOperation extends Model
 		               FinancialOperation.modified,
 		               Category.name AS category_name,
 		               Category.description AS category_description,
-		               Subcategory.name AS subcategory_name,
 		               User.username,
 		               Person.name AS user_name
 		        FROM financial_operations AS FinancialOperation
 		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		        LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		        LEFT JOIN people AS Person ON Person.id = User.person_id
 		        WHERE 1 = 1";
@@ -418,7 +399,6 @@ class FinancialOperation extends Model
 		$sql = "SELECT COUNT(FinancialOperation.id) AS total
 		        FROM financial_operations AS FinancialOperation
 		        LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-		        LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 		        INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 		        LEFT JOIN people AS Person ON Person.id = User.person_id
 		        WHERE 1 = 1";
@@ -591,7 +571,6 @@ class FinancialOperation extends Model
 		$stmt = $this->db->prepare("
 			SELECT FinancialOperation.id AS operation_id,
 			       FinancialOperation.financial_operation_category_id AS category_id,
-			       FinancialOperation.financial_operation_subcategory_id AS subcategory_id,
 			       FinancialOperation.type AS operation_type,
 			       FinancialOperation.total_value AS operation_total_value,
 			       FinancialOperation.user_id,
@@ -599,7 +578,6 @@ class FinancialOperation extends Model
 			       FinancialOperation.modified AS operation_modified,
 			       Category.name AS category_name,
 			       Category.description AS category_description,
-			       Subcategory.name AS subcategory_name,
 			       User.username,
 			       Person.name AS user_name,
 			       FinancialOperationPayment.id AS payment_id,
@@ -612,7 +590,6 @@ class FinancialOperation extends Model
 			FROM financial_operations AS FinancialOperation
 			INNER JOIN financial_operations_payments AS FinancialOperationPayment ON FinancialOperationPayment.financial_operation_id = FinancialOperation.id
 			LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-			LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 			INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 			LEFT JOIN people AS Person ON Person.id = User.person_id
 			WHERE FinancialOperationPayment.due_date IS NOT NULL
@@ -625,7 +602,6 @@ class FinancialOperation extends Model
 
 			SELECT FinancialOperation.id AS operation_id,
 			       FinancialOperation.financial_operation_category_id AS category_id,
-			       FinancialOperation.financial_operation_subcategory_id AS subcategory_id,
 			       FinancialOperation.type AS operation_type,
 			       FinancialOperation.total_value AS operation_total_value,
 			       FinancialOperation.user_id,
@@ -633,7 +609,6 @@ class FinancialOperation extends Model
 			       FinancialOperation.modified AS operation_modified,
 			       Category.name AS category_name,
 			       Category.description AS category_description,
-			       Subcategory.name AS subcategory_name,
 			       User.username,
 			       Person.name AS user_name,
 			       NULL AS payment_id,
@@ -645,7 +620,6 @@ class FinancialOperation extends Model
 			       'operation' AS entry_source
 			FROM financial_operations AS FinancialOperation
 			LEFT JOIN financial_operations_categories AS Category ON Category.id = FinancialOperation.financial_operation_category_id
-			LEFT JOIN financial_operations_subcategories AS Subcategory ON Subcategory.id = FinancialOperation.financial_operation_subcategory_id
 			INNER JOIN users AS User ON User.id = FinancialOperation.user_id
 			LEFT JOIN people AS Person ON Person.id = User.person_id
 			WHERE NOT EXISTS (
@@ -937,25 +911,23 @@ class FinancialOperation extends Model
 			}
 
 		return [
-			'operation_id'                    => (int) ($row['operation_id'] ?? 0),
+			'operation_id'          => (int) ($row['operation_id'] ?? 0),
 			'financial_operation_category_id' => (int) ($row['category_id'] ?? 0),
-			'financial_operation_subcategory_id' => isset($row['subcategory_id']) ? (int) $row['subcategory_id'] : null,
-			'category_name'                   => (string) ($row['category_name'] ?? ''),
-			'category_description'            => (string) ($row['category_description'] ?? ''),
-			'subcategory_name'                => (string) ($row['subcategory_name'] ?? ''),
-			'operation_type'                  => (string) ($row['operation_type'] ?? ''),
-			'operation_total_value'           => number_format((float) ($row['operation_total_value'] ?? 0), 2, '.', ''),
-			'user_id'                         => (int) ($row['user_id'] ?? 0),
-			'username'                        => (string) ($row['username'] ?? ''),
-			'user_name'                       => (string) ($row['user_name'] ?? ''),
-			'payment_id'                      => isset($row['payment_id']) ? (int) $row['payment_id'] : null,
-			'payment_type'                    => $row['payment_type'] !== null ? (string) $row['payment_type'] : '',
-			'payment_value'                   => $row['payment_value'] !== null ? number_format((float) $row['payment_value'], 2, '.', '') : '',
-			'payment_date'                    => $paymentDate !== null ? (string) $paymentDate : '',
-			'payment_date_input'              => $paymentDateInput,
-			'due_date'                        => $row['due_date'] !== null ? (string) $row['due_date'] : '',
-			'sheet_date'                      => (string) ($row['sheet_date'] ?? ''),
-			'entry_source'                    => (string) ($row['entry_source'] ?? ''),
+			'category_name'         => (string) ($row['category_name'] ?? ''),
+			'category_description'  => (string) ($row['category_description'] ?? ''),
+			'operation_type'        => (string) ($row['operation_type'] ?? ''),
+			'operation_total_value' => number_format((float) ($row['operation_total_value'] ?? 0), 2, '.', ''),
+			'user_id'               => (int) ($row['user_id'] ?? 0),
+			'username'              => (string) ($row['username'] ?? ''),
+			'user_name'             => (string) ($row['user_name'] ?? ''),
+			'payment_id'            => isset($row['payment_id']) ? (int) $row['payment_id'] : null,
+			'payment_type'          => $row['payment_type'] !== null ? (string) $row['payment_type'] : '',
+			'payment_value'         => $row['payment_value'] !== null ? number_format((float) $row['payment_value'], 2, '.', '') : '',
+			'payment_date'          => $paymentDate !== null ? (string) $paymentDate : '',
+			'payment_date_input'    => $paymentDateInput,
+			'due_date'              => $row['due_date'] !== null ? (string) $row['due_date'] : '',
+			'sheet_date'            => (string) ($row['sheet_date'] ?? ''),
+			'entry_source'          => (string) ($row['entry_source'] ?? ''),
 		];
 		}
 
@@ -1198,18 +1170,6 @@ class FinancialOperation extends Model
 			$params['category_name'] = '%' . $filters['category_name'] . '%';
 			}
 
-		if (isset($filters['financial_operation_subcategory_id']) && $filters['financial_operation_subcategory_id'] !== '')
-			{
-			$sql .= " AND FinancialOperation.financial_operation_subcategory_id = :financial_operation_subcategory_id";
-			$params['financial_operation_subcategory_id'] = (int) $filters['financial_operation_subcategory_id'];
-			}
-
-		if (isset($filters['subcategory_name']) && $filters['subcategory_name'] !== '')
-			{
-			$sql .= " AND Subcategory.name LIKE :subcategory_name";
-			$params['subcategory_name'] = '%' . $filters['subcategory_name'] . '%';
-			}
-
 		if (isset($filters['user_name']) && $filters['user_name'] !== '')
 			{
 			$sql .= " AND (Person.name LIKE :user_name OR User.username LIKE :user_name)";
@@ -1243,40 +1203,6 @@ class FinancialOperation extends Model
 			$paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
 			$stmt->bindValue(':' . $key, $value, $paramType);
 			}
-		}
-
-	/**
-	 * Normalizes a subcategory id and checks whether it belongs to the selected category.
-	 *
-	 * @param int $categoryId Parent category ID.
-	 * @param mixed $value Raw subcategory ID.
-	 * @return int|null
-	 */
-	private function normalizeSubcategoryId(int $categoryId, $value): ?int
-		{
-		$subcategoryId = (int) $value;
-		if ($subcategoryId <= 0)
-			{
-			return null;
-			}
-
-		$stmt = $this->db->prepare("
-			SELECT COUNT(FinancialOperationSubcategory.id)
-			FROM financial_operations_subcategories AS FinancialOperationSubcategory
-			WHERE FinancialOperationSubcategory.id = :id
-			  AND FinancialOperationSubcategory.financial_operation_category_id = :financial_operation_category_id
-		");
-		$stmt->execute([
-			'id'                              => $subcategoryId,
-			'financial_operation_category_id' => $categoryId,
-		]);
-
-		if ((int) $stmt->fetchColumn() < 1)
-			{
-			throw new \InvalidArgumentException('Financial operation subcategory must belong to the selected category.');
-			}
-
-		return $subcategoryId;
 		}
 
 	/**

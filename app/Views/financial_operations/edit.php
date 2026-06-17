@@ -1,6 +1,5 @@
 <?php
 $categories = $categories ?? [];
-$subcategories = $subcategories ?? [];
 $types = $types ?? [];
 $paymentTypes = $paymentTypes ?? [];
 $sessionUser = $sessionUser ?? [];
@@ -42,22 +41,6 @@ if ($sessionUserLabel === '')
         <?php foreach ($categories as $category): ?>
           <option value="<?= (int) $category['id'] ?>" <?= (int) $financial_operation['financial_operation_category_id'] === (int) $category['id'] ? 'selected' : '' ?>>
             <?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-
-    <div class="mb-2 col-md-6 col-lg-6">
-      <label class="form-label" for="financial_operation_subcategory_id">Subcategoria</label>
-      <select class="form-select" id="financial_operation_subcategory_id" name="financial_operation_subcategory_id">
-        <option value="">Selecione</option>
-        <?php foreach ($subcategories as $subcategory): ?>
-          <option
-            value="<?= (int) $subcategory['id'] ?>"
-            data-category-id="<?= (int) ($subcategory['financial_operation_category_id'] ?? 0); ?>"
-            <?= (int) ($financial_operation['financial_operation_subcategory_id'] ?? 0) === (int) $subcategory['id'] ? 'selected' : '' ?>
-          >
-            <?= htmlspecialchars(trim((string) ($subcategory['name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
           </option>
         <?php endforeach; ?>
       </select>

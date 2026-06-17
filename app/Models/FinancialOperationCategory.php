@@ -180,34 +180,11 @@ class FinancialOperationCategory extends Model
 	 * Find all by financial operation category id.
 	 *
 	 * @param int|string $id Category ID.
-	 * @return array{financial_operation_category: array<string, mixed>|false, financial_operation_subcategories: array<int, array<string, mixed>>}
+	 * @return array{financial_operation_category: array<string, mixed>|false}
 	 */
 	public function findAllByFinancialOperationCategoryId($id): array
 		{
-		return [
-			'financial_operation_category'      => $this->find($id),
-			'financial_operation_subcategories' => $this->findSubcategoriesByFinancialOperationCategoryId($id),
-		];
-		}
-
-	/**
-	 * Finds the subcategories linked to a category.
-	 *
-	 * @param int|string $id Category ID.
-	 * @return array<int, array<string, mixed>>
-	 */
-	public function findSubcategoriesByFinancialOperationCategoryId($id): array
-		{
-		$stmt = $this->db->prepare("SELECT FinancialOperationSubcategory.id,
-		                                   FinancialOperationSubcategory.financial_operation_category_id,
-		                                   FinancialOperationSubcategory.name,
-		                                   FinancialOperationSubcategory.created,
-		                                   FinancialOperationSubcategory.modified
-		                            FROM financial_operations_subcategories AS FinancialOperationSubcategory
-		                            WHERE FinancialOperationSubcategory.financial_operation_category_id = :id
-		                            ORDER BY FinancialOperationSubcategory.name ASC");
-		$stmt->execute(['id' => $id]);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return ['financial_operation_category' => $this->find($id)];
 		}
 
 	/**

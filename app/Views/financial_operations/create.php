@@ -1,6 +1,5 @@
 <?php
 $categories = $categories ?? [];
-$subcategories = $subcategories ?? [];
 $types = $types ?? [];
 $paymentTypes = $paymentTypes ?? [];
 $sessionUser = $sessionUser ?? [];
@@ -29,7 +28,7 @@ if ($sessionUserLabel === '')
 <form action="<?= url('financial_operation/store/'); ?>" method="POST" id="financialOperationCreateForm">
   <div class="row">
 
-    <div class="mb-2 col-md-6 col-lg-3">
+    <div class="mb-2 col-md-6 col-lg-4">
       <label class="form-label" for="financial_operation_category_id">Categoria</label>
       <select class="form-select" id="financial_operation_category_id" name="financial_operation_category_id" required>
         <option value="">Selecione</option>
@@ -46,19 +45,7 @@ if ($sessionUserLabel === '')
       </select>
     </div>
 
-    <div class="mb-2 col-md-6 col-lg-3">
-      <label class="form-label" for="financial_operation_subcategory_id">Subcategoria</label>
-      <select class="form-select" id="financial_operation_subcategory_id" name="financial_operation_subcategory_id">
-        <option value="">Selecione</option>
-        <?php foreach ($subcategories as $subcategory): ?>
-          <option value="<?= (int) $subcategory['id'] ?>" data-category-id="<?= (int) ($subcategory['financial_operation_category_id'] ?? 0); ?>">
-            <?= htmlspecialchars(trim((string) ($subcategory['name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-
-    <div class="mb-2 col-md-6 col-lg-3">
+    <div class="mb-2 col-md-6 col-lg-4">
       <label class="form-label" for="type">Tipo</label>
       <select class="form-select" id="type" name="type" required>
         <option value="">Selecione</option>
@@ -68,7 +55,7 @@ if ($sessionUserLabel === '')
       </select>
     </div>
 
-    <div class="mb-2 col-md-6 col-lg-3">
+    <div class="mb-2 col-md-6 col-lg-4">
       <label class="form-label" for="total_value">Valor total</label>
       <input autocomplete="off" class="form-control" id="total_value" name="total_value" min="0" step="0.01" type="number" required>
     </div>

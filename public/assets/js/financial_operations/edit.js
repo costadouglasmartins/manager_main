@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const categoryInput = document.getElementById("financial_operation_category_id");
-  const subcategoryInput = document.getElementById("financial_operation_subcategory_id");
   const totalInput = document.getElementById("total_value");
   const recurrenceInput = document.getElementById("generate_installments");
   const recurrenceFields = document.getElementById("recurrenceFields");
@@ -20,34 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     style: "currency",
     currency: "BRL",
   });
-
-  /**
-   * Shows only subcategories that belong to the selected category.
-   */
-  function syncSubcategoryOptions() {
-    if (!categoryInput || !subcategoryInput) {
-      return;
-    }
-
-    const categoryId = categoryInput.value;
-    subcategoryInput.disabled = categoryId === "";
-
-    Array.from(subcategoryInput.options).forEach((option) => {
-      if (option.value === "") {
-        option.hidden = false;
-        option.disabled = false;
-        return;
-      }
-
-      const belongsToCategory = option.dataset.categoryId === categoryId;
-      option.hidden = !belongsToCategory;
-      option.disabled = !belongsToCategory;
-    });
-
-    if (subcategoryInput.selectedOptions.length > 0 && subcategoryInput.selectedOptions[0].disabled) {
-      subcategoryInput.value = "";
-    }
-  }
 
   /**
    * Builds and validates a local date.
@@ -331,9 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   recurrenceInput.addEventListener("change", syncRecurrence);
-  if (categoryInput) {
-    categoryInput.addEventListener("change", syncSubcategoryOptions);
-  }
   installmentValueInput.addEventListener("input", updatePreview);
   startDateInput.addEventListener("input", () => {
     startDateInput.value = formatDateTextValue(startDateInput.value);
@@ -346,6 +313,5 @@ document.addEventListener("DOMContentLoaded", () => {
   startDateInput.addEventListener("change", syncRecurrence);
   endDateInput.addEventListener("change", updatePreview);
 
-  syncSubcategoryOptions();
   syncRecurrence();
 });

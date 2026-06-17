@@ -95,10 +95,6 @@ if ($categoryDescription !== '')
 	$categoryLabel .= ' - ' . $categoryDescription;
 	}
 $categoryDetail = $categoryId > 0 ? '#' . $categoryId . ' - ' . $categoryLabel : $categoryLabel;
-$subcategoryId = (int) ($financial_operation['financial_operation_subcategory_id'] ?? 0);
-$subcategoryLabel = trim((string) ($financial_operation['subcategory_name'] ?? ''));
-$subcategoryLabel = $subcategoryLabel !== '' ? $subcategoryLabel : 'Sem subcategoria';
-$subcategoryDetail = $subcategoryId > 0 ? '#' . $subcategoryId . ' - ' . $subcategoryLabel : $subcategoryLabel;
 
 $userId = (int) ($financial_operation['user_id'] ?? 0);
 $userName = trim((string) ($financial_operation['user_name'] ?? ''));
@@ -178,7 +174,6 @@ $paymentCount = count($financial_operation_payments);
             <?= htmlspecialchars($operationTypeLabel, ENT_QUOTES, 'UTF-8'); ?>
           </span>
           <span><i class="bi bi-tag"></i><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-          <span><i class="bi bi-tags"></i><?= htmlspecialchars($subcategoryLabel, ENT_QUOTES, 'UTF-8'); ?></span>
           <span><i class="bi bi-person-circle"></i><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
       </div>
@@ -308,10 +303,6 @@ $paymentCount = count($financial_operation_payments);
             <div>
               <dt><i class="bi bi-tag"></i>Categoria</dt>
               <dd><?= htmlspecialchars($categoryDetail, ENT_QUOTES, 'UTF-8'); ?></dd>
-            </div>
-            <div>
-              <dt><i class="bi bi-tags"></i>Subcategoria</dt>
-              <dd><?= htmlspecialchars($subcategoryDetail, ENT_QUOTES, 'UTF-8'); ?></dd>
             </div>
             <div>
               <dt><i class="bi bi-credit-card"></i>Pagamentos vinculados</dt>

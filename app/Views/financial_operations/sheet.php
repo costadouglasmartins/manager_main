@@ -81,7 +81,6 @@ $months = $sheet['months'] ?? [];
 $incomeRows = $sheet['incomeRows'] ?? [];
 $expenseRows = $sheet['expenseRows'] ?? [];
 $categories = $categories ?? [];
-$subcategories = $subcategories ?? [];
 $types = $types ?? [];
 $paymentTypes = $paymentTypes ?? [];
 $sessionUser = $sessionUser ?? [];
@@ -376,18 +375,6 @@ if ($sessionUserLabel === '')
                         }
                       ?>
                       <option value="<?= (int) $category['id']; ?>"><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8'); ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </div>
-
-                <div class="mb-2 col-md-6">
-                  <label class="form-label" for="sheet_financial_operation_subcategory_id">Subcategoria</label>
-                  <select class="form-select" id="sheet_financial_operation_subcategory_id" name="financial_operation_subcategory_id">
-                    <option value="">Selecione</option>
-                    <?php foreach ($subcategories as $subcategory): ?>
-                      <option value="<?= (int) $subcategory['id']; ?>" data-category-id="<?= (int) ($subcategory['financial_operation_category_id'] ?? 0); ?>">
-                        <?= htmlspecialchars(trim((string) ($subcategory['name'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>
-                      </option>
                     <?php endforeach; ?>
                   </select>
                 </div>

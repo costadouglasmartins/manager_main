@@ -6,7 +6,6 @@ use App\Core\Controller;
 use App\Models\FinancialOperation;
 use App\Models\FinancialOperationCategory;
 use App\Models\FinancialOperationPayment;
-use App\Models\FinancialOperationSubcategory;
 
 class FinancialOperationController extends Controller
 	{
@@ -19,18 +18,15 @@ class FinancialOperationController extends Controller
 
 		$financialOperation = new FinancialOperation();
 		$category = new FinancialOperationCategory();
-		$subcategory = new FinancialOperationSubcategory();
 
 		$filters = [
-			'id'                                 => isset($_GET['id'])                                 ? trim($_GET['id'])                                 : '',
-			'financial_operation_category_id'    => isset($_GET['financial_operation_category_id'])    ? trim($_GET['financial_operation_category_id'])    : '',
-			'category_name'                      => isset($_GET['category_name'])                      ? trim($_GET['category_name'])                      : '',
-			'financial_operation_subcategory_id' => isset($_GET['financial_operation_subcategory_id']) ? trim($_GET['financial_operation_subcategory_id']) : '',
-			'subcategory_name'                   => isset($_GET['subcategory_name'])                   ? trim($_GET['subcategory_name'])                   : '',
-			'user_id'                            => isset($_GET['user_id'])                            ? trim($_GET['user_id'])                            : '',
-			'user_name'                          => isset($_GET['user_name'])                          ? trim($_GET['user_name'])                          : '',
-			'type'                               => isset($_GET['type'])                               ? trim($_GET['type'])                               : '',
-			'total_value'                        => isset($_GET['total_value'])                        ? trim($_GET['total_value'])                        : '',
+			'id'                              => isset($_GET['id'])                              ? trim($_GET['id'])                              : '',
+			'financial_operation_category_id' => isset($_GET['financial_operation_category_id']) ? trim($_GET['financial_operation_category_id']) : '',
+			'category_name'                   => isset($_GET['category_name'])                   ? trim($_GET['category_name'])                   : '',
+			'user_id'                         => isset($_GET['user_id'])                         ? trim($_GET['user_id'])                         : '',
+			'user_name'                       => isset($_GET['user_name'])                       ? trim($_GET['user_name'])                       : '',
+			'type'                            => isset($_GET['type'])                            ? trim($_GET['type'])                            : '',
+			'total_value'                     => isset($_GET['total_value'])                     ? trim($_GET['total_value'])                     : '',
 		];
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -69,7 +65,6 @@ class FinancialOperationController extends Controller
 			'title'                => 'Lista de operações financeiras',
 			'filters'              => $filters,
 			'categories'           => $category->getAll(),
-			'subcategories'        => $subcategory->getAll(),
 			'types'                => FinancialOperation::typeOptions(),
 			'page'                 => $page,
 			'totalPages'           => $totalPages,
@@ -86,11 +81,9 @@ class FinancialOperationController extends Controller
 		$this->requirePermission('financial_operation.create');
 
 		$category = new FinancialOperationCategory();
-		$subcategory = new FinancialOperationSubcategory();
 		$this->view('financial_operations/create', [
 			'title'         => 'Nova operação financeira',
 			'categories'    => $category->getAll(),
-			'subcategories' => $subcategory->getAll(),
 			'types'         => FinancialOperation::typeOptions(),
 			'paymentTypes'  => FinancialOperationPayment::typeOptions(),
 			'sessionUser'   => $_SESSION['manager_main']['user'] ?? [],
@@ -118,7 +111,6 @@ class FinancialOperationController extends Controller
 
 		$financialOperation = new FinancialOperation();
 		$category = new FinancialOperationCategory();
-		$subcategory = new FinancialOperationSubcategory();
 		$sheet = $financialOperation->getAnnualSheet($year);
 
 		if ($this->wantsJson())
@@ -131,7 +123,6 @@ class FinancialOperationController extends Controller
 			'sheet'       => $sheet,
 			'yearOptions' => range($minYear, $maxYear),
 			'categories'  => $category->getAll(),
-			'subcategories' => $subcategory->getAll(),
 			'types'       => FinancialOperation::typeOptions(),
 			'paymentTypes' => FinancialOperationPayment::typeOptions(),
 			'sessionUser' => $_SESSION['manager_main']['user'] ?? [],
@@ -256,14 +247,12 @@ class FinancialOperationController extends Controller
 
 		$financialOperation = new FinancialOperation();
 		$category = new FinancialOperationCategory();
-		$subcategory = new FinancialOperationSubcategory();
 		$data = $financialOperation->find($id);
 
 		$this->view('financial_operations/edit', [
 			'title'               => 'Editar operação financeira',
 			'financial_operation' => $data,
 			'categories'          => $category->getAll(),
-			'subcategories'       => $subcategory->getAll(),
 			'types'               => FinancialOperation::typeOptions(),
 			'paymentTypes'        => FinancialOperationPayment::typeOptions(),
 			'sessionUser'         => $_SESSION['manager_main']['user'] ?? [],
