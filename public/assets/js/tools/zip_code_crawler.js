@@ -307,7 +307,7 @@
 
 				if (stage === "normalization_pending")
 					{
-						return "Cache TXT carregado; sincronização em ordem crescente será feita sem bloquear o início da pesquisa.";
+						return "Cache TXT carregado; sincronização em ordem decrescente será feita sem bloquear o início da pesquisa.";
 					}
 
 				if (stage === "loaded")

@@ -262,6 +262,21 @@ class ZipCodeCrawlerService
 		}
 
 	/**
+	 * Return zip code ranges ordered from the highest range to the lowest.
+	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
+	 * @return array<int, array{start: string, end: string}>
+	 **/
+	private function descendingZipCodeRanges(array $ranges): array
+		{
+		usort($ranges, static function (array $left, array $right): int
+			{
+			return strcmp($right['end'], $left['end']);
+			});
+
+		return array_values($ranges);
+		}
+
+	/**
 	 * Iterate zip codes covered by ranges up to a processing limit.
 	 * @param array<int, array{start: string, end: string}> $ranges Zip code ranges.
 	 * @param int $limit Maximum number of zip codes to iterate.
@@ -275,7 +290,7 @@ class ZipCodeCrawlerService
 			$startNumber = (int) $range['start'];
 			$endNumber = (int) $range['end'];
 
-			for ($currentNumber = $startNumber; $currentNumber <= $endNumber; $currentNumber++)
+			for ($currentNumber = $endNumber; $currentNumber >= $startNumber; $currentNumber--)
 				{
 				if ($iterated >= $limit)
 					{
@@ -302,7 +317,7 @@ class ZipCodeCrawlerService
 			}
 
 		$zipCodes = array_keys($notFoundZipCodes);
-		sort($zipCodes, SORT_STRING);
+		rsort($zipCodes, SORT_STRING);
 		$zipCodesInRange = [];
 
 		foreach ($zipCodes as $zipCode)
@@ -356,9 +371,10 @@ class ZipCodeCrawlerService
 		{
 		if (strlen($startDigits) !== 8)
 			{
-			return $ranges;
+			return $this->descendingZipCodeRanges($ranges);
 			}
 
+		$ranges = $this->descendingZipCodeRanges($ranges);
 		$rotatedRanges = [];
 		$previousRanges = [];
 		$foundStart = false;
@@ -368,15 +384,15 @@ class ZipCodeCrawlerService
 			if (!$foundStart && $startDigits >= $range['start'] && $startDigits <= $range['end'])
 				{
 				$rotatedRanges[] = [
-					'start' => $startDigits,
-					'end' => $range['end'],
+					'start' => $range['start'],
+					'end' => $startDigits,
 				];
 
-				if ($range['start'] < $startDigits)
+				if ($startDigits < $range['end'])
 					{
 					$previousRanges[] = [
-						'start' => $range['start'],
-						'end' => str_pad((string) (((int) $startDigits) - 1), 8, '0', STR_PAD_LEFT),
+						'start' => str_pad((string) (((int) $startDigits) + 1), 8, '0', STR_PAD_LEFT),
+						'end' => $range['end'],
 					];
 					}
 
@@ -395,7 +411,7 @@ class ZipCodeCrawlerService
 
 		if (!$foundStart)
 			{
-			return $ranges;
+			return $this->descendingZipCodeRanges($ranges);
 			}
 
 		return array_values(array_merge($rotatedRanges, $previousRanges));
@@ -462,7 +478,7 @@ class ZipCodeCrawlerService
 	 * Crawl the configured zip code ranges for a Brazilian state.
 	 * @param string $stateAcronym State acronym.
 	 * @param int $delayMs Delay between lookups in milliseconds.
-	 * @param int $maxResults Maximum number of records to process.
+	 * @param int $maxResults Legacy limit ignored for state crawls.
 	 * @param string $providerMode Provider selection mode.
 	 * @param int $concurrency Number of simultaneous webservice lookups.
 	 * @param bool $autoSaveCity Whether city persistence is enabled.
@@ -484,7 +500,7 @@ class ZipCodeCrawlerService
 			return;
 			}
 
-		yield from $this->crawlRanges($ranges, $delayMs, $maxResults, $providerMode, $stateAcronym, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
+		yield from $this->crawlRanges($ranges, $delayMs, self::countZipCodeRanges($ranges), $providerMode, $stateAcronym, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
 		}
 
 	/**
@@ -514,7 +530,7 @@ class ZipCodeCrawlerService
 		$this->prepareViaCepAvailability($providerMode);
 		$resumeStartDigits = $this->resolveNotFoundResumeStart($notFoundZipCodes, $ranges);
 		$crawlRanges = $resumeStartDigits === null
-			? $ranges
+			? $this->descendingZipCodeRanges($ranges)
 			: $this->rotateZipCodeRangesFrom($ranges, $resumeStartDigits);
 		$totalAvailable = self::countZipCodeRanges($crawlRanges);
 		$totalToProcess = min($totalAvailable, max(1, $maxResults));
@@ -1939,7 +1955,7 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Flush pending not found zip codes to disk in ascending order.
+	 * Flush pending not found zip codes to disk in descending order.
 	 * @return void
 	 **/
 	private function flushNotFoundZipCodes(): void
@@ -2261,7 +2277,7 @@ class ZipCodeCrawlerService
 			}
 
 		$notFoundZipCodes = $this->loadNormalizedNotFoundZipCodeContents($contents, $needsRewrite);
-		if (!$needsRewrite)
+		if (!$needsRewrite || !empty($notFoundZipCodes))
 			{
 			return $notFoundZipCodes;
 			}
@@ -2303,6 +2319,11 @@ class ZipCodeCrawlerService
 
 		$lines = explode("\n", $contents);
 		$notFoundZipCodes = array_fill_keys($lines, true);
+		if (count($lines) > 1 && strcmp($lines[0], $lines[count($lines) - 1]) < 0)
+			{
+			$needsRewrite = true;
+			}
+
 		if (count($notFoundZipCodes) !== count($lines))
 			{
 			$needsRewrite = true;
@@ -2432,14 +2453,14 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Serialize zip codes in ascending order, one per line.
+	 * Serialize zip codes in descending order, one per line.
 	 * @param array<string, bool> $notFoundZipCodes Parsed zip code set.
 	 * @return string
 	 **/
 	private function serializeNotFoundZipCodes(array $notFoundZipCodes): string
 		{
 		$zipCodes = array_keys($notFoundZipCodes);
-		sort($zipCodes, SORT_STRING);
+		rsort($zipCodes, SORT_STRING);
 
 		return empty($zipCodes) ? '' : implode(PHP_EOL, $zipCodes) . PHP_EOL;
 		}
@@ -2532,10 +2553,10 @@ class ZipCodeCrawlerService
 		foreach ($ranges as $range)
 			{
 			$rangeData[] = [
-				'start_digits' => $range['start'],
-				'end_digits' => $range['end'],
-				'start_zip_code' => self::formatZipCodeDigits($range['start']),
-				'end_zip_code' => self::formatZipCodeDigits($range['end']),
+				'start_digits' => $range['end'],
+				'end_digits' => $range['start'],
+				'start_zip_code' => self::formatZipCodeDigits($range['end']),
+				'end_zip_code' => self::formatZipCodeDigits($range['start']),
 				'total' => ((int) $range['end'] - (int) $range['start']) + 1,
 			];
 			}
