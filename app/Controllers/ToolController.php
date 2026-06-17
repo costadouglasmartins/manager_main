@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Core\Authorization;
 use App\Core\Controller;
 use App\Models\State;
 use App\Services\EmailMxValidatorService;
+use App\Services\IpCountryRangeService;
+use App\Services\IpWebCrawlerService;
 use App\Services\ZipCodeCrawlerService;
 use App\Services\ZipCodeNeighborhoodService;
 use App\Services\ZipCodeSearchService;
@@ -83,6 +86,20 @@ class ToolController extends Controller
 		$this->view('tools/zip_code_crawler', [
 			'title' => 'Webcrawler de CEPs',
 			'zipCodeStateOptions' => $this->readZipCodeCrawlerStateOptions(),
+		]);
+		}
+
+	/**
+	 * Render the IP webcrawler page.
+	 * @return void
+	 **/
+	public function ipWebCrawler(): void
+		{
+		$this->authorizeIpWebCrawler('tool.ipWebCrawler');
+
+		$this->view('tools/ip_web_crawler', [
+			'title' => 'Webcrawler por IP',
+			'ipCountryOptions' => IpCountryRangeService::countryOptions(),
 		]);
 		}
 
@@ -189,6 +206,77 @@ class ToolController extends Controller
 			}
 
 		exit;
+		}
+
+	/**
+	 * Stream IP webcrawler progress through Server-Sent Events.
+	 * @return void
+	 **/
+	public function streamIpWebCrawler(): void
+		{
+		$this->authorizeIpWebCrawler('tool.streamIpWebCrawler');
+
+		$userId = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+
+		ignore_user_abort(true);
+		set_time_limit(0);
+
+		header('Content-Type: text/event-stream; charset=utf-8');
+		header('Cache-Control: no-cache, no-transform');
+		header('Connection: keep-alive');
+		header('X-Accel-Buffering: no');
+
+		while (ob_get_level() > 0)
+			{
+			ob_end_flush();
+			}
+
+		ob_implicit_flush(true);
+		session_write_close();
+
+		$service = new IpWebCrawlerService();
+		foreach ($service->crawl($this->readIpWebCrawlerInput(), $userId) as $payload)
+			{
+			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
+			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
+			flush();
+
+			if (connection_aborted())
+				{
+				break;
+				}
+			}
+
+		exit;
+		}
+
+	/**
+	 * Return IPv4 ranges for the selected country.
+	 * @return void
+	 **/
+	public function ipWebCrawlerCountryRanges(): void
+		{
+		$this->authorizeIpWebCrawler('tool.ipWebCrawler');
+
+		$countryCode = trim((string) ($_GET['country_code'] ?? ($_POST['country_code'] ?? '')));
+		$limit = $this->readPositiveInt((string) ($_GET['limit'] ?? ($_POST['limit'] ?? '250')), 250, 1, 250);
+		$refresh = $this->readBooleanFlag($_GET['refresh'] ?? ($_POST['refresh'] ?? null));
+		$maxIpsPerRange = $this->readPositiveInt((string) ($_GET['max_ips_per_range'] ?? ($_POST['max_ips_per_range'] ?? '1000')), 1000, 1, 1000);
+
+		try
+			{
+			$service = new IpCountryRangeService();
+			$result = $service->loadCountryRanges($countryCode, $limit, $refresh, $maxIpsPerRange);
+			$this->json($result, !empty($result['success']) ? 200 : 422);
+			}
+		catch (\Throwable $e)
+			{
+			$this->json([
+				'success' => false,
+				'message' => 'Não foi possível carregar as faixas de IPs por país. Aplique o schema SQL do webcrawler e tente novamente.',
+				'error' => 'country_ranges_failed',
+			], 500);
+			}
 		}
 
 	/**
@@ -530,6 +618,62 @@ class ToolController extends Controller
 			}
 
 		return $options;
+		}
+
+	/**
+	 * Authorize access to the IP webcrawler tool.
+	 * @param string $ability Ability required for non-root users.
+	 * @return void
+	 **/
+	private function authorizeIpWebCrawler(string $ability): void
+		{
+		$this->requireAuth();
+
+		if (Authorization::isRoot() || Authorization::can($ability))
+			{
+			return;
+			}
+
+		if ($this->wantsJson() || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'text/event-stream') !== false)
+			{
+			$this->json([
+				'error' => 'forbidden',
+				'message' => 'You do not have permission to access this resource',
+				'ability' => $ability,
+			], 403);
+			}
+
+		http_response_code(403);
+		$this->view('errors/403', ['title' => 'Access denied', 'ability' => $ability]);
+		exit;
+		}
+
+	/**
+	 * Read IP webcrawler input values from the request.
+	 * @return array<string, mixed>
+	 **/
+	private function readIpWebCrawlerInput(): array
+		{
+		$protocols = $_GET['protocols'] ?? ($_POST['protocols'] ?? []);
+
+		return [
+			'range_mode' => trim((string) ($_GET['range_mode'] ?? ($_POST['range_mode'] ?? 'amount'))),
+			'start_ip' => trim((string) ($_GET['start_ip'] ?? ($_POST['start_ip'] ?? ''))),
+			'end_ip' => trim((string) ($_GET['end_ip'] ?? ($_POST['end_ip'] ?? ''))),
+			'ip_quantity' => trim((string) ($_GET['ip_quantity'] ?? ($_POST['ip_quantity'] ?? '1'))),
+			'cidr' => trim((string) ($_GET['cidr'] ?? ($_POST['cidr'] ?? ''))),
+			'ports' => trim((string) ($_GET['ports'] ?? ($_POST['ports'] ?? '80,443'))),
+			'protocols' => $protocols,
+			'start_paths' => trim((string) ($_GET['start_paths'] ?? ($_POST['start_paths'] ?? '/'))),
+			'search_terms' => trim((string) ($_GET['search_terms'] ?? ($_POST['search_terms'] ?? ''))),
+			'user_agent' => trim((string) ($_GET['user_agent'] ?? ($_POST['user_agent'] ?? ''))),
+			'robots_mode' => trim((string) ($_GET['robots_mode'] ?? ($_POST['robots_mode'] ?? 'respect'))),
+			'skip_cached_failures' => $_GET['skip_cached_failures'] ?? ($_POST['skip_cached_failures'] ?? '1'),
+			'timeout_ms' => trim((string) ($_GET['timeout_ms'] ?? ($_POST['timeout_ms'] ?? '3000'))),
+			'delay_ms' => trim((string) ($_GET['delay_ms'] ?? ($_POST['delay_ms'] ?? '250'))),
+			'max_depth' => trim((string) ($_GET['max_depth'] ?? ($_POST['max_depth'] ?? '1'))),
+			'max_pages_per_target' => trim((string) ($_GET['max_pages_per_target'] ?? ($_POST['max_pages_per_target'] ?? '10'))),
+		];
 		}
 
 	/**
