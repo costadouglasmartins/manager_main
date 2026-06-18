@@ -15,7 +15,7 @@ class ZipCodeCrawlerService
 	private const NOT_FOUND_FLUSH_THRESHOLD = 5;
 	private const NOT_FOUND_RESUME_WINDOW = 5;
 	private const DEFAULT_CONCURRENCY = 3;
-	private const MAX_CONCURRENCY = 5;
+	private const MAX_CONCURRENCY = 10;
 	private const RANDOM_DELAY_MIN_MS = 250;
 	private const RANDOM_DELAY_MAX_MS = 750;
 	private const VIACEP_TRANSIENT_FAILURE_THRESHOLD = 1;

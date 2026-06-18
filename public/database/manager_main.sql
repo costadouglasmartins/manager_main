@@ -6037,13 +6037,26 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~2 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
 	(1, 'Receita', 'Salário', '2026-06-16 22:43:04', '2026-06-17 19:45:23'),
 	(2, 'Moradia', 'Aluguel', '2026-06-16 22:43:50', '2026-06-17 19:44:58'),
-	(3, 'Moradia', 'Água', '2026-06-17 19:45:10', '2026-06-17 19:45:10');
+	(3, 'Moradia', 'Água', '2026-06-17 19:45:10', '2026-06-17 19:45:10'),
+	(4, 'Ajuda financeira família', 'Pensão Mãe', '2026-06-18 12:17:02', '2026-06-18 12:17:02'),
+	(5, 'Alimentação', 'Café da manhã fins de semana', '2026-06-18 12:17:33', '2026-06-18 12:17:33'),
+	(6, 'Alimentação', 'Café da manhã segunda à sexta', '2026-06-18 12:18:03', '2026-06-18 12:18:03'),
+	(7, 'Alimentação', 'Almoço fins de semana', '2026-06-18 12:18:27', '2026-06-18 12:18:27'),
+	(8, 'Alimentação', 'Almoço segunda à sexta', '2026-06-18 12:18:54', '2026-06-18 12:18:54'),
+	(9, 'Alimentação', 'Janta fins de semana', '2026-06-18 12:19:22', '2026-06-18 12:19:22'),
+	(10, 'Alimentação', 'Janta segunda à sexta', '2026-06-18 12:19:46', '2026-06-18 12:19:46'),
+	(11, 'Aplicação poupança', 'Nubank', '2026-06-18 12:21:31', '2026-06-18 12:21:31'),
+	(12, 'Aposentadoria', 'Previdência privada', '2026-06-18 12:22:02', '2026-06-18 12:22:02'),
+	(13, 'Carteira', 'Saque bancário em dinheiro', '2026-06-18 12:22:50', '2026-06-18 12:22:50'),
+	(14, 'Cartão de Crédito', 'Nubank', '2026-06-18 12:23:14', '2026-06-18 12:23:14'),
+	(15, 'Moradia', 'Condomínio', '2026-06-18 12:24:35', '2026-06-18 12:24:35'),
+	(16, 'Moradia', 'Energia', '2026-06-18 12:25:10', '2026-06-18 12:25:10');
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -6097,7 +6110,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=221 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~177 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6319,7 +6332,20 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(217, 'Centro', 11, '2026-06-16 22:10:27', '2026-06-16 22:10:27'),
 	(218, 'Centro', 17, '2026-06-17 16:59:43', '2026-06-17 16:59:43'),
 	(219, 'Centro', 12, '2026-06-17 17:42:44', '2026-06-17 17:42:44'),
-	(220, 'Centro', 52, '2026-06-18 10:00:23', '2026-06-18 10:00:23');
+	(220, 'Centro', 52, '2026-06-18 10:00:23', '2026-06-18 10:00:23'),
+	(221, 'Centro', 4589, '2026-06-18 10:17:15', '2026-06-18 10:17:15'),
+	(222, 'São Roque', 4673, '2026-06-18 10:32:01', '2026-06-18 10:32:01'),
+	(223, 'Frederico Wastner', 4673, '2026-06-18 10:47:08', '2026-06-18 10:47:08'),
+	(224, 'Presidente Juscelino', 4673, '2026-06-18 11:02:19', '2026-06-18 11:02:19'),
+	(225, 'Centro', 4673, '2026-06-18 11:12:56', '2026-06-18 11:12:56'),
+	(226, 'Centro', 4597, '2026-06-18 11:33:52', '2026-06-18 11:33:52'),
+	(227, 'Centro', 4648, '2026-06-18 11:41:46', '2026-06-18 11:41:46'),
+	(228, 'Centro', 4659, '2026-06-18 11:46:08', '2026-06-18 11:46:08'),
+	(229, 'Centro', 4640, '2026-06-18 11:49:49', '2026-06-18 11:49:49'),
+	(230, 'Centro', 4469, '2026-06-18 11:53:58', '2026-06-18 11:53:58'),
+	(231, 'Centro', 4424, '2026-06-18 12:34:20', '2026-06-18 12:34:20'),
+	(232, 'Idamar', 4495, '2026-06-18 12:38:37', '2026-06-18 12:38:37'),
+	(233, 'Jorge Lacerda', 4495, '2026-06-18 12:42:43', '2026-06-18 12:42:43');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
