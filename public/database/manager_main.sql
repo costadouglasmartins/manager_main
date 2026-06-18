@@ -6110,7 +6110,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=235 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=236 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~177 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6346,7 +6346,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(231, 'Centro', 4424, '2026-06-18 12:34:20', '2026-06-18 12:34:20'),
 	(232, 'Idamar', 4495, '2026-06-18 12:38:37', '2026-06-18 12:38:37'),
 	(233, 'Jorge Lacerda', 4495, '2026-06-18 12:42:43', '2026-06-18 12:42:43'),
-	(234, 'São Pedro Tobias', 4495, '2026-06-18 13:31:47', '2026-06-18 13:31:47');
+	(234, 'São Pedro Tobias', 4495, '2026-06-18 13:31:47', '2026-06-18 13:31:47'),
+	(235, 'Centro', 4495, '2026-06-18 21:29:53', '2026-06-18 21:29:53');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -6804,7 +6805,7 @@ INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `ten
 	(2, 2, 1, 1, '0001', 'closed', '2026-06-07 07:10:06', '2026-06-07 10:04:13', '2026-06-07 07:10:06', '2026-06-07 07:10:14', 1, '2026-06-07 10:03:48', '2026-06-07 07:10:14'),
 	(3, 2, 1, 1, '0001', 'closed', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:15:22', '2026-06-07 17:23:08', 1, '2026-06-07 17:07:03', '2026-06-07 17:23:08'),
 	(4, 3, 1, 2, '0002', 'closed', '2026-06-15 18:09:53', '2026-06-15 18:09:39', '2026-06-15 18:09:53', '2026-06-15 18:14:26', 1, '2026-06-15 18:09:06', '2026-06-15 18:14:26'),
-	(5, 3, 1, 2, '0002', 'open', '2026-06-15 18:28:12', '2026-06-15 18:27:34', '2026-06-15 18:28:12', NULL, NULL, '2026-06-15 18:27:34', '2026-06-15 18:28:12');
+	(5, 3, 1, 2, '0002', 'closed', '2026-06-15 18:28:12', '2026-06-15 18:27:34', '2026-06-15 18:28:12', '2026-06-18 18:33:34', 1, '2026-06-15 18:27:34', '2026-06-18 18:34:00');
 
 -- Dumping structure for table manager_main.support_chats_messages
 CREATE TABLE IF NOT EXISTS `support_chats_messages` (
@@ -7398,7 +7399,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
 	(3, 1, '905a7df5beae6bb5a81499b60591bf8e', '1e0e3daa52c36a5977a17e734340e2c79b3d8c286c2c0e4985be6203ffb82a80', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1 OPT/6.5.2', '172.18.0.1', '2026-07-16 22:48:07', '2026-06-16 22:48:07', NULL),
-	(4, 1, 'a3cc0a2eef7b233bc788304fe6828a20', 'c1954b9051c888d65185bebe8c203386250fb5e340959e338ddd8e984451081d', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-18 08:50:31', '2026-06-16 23:05:33', '2026-06-18 08:50:31');
+	(4, 1, 'b0b806bad54512eebe1df240fd510900', '7f94c0666c7af312705d28b4fb0c6ebe33e9e4fc7c72b32a26ae5143f31c5cdb', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-18 21:21:35', '2026-06-16 23:05:33', '2026-06-18 21:21:35');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

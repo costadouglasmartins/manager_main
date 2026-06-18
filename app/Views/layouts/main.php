@@ -260,7 +260,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
         <?php if (!empty($_SESSION['manager_main']['user'])): ?>
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="systemMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-gear-fill me-2"></i>Sistema
+              <i class="bi bi-gear-fill me-2"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="systemMenu">
               <li class="dropdown-submenu">
@@ -312,7 +312,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
         <ul class="navbar-nav mb-2 mb-lg-0">
           <li class="nav-item dropdown me-lg-3">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-person-circle me-2"></i> Usuário(a)
+              <i class="bi bi-person-circle me-2"></i> 
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
               <!--
