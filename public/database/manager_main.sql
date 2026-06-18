@@ -6110,7 +6110,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=235 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~177 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -6345,7 +6345,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(230, 'Centro', 4469, '2026-06-18 11:53:58', '2026-06-18 11:53:58'),
 	(231, 'Centro', 4424, '2026-06-18 12:34:20', '2026-06-18 12:34:20'),
 	(232, 'Idamar', 4495, '2026-06-18 12:38:37', '2026-06-18 12:38:37'),
-	(233, 'Jorge Lacerda', 4495, '2026-06-18 12:42:43', '2026-06-18 12:42:43');
+	(233, 'Jorge Lacerda', 4495, '2026-06-18 12:42:43', '2026-06-18 12:42:43'),
+	(234, 'São Pedro Tobias', 4495, '2026-06-18 13:31:47', '2026-06-18 13:31:47');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
