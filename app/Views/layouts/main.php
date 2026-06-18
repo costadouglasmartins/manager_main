@@ -287,7 +287,6 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><hr class="dropdown-divider" /></li>
                   <?php $canToolDocuments = authCan('tool.documents'); ?>
                   <?php $canToolEmailValidation = authCan('tool.email_validation'); ?>
-                  <?php $canToolIpWebCrawler = authCan('tool.ipWebCrawler') || authIsRoot(); ?>
                   <?php if ($canToolDocuments): ?>
                     <li><a class="dropdown-item" href="<?= url('tool/documents'); ?>"><i class="bi bi-person-vcard me-2"></i>Gerador/Validador de CPF / CNPJ</a></li>
                   <?php endif; ?>
@@ -301,10 +300,6 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeNeighborhoodSearch'); ?>"><i class="bi bi-diagram-3-fill me-2"></i>Bairro e cidade por CEP</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeCrawler'); ?>"><i class="bi bi-radar me-2"></i>Webcrawler de CEPs</a></li>
-                  <?php if ($canToolIpWebCrawler): ?>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" href="<?= url('tool/ipWebCrawler'); ?>"><i class="bi bi-router-fill me-2"></i>Webcrawler por IP</a></li>
-                  <?php endif; ?>
                 </ul>
               </li>
               <li><hr class="dropdown-divider" /></li>
