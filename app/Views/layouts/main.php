@@ -299,6 +299,8 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeNeighborhoodSearch'); ?>"><i class="bi bi-diagram-3-fill me-2"></i>Bairro e cidade por CEP</a></li>
                   <li><hr class="dropdown-divider" /></li>
+                  <li><a class="dropdown-item" href="<?= url('tool/neighborhoodImport'); ?>"><i class="bi bi-filetype-xlsx me-2"></i>Importador de bairros</a></li>
+                  <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeCrawler'); ?>"><i class="bi bi-radar me-2"></i>Webcrawler de CEPs</a></li>
                 </ul>
               </li>
