@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\Authorization;
 use App\Core\Controller;
 use App\Models\Tenant;
 use App\Services\TenantProvisioner;
@@ -64,13 +65,11 @@ class TenantController extends Controller
 			}
 
 		$tenantUsers    = $tenantModel->getTenantUsers((int) $id);
-		$availableUsers = $tenantModel->getAvailableUsers((int) $id);
 
 		$this->view('tenants/edit', [
-			'title'          => 'Editar tenant',
-			'tenant'         => $tenant,
-			'tenantUsers'    => $tenantUsers,
-			'availableUsers' => $availableUsers,
+			'title'       => 'Editar tenant',
+			'tenant'      => $tenant,
+			'tenantUsers' => $tenantUsers,
 		]);
 		}
 
@@ -82,22 +81,99 @@ class TenantController extends Controller
 		$this->requirePermission('tenant.update');
 
 		$tenantModel = new Tenant();
+		$tenantId = (int) $id;
+		$data = $_POST;
 
-		$data = [
-			'status'       => isset($_POST['status'])       ? trim($_POST['status'])       : 'pending',
-			'observations' => isset($_POST['observations']) ? trim($_POST['observations']) : null,
-		];
+		if ($this->hasLinkedPersonUserInput($data) && !Authorization::can('tenant.addUser'))
+			{
+			setFlashMessage('danger', 'Você não tem permissão para adicionar pessoa e usuário ao tenant.');
+			$this->redirect('tenant/edit/' . $tenantId);
+			return;
+			}
+
+		$this->filterTenantUserPermissions($data);
 
 		try
 			{
-			$tenantModel->update((int) $id, $data);
-			setFlashMessage('success', 'Tenant atualizado com sucesso.');
-			$this->redirect('tenant');
+			$result = $tenantModel->updateWithRelations($tenantId, $data);
+			$message = !empty($result['user_id'])
+				? 'Tenant atualizado e nova pessoa vinculada com sucesso.'
+				: 'Tenant atualizado com sucesso.';
+			setFlashMessage('success', $message);
+			$this->redirect('tenant/edit/' . $tenantId);
+			}
+		catch (\InvalidArgumentException $e)
+			{
+			setFlashMessage('danger', $e->getMessage());
+			$this->redirect('tenant/edit/' . $tenantId);
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar o tenant. Verifique os dados e tente novamente.');
-			$this->redirect('tenant/edit/' . $id);
+			$this->redirect('tenant/edit/' . $tenantId);
+			}
+		}
+
+	/**
+	 * Detect whether the edit form is trying to add a new linked person and user.
+	 * @param array<string, mixed> $data Posted tenant edit data.
+	 * @return bool
+	 */
+	private function hasLinkedPersonUserInput(array $data): bool
+		{
+		$person = is_array($data['linked_person'] ?? null) ? $data['linked_person'] : [];
+		$user = is_array($data['linked_user'] ?? null) ? $data['linked_user'] : [];
+		$email = is_array($data['linked_email'] ?? null) ? $data['linked_email'] : [];
+
+		foreach ([$person['name'] ?? '', $person['document'] ?? '', $user['username'] ?? '', $user['password'] ?? '', $email['email'] ?? ''] as $value)
+			{
+			if (trim((string) $value) !== '')
+				{
+				return true;
+				}
+			}
+
+		return false;
+		}
+
+	/**
+	 * Remove relationship fields the current user is not allowed to change.
+	 * @param array<string, mixed> $data Posted tenant edit data.
+	 * @return void
+	 */
+	private function filterTenantUserPermissions(array &$data): void
+		{
+		if (empty($data['tenant_users']) || !is_array($data['tenant_users']))
+			{
+			return;
+			}
+
+		$canUpdateUser = Authorization::can('tenant.updateUser');
+		$canRemoveUser = Authorization::can('tenant.removeUser');
+
+		if (!$canUpdateUser && !$canRemoveUser)
+			{
+			unset($data['tenant_users']);
+			return;
+			}
+
+		foreach ($data['tenant_users'] as $index => $row)
+			{
+			if (!is_array($row))
+				{
+				unset($data['tenant_users'][$index]);
+				continue;
+				}
+
+			if (!$canUpdateUser)
+				{
+				unset($data['tenant_users'][$index]['role']);
+				}
+
+			if (!$canRemoveUser)
+				{
+				unset($data['tenant_users'][$index]['_delete']);
+				}
 			}
 		}
 

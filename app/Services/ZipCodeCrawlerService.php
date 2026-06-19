@@ -1977,10 +1977,7 @@ class ZipCodeCrawlerService
 	 **/
 	private function flushNotFoundZipCodes(): void
 		{
-		if (
-			(!$this->notFoundZipCodesDirty || $this->notFoundZipCodes === null)
-			&& !$this->fileHasContents($this->notFoundJournalFilePath)
-		)
+		if ($this->pendingNotFoundZipCodeWrites <= 0 || $this->notFoundZipCodes === null)
 			{
 			return;
 			}
@@ -2104,11 +2101,6 @@ class ZipCodeCrawlerService
 				}
 			}
 
-		if ($mainFileNeedsRewrite || $journalHasContents || $journalNeedsRewrite)
-			{
-			$this->notFoundZipCodesDirty = true;
-			}
-
 		return $this->notFoundZipCodes;
 		}
 
@@ -2197,11 +2189,10 @@ class ZipCodeCrawlerService
 
 		if ($mainFileNeedsRewrite || $journalHasContents || $journalNeedsRewrite)
 			{
-			$this->notFoundZipCodesDirty = true;
 			yield $this->cacheEvent('normalization_pending', 'running', [
 				'percent' => 95,
 				'count' => count($this->notFoundZipCodes),
-				'message' => 'Cache carregado; sincronização do TXT será feita sem bloquear o início da pesquisa.',
+				'message' => 'Cache carregado; o TXT só será sincronizado após novo CEP 404 retornado pelos webservices.',
 			]);
 			}
 
