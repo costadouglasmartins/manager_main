@@ -74,7 +74,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
                 <span>Consultas simultâneas</span>
                 <strong id="crawlerConcurrencyLabel">3</strong>
               </label>
-              <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="10" step="1" value="3">
+              <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="100" step="1" value="3">
             </div>
 
             <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center zip-code-crawler-actions">

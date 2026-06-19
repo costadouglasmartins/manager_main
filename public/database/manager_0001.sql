@@ -2,7 +2,7 @@
 -- Host:                         127.0.0.1
 -- Server version:               8.0.46 - MySQL Community Server - GPL
 -- Server OS:                    Linux
--- HeidiSQL Version:             12.17.1.1
+-- HeidiSQL Version:             12.18.1.1
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -71,15 +71,7 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   CONSTRAINT `fk_bank_files_bank_accounts` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.bank_files: ~7 rows (approximately)
-INSERT INTO `bank_files` (`id`, `bank_account_id`, `file_type`, `file_name`, `file_path`, `file_hash`, `created`, `modified`) VALUES
-	(1, 1, 'REMITTANCE', 'C260601A.TXT', 'tenant_files/manager_0001/remittance/C260601A.TXT', '323ae468e88ea754e74bee5aab2464928229f6803a586cf4f186ed38599c8fd1', '2026-06-01 23:05:24', '2026-06-01 23:05:24'),
-	(2, 1, 'REMITTANCE', 'C260601B.TXT', 'tenant_files/manager_0001/remittance/C260601B.TXT', 'a64163b869f00bec8f0c05a8911d6b6a71fe264984c8a6a9135f0639b2d87eb0', '2026-06-01 23:09:55', '2026-06-01 23:09:55'),
-	(3, 1, 'REMITTANCE', 'C260601C.TXT', 'tenant_files/manager_0001/remittance/C260601C.TXT', 'a5d6d029e297dae89ce2c588f48907e3b0475958d1b92f69c1ba8432c537ecbe', '2026-06-01 23:35:19', '2026-06-01 23:35:19'),
-	(4, 1, 'REMITTANCE', 'C260601D.TXT', 'tenant_files/manager_0001/remittance/C260601D.TXT', 'a5d6d029e297dae89ce2c588f48907e3b0475958d1b92f69c1ba8432c537ecbe', '2026-06-01 23:47:30', '2026-06-01 23:47:30'),
-	(5, 1, 'REMITTANCE', 'C260601E.TXT', 'tenant_files/manager_0001/remittance/C260601E.TXT', '4f63db137578ea8cc445f0464a4c02ccb5294b50339ade816a79c5850dfc97da', '2026-06-01 23:59:51', '2026-06-01 23:59:51'),
-	(6, 2, 'REMITTANCE', 'C260602A.TXT', 'tenant_files/manager_0001/remittance/C260602A.TXT', 'a7af7beb85ef390b91051b3effeaf356100758fb60baaef96a20cfcf39403405', '2026-06-02 00:04:49', '2026-06-02 00:04:49'),
-	(7, 2, 'REMITTANCE', 'C260602B.TXT', 'tenant_files/manager_0001/remittance/C260602B.TXT', 'c56dd78775e5798e46017a9cccf3d63b424c17d2226d77de6405f422a751a5d6', '2026-06-02 00:29:56', '2026-06-02 00:29:56');
+-- Dumping data for table manager_0001.bank_files: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.bank_slips
 CREATE TABLE IF NOT EXISTS `bank_slips` (
@@ -135,12 +127,7 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   CONSTRAINT `fk_bank_slips_financial_operations_payments` FOREIGN KEY (`financial_operation_payment_id`) REFERENCES `financial_operations_payments` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.bank_slips: ~4 rows (approximately)
-INSERT INTO `bank_slips` (`id`, `financial_operation_payment_id`, `bank_account_id`, `bank_file_id`, `status`, `document_number`, `our_number`, `our_number_digit`, `portfolio`, `payer_document_type`, `payer_document`, `payer_name`, `payer_street`, `payer_neighborhood`, `payer_city`, `payer_state`, `payer_zip_code`, `amount`, `due_date`, `issue_date`, `payment_date`, `paid_amount`, `credited_amount`, `credit_date`, `interest_date`, `interest_amount_per_day`, `discount_date`, `discount_amount`, `fine_date`, `fine_amount`, `protest_code`, `protest_days`, `write_off_code`, `write_off_days`, `last_occurrence_code`, `last_occurrence_message`, `created`, `modified`) VALUES
-	(1, NULL, 1, 5, 'REMITTANCE_GENERATED', '1', '1', NULL, '109', 'CPF', '03599033986', 'Nome do Sacado', 'Rua 10', 'Centro', 'Balneário Camboriú', 'SC', '88130000', 1.00, '2026-12-10', '2026-06-01', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 0.00, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-01 23:05:13', '2026-06-01 23:59:51'),
-	(2, NULL, 1, 5, 'REMITTANCE_GENERATED', '2', '2', NULL, '109', 'CNPJ', 'CNOB8H8W000125', 'Sacado Nome', 'R. Maria Soares, 141', 'Ponte do Imaruim', 'Palhoça', 'SC', '88130743', 1.45, '2026-06-20', '2026-06-01', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 0.00, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-01 23:09:11', '2026-06-02 00:27:55'),
-	(3, NULL, 1, 5, 'REMITTANCE_GENERATED', '3', '3', NULL, '109', 'CPF', '04599033986', 'Emma Watson', 'Rua do amor perfeito', 'Pedra Branca', 'Palhoça', 'SC', '88137335', 3.46, '2026-11-22', '2026-06-01', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 0.00, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-01 23:55:39', '2026-06-01 23:59:51'),
-	(4, NULL, 2, 7, 'REMITTANCE_GENERATED', '4', '4', NULL, '109', 'CPF', '65222472248', 'Amy Winehouse', 'Rua 10', 'Centro', 'Balneário Camboriú', 'SC', '88130743', 123.45, '2026-10-10', '2026-06-01', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 0.00, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-01 23:59:12', '2026-06-02 00:29:56');
+-- Dumping data for table manager_0001.bank_slips: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -159,7 +146,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
 
 -- Dumping data for table manager_0001.financial_operations: ~2 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `financial_operation_subcategory_id`, `total_amount`, `created`, `modified`) VALUES
-	(1, 7, NULL, 6000.00, '2026-06-01 12:00:00', '2026-06-03 00:51:42'),
+	(1, 7, NULL, 5100.00, '2026-06-01 12:00:00', '2026-06-15 23:54:09'),
 	(2, 1, NULL, 766.50, '2026-06-01 12:00:00', '2026-06-03 00:52:09');
 
 -- Dumping structure for table manager_0001.financial_operations_categories
@@ -172,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_categories: ~9 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_categories: ~8 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `created`, `modified`) VALUES
 	(1, 'Ajuda financeira', '2026-06-02 23:21:58', '2026-06-02 23:21:58'),
 	(2, 'Alimentação', '2026-06-02 23:22:18', '2026-06-02 23:22:18'),
@@ -214,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_subcategories: ~22 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_subcategories: ~21 rows (approximately)
 INSERT INTO `financial_operations_subcategories` (`id`, `financial_operation_category_id`, `name`, `created`, `modified`) VALUES
 	(1, 2, 'Café da manhã fins de semana', '2026-06-02 23:24:42', '2026-06-02 23:24:42'),
 	(2, 2, 'Café da manhã segunda à sexta', '2026-06-02 23:25:11', '2026-06-02 23:25:11'),
@@ -266,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   KEY `idx_products_stock_quantity` (`stock_quantity`),
   CONSTRAINT `fk_products_categories` FOREIGN KEY (`product_category_id`) REFERENCES `products_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_products_manager_main_users` FOREIGN KEY (`user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.products: ~0 rows (approximately)
 
@@ -281,9 +268,11 @@ CREATE TABLE IF NOT EXISTS `products_categories` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_products_categories_name` (`name`),
   KEY `idx_products_categories_active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.products_categories: ~0 rows (approximately)
+INSERT INTO `products_categories` (`id`, `name`, `description`, `active`, `created`, `modified`) VALUES
+	(1, 'Carros', NULL, 1, '2026-06-08 22:31:24', '2026-06-08 22:31:24');
 
 -- Dumping structure for table manager_0001.products_images
 CREATE TABLE IF NOT EXISTS `products_images` (
@@ -305,9 +294,9 @@ CREATE TABLE IF NOT EXISTS `products_images` (
   KEY `idx_products_images_product` (`product_id`),
   KEY `idx_products_images_main` (`product_id`,`is_main`),
   CONSTRAINT `fk_products_images_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.products_images: ~0 rows (approximately)
+-- Dumping data for table manager_0001.products_images: ~1 rows (approximately)
 
 -- Dumping structure for table manager_0001.products_stocks_movements
 CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
@@ -329,7 +318,7 @@ CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
   KEY `idx_products_stocks_movements_type` (`movement_type`),
   KEY `idx_products_stocks_movements_date` (`movement_date`),
   CONSTRAINT `fk_products_stocks_movements_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.products_stocks_movements: ~0 rows (approximately)
 

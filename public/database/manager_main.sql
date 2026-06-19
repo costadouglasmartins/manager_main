@@ -5856,7 +5856,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17817 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17818 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~18 059 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -23675,7 +23675,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(17813, 'Grápia', 4601, '2026-06-19 21:35:08', '2026-06-19 21:35:08'),
 	(17814, 'Centro', 4601, '2026-06-19 21:35:16', '2026-06-19 21:35:16'),
 	(17815, 'Centro', 4445, '2026-06-19 21:39:45', '2026-06-19 21:39:45'),
-	(17816, 'Prata', 4677, '2026-06-19 21:48:17', '2026-06-19 21:48:17');
+	(17816, 'Prata', 4677, '2026-06-19 21:48:17', '2026-06-19 21:48:17'),
+	(17817, 'Centro', 4531, '2026-06-19 22:02:04', '2026-06-19 22:02:04');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -24173,7 +24174,7 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.tenants: ~2 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
