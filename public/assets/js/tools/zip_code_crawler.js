@@ -920,7 +920,7 @@
 						updateProgress(payload.total || 1, payload.total || 1);
 						statusText.textContent = "Concluído";
 						setMessage("success", "Pesquisa concluída com " + (payload.found || 0) + " novo(s) salvo(s).");
-						appendSystemLine("DONE", "Pesquisa concluída | " + (payload.found || 0) + " novo(s) salvo(s) | " + (payload.failed || 0) + " não encontrado(s) | " + (payload.looked_up || 0) + " consulta(s) em webservices");
+						appendSystemLine("DONE", "Pesquisa concluída | " + (payload.found || 0) + " novo(s) salvo(s) | " + (payload.failed || 0) + " falha(s) de consulta | " + (payload.looked_up || 0) + " consulta(s) em webservices");
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;

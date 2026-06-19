@@ -586,7 +586,6 @@ class ZipCodeCrawlerService
 					}
 
 				$stats['processed']++;
-				$stats['failed']++;
 				$stats['skipped']++;
 
 				yield $this->event('progress', [
@@ -731,7 +730,6 @@ class ZipCodeCrawlerService
 			$stats['processed']++;
 			if ($result !== null)
 				{
-				$stats['failed']++;
 				$stats['skipped']++;
 				}
 			else
@@ -741,7 +739,11 @@ class ZipCodeCrawlerService
 
 				if (empty($result['success']))
 					{
-					$stats['failed']++;
+					if ($this->shouldCountAsFailureMetric($result))
+						{
+						$stats['failed']++;
+						}
+
 					if ($this->shouldRememberNotFoundZipCode($result, $providerMode))
 						{
 						$this->rememberNotFoundZipCode($zipCode);
@@ -1778,6 +1780,21 @@ class ZipCodeCrawlerService
 
 		return $this->isProviderModeSource($providerMode, (string) ($result['source'] ?? ''))
 			&& $this->isNotFoundSignal((string) ($result['error'] ?? ''), (int) ($result['status'] ?? 0));
+		}
+
+	/**
+	 * Decide whether a failed lookup should increment the failure metric.
+	 * @param array<string, mixed> $result Lookup result payload.
+	 * @return bool
+	 **/
+	private function shouldCountAsFailureMetric(array $result): bool
+		{
+		if (!empty($result['success']))
+			{
+			return false;
+			}
+
+		return !$this->isNotFoundSignal((string) ($result['error'] ?? ''), (int) ($result['status'] ?? 0));
 		}
 
 	/**

@@ -5856,7 +5856,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17818 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17823 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~18 059 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -23676,7 +23676,12 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(17814, 'Centro', 4601, '2026-06-19 21:35:16', '2026-06-19 21:35:16'),
 	(17815, 'Centro', 4445, '2026-06-19 21:39:45', '2026-06-19 21:39:45'),
 	(17816, 'Prata', 4677, '2026-06-19 21:48:17', '2026-06-19 21:48:17'),
-	(17817, 'Centro', 4531, '2026-06-19 22:02:04', '2026-06-19 22:02:04');
+	(17817, 'Centro', 4531, '2026-06-19 22:02:04', '2026-06-19 22:02:04'),
+	(17818, 'Centro', 4692, '2026-06-19 22:14:37', '2026-06-19 22:14:37'),
+	(17819, 'Distrito de Cristo Rei', 4671, '2026-06-19 22:16:24', '2026-06-19 22:16:24'),
+	(17820, 'Centro', 4671, '2026-06-19 22:16:24', '2026-06-19 22:16:24'),
+	(17821, 'Centro', 4541, '2026-06-19 22:17:59', '2026-06-19 22:17:59'),
+	(17822, 'Centro', 4636, '2026-06-19 22:19:28', '2026-06-19 22:19:28');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
