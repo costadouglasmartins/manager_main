@@ -9,7 +9,7 @@ class SupportChatTokenService
 	 */
 	private static function secret(): string
 		{
-		$secret = getenv('SUPPORT_CHAT_SECRET') ?: 'douglas201183mc695500..';
+		$secret = getenv('SUPPORT_CHAT_SECRET') ?: '9323d5e71fe951602b452cc683ff7c49f8d5cec8';
 		return (string) $secret;
 		}
 

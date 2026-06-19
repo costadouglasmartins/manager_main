@@ -43,7 +43,7 @@ spl_autoload_register(function ($class) use ($rootPath) {
 
 $host = getenv('SUPPORT_CHAT_WS_HOST') ?: '127.0.0.1';
 $port = (int) (getenv('SUPPORT_CHAT_WS_PORT') ?: 8081);
-$secret = (string) (getenv('SUPPORT_CHAT_SECRET') ?: 'douglas201183mc695500..');
+$secret = (string) (getenv('SUPPORT_CHAT_SECRET') ?: '9323d5e71fe951602b452cc683ff7c49f8d5cec8');
 $db = method_exists(\App\Core\Database::class, 'getManagerConnection')
 	? \App\Core\Database::getManagerConnection()
 	: \App\Core\Database::getInstance();

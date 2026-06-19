@@ -6039,7 +6039,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_categories: ~2 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_categories: ~15 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
 	(1, 'Receita', 'Salário', '2026-06-16 22:43:04', '2026-06-17 19:45:23'),
 	(2, 'Moradia', 'Aluguel', '2026-06-16 22:43:50', '2026-06-17 19:44:58'),
@@ -6110,9 +6110,9 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=236 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~177 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~178 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -6347,7 +6347,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(232, 'Idamar', 4495, '2026-06-18 12:38:37', '2026-06-18 12:38:37'),
 	(233, 'Jorge Lacerda', 4495, '2026-06-18 12:42:43', '2026-06-18 12:42:43'),
 	(234, 'São Pedro Tobias', 4495, '2026-06-18 13:31:47', '2026-06-18 13:31:47'),
-	(235, 'Centro', 4495, '2026-06-18 21:29:53', '2026-06-18 21:29:53');
+	(235, 'Centro', 4495, '2026-06-18 21:29:53', '2026-06-18 21:29:53'),
+	(236, 'Centro', 4518, '2026-06-19 12:06:36', '2026-06-19 12:06:36');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -6797,15 +6798,17 @@ CREATE TABLE IF NOT EXISTS `support_chats` (
   CONSTRAINT `fk_support_chats_closed_by_user` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_customer_user` FOREIGN KEY (`customer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.support_chats: ~5 rows (approximately)
+-- Dumping data for table manager_main.support_chats: ~7 rows (approximately)
 INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `tenant_id`, `tenant_database_number`, `status`, `last_message_at`, `customer_last_seen_at`, `attendant_last_seen_at`, `closed_at`, `closed_by_user_id`, `created`, `modified`) VALUES
 	(1, 2, 1, 1, '0001', 'closed', '2026-06-07 09:48:54', '2026-06-07 09:48:54', '2026-06-07 09:48:41', '2026-06-07 09:49:24', 1, '2026-06-07 09:45:32', '2026-06-07 09:49:24'),
 	(2, 2, 1, 1, '0001', 'closed', '2026-06-07 07:10:06', '2026-06-07 10:04:13', '2026-06-07 07:10:06', '2026-06-07 07:10:14', 1, '2026-06-07 10:03:48', '2026-06-07 07:10:14'),
-	(3, 2, 1, 1, '0001', 'closed', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:15:22', '2026-06-07 17:23:08', 1, '2026-06-07 17:07:03', '2026-06-07 17:23:08'),
-	(4, 3, 1, 2, '0002', 'closed', '2026-06-15 18:09:53', '2026-06-15 18:09:39', '2026-06-15 18:09:53', '2026-06-15 18:14:26', 1, '2026-06-15 18:09:06', '2026-06-15 18:14:26'),
-	(5, 3, 1, 2, '0002', 'closed', '2026-06-15 18:28:12', '2026-06-15 18:27:34', '2026-06-15 18:28:12', '2026-06-18 18:33:34', 1, '2026-06-15 18:27:34', '2026-06-18 18:34:00');
+	(3, 2, 1, 1, '0001', 'closed', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:23:08', 1, '2026-06-07 17:07:03', '2026-06-19 08:31:10'),
+	(4, 3, 1, 2, '0002', 'closed', '2026-06-15 18:09:53', '2026-06-15 18:09:39', '2026-06-15 18:09:53', '2026-06-15 18:14:26', 1, '2026-06-15 18:09:06', '2026-06-19 08:31:09'),
+	(5, 3, 1, 2, '0002', 'closed', '2026-06-15 18:28:12', '2026-06-15 18:27:34', '2026-06-15 18:28:12', '2026-06-18 18:33:34', 1, '2026-06-15 18:27:34', '2026-06-19 08:31:08'),
+	(6, 2, 1, 1, '0001', 'closed', '2026-06-18 18:55:02', '2026-06-18 18:54:50', '2026-06-18 18:55:02', '2026-06-18 18:55:20', 1, '2026-06-18 18:54:50', '2026-06-19 08:31:06'),
+	(7, 3, 1, 2, '0002', 'closed', '2026-06-19 08:29:04', '2026-06-19 08:29:04', '2026-06-19 08:29:04', '2026-06-19 08:31:03', 1, '2026-06-19 08:28:29', '2026-06-19 08:31:03');
 
 -- Dumping structure for table manager_main.support_chats_messages
 CREATE TABLE IF NOT EXISTS `support_chats_messages` (
@@ -6821,9 +6824,9 @@ CREATE TABLE IF NOT EXISTS `support_chats_messages` (
   KEY `idx_support_chat_messages_sender` (`sender_user_id`),
   CONSTRAINT `fk_support_chat_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.support_chats_messages: ~17 rows (approximately)
+-- Dumping data for table manager_main.support_chats_messages: ~19 rows (approximately)
 INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
 	(1, 1, 2, 'customer', 'Emma Watson', 'bom dia', '2026-06-07 09:45:32'),
 	(2, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:46:29'),
@@ -6843,7 +6846,11 @@ INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`,
 	(16, 4, 3, 'customer', 'Angelina Jolie', 'teste2', '2026-06-15 18:09:39'),
 	(17, 4, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-06-15 18:09:53'),
 	(18, 5, 3, 'customer', 'Angelina Jolie', 'teste', '2026-06-15 18:27:34'),
-	(19, 5, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-06-15 18:28:12');
+	(19, 5, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-06-15 18:28:12'),
+	(20, 6, 2, 'customer', 'Emma Watson', 'Teste', '2026-06-18 18:54:50'),
+	(21, 6, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-06-18 18:55:02'),
+	(22, 7, 3, 'customer', 'Angelina Jolie', 'Teste', '2026-06-19 08:28:29'),
+	(23, 7, 3, 'customer', 'Angelina Jolie', 'Isto é um teste... favor desconsiderar', '2026-06-19 08:29:04');
 
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
@@ -7399,7 +7406,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(1, 1, 'd014f9c91c70614d0df2272858cde65c', '5946eaea7c4b75272fdcdec132b16e411ef5ae13e27c82cd705ac0615bb7ff66', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0', '172.18.0.1', '2026-07-04 00:10:48', '2026-06-01 22:32:24', '2026-06-04 00:10:48'),
 	(3, 1, '905a7df5beae6bb5a81499b60591bf8e', '1e0e3daa52c36a5977a17e734340e2c79b3d8c286c2c0e4985be6203ffb82a80', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1 OPT/6.5.2', '172.18.0.1', '2026-07-16 22:48:07', '2026-06-16 22:48:07', NULL),
-	(4, 1, 'b0b806bad54512eebe1df240fd510900', '7f94c0666c7af312705d28b4fb0c6ebe33e9e4fc7c72b32a26ae5143f31c5cdb', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-18 21:21:35', '2026-06-16 23:05:33', '2026-06-18 21:21:35');
+	(4, 1, '1ab58a491af7c8c2160a37e11a6a11b5', 'a6507617840e8aa70992966684af3bd48fa73fe2be9b96ab88a7e7e99431de63', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-19 11:06:13', '2026-06-16 23:05:33', '2026-06-19 11:06:13');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
