@@ -480,10 +480,11 @@
 	const PERSON_NEIGHBORHOOD_SEARCH_URL = "<?= url('person/neighborhoodSearch'); ?>";
 	const PERSON_NEIGHBORHOOD_CREATE_URL = "<?= url('person/neighborhoodCreate'); ?>";
 	const PERSON_CITY_SEARCH_URL         = "<?= url('person/citySearch'); ?>";
+	const PERSON_ZIP_CODE_SEARCH_URL     = "<?= url('tool/searchZipCode'); ?>";
 	const PERSON_DOCUMENT_EXISTS_URL     = "<?= url('person/documentExists'); ?>";
 	const PERSON_USERNAME_EXISTS_URL     = "<?= url('person/usernameExists'); ?>";
 	const PERSON_PHONE_NUMBER_EXISTS_URL = "<?= url('person/phoneNumberExists'); ?>";
 	const PERSON_EMAIL_EXISTS_URL        = "<?= url('person/emailExists'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=13'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=16'); ?>"></script>
 <script src="<?= url('assets/js/masks.js?v=5'); ?>"></script>

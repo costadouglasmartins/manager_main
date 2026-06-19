@@ -1101,6 +1101,553 @@
 					});
 			}
 
+		function getAddressInput(block, fieldName)
+			{
+				if (!block)
+					{
+						return null;
+					}
+
+				return block.querySelector("input[name^='addresses['][name$='[" + fieldName + "]']");
+			}
+
+		function onlyZipCodeDigits(value)
+			{
+				return String(value || "").replace(/\D/g, "");
+			}
+
+		function formatZipCodeValue(value)
+			{
+				const digits = onlyZipCodeDigits(value).slice(0, 8);
+				return digits.replace(/(\d{5})(\d{1,3})$/, "$1-$2");
+			}
+
+		function setControlValue(el, value, shouldDispatch)
+			{
+				if (!el)
+					{
+						return;
+					}
+
+				el.value = value || "";
+
+				if (shouldDispatch)
+					{
+						el.dispatchEvent(new Event("input", {bubbles: true}));
+						el.dispatchEvent(new Event("change", {bubbles: true}));
+					}
+			}
+
+		function getAddressVisibleInput(block, fieldName)
+			{
+				if (fieldName === "neighborhood_name")
+					{
+						return block ? block.querySelector(".addr-neighborhood-input") : null;
+					}
+
+				return getAddressInput(block, fieldName);
+			}
+
+		function addressFeedbackClassName(fieldName)
+			{
+				return "addr-" + String(fieldName || "").replace(/[^a-z0-9_-]+/gi, "-") + "-feedback";
+			}
+
+		function getAddressFieldFeedback(block, fieldName)
+			{
+				const className = addressFeedbackClassName(fieldName);
+				let feedback = block ? block.querySelector("." + className) : null;
+				if (feedback)
+					{
+						return feedback;
+					}
+
+				const input = getAddressVisibleInput(block, fieldName);
+				if (!input)
+					{
+						return null;
+					}
+
+				feedback = document.createElement("div");
+				feedback.className = "form-text addr-field-feedback " + className;
+				input.insertAdjacentElement("afterend", feedback);
+				return feedback;
+			}
+
+		function setAddressFieldFeedback(block, fieldName, message, type)
+			{
+				const feedback = getAddressFieldFeedback(block, fieldName);
+				if (!feedback)
+					{
+						return;
+					}
+
+				feedback.textContent = message || "";
+				feedback.className = "form-text addr-field-feedback " + addressFeedbackClassName(fieldName);
+
+				if (type === "success")
+					{
+						feedback.classList.add("text-success");
+						return;
+					}
+
+				if (type === "warning")
+					{
+						feedback.classList.add("text-warning");
+						return;
+					}
+
+				if (type === "error")
+					{
+						feedback.classList.add("text-danger");
+						return;
+					}
+
+				feedback.classList.add("text-muted");
+			}
+
+		function clearAddressFieldFeedbacks(block)
+			{
+				["street", "number", "observations", "neighborhood_name"].forEach(function (fieldName)
+					{
+						const feedback = block ? block.querySelector("." + addressFeedbackClassName(fieldName)) : null;
+						if (feedback)
+							{
+								feedback.textContent = "";
+								feedback.className = "form-text addr-field-feedback " + addressFeedbackClassName(fieldName);
+							}
+					});
+			}
+
+		function waitForZipCodeAutocompleteStep()
+			{
+				return new Promise(function (resolve)
+					{
+						setTimeout(resolve, 45);
+					});
+			}
+
+		function getAddressZipCodeFeedback(block)
+			{
+				let feedback = block.querySelector(".addr-zip-code-feedback");
+				if (feedback)
+					{
+						return feedback;
+					}
+
+				const zipCodeInput = getAddressInput(block, "zip_code");
+				if (!zipCodeInput)
+					{
+						return null;
+					}
+
+				feedback = document.createElement("div");
+				feedback.className = "form-text addr-zip-code-feedback";
+				zipCodeInput.insertAdjacentElement("afterend", feedback);
+				return feedback;
+			}
+
+		function setAddressZipCodeFeedback(block, message, type)
+			{
+				const feedback = getAddressZipCodeFeedback(block);
+				if (!feedback)
+					{
+						return;
+					}
+
+				feedback.textContent = message || "";
+				feedback.className = "form-text addr-zip-code-feedback";
+
+				if (type === "error")
+					{
+						feedback.classList.add("text-danger");
+						return;
+					}
+
+				if (type === "success")
+					{
+						feedback.classList.add("text-success");
+						return;
+					}
+
+				if (type === "warning")
+					{
+						feedback.classList.add("text-warning");
+						return;
+					}
+
+				feedback.classList.add("text-muted");
+			}
+
+		function getSavedZipCodeRecord(data, key)
+			{
+				if (!data || !data.saved || !data.saved[key] || typeof data.saved[key] !== "object")
+					{
+						return null;
+					}
+
+				return data.saved[key];
+			}
+
+		function buildZipCodeNeighborhoodLabel(data)
+			{
+				if (data.neighborhood_label)
+					{
+						return data.neighborhood_label;
+					}
+
+				const neighborhood = getSavedZipCodeRecord(data, "neighborhood");
+				const city = getSavedZipCodeRecord(data, "city");
+				const state = getSavedZipCodeRecord(data, "state");
+				const neighborhoodName = neighborhood && neighborhood.name ? neighborhood.name : data.neighborhood;
+
+				if (!neighborhoodName)
+					{
+						return "";
+					}
+
+				return [
+					neighborhoodName,
+					city && city.name ? city.name : data.city,
+					state && state.acronym ? state.acronym : data.state
+				].map(function (value)
+					{
+						return String(value || "").trim();
+					})
+					.filter(Boolean)
+					.join(" — ");
+			}
+
+		function normalizeZipCodeLookupData(payload)
+			{
+				const data = Object.assign({}, payload && payload.data ? payload.data : (payload || {}));
+				const neighborhood = getSavedZipCodeRecord(data, "neighborhood");
+
+				if (!data.neighborhood_id && neighborhood && neighborhood.id)
+					{
+						data.neighborhood_id = neighborhood.id;
+					}
+
+				data.neighborhood_label = buildZipCodeNeighborhoodLabel(data);
+				return data;
+			}
+
+		async function searchNeighborhoodAutocompleteItems(term, data)
+			{
+				const url = new URL(PERSON_NEIGHBORHOOD_SEARCH_URL, window.location.origin);
+				url.searchParams.set("term", term);
+				url.searchParams.set("limit", "50");
+
+				if (data.city)
+					{
+						url.searchParams.set("city_name", data.city);
+					}
+
+				if (data.state)
+					{
+						url.searchParams.set("state_acronym", data.state);
+					}
+
+				const response = await fetch(url.toString(), {
+					method: "GET",
+					credentials: "same-origin",
+					headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"}
+				});
+
+				if (!response.ok)
+					{
+						throw new Error("Não foi possível pesquisar o bairro no autocomplete.");
+					}
+
+				const payload = await response.json();
+				return Array.isArray(payload.items) ? payload.items : [];
+			}
+
+		function renderAddressNeighborhoodResults(block, items)
+			{
+				const neighborhoodInput = block.querySelector(".addr-neighborhood-input");
+				const resultsList = block.querySelector(".addr-neighborhood-results");
+				if (!neighborhoodInput || !resultsList)
+					{
+						return;
+					}
+
+				resultsList.innerHTML = "";
+				items.forEach(function (item)
+					{
+						const li = document.createElement("li");
+						li.className = "list-group-item list-group-item-action py-1 px-2";
+						li.textContent = item.label;
+						li.addEventListener("mousedown", function (event)
+							{
+								event.preventDefault();
+								selectAddressNeighborhoodItem(block, item);
+							});
+						resultsList.appendChild(li);
+					});
+
+				resultsList.style.display = items.length > 0 ? "block" : "none";
+			}
+
+		function clearAddressNeighborhoodResults(block)
+			{
+				const resultsList = block.querySelector(".addr-neighborhood-results");
+				if (!resultsList)
+					{
+						return;
+					}
+
+				resultsList.innerHTML = "";
+				resultsList.style.display = "none";
+			}
+
+		function selectAddressNeighborhoodItem(block, item)
+			{
+				const neighborhoodId = block.querySelector(".addr-neighborhood-id");
+				const neighborhoodInput = block.querySelector(".addr-neighborhood-input");
+				const createPanel = block.querySelector(".addr-create-panel");
+
+				setControlValue(neighborhoodInput, item.label || item.name || "", false);
+				setControlValue(neighborhoodId, item.id || "", true);
+				clearAddressNeighborhoodResults(block);
+
+				if (createPanel)
+					{
+						createPanel.classList.add("d-none");
+					}
+
+				if (typeof saveFormState === "function")
+					{
+						saveFormState();
+					}
+			}
+
+		async function autoSelectAddressNeighborhood(block, data)
+			{
+				const neighborhoodInput = block.querySelector(".addr-neighborhood-input");
+				const neighborhoodId = block.querySelector(".addr-neighborhood-id");
+				const neighborhood = getSavedZipCodeRecord(data, "neighborhood");
+				const neighborhoodName = String((neighborhood && neighborhood.name) || data.neighborhood || "").trim();
+
+				if (!neighborhoodInput || !neighborhoodId || !neighborhoodName)
+					{
+						return false;
+					}
+
+				neighborhoodId.value = "";
+
+				let lastItems = [];
+				for (let i = 1; i <= neighborhoodName.length; i += 1)
+					{
+						const term = neighborhoodName.slice(0, i);
+						setControlValue(neighborhoodInput, term, false);
+
+						lastItems = await searchNeighborhoodAutocompleteItems(term, data);
+						renderAddressNeighborhoodResults(block, lastItems);
+
+						if (lastItems.length === 1)
+							{
+								selectAddressNeighborhoodItem(block, lastItems[0]);
+								return true;
+							}
+
+						await waitForZipCodeAutocompleteStep();
+					}
+
+				if (data.neighborhood_id)
+					{
+						const item = lastItems.find(function (candidate)
+							{
+								return String(candidate.id || "") === String(data.neighborhood_id);
+							});
+
+						selectAddressNeighborhoodItem(block, item || {
+							id: data.neighborhood_id,
+							label: data.neighborhood_label || neighborhoodName,
+							name: neighborhoodName
+						});
+						return true;
+					}
+
+				clearAddressNeighborhoodResults(block);
+				return false;
+			}
+
+		async function searchAddressZipCode(zipCode)
+			{
+				if (typeof PERSON_ZIP_CODE_SEARCH_URL === "undefined" || !PERSON_ZIP_CODE_SEARCH_URL)
+					{
+						throw new Error("Endpoint de consulta de CEP não configurado.");
+					}
+
+				const digits = onlyZipCodeDigits(zipCode);
+				const url = new URL(PERSON_ZIP_CODE_SEARCH_URL, window.location.origin);
+				url.searchParams.set("zip_code", digits);
+
+				const response = await fetch(url.toString(), {
+					method: "GET",
+					credentials: "same-origin",
+					headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"}
+				});
+
+				const payload = await response.json();
+				if (!response.ok || (payload && payload.success === false))
+					{
+						throw new Error((payload && payload.message) || "Não foi possível consultar o CEP.");
+					}
+
+				return normalizeZipCodeLookupData(payload);
+			}
+
+		async function fillAddressFromZipCode(block, data)
+			{
+				const zipCodeInput = getAddressInput(block, "zip_code");
+				const streetInput = getAddressInput(block, "street");
+
+				setControlValue(zipCodeInput, data.zip_code || formatZipCodeValue(zipCodeInput ? zipCodeInput.value : ""), false);
+				setControlValue(streetInput, data.street || "", true);
+
+				return await autoSelectAddressNeighborhood(block, data);
+			}
+
+		function setAddressFieldFeedbacksAfterZipCodeLookup(block, data, neighborhoodWasSelected)
+			{
+				const filledMessage = "Endereço preenchido pelo CEP.";
+				const pendingMessage = "Pendente de preenchimento.";
+
+				setAddressFieldFeedback(
+					block,
+					"street",
+					data.street ? filledMessage : pendingMessage,
+					data.street ? "success" : "muted"
+				);
+
+				setAddressFieldFeedback(
+					block,
+					"neighborhood_name",
+					neighborhoodWasSelected ? filledMessage : pendingMessage,
+					neighborhoodWasSelected ? "success" : "muted"
+				);
+
+				setAddressFieldFeedback(block, "number", pendingMessage, "muted");
+				setAddressFieldFeedback(block, "observations", pendingMessage, "muted");
+			}
+
+		function initAddressZipCodeLookup(block)
+			{
+				const zipCodeInput = getAddressInput(block, "zip_code");
+				if (!zipCodeInput || zipCodeInput.dataset.zipCodeLookupBound === "1")
+					{
+						return;
+					}
+
+				zipCodeInput.dataset.zipCodeLookupBound = "1";
+
+				let lookupTimer = null;
+				let lastLookupDigits = "";
+
+				function clearLookupTimer()
+					{
+						if (lookupTimer)
+							{
+								clearTimeout(lookupTimer);
+								lookupTimer = null;
+							}
+					}
+
+				async function runLookup(force)
+					{
+						clearLookupTimer();
+
+						const digits = onlyZipCodeDigits(zipCodeInput.value);
+						if (digits.length === 0)
+							{
+								lastLookupDigits = "";
+								setAddressZipCodeFeedback(block, "", "muted");
+								clearAddressFieldFeedbacks(block);
+								return;
+							}
+
+						if (digits.length !== 8)
+							{
+								if (force)
+									{
+										setAddressZipCodeFeedback(block, "Informe um CEP válido com 8 dígitos.", "error");
+									}
+								return;
+							}
+
+						if (!force && lastLookupDigits === digits)
+							{
+								return;
+							}
+
+						lastLookupDigits = digits;
+						setAddressZipCodeFeedback(block, "Consultando CEP...", "muted");
+						clearAddressFieldFeedbacks(block);
+
+						try
+							{
+								const data = await searchAddressZipCode(digits);
+								const neighborhoodWasSelected = await fillAddressFromZipCode(block, data);
+								setAddressFieldFeedbacksAfterZipCodeLookup(block, data, neighborhoodWasSelected);
+
+								if (data.neighborhood && !neighborhoodWasSelected)
+									{
+										setAddressZipCodeFeedback(block, "CEP encontrado. Selecione ou cadastre o bairro antes de salvar.", "warning");
+										return;
+									}
+
+								setAddressZipCodeFeedback(block, "Endereço preenchido pelo CEP.", "success");
+							}
+						catch (err)
+							{
+								setAddressZipCodeFeedback(block, err.message || "Não foi possível consultar o CEP.", "error");
+								lastLookupDigits = "";
+								console.error("zip code lookup error:", err);
+							}
+					}
+
+				zipCodeInput.addEventListener("input", function ()
+					{
+						clearLookupTimer();
+
+						const digits = onlyZipCodeDigits(zipCodeInput.value);
+						if (digits.length === 0)
+							{
+								lastLookupDigits = "";
+								setAddressZipCodeFeedback(block, "", "muted");
+								clearAddressFieldFeedbacks(block);
+								return;
+							}
+
+						if (digits.length !== 8)
+							{
+								lastLookupDigits = "";
+								return;
+							}
+
+						lookupTimer = setTimeout(function ()
+							{
+								runLookup(false);
+							}, 400);
+					});
+
+				zipCodeInput.addEventListener("blur", function ()
+					{
+						runLookup(false);
+					});
+
+				zipCodeInput.addEventListener("keydown", function (event)
+					{
+						if (event.key === "Enter")
+							{
+								event.preventDefault();
+								runLookup(true);
+							}
+					});
+			}
+
 		// -----------------------------------------------------------------------
 		// Tenant: alternar painéis conforme modo selecionado
 		// -----------------------------------------------------------------------
@@ -1445,6 +1992,7 @@
 				// Inicializa o autocomplete de bairro no bloco recém-inserido
 				if (block)
 					{
+						initAddressZipCodeLookup(block);
 						initAddressNeighborhoodAutocomplete(block);
 					}
 			}

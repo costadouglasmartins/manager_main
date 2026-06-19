@@ -213,9 +213,13 @@ class Neighborhood extends Model
 		}
 
 	/**
-	 * Autocomplete method
+	 * Autocomplete neighborhoods, optionally narrowing by city and state.
+	 * @param string $term Search term typed by the user.
+	 * @param int $limit Maximum number of rows returned.
+	 * @param array<string, mixed> $filters Optional city/state filters.
+	 * @return array<int, array<string, mixed>>
 	 */
-	public function autocomplete(string $term, int $limit = 100): array
+	public function autocomplete(string $term, int $limit = 100, array $filters = []): array
 		{
 		$term = trim($term);
 		if ($term === '')
@@ -224,6 +228,7 @@ class Neighborhood extends Model
 			}
 
 		$limit = max(1, min(50, (int) $limit));
+		$params = [':t' => '%' . $term . '%'];
 
 		$sql = "SELECT  Neighborhood.id, 
                     Neighborhood.`name`, 
@@ -232,12 +237,27 @@ class Neighborhood extends Model
             FROM neighborhoods AS Neighborhood
             LEFT JOIN cities AS City ON City.id = Neighborhood.city_id
             LEFT JOIN states AS State ON State.id = City.state_id
-            WHERE Neighborhood.`name` LIKE :t
-            ORDER BY Neighborhood.`name` ASC
+            WHERE Neighborhood.`name` LIKE :t";
+
+		$cityName = trim((string) ($filters['city_name'] ?? ''));
+		if ($cityName !== '')
+			{
+			$sql .= " AND LOWER(TRIM(City.`name`)) = LOWER(TRIM(:city_name))";
+			$params[':city_name'] = $cityName;
+			}
+
+		$stateAcronym = strtoupper(trim((string) ($filters['state_acronym'] ?? '')));
+		if ($stateAcronym !== '')
+			{
+			$sql .= " AND UPPER(TRIM(State.acronym)) = :state_acronym";
+			$params[':state_acronym'] = $stateAcronym;
+			}
+
+		$sql .= " ORDER BY Neighborhood.`name` ASC
             LIMIT {$limit}";
 
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute([':t' => '%' . $term . '%']);
+		$stmt->execute($params);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 		}

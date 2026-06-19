@@ -158,9 +158,14 @@ class PersonController extends Controller
 
 		$term  = trim($_GET['term'] ?? '');
 		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
+		$cityName = trim($_GET['city_name'] ?? ($_GET['city'] ?? ''));
+		$stateAcronym = trim($_GET['state_acronym'] ?? ($_GET['state'] ?? ''));
 
 		$neighborhood = new Neighborhood();
-		$rows = $neighborhood->autocomplete($term, $limit);
+		$rows = $neighborhood->autocomplete($term, $limit, [
+			'city_name'     => $cityName,
+			'state_acronym' => $stateAcronym,
+		]);
 
 		$items = array_map(function ($r)
 			{
