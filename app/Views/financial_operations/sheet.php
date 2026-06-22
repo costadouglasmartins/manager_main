@@ -48,16 +48,12 @@ if (!function_exists('financialSheetEntryButton'))
       return $label;
       }
 
-    $classes = ['financial-sheet-entry-button'];
-    if ($isPaid)
-      {
-      $classes[] = 'financial-sheet-entry-paid';
-      }
-
     $attributes = [
       'type' => 'button',
-      'class' => implode(' ', $classes),
+      'class' => 'financial-sheet-entry-edit',
       'data-sheet-entry' => '1',
+      'aria-label' => 'Editar lançamento',
+      'title' => 'Editar lançamento',
     ];
     foreach ($data as $name => $value)
       {
@@ -70,7 +66,16 @@ if (!function_exists('financialSheetEntryButton'))
       $htmlAttributes[] = htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
       }
 
-    return '<button ' . implode(' ', $htmlAttributes) . '>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</button>';
+    $valueClasses = ['financial-sheet-entry-value'];
+    if ($isPaid)
+      {
+      $valueClasses[] = 'financial-sheet-entry-paid';
+      }
+
+    return '<span class="financial-sheet-entry">'
+      . '<button ' . implode(' ', $htmlAttributes) . '><i class="bi bi-pencil-square"></i></button>'
+      . '<span class="' . implode(' ', $valueClasses) . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>'
+      . '</span>';
     }
   }
 
@@ -97,6 +102,11 @@ if ($expensePercentageLabel !== '-')
   $expensePercentageLabel .= '%';
   }
 $canEditSheetOperations = authCan('financial_operation.edit') && authCan('financial_operation.update');
+$currentMonthNumber = ((int) $year === (int) date('Y')) ? (int) date('n') : 0;
+$financialSheetMonthClass = static function ($monthNumber) use ($currentMonthNumber): string
+  {
+  return ($currentMonthNumber !== 0 && (int) $monthNumber === $currentMonthNumber) ? 'financial-sheet-month-current' : '';
+  };
 $sessionUserLabel = trim((string) ($sessionUser['name'] ?? ''));
 if (!empty($sessionUser['username']))
   {
@@ -108,7 +118,7 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=11'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=17'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -187,10 +197,10 @@ if ($sessionUserLabel === '')
         <thead>
           <tr>
             <th><span class="d-block text-truncate" title="Categoria">Categoria</span></th>
-            <?php foreach ($months as $monthLabel): ?>
+            <?php foreach ($months as $monthNumber => $monthLabel): ?>
               <?php $monthHeader = function_exists('mb_strtoupper') ? mb_strtoupper($monthLabel, 'UTF-8') : strtoupper($monthLabel); ?>
               <?php $monthTitle = htmlspecialchars($monthHeader, ENT_QUOTES, 'UTF-8'); ?>
-              <th><span class="d-block text-truncate" title="<?= $monthTitle; ?>"><?= $monthTitle; ?></span></th>
+              <th class="<?= $financialSheetMonthClass($monthNumber); ?>"><span class="d-block text-truncate" title="<?= $monthTitle; ?>"><?= $monthTitle; ?></span></th>
             <?php endforeach; ?>
             <th><span class="d-block text-truncate" title="Total">Total</span></th>
           </tr>
@@ -211,7 +221,7 @@ if ($sessionUserLabel === '')
                   $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
                   $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
                   ?>
-                  <td><?= financialSheetEntryButton($monthCents, [
+                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetEntryButton($monthCents, [
                     'sheet_year' => $year,
                     'sheet_type' => 'CREDIT',
                     'sheet_category_id' => $categoryId,
@@ -238,7 +248,7 @@ if ($sessionUserLabel === '')
             <tr class="financial-sheet-data-row financial-sheet-empty-row">
               <th scope="row" title="Nenhuma receita lançada"><span class="d-block text-truncate">Nenhuma receita lançada</span></th>
               <?php foreach ($months as $_monthNumber => $_monthLabel): ?>
-                <td></td>
+                <td class="<?= $financialSheetMonthClass($_monthNumber); ?>"></td>
               <?php endforeach; ?>
               <td>0,00</td>
             </tr>
@@ -247,7 +257,7 @@ if ($sessionUserLabel === '')
           <tr class="financial-sheet-total-row financial-sheet-income-total">
             <th scope="row" title="Subtotal receitas"><span class="d-block text-truncate">Subtotal receitas</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
-              <td><?= financialSheetMoney((int) ($incomeTotals['months'][$monthNumber] ?? 0)); ?></td>
+              <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetMoney((int) ($incomeTotals['months'][$monthNumber] ?? 0)); ?></td>
             <?php endforeach; ?>
             <td><?= financialSheetMoney($incomeTotal); ?></td>
           </tr>
@@ -267,7 +277,7 @@ if ($sessionUserLabel === '')
                   $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
                   $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
                   ?>
-                  <td><?= financialSheetEntryButton($monthCents, [
+                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetEntryButton($monthCents, [
                     'sheet_year' => $year,
                     'sheet_type' => 'DEBIT',
                     'sheet_category_id' => $categoryId,
@@ -294,7 +304,7 @@ if ($sessionUserLabel === '')
             <tr class="financial-sheet-data-row financial-sheet-empty-row">
               <th scope="row" title="Nenhuma despesa lançada"><span class="d-block text-truncate">Nenhuma despesa lançada</span></th>
               <?php foreach ($months as $_monthNumber => $_monthLabel): ?>
-                <td></td>
+                <td class="<?= $financialSheetMonthClass($_monthNumber); ?>"></td>
               <?php endforeach; ?>
               <td>0,00</td>
             </tr>
@@ -303,7 +313,7 @@ if ($sessionUserLabel === '')
           <tr class="financial-sheet-total-row financial-sheet-expense-total">
             <th scope="row" title="Subtotal despesas"><span class="d-block text-truncate">Subtotal despesas</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
-              <td><?= financialSheetMoney((int) ($expenseTotals['months'][$monthNumber] ?? 0)); ?></td>
+              <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetMoney((int) ($expenseTotals['months'][$monthNumber] ?? 0)); ?></td>
             <?php endforeach; ?>
             <td><?= financialSheetMoney($expenseTotal); ?></td>
           </tr>
@@ -316,7 +326,7 @@ if ($sessionUserLabel === '')
             <th scope="row" title="Subtotal saldos (R$)"><span class="d-block text-truncate">Subtotal saldos (R$)</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
               <?php $monthBalance = (int) ($balanceTotals['months'][$monthNumber] ?? 0); ?>
-              <td class="<?= $monthBalance < 0 ? 'financial-sheet-negative' : ''; ?>"><?= financialSheetMoney($monthBalance); ?></td>
+              <td class="<?= trim(($monthBalance < 0 ? 'financial-sheet-negative ' : '') . $financialSheetMonthClass($monthNumber)); ?>"><?= financialSheetMoney($monthBalance); ?></td>
             <?php endforeach; ?>
             <td class="<?= $yearBalance < 0 ? 'financial-sheet-negative' : ''; ?>"><?= financialSheetMoney($yearBalance); ?></td>
           </tr>
@@ -324,7 +334,7 @@ if ($sessionUserLabel === '')
           <tr class="financial-sheet-total-row financial-sheet-percent-row">
             <th scope="row" title="Percentual despesas (%)"><span class="d-block text-truncate">Percentual despesas (%)</span></th>
             <?php foreach (array_keys($months) as $monthNumber): ?>
-              <td><?= financialSheetPercent($expensePercentages['months'][$monthNumber] ?? null); ?></td>
+              <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetPercent($expensePercentages['months'][$monthNumber] ?? null); ?></td>
             <?php endforeach; ?>
             <td><?= financialSheetPercent($expensePercentages['total'] ?? null); ?></td>
           </tr>

@@ -237,6 +237,7 @@
 
 .financial-sheet-data-row td,
 .financial-sheet-total-row td {
+  position: relative;
   overflow: hidden;
   text-align: right;
   text-overflow: ellipsis;
@@ -318,28 +319,83 @@
   outline-offset: -2px;
 }
 
-.financial-sheet-entry-button {
+/* Coluna do mês atual: moldura suave + tom de realce que respeita as cores das linhas */
+.financial-sheet-month-current {
+  box-shadow: inset 1px 0 0 rgba(var(--bs-primary-rgb), 0.3),
+    inset -1px 0 0 rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.financial-sheet-table td.financial-sheet-month-current {
+  background-image: linear-gradient(rgba(var(--bs-primary-rgb), 0.08), rgba(var(--bs-primary-rgb), 0.08));
+}
+
+.financial-sheet-table thead th.financial-sheet-month-current {
+  background-image: linear-gradient(rgba(var(--bs-primary-rgb), 0.45), rgba(var(--bs-primary-rgb), 0.45));
+}
+
+/* Dentro da coluna do mês atual, reforça Receitas (verde) e Despesas (vermelho) */
+.financial-sheet-income-data td.financial-sheet-month-current {
+  background-image: linear-gradient(rgba(var(--bs-success-rgb), 0.16), rgba(var(--bs-success-rgb), 0.16));
+}
+
+.financial-sheet-expense-data td.financial-sheet-month-current {
+  background-image: linear-gradient(rgba(var(--bs-danger-rgb), 0.16), rgba(var(--bs-danger-rgb), 0.16));
+}
+
+/* Hover em linha de receita/despesa: realça a linha inteira em amarelo fraco,
+   mantendo o texto legível em ambos os temas */
+.financial-sheet-income-data:hover th,
+.financial-sheet-income-data:hover td,
+.financial-sheet-expense-data:hover th,
+.financial-sheet-expense-data:hover td {
+  color: var(--bs-emphasis-color);
+  background-color: rgba(var(--bs-warning-rgb), 0.16);
+  background-image: none;
+}
+
+.financial-sheet-entry {
   display: block;
-  width: 100%;
-  min-height: 1.4rem;
+  padding-left: 1rem;
+}
+
+.financial-sheet-entry-edit {
+  position: absolute;
+  left: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   border: 0;
-  color: inherit;
-  font: inherit;
-  line-height: inherit;
-  text-align: right;
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  line-height: 1;
   background: transparent;
+  opacity: 0;
+  transition: opacity 0.12s ease-in-out;
 }
 
-.financial-sheet-entry-button:hover,
-.financial-sheet-entry-button:focus {
-  color: var(--bs-primary-text-emphasis);
-  text-decoration: underline;
+.financial-sheet-table td:hover .financial-sheet-entry-edit,
+.financial-sheet-entry-edit:focus-visible {
+  opacity: 1;
 }
 
-.financial-sheet-entry-button:focus-visible {
+.financial-sheet-entry-edit:hover,
+.financial-sheet-entry-edit:focus {
+  color: var(--bs-primary);
+}
+
+.financial-sheet-entry-edit:focus-visible {
   outline: 2px solid var(--bs-primary);
   outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.financial-sheet-entry-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .financial-sheet-entry-paid {
