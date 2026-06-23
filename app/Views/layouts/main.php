@@ -47,7 +47,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
             <!-- Four levels menu -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="menuExemplo" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-layers me-1"></i> Cadastros essenciais
+                <i class="bi bi-layers me-1"></i> Cadastros
               </a>
               <ul class="dropdown-menu" aria-labelledby="menuExemplo">
                 <?php if (authCan('neighborhood.index')): ?>
@@ -140,7 +140,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                 <?php if (authCan('person.index')): ?>
                   <!-- Person -->
                   <li class="dropdown-submenu">
-                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-people-fill me-2"></i>Pessoas</a>
+                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-people-fill me-2"></i>Pessoas / Tennants</a>
                     <ul class="dropdown-menu">
 
                       <li><a class="dropdown-item" href="<?= url('person/create'); ?>"><i class="bi bi-person-fill-add me-2"></i>Cadastrar</a></li>
@@ -302,6 +302,8 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><a class="dropdown-item" href="<?= url('tool/neighborhoodImport'); ?>"><i class="bi bi-filetype-xlsx me-2"></i>Importador de bairros</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeCrawler'); ?>"><i class="bi bi-radar me-2"></i>Webcrawler de CEPs</a></li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <li><a class="dropdown-item" href="<?= url('tool/ipRangeWebCrawler'); ?>"><i class="bi bi-hdd-network me-2"></i>Webcrawler de IPs</a></li>
                 </ul>
               </li>
               <li><hr class="dropdown-divider" /></li>

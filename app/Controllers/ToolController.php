@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\NeighborhoodImport;
 use App\Models\State;
 use App\Services\EmailMxValidatorService;
+use App\Services\IpRangeWebCrawlerService;
 use App\Services\ZipCodeCrawlerService;
 use App\Services\ZipCodeNeighborhoodService;
 use App\Services\ZipCodeSearchService;
@@ -84,6 +85,59 @@ class ToolController extends Controller
 		$this->view('tools/zip_code_crawler', [
 			'title' => 'Webcrawler de CEPs',
 			'zipCodeStateOptions' => $this->readZipCodeCrawlerStateOptions(),
+		]);
+		}
+
+	/**
+	 * Render the IP range webcrawler page.
+	 * @return void
+	 **/
+	public function ipRangeWebCrawler(): void
+		{
+		$this->requireAuth();
+
+		$service = new IpRangeWebCrawlerService();
+
+		$this->view('tools/ip_range_webcrawler', [
+			'title' => 'Webcrawler de IPs',
+			'ipRangeCountryOptions' => $service->countryRangeOptions(),
+			'userAgentOptions' => IpRangeWebCrawlerService::userAgentOptions(),
+		]);
+		}
+
+	/**
+	 * Render the IP range webcrawler report.
+	 * @return void
+	 **/
+	public function ipRangeWebCrawlerReport(): void
+		{
+		$this->requireAuth();
+
+		$service = new IpRangeWebCrawlerService();
+		$filters = $this->readIpRangeWebCrawlerReportFilters();
+		$page = $this->readIpRangeWebCrawlerReportPage();
+		$perPage = 20;
+		$offset = ($page - 1) * $perPage;
+		$sort = sortRequest($this->ipRangeWebCrawlerReportSortableColumns(), 'checked_at', 'desc');
+		$results = $service->searchResults($filters, $perPage, $offset, $sort);
+		$total = $service->countResults($filters);
+		$totalPages = max(1, (int) ceil($total / $perPage));
+		$summary = $service->reportSummary($filters);
+		$countryOptions = $service->countryRangeOptions();
+		$queryFilters = http_build_query($filters);
+
+		$this->view('tools/ip_range_webcrawler_report', [
+			'title' => 'Relatório do webcrawler de IPs',
+			'filters' => $filters,
+			'results' => $results,
+			'summary' => $summary,
+			'page' => $page,
+			'perPage' => $perPage,
+			'totalPages' => $totalPages,
+			'total' => $total,
+			'sort' => $sort,
+			'paginationQuery' => sortQueryString($queryFilters, $sort),
+			'ipRangeCountryOptions' => $countryOptions,
 		]);
 		}
 
@@ -291,6 +345,62 @@ class ToolController extends Controller
 		}
 
 	/**
+	 * Stream IP range webcrawler progress through Server-Sent Events.
+	 * @return void
+	 **/
+	public function streamIpRangeWebCrawler(): void
+		{
+		$this->requireAuth();
+
+		ignore_user_abort(true);
+		set_time_limit(0);
+
+		header('Content-Type: text/event-stream; charset=utf-8');
+		header('Cache-Control: no-cache, no-transform');
+		header('Connection: keep-alive');
+		header('X-Accel-Buffering: no');
+
+		while (ob_get_level() > 0)
+			{
+			ob_end_flush();
+			}
+
+		ob_implicit_flush(true);
+		session_write_close();
+
+		$service = new IpRangeWebCrawlerService();
+
+		foreach ($service->stream($this->readIpRangeWebCrawlerInput()) as $payload)
+			{
+			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
+			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
+			flush();
+
+			if (connection_aborted())
+				{
+				break;
+				}
+			}
+
+		exit;
+		}
+
+	/**
+	 * Import IP ranges for one country and return refreshed options.
+	 * @return void
+	 **/
+	public function importIpRangeCountryRanges(): void
+		{
+		$this->requireAuth();
+
+		$service = new IpRangeWebCrawlerService();
+		$result = $service->importCountryRanges($this->readIpRangeCountryCodeInput());
+		$status = (int) ($result['status'] ?? 500);
+
+		$this->json($result, $status);
+		}
+
+	/**
 	 * Save a single zip code crawler result.
 	 * @return void
 	 **/
@@ -400,6 +510,125 @@ class ToolController extends Controller
 			}
 
 		return '';
+		}
+
+	/**
+	 * Read the IP range webcrawler input from the request.
+	 * @return array<string, mixed>
+	 **/
+	private function readIpRangeWebCrawlerInput(): array
+		{
+		$user = $_SESSION['manager_main']['user'] ?? [];
+
+		return [
+			'user_id' => (int) ($user['id'] ?? 0),
+			'range_mode' => trim((string) ($_GET['range_mode'] ?? 'amount')),
+			'start_ip' => trim((string) ($_GET['start_ip'] ?? '')),
+			'end_ip' => trim((string) ($_GET['end_ip'] ?? '')),
+			'ip_quantity' => $this->readPositiveInt((string) ($_GET['ip_quantity'] ?? '100'), 100, 1, IpRangeWebCrawlerService::maxIpsPerExecution()),
+			'manual_ranges' => trim((string) ($_GET['manual_ranges'] ?? '')),
+			'country_code' => strtoupper(trim((string) ($_GET['country_code'] ?? ''))),
+			'max_ips' => $this->readPositiveInt((string) ($_GET['max_ips'] ?? '0'), 0, 0, IpRangeWebCrawlerService::maxIpsPerExecution()),
+			'keywords' => trim((string) ($_GET['keywords'] ?? '')),
+			'user_agent' => trim((string) ($_GET['user_agent'] ?? '')),
+			'timeout_ms' => $this->readPositiveInt((string) ($_GET['timeout_ms'] ?? '3000'), 3000, 500, 15000),
+			'concurrency' => $this->readPositiveInt((string) ($_GET['concurrency'] ?? '10'), 10, 1, 200),
+			'skip_existing' => array_key_exists('skip_existing', $_GET) ? $this->readBooleanFlag($_GET['skip_existing']) : true,
+		];
+		}
+
+	/**
+	 * Read the country code used to import country IP ranges.
+	 * @return string
+	 **/
+	private function readIpRangeCountryCodeInput(): string
+		{
+		if (isset($_POST['country_code']))
+			{
+			return strtoupper(trim((string) $_POST['country_code']));
+			}
+
+		if (isset($_GET['country_code']))
+			{
+			return strtoupper(trim((string) $_GET['country_code']));
+			}
+
+		$rawBody = (string) file_get_contents('php://input');
+		if ($rawBody === '')
+			{
+			return '';
+			}
+
+		$contentType = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+		if (strpos($contentType, 'application/json') !== false)
+			{
+			$payload = json_decode($rawBody, true);
+			if (is_array($payload) && isset($payload['country_code']))
+				{
+				return strtoupper(trim((string) $payload['country_code']));
+				}
+			}
+
+		parse_str($rawBody, $parsedBody);
+		if (is_array($parsedBody) && isset($parsedBody['country_code']))
+			{
+			return strtoupper(trim((string) $parsedBody['country_code']));
+			}
+
+		return '';
+		}
+
+	/**
+	 * Read filters for the IP range webcrawler report.
+	 * @return array<string, string>
+	 **/
+	private function readIpRangeWebCrawlerReportFilters(): array
+		{
+		return [
+			'execution_id' => trim((string) ($_GET['execution_id'] ?? '')),
+			'country_code' => strtoupper(trim((string) ($_GET['country_code'] ?? ''))),
+			'range_mode' => trim((string) ($_GET['range_mode'] ?? '')),
+			'protocol' => strtolower(trim((string) ($_GET['protocol'] ?? ''))),
+			'port' => trim((string) ($_GET['port'] ?? '')),
+			'http_status' => trim((string) ($_GET['http_status'] ?? '')),
+			'scan_status' => trim((string) ($_GET['scan_status'] ?? '')),
+			'keyword_matched' => trim((string) ($_GET['keyword_matched'] ?? '')),
+			'term' => trim((string) ($_GET['term'] ?? '')),
+			'date_from' => trim((string) ($_GET['date_from'] ?? '')),
+			'date_to' => trim((string) ($_GET['date_to'] ?? '')),
+		];
+		}
+
+	/**
+	 * Read the current page for the IP range webcrawler report.
+	 * @return int
+	 **/
+	private function readIpRangeWebCrawlerReportPage(): int
+		{
+		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+		return $page > 0 ? $page : 1;
+		}
+
+	/**
+	 * Return allowed sort columns for the IP range webcrawler report.
+	 * @return array<string, string>
+	 **/
+	private function ipRangeWebCrawlerReportSortableColumns(): array
+		{
+		return [
+			'id' => 'r.id',
+			'execution_id' => 'r.execution_id',
+			'country_code' => 'e.country_code',
+			'ip_address' => 'r.ip_address',
+			'protocol' => 'r.protocol',
+			'port' => 'r.port',
+			'http_status' => 'r.http_status',
+			'scan_status' => 'r.scan_status',
+			'keyword_matched' => 'r.keyword_matched',
+			'response_time_ms' => 'r.response_time_ms',
+			'checked_at' => 'r.checked_at',
+			'title' => 'r.title',
+		];
 		}
 
 	/**
