@@ -30,9 +30,6 @@ $userAgentOptions = $userAgentOptions ?? [];
                   <h1 class="ip-range-webcrawler-title mb-0">Webcrawler de IPs</h1>
                   <small class="text-secondary">Pesquisa HTTP/HTTPS por faixas IPv4.</small>
                 </div>
-                <a class="btn btn-outline-primary btn-sm" href="<?= url('tool/ipRangeWebCrawlerReport'); ?>">
-                  <i class="bi bi-file-earmark-text me-1"></i>Relatório
-                </a>
               </div>
             </div>
           </div>
@@ -134,18 +131,19 @@ $userAgentOptions = $userAgentOptions ?? [];
               <div class="alert alert-info d-none mb-0" id="ipCrawlerMessage" role="status"></div>
             </div>
 
-            <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center ip-range-webcrawler-actions">
-              <button class="btn btn-secondary" type="button" id="ipCrawlerClearButton">
+            <div class="col-12 d-flex flex-nowrap gap-2 align-items-center ip-range-webcrawler-actions">
+              <button class="btn btn-sm btn-secondary text-truncate" type="button" id="ipCrawlerClearButton">
                 <i class="bi bi-eraser me-1"></i>Limpar
               </button>
-              <div class="d-flex gap-2">
-                <button class="btn btn-danger d-none" type="button" id="ipCrawlerStopButton">
-                  <i class="bi bi-stop-fill me-1"></i>Parar
-                </button>
-                <button class="btn btn-primary" type="submit" id="ipCrawlerStartButton">
-                  <i class="bi bi-play-fill me-1"></i>Iniciar
-                </button>
-              </div>
+              <button class="btn btn-sm btn-danger text-truncate d-none" type="button" id="ipCrawlerStopButton">
+                <i class="bi bi-stop-fill me-1"></i>Parar
+              </button>
+              <button class="btn btn-sm btn-primary text-truncate" onclick="window.open('<?= url('tool/ipRangeWebCrawlerReport'); ?>', '_blank')" type="button" id="ipCrawlerReportButton">
+                <i class="bi bi-file-earmark-text me-1"></i>Relatório
+              </button>
+              <button class="btn btn-sm btn-primary text-truncate" type="submit" id="ipCrawlerStartButton">
+                <i class="bi bi-play-fill me-1"></i>Iniciar
+              </button>
             </div>
           </form>
         </div>
