@@ -1,0 +1,108 @@
+.web-address-crawler-tool {
+  --web-address-crawler-border: rgba(var(--bs-body-color-rgb), 0.13);
+  --web-address-crawler-soft: var(--bs-tertiary-bg);
+  --web-address-crawler-primary: #0f766e;
+}
+
+[data-bs-theme="dark"] .web-address-crawler-tool {
+  --web-address-crawler-border: rgba(255, 255, 255, 0.14);
+  --web-address-crawler-primary: #43c6bc;
+}
+
+.web-address-crawler-tool .card {
+  border: 1px solid var(--web-address-crawler-border);
+  border-radius: 8px;
+}
+
+.web-address-crawler-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+}
+
+.web-address-crawler-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.web-address-crawler-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 0.75rem;
+}
+
+.web-address-crawler-stat {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.85rem;
+  background: var(--web-address-crawler-soft);
+  border: 1px solid var(--web-address-crawler-border);
+  border-radius: 8px;
+}
+
+.web-address-crawler-stat small {
+  color: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.web-address-crawler-stat strong {
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+}
+
+.web-address-crawler-progress .progress {
+  height: 0.85rem;
+  background-color: var(--bs-secondary-bg);
+}
+
+.web-address-crawler-progress .progress-bar {
+  background-color: var(--web-address-crawler-primary);
+  transition: width 0.2s ease;
+}
+
+.web-address-crawler-monitor-card > .card-body {
+  min-height: 0;
+}
+
+.web-address-crawler-results {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.web-address-crawler-results-body {
+  flex: 1 1 0;
+  overflow-y: auto;
+  min-height: 24rem;
+  padding-bottom: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bs-border-color) transparent;
+}
+
+.web-address-crawler-results-body .badge {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 1400px) {
+  .web-address-crawler-monitor-card {
+    height: calc(100dvh - 10.5rem) !important;
+  }
+
+  .web-address-crawler-results-body {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .web-address-crawler-results-body {
+    min-height: 18rem;
+  }
+}

@@ -304,6 +304,9 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><a class="dropdown-item" href="<?= url('tool/zipCodeCrawler'); ?>"><i class="bi bi-radar me-2"></i>Webcrawler de CEPs</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/ipRangeWebCrawler'); ?>"><i class="bi bi-hdd-network me-2"></i>Webcrawler de IPs</a></li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawler'); ?>"><i class="bi bi-geo-alt me-2"></i>Webcrawler de endereços</a></li>
+                  <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawlerResults'); ?>"><i class="bi bi-list-check me-2"></i>Registros encontrados</a></li>
                 </ul>
               </li>
               <li><hr class="dropdown-divider" /></li>

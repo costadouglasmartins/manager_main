@@ -1,0 +1,13 @@
+#webAddressCrawlerResultsApp .badge {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#webAddressCrawlerResultsApp #webCrawlerImportMessage {
+  max-width: 28rem;
+}
+
+#webAddressCrawlerResultsApp td small {
+  line-height: 1.35;
+}
