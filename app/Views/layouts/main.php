@@ -267,6 +267,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-sliders me-2"></i>Configurações</a>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
+                  <li><a class="dropdown-item" href="<?= url('log'); ?>"><i class="bi bi-journal-text me-2"></i>Logs do sistema</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
                 </ul>

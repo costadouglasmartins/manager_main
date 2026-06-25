@@ -49,6 +49,8 @@ class Neighborhood extends Model
 				'modified' => date('Y-m-d H:i:s'),
 			]);
 			$neighborhoodId = $this->db->lastInsertId();
+			$neighborhood = $this->find($neighborhoodId);
+			$this->auditCreate('neighborhood', 'neighborhoods', $neighborhoodId, $neighborhood);
 
 			$this->db->commit();
 
@@ -76,6 +78,7 @@ class Neighborhood extends Model
 	 */
 	public function update($id, $data)
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("
 			UPDATE neighborhoods
 			SET
@@ -91,6 +94,8 @@ class Neighborhood extends Model
 			'modified' => date('Y-m-d H:i:s'),
 			'id'       => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('neighborhood', 'neighborhoods', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -271,6 +276,7 @@ class Neighborhood extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			// Delete dependent addresses
@@ -280,6 +286,9 @@ class Neighborhood extends Model
 			// Delete neighborhood
 			$stmt = $this->db->prepare("DELETE FROM neighborhoods WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('neighborhood', 'neighborhoods', $id, $beforeData, [
+				'affected_tables' => ['neighborhoods', 'addresses'],
+			]);
 
 			$this->db->commit();
 			}

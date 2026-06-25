@@ -123,6 +123,7 @@ class FinancialOperation extends Model
 		{
 		try
 			{
+			$beforeData = $this->findAllByFinancialOperationId($id);
 			$this->db->beginTransaction();
 			$userId = (int) ($data['user_id'] ?? 0);
 			if ($userId <= 0)
@@ -156,6 +157,8 @@ class FinancialOperation extends Model
 
 			$financialOperationId = $this->db->lastInsertId();
 			$this->insertInstallments((int) $financialOperationId, $installments);
+			$financialOperation = $this->findAllByFinancialOperationId($financialOperationId);
+			$this->auditCreate('financial_operation', 'financial_operations', $financialOperationId, $financialOperation);
 			$this->db->commit();
 
 			return ['financial_operation_id' => $financialOperationId];
@@ -212,6 +215,7 @@ class FinancialOperation extends Model
 
 		try
 			{
+			$beforeData = $this->findAllByFinancialOperationId($id);
 			$this->db->beginTransaction();
 			$categoryId = (int) ($data['financial_operation_category_id'] ?? 0);
 			if ($categoryId <= 0)
@@ -249,6 +253,8 @@ class FinancialOperation extends Model
 				}
 
 			$this->db->commit();
+			$afterData = $this->findAllByFinancialOperationId($id);
+			$this->auditUpdate('financial_operation', 'financial_operations', $id, $beforeData, $afterData);
 			}
 		catch (\Exception $e)
 			{
@@ -317,6 +323,10 @@ class FinancialOperation extends Model
 				{
 				$this->replaceInstallments((int) $id, $installments);
 				$this->db->commit();
+				$afterData = $this->findAllByFinancialOperationId($id);
+				$this->auditUpdate('financial_operation', 'financial_operations', $id, $beforeData, $afterData, [
+					'source' => 'sheet_entry',
+				]);
 				return;
 				}
 
@@ -327,6 +337,11 @@ class FinancialOperation extends Model
 				}
 
 			$this->db->commit();
+			$afterData = $this->findAllByFinancialOperationId($id);
+			$this->auditUpdate('financial_operation', 'financial_operations', $id, $beforeData, $afterData, [
+				'source' => 'sheet_entry',
+				'payment_id' => $paymentId > 0 ? $paymentId : null,
+			]);
 			}
 		catch (\Exception $e)
 			{
@@ -665,7 +680,12 @@ class FinancialOperation extends Model
 	 */
 	public function findAllByFinancialOperationId($id): array
 		{
-		return ['financial_operation' => $this->find($id)];
+		$paymentModel = new FinancialOperationPayment();
+
+		return [
+			'financial_operation' => $this->find($id),
+			'payments' => $paymentModel->findByFinancialOperationId($id),
+		];
 		}
 
 	/**
@@ -679,6 +699,7 @@ class FinancialOperation extends Model
 		{
 		try
 			{
+			$beforeData = $this->findAllByFinancialOperationId($id);
 			$this->db->beginTransaction();
 
 			$stmt = $this->db->prepare("DELETE FROM financial_operations_payments WHERE financial_operation_id = :id");
@@ -686,6 +707,9 @@ class FinancialOperation extends Model
 
 			$stmt = $this->db->prepare("DELETE FROM financial_operations WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('financial_operation', 'financial_operations', $id, $beforeData, [
+				'affected_tables' => ['financial_operations', 'financial_operations_payments'],
+			]);
 
 			$this->db->commit();
 			}

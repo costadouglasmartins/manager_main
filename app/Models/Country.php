@@ -71,6 +71,8 @@ class Country extends Model
 			]);
 			// Store person id
 			$countryId = $this->db->lastInsertId();
+			$country = $this->find($countryId);
+			$this->auditCreate('country', 'countries', $countryId, $country);
 
 			// Confirms the transaction
 			$this->db->commit();
@@ -113,6 +115,7 @@ class Country extends Model
 	 */
 	public function update($id, $data)
     {
+    $beforeData = $this->find($id);
     $stmt = $this->db->prepare("UPDATE countries
                                 SET `name`     = :name,
                                     `acronym`  = :acronym,
@@ -125,6 +128,8 @@ class Country extends Model
         'modified'  => date('Y-m-d H:i:s'),
         'id'        => $id
     ]);
+    $afterData = $this->find($id);
+    $this->auditUpdate('country', 'countries', $id, $beforeData, $afterData);
     }
 
 	/**
@@ -287,6 +292,7 @@ class Country extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			// Get all states for this country
@@ -339,6 +345,9 @@ class Country extends Model
 			$stmt = $this->db->prepare("DELETE FROM countries
 			                            WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('country', 'countries', $id, $beforeData, [
+				'affected_tables' => ['countries', 'states', 'cities', 'neighborhoods', 'addresses'],
+			]);
 
 			$this->db->commit();
 			}

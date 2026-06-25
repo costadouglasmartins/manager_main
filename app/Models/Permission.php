@@ -113,6 +113,12 @@ class Permission extends Model
 			'modified' => date('Y-m-d H:i:s')
 			]);
 
+		if ($stmt->rowCount() > 0)
+			{
+			$permission = $this->findPermissionSnapshot((int) $this->db->lastInsertId());
+			$this->auditCreate('permission', 'permissions', $permission['id'] ?? null, $permission);
+			}
+
 		return ($stmt->rowCount() > 0);
 		}
 
@@ -132,6 +138,7 @@ class Permission extends Model
 		$discovered = $this->discoverAbilitiesFromControllers($controllersDir);
 
 		$added = 0;
+		$createdPermissions = [];
 		$stmt = $this->db->prepare("INSERT IGNORE INTO permissions (ability, `system`, description, created, modified) VALUES (:ability, :system, :description, :created, :modified)");
 
 		foreach ($discovered as $ability => $description)
@@ -146,8 +153,18 @@ class Permission extends Model
 
 			if ($stmt->rowCount() > 0)
 				{
+				$createdPermissions[] = $this->findPermissionSnapshot((int) $this->db->lastInsertId());
 				$added++;
 				}
+			}
+
+		if (!empty($createdPermissions))
+			{
+			$this->auditCreate('permission', 'permissions', null, $createdPermissions, [
+				'source' => 'sync_from_controllers',
+				'system' => $system,
+				'controllers_dir' => $controllersDir,
+			]);
 			}
 
 		return $added;
@@ -365,6 +382,8 @@ class Permission extends Model
 			return;
 			}
 
+		$beforeData = $this->buildUserPermissionSnapshot($userId);
+
 		$this->db->beginTransaction();
 
 		try
@@ -395,6 +414,8 @@ class Permission extends Model
 				}
 
 			$this->db->commit();
+			$afterData = $this->buildUserPermissionSnapshot($userId);
+			$this->auditUpdate('permission', 'user_permissions', $userId, $beforeData, $afterData);
 			}
 		catch (\Throwable $e)
 			{
@@ -663,6 +684,7 @@ class Permission extends Model
 
 		try
 			{
+			$beforeData = $this->findPermissionSnapshot($permissionId);
 			$this->db->beginTransaction();
 
 			// Verify that the permission is still orphaned before deleting it.
@@ -694,6 +716,11 @@ class Permission extends Model
 			// Delete the catalog entry.
 			$stmt = $this->db->prepare("DELETE FROM permissions WHERE id = :id");
 			$stmt->execute(['id' => $permissionId]);
+			$this->auditDelete('permission', 'permissions', $permissionId, $beforeData, [
+				'users_affected' => $usersCount,
+				'users' => $affectedUsers,
+				'source' => 'delete_orphaned_permission',
+			]);
 
 			$this->db->commit();
 
@@ -721,6 +748,8 @@ class Permission extends Model
 		{
 		try
 			{
+			$beforeData = $this->findPermissionSnapshot((int) $id);
+			$affectedUsers = $this->getUsersWithPermission((int) $id);
 			$this->db->beginTransaction();
 
 			// Delete user permissions
@@ -730,6 +759,10 @@ class Permission extends Model
 			// Delete permission
 			$stmt = $this->db->prepare("DELETE FROM permissions WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('permission', 'permissions', $id, $beforeData, [
+				'users_affected' => count($affectedUsers),
+				'users' => $affectedUsers,
+			]);
 
 			$this->db->commit();
 			}
@@ -738,6 +771,44 @@ class Permission extends Model
 			$this->db->rollBack();
 			throw $e;
 			}
+		}
+
+	/**
+	 * Builds a snapshot of a user's direct permission assignments.
+	 *
+	 * @param int $userId User ID.
+	 * @return array<string, mixed>
+	 */
+	private function buildUserPermissionSnapshot(int $userId): array
+		{
+		return [
+			'user' => $this->findUser($userId),
+			'permission_ids' => $this->getPermissionIdsByUser($userId),
+			'abilities' => $this->getAbilitiesForUser($userId),
+		];
+		}
+
+	/**
+	 * Returns a permission snapshot used by the audit logs.
+	 *
+	 * @param int $permissionId Permission ID.
+	 * @return array<string, mixed>|null
+	 */
+	private function findPermissionSnapshot(int $permissionId): ?array
+		{
+		$stmt = $this->db->prepare("SELECT Permission.id,
+		                                   Permission.ability,
+		                                   Permission.system,
+		                                   Permission.description,
+		                                   Permission.created,
+		                                   Permission.modified
+		                            FROM permissions AS Permission
+		                            WHERE Permission.id = :id
+		                            LIMIT 1");
+		$stmt->execute(['id' => $permissionId]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		return $row ?: null;
 		}
 	}
 

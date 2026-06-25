@@ -1,0 +1,28 @@
+.audit-log-detail-shell .card {
+  border-radius: 1rem;
+}
+
+.audit-log-kicker {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.4rem;
+}
+
+.audit-log-summary dt {
+  color: #64748b;
+}
+
+.audit-log-json {
+  min-height: 14rem;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 0.85rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+}

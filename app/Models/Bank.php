@@ -77,6 +77,8 @@ class Bank extends Model
 			]);
 
 			$bankId = (int) $this->db->lastInsertId();
+			$bank = $this->find($bankId);
+			$this->auditCreate('bank', 'banks', $bankId, $bank);
 
 			$this->db->commit();
 
@@ -113,6 +115,7 @@ class Bank extends Model
 	 */
 	public function update($id, $data): void
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("
 			UPDATE banks
 			SET
@@ -130,6 +133,8 @@ class Bank extends Model
 			'modified' => date('Y-m-d H:i:s'),
 			'id'       => (int) $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('bank', 'banks', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -205,10 +210,12 @@ class Bank extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			$stmt = $this->db->prepare("DELETE FROM banks WHERE id = :id");
 			$stmt->execute(['id' => (int) $id]);
+			$this->auditDelete('bank', 'banks', $id, $beforeData);
 
 			$this->db->commit();
 			}

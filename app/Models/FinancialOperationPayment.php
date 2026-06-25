@@ -80,6 +80,8 @@ class FinancialOperationPayment extends Model
 			]);
 
 			$paymentId = $this->db->lastInsertId();
+			$payment = $this->find($paymentId);
+			$this->auditCreate('financial_operation_payment', 'financial_operations_payments', $paymentId, $payment);
 			$this->db->commit();
 
 			return ['financial_operation_payment_id' => $paymentId];
@@ -130,6 +132,7 @@ class FinancialOperationPayment extends Model
 	 */
 	public function update($id, $data): void
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("
 			UPDATE financial_operations_payments
 			SET
@@ -151,6 +154,8 @@ class FinancialOperationPayment extends Model
 			'modified'               => date('Y-m-d H:i:s'),
 			'id'                     => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('financial_operation_payment', 'financial_operations_payments', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -227,10 +232,12 @@ class FinancialOperationPayment extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			$stmt = $this->db->prepare("DELETE FROM financial_operations_payments WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('financial_operation_payment', 'financial_operations_payments', $id, $beforeData);
 
 			$this->db->commit();
 			}

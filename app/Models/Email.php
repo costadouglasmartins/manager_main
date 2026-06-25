@@ -59,6 +59,8 @@ class Email extends Model
 				'created'      => date('Y-m-d H:i:s'),
 			]);
 			$emailId = $this->db->lastInsertId();
+			$email = $this->find($emailId);
+			$this->auditCreate('email', 'emails', $emailId, $email);
 
 			$this->db->commit();
 
@@ -95,6 +97,7 @@ class Email extends Model
 	 */
 	public function update($id, $data)
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("UPDATE emails AS Email
                                 SET Email.`email` = :email,
                                     Email.`is_login` = :is_login,
@@ -109,6 +112,8 @@ class Email extends Model
 			'person_id'    => !empty($data['person_id']) ? (int) $data['person_id'] : null,
 			'id'           => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('email', 'emails', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -235,10 +240,12 @@ class Email extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			$stmt = $this->db->prepare("DELETE FROM emails WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('email', 'emails', $id, $beforeData);
 
 			$this->db->commit();
 			}

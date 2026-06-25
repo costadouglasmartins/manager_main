@@ -5,6 +5,8 @@ use App\Core\Database;
 
 class Model
   {
+	use AuditsChanges;
+
 	/**
 	 * Protected db
 	 * @var $db

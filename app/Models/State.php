@@ -54,6 +54,8 @@ class State extends Model
 				'modified'   => date('Y-m-d H:i:s'),
 			]);
 			$stateId = $this->db->lastInsertId();
+			$state = $this->find($stateId);
+			$this->auditCreate('state', 'states', $stateId, $state);
 
 			$this->db->commit();
 
@@ -85,6 +87,7 @@ class State extends Model
 	 */
 	public function update($id, $data)
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("
 			UPDATE states
 			SET
@@ -102,6 +105,8 @@ class State extends Model
 			'modified'   => date('Y-m-d H:i:s'),
 			'id'         => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('state', 'states', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -289,6 +294,7 @@ class State extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			// Get all cities for this state
@@ -320,6 +326,9 @@ class State extends Model
 			// Delete state
 			$stmt = $this->db->prepare("DELETE FROM states WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('state', 'states', $id, $beforeData, [
+				'affected_tables' => ['states', 'cities', 'neighborhoods', 'addresses'],
+			]);
 
 			$this->db->commit();
 			}

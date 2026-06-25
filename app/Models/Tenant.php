@@ -236,7 +236,13 @@ class Tenant extends Model
 			'modified'        => $now,
 		]);
 
-		return (int) $this->db->lastInsertId();
+		$tenantId = (int) $this->db->lastInsertId();
+		$tenant = $this->find($tenantId);
+		$this->auditCreate('tenant', 'tenants', $tenantId, $tenant, [
+			'tenant_id' => $tenantId,
+		]);
+
+		return $tenantId;
 		}
 
 	/**
@@ -244,6 +250,7 @@ class Tenant extends Model
 	 */
 	public function update(int $id, array $data): void
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("UPDATE tenants AS Tenant
 		                            SET Tenant.status       = :status,
 		                                Tenant.observations = :observations,
@@ -256,6 +263,14 @@ class Tenant extends Model
 			'modified'     => date('Y-m-d H:i:s'),
 			'id'           => $id,
 		]);
+
+		if (!$this->db->inTransaction())
+			{
+			$afterData = $this->find($id);
+			$this->auditUpdate('tenant', 'tenants', $id, $beforeData, $afterData, [
+				'tenant_id' => $id,
+			]);
+			}
 		}
 
 	/**
@@ -267,6 +282,7 @@ class Tenant extends Model
 	 **/
 	public function updateWithRelations(int $id, array $data): array
 		{
+		$beforeData = $this->findAllByTenantId($id);
 		try
 			{
 			$this->db->beginTransaction();
@@ -292,6 +308,14 @@ class Tenant extends Model
 				}
 
 			$this->db->commit();
+			$afterData = $this->findAllByTenantId($id);
+			$this->auditUpdate('tenant', 'tenants', $id, $beforeData, $afterData, [
+				'tenant_id' => $id,
+				'affected_tables' => ['tenants', 'tenant_users', 'users', 'people', 'emails'],
+				'created_person_id' => $result['person_id'],
+				'created_user_id' => $result['user_id'],
+				'source' => 'update_with_relations',
+			]);
 			return $result;
 			}
 		catch (\Exception $e)
@@ -431,6 +455,20 @@ class Tenant extends Model
 
 		$stmt->execute(['tenant_id' => $tenantId]);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Returns a tenant aggregate snapshot for audit logging.
+	 *
+	 * @param int $tenantId Tenant ID.
+	 * @return array<string, mixed>
+	 */
+	public function findAllByTenantId(int $tenantId): array
+		{
+		return [
+			'tenant' => $this->find($tenantId),
+			'users' => $this->getTenantUsers($tenantId),
+		];
 		}
 
 	/**
@@ -853,6 +891,7 @@ class Tenant extends Model
 		{
 		try
 			{
+			$beforeData = $this->findAllByTenantId((int) $id);
 			$this->db->beginTransaction();
 
 			// Delete tenant_users
@@ -866,6 +905,10 @@ class Tenant extends Model
 			// Delete tenant
 			$stmt = $this->db->prepare("DELETE FROM tenants WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('tenant', 'tenants', $id, $beforeData, [
+				'tenant_id' => (int) $id,
+				'affected_tables' => ['tenants', 'tenant_users', 'users'],
+			]);
 
 			$this->db->commit();
 			}

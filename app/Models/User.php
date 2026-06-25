@@ -189,6 +189,8 @@ class User extends Model
 	 */
 	public function update($id, $data)
 		{
+		$beforeData = $this->findAuditSnapshot((int) $id);
+
 		// tenant_id: null if empty/0, otherwise cast to int
 		$tenantId = (isset($data['tenant_id']) && $data['tenant_id'] !== '' && (int) $data['tenant_id'] > 0)
 			? (int) $data['tenant_id']
@@ -231,6 +233,9 @@ class User extends Model
 				'id'        => $id,
 				]);
 			}
+
+		$afterData = $this->findAuditSnapshot((int) $id);
+		$this->auditUpdate('user', 'users', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -459,6 +464,7 @@ class User extends Model
 		{
 		try
 			{
+			$beforeData = $this->findAuditSnapshot((int) $id);
 			$this->db->beginTransaction();
 
 			// Delete user permissions
@@ -472,6 +478,9 @@ class User extends Model
 			// Delete user
 			$stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('user', 'users', $id, $beforeData, [
+				'affected_tables' => ['users', 'user_permissions', 'tenant_users'],
+			]);
 
 			$this->db->commit();
 			}
@@ -480,6 +489,34 @@ class User extends Model
 			$this->db->rollBack();
 			throw $e;
 			}
+		}
+
+	/**
+	 * Returns a user snapshot suitable for audit logs.
+	 *
+	 * @param int $id User ID.
+	 * @return array<string, mixed>|null
+	 */
+	private function findAuditSnapshot(int $id): ?array
+		{
+		$stmt = $this->db->prepare("SELECT User.id,
+		                                   User.username,
+		                                   User.type,
+		                                   User.active,
+		                                   User.tenant_id,
+		                                   User.person_id,
+		                                   Person.name,
+		                                   Person.document,
+		                                   Email.email
+		                            FROM users AS User
+		                            INNER JOIN people AS Person ON Person.id = User.person_id
+		                            LEFT JOIN emails AS Email ON Email.person_id = Person.id AND Email.is_login = '1'
+		                            WHERE User.id = :id
+		                            LIMIT 1");
+		$stmt->execute(['id' => $id]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		return $row ?: null;
 		}
 	}
 

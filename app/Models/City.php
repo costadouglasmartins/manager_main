@@ -70,6 +70,8 @@ class City extends Model
 				'modified'    => date('Y-m-d H:i:s'),
 			]);
 			$cityId = $this->db->lastInsertId();
+			$city = $this->find($cityId);
+			$this->auditCreate('city', 'cities', $cityId, $city);
 
 			$this->db->commit();
 
@@ -106,6 +108,7 @@ class City extends Model
 	 */
 	public function update($id, $data)
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("UPDATE cities
 		                            SET `name`        = :name,
 		                                `description` = :description,
@@ -120,6 +123,8 @@ class City extends Model
 			'modified'    => date('Y-m-d H:i:s'),
 			'id'          => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('city', 'cities', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -357,6 +362,7 @@ class City extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			// Get all neighborhoods for this city
@@ -383,6 +389,9 @@ class City extends Model
 			$stmt = $this->db->prepare("DELETE FROM cities
 			                            WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('city', 'cities', $id, $beforeData, [
+				'affected_tables' => ['cities', 'neighborhoods', 'addresses'],
+			]);
 
 			$this->db->commit();
 			}

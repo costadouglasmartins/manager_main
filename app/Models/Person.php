@@ -330,6 +330,13 @@ class Person extends Model
 					}
 				}
 
+			$personSnapshot = $this->findAllByPersonId($personId);
+			$this->auditCreate('person', 'people', $personId, $personSnapshot, [
+				'affected_tables' => ['people', 'users', 'tenant_users', 'phone_numbers', 'addresses', 'emails'],
+				'created_user_id' => $userId,
+				'created_tenant_id' => $tenantId,
+			]);
+
 			return [
 				'person_id' => $personId,
 				'user_id'   => $userId,
@@ -621,6 +628,7 @@ class Person extends Model
 		{
 		$personId = (int) $id;
 		$personData = (isset($data['person']) && is_array($data['person'])) ? $data['person'] : $data;
+		$beforeData = $this->findAllByPersonId($personId);
 
 		try
 			{
@@ -661,6 +669,10 @@ class Person extends Model
 				}
 
 			$this->db->commit();
+			$afterData = $this->findAllByPersonId($personId);
+			$this->auditUpdate('person', 'people', $personId, $beforeData, $afterData, [
+				'affected_tables' => ['people', 'users', 'tenant_users', 'phone_numbers', 'addresses', 'emails'],
+			]);
 			}
 		catch (\Exception $e)
 			{
@@ -1532,6 +1544,7 @@ class Person extends Model
 		{
 		try
 			{
+			$beforeData = $this->findAllByPersonId($id);
 			$this->db->beginTransaction();
 
 			// Load users first so their pivot/dependency rows can be removed.
@@ -1570,6 +1583,9 @@ class Person extends Model
 			// Delete the person record last.
 			$stmt = $this->db->prepare("DELETE FROM people WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('person', 'people', $id, $beforeData, [
+				'affected_tables' => ['people', 'users', 'user_permissions', 'tenant_users', 'addresses', 'emails', 'phone_numbers'],
+			]);
 
 			$this->db->commit();
 			}

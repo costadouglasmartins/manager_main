@@ -64,6 +64,8 @@ class FinancialOperationCategory extends Model
 			]);
 
 			$categoryId = $this->db->lastInsertId();
+			$category = $this->find($categoryId);
+			$this->auditCreate('financial_operation_category', 'financial_operations_categories', $categoryId, $category);
 
 			$this->db->commit();
 
@@ -104,6 +106,7 @@ class FinancialOperationCategory extends Model
 	 */
 	public function update($id, $data): void
 		{
+		$beforeData = $this->find($id);
 		$stmt = $this->db->prepare("
 			UPDATE financial_operations_categories
 			SET
@@ -119,6 +122,8 @@ class FinancialOperationCategory extends Model
 			'modified'    => date('Y-m-d H:i:s'),
 			'id'          => $id,
 		]);
+		$afterData = $this->find($id);
+		$this->auditUpdate('financial_operation_category', 'financial_operations_categories', $id, $beforeData, $afterData);
 		}
 
 	/**
@@ -198,10 +203,12 @@ class FinancialOperationCategory extends Model
 		{
 		try
 			{
+			$beforeData = $this->find($id);
 			$this->db->beginTransaction();
 
 			$stmt = $this->db->prepare("DELETE FROM financial_operations_categories WHERE id = :id");
 			$stmt->execute(['id' => $id]);
+			$this->auditDelete('financial_operation_category', 'financial_operations_categories', $id, $beforeData);
 
 			$this->db->commit();
 			}
