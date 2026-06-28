@@ -27,12 +27,14 @@ $actionBadgeClass = static function (string $action): string {
     'create' => 'text-bg-success',
     'update' => 'text-bg-warning',
     'delete' => 'text-bg-danger',
+    'login' => 'text-bg-info',
+    'logout' => 'text-bg-dark',
     default => 'text-bg-secondary',
   };
 };
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/logs/index.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/logs/index.css?v=3'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -119,7 +121,7 @@ $actionBadgeClass = static function (string $action): string {
 </form>
 
 <div class="audit-log-toolbar mb-3">
-  <p class="text-muted mb-0"><?= (int) $total; ?> log(s) encontrado(s)</p>
+  <p class="text-muted mb-0" id="auditLogTotal" data-total="<?= (int) $total; ?>"><?= (int) $total; ?> log(s) encontrado(s)</p>
 </div>
 
 <div class="table-responsive audit-log-table-wrap">
@@ -152,7 +154,7 @@ $actionBadgeClass = static function (string $action): string {
             $userLabel = trim((string) ($row['performed_by_username'] ?? 'Sistema'));
           }
           ?>
-          <tr>
+          <tr data-log-row data-log-id="<?= (int) $row['id']; ?>">
             <td><?= (int) $row['id']; ?></td>
             <td><?= htmlspecialchars(maskDateTimeBr((string) ($row['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
             <td>
@@ -165,13 +167,21 @@ $actionBadgeClass = static function (string $action): string {
             <td><span class="badge <?= $actionBadgeClass((string) ($row['action'] ?? '')); ?>"><?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span></td>
             <td><?= htmlspecialchars((string) ($row['entity_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
             <td><?= htmlspecialchars((string) ($row['entity_id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-            <td><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8'); ?></td>
+            <td>
+              <span><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+              <?php if (!empty($row['performed_by_user_id']) && authCan('log.userTimeline')): ?>
+                <a class="audit-log-user-timeline" href="<?= url('log/user-timeline/' . (int) $row['performed_by_user_id']); ?>">Linha do tempo</a>
+              <?php endif; ?>
+            </td>
             <td><code><?= htmlspecialchars((string) ($row['route'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></code></td>
             <td class="text-end text-nowrap">
               <?php if (authCan('log.informations')): ?>
                 <a class="btn btn-sm btn-outline-primary" href="<?= url('log/informations/' . (int) $row['id']); ?>">
                   <i class="bi bi-search me-1"></i> Ver
                 </a>
+                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) $row['id']; ?>" data-log-label="Log #<?= (int) $row['id']; ?> - <?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) $row['id']); ?>">
+                  <i class="bi bi-trash me-1"></i> Remover
+                </button>
               <?php endif; ?>
             </td>
           </tr>
@@ -185,8 +195,35 @@ $actionBadgeClass = static function (string $action): string {
   </table>
 </div>
 
+<div class="modal fade" id="logDeleteModal" tabindex="-1" aria-labelledby="logDeleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content audit-log-delete-modal">
+      <form id="logDeleteForm">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="logDeleteModalTitle">Remover log</h5>
+            <small class="text-muted">Confirmação pela senha de <code>admin@admin.com</code>.</small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Você está prestes a remover permanentemente <strong id="logDeleteTargetLabel">este log</strong>.</p>
+          <label class="form-label" for="logDeletePassword">Senha de confirmação</label>
+          <input class="form-control" id="logDeletePassword" name="password" type="password" autocomplete="current-password" required>
+          <div class="form-text">A remoção acontece apenas quando a senha informada estiver correta.</div>
+          <div class="alert alert-danger d-none mt-3 mb-0" id="logDeleteFeedback" role="alert"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-danger" type="submit" id="logDeleteSubmit">Remover log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <?php if ($totalPages > 1): ?>
   <?= paginationLinks('log', (int) $page, (int) $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima'); ?>
 <?php endif; ?>
 
-<script src="<?= url('assets/js/logs/index.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/logs/index.js?v=3'); ?>"></script>

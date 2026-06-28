@@ -1,5 +1,7 @@
 <?php
 $log = $log ?? [];
+$userTimeline = $userTimeline ?? [];
+$actions = $actions ?? [];
 
 $decodeJson = static function ($value) {
   if ($value === null || $value === '') {
@@ -37,9 +39,20 @@ $userLabel = trim((string) ($log['performed_by_name'] ?? ''));
 if ($userLabel === '') {
   $userLabel = trim((string) ($log['performed_by_username'] ?? 'Sistema'));
 }
+
+$actionBadgeClass = static function (string $action): string {
+  return match ($action) {
+    'create' => 'text-bg-success',
+    'update' => 'text-bg-warning',
+    'delete' => 'text-bg-danger',
+    'login' => 'text-bg-info',
+    'logout' => 'text-bg-dark',
+    default => 'text-bg-secondary',
+  };
+};
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=4'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -50,6 +63,8 @@ if ($userLabel === '') {
 </nav>
 
 <div class="audit-log-detail-shell">
+  <div class="alert alert-success d-none mb-4" id="auditLogDeleteSuccess" role="alert"></div>
+
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3 p-lg-4">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
@@ -58,7 +73,15 @@ if ($userLabel === '') {
           <h5 class="mb-1"><?= htmlspecialchars((string) ($log['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?> / <?= htmlspecialchars((string) ($log['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></h5>
           <p class="text-muted mb-0">Ocorrido em <?= htmlspecialchars(maskDateTimeBr((string) ($log['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></p>
         </div>
-        <a class="btn btn-outline-secondary" href="<?= url('log'); ?>"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+        <div class="d-flex flex-wrap gap-2">
+          <?php if (!empty($log['performed_by_user_id']) && authCan('log.userTimeline')): ?>
+            <a class="btn btn-outline-primary" href="<?= url('log/user-timeline/' . (int) $log['performed_by_user_id']); ?>"><i class="bi bi-clock-history me-1"></i> Linha do tempo</a>
+          <?php endif; ?>
+          <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) ($log['id'] ?? 0); ?>" data-log-label="Log #<?= (int) ($log['id'] ?? 0); ?> - <?= htmlspecialchars((string) ($log['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$log['action']] ?? $log['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) ($log['id'] ?? 0)); ?>">
+            <i class="bi bi-trash me-1"></i> Remover
+          </button>
+          <a class="btn btn-outline-secondary" href="<?= url('log'); ?>"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+        </div>
       </div>
     </div>
   </div>
@@ -104,6 +127,37 @@ if ($userLabel === '') {
       </div>
     </div>
   </div>
+
+  <?php if (!empty($userTimeline)): ?>
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-0 pb-0">
+        <h6 class="mb-0">Linha do tempo recente de <?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8'); ?></h6>
+      </div>
+      <div class="card-body">
+        <div class="audit-log-mini-timeline">
+          <?php foreach ($userTimeline as $timelineRow): ?>
+            <?php
+            $timelineTenant = trim((string) ($timelineRow['tenant_name_snapshot'] ?? ''));
+            if ($timelineTenant === '') {
+              $timelineTenant = trim((string) ($timelineRow['tenant_database'] ?? 'Sem tenant'));
+            }
+            ?>
+            <a class="audit-log-mini-timeline-item" href="<?= url('log/informations/' . (int) $timelineRow['id']); ?>">
+              <span class="audit-log-mini-timeline-marker <?= htmlspecialchars((string) ($timelineRow['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"></span>
+              <span class="audit-log-mini-timeline-content">
+                <span class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                  <span class="badge <?= $actionBadgeClass((string) ($timelineRow['action'] ?? '')); ?>"><?= htmlspecialchars((string) ($actions[$timelineRow['action']] ?? $timelineRow['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+                  <strong><?= htmlspecialchars((string) ($timelineRow['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
+                  <small class="text-muted"><?= htmlspecialchars(maskDateTimeBr((string) ($timelineRow['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></small>
+                </span>
+                <span class="text-muted"><?= htmlspecialchars($timelineTenant, ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) ($timelineRow['entity_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?> #<?= htmlspecialchars((string) ($timelineRow['entity_id'] ?? '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+              </span>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
 
   <div class="row g-3">
     <div class="col-12 col-xl-6">
@@ -152,4 +206,31 @@ if ($userLabel === '') {
   </div>
 </div>
 
-<script src="<?= url('assets/js/logs/informations.js?v=1'); ?>"></script>
+<div class="modal fade" id="logDeleteModal" tabindex="-1" aria-labelledby="logDeleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content audit-log-delete-modal">
+      <form id="logDeleteForm" data-redirect-url="<?= url('log'); ?>">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="logDeleteModalTitle">Remover log</h5>
+            <small class="text-muted">Confirmação pela senha de <code>admin@admin.com</code>.</small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Você está prestes a remover permanentemente <strong id="logDeleteTargetLabel">este log</strong>.</p>
+          <label class="form-label" for="logDeletePassword">Senha de confirmação</label>
+          <input class="form-control" id="logDeletePassword" name="password" type="password" autocomplete="current-password" required>
+          <div class="form-text">A remoção acontece apenas quando a senha informada estiver correta.</div>
+          <div class="alert alert-danger d-none mt-3 mb-0" id="logDeleteFeedback" role="alert"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-danger" type="submit" id="logDeleteSubmit">Remover log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="<?= url('assets/js/logs/informations.js?v=3'); ?>"></script>

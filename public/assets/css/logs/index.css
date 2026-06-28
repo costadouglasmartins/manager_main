@@ -21,3 +21,22 @@
   padding: 0.2rem 0.45rem;
   border-radius: 0.45rem;
 }
+
+.audit-log-user-timeline {
+  display: block;
+  width: max-content;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.audit-log-delete-modal {
+  border: 0;
+  border-radius: 1rem;
+}
+
+.audit-log-row-removing {
+  opacity: 0;
+  transform: scale(0.995);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}

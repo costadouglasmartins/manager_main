@@ -2,6 +2,15 @@
   border-radius: 1rem;
 }
 
+.audit-log-detail-shell .card-header {
+  background: #fff;
+  color: #0f172a;
+}
+
+.audit-log-detail-shell .card-header h6 {
+  color: inherit;
+}
+
 .audit-log-kicker {
   display: inline-block;
   text-transform: uppercase;
@@ -25,4 +34,77 @@
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 0.85rem;
+}
+
+.audit-log-mini-timeline {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.audit-log-mini-timeline::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.45rem;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.audit-log-mini-timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.audit-log-mini-timeline-marker {
+  position: relative;
+  z-index: 1;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: #64748b;
+  box-shadow: 0 0 0 0.25rem #fff;
+}
+
+.audit-log-mini-timeline-marker.login {
+  background: #0dcaf0;
+}
+
+.audit-log-mini-timeline-marker.logout {
+  background: #212529;
+}
+
+.audit-log-mini-timeline-marker.create {
+  background: #198754;
+}
+
+.audit-log-mini-timeline-marker.update {
+  background: #ffc107;
+}
+
+.audit-log-mini-timeline-marker.delete {
+  background: #dc3545;
+}
+
+.audit-log-mini-timeline-content {
+  display: block;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.audit-log-delete-modal {
+  border: 0;
+  border-radius: 1rem;
+}
+
+[data-bs-theme="dark"] .audit-log-detail-shell .card-header {
+  background: #1f2733 !important;
+  color: #f8f9fa;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
