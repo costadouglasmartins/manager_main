@@ -116,6 +116,8 @@ $actionBadgeClass = static function (string $action): string {
       <div class="d-flex flex-column gap-2 align-items-center align-items-xl-end">
         <button class="btn btn-primary w-100" type="submit">Filtrar</button>
         <a class="btn btn-secondary w-100" href="<?= url('log'); ?>">Limpar</a>
+        <?= pdfExportButton('log', $paginationQuery); ?>
+        <?= excelExportButton('log', $paginationQuery); ?>
       </div>
     </div>
   </div>
@@ -135,7 +137,6 @@ $actionBadgeClass = static function (string $action): string {
         <?= sortableTh('log', 'module', 'Módulo', $sort, $queryFilters) ?>
         <?= sortableTh('log', 'action', 'Ação', $sort, $queryFilters) ?>
         <?= sortableTh('log', 'entity_name', 'Entidade', $sort, $queryFilters) ?>
-        <th>Registro</th>
         <?= sortableTh('log', 'performed_by_name', 'Usuário', $sort, $queryFilters) ?>
         <th>Rota</th>
         <th class="text-end">Ações</th>
@@ -167,7 +168,6 @@ $actionBadgeClass = static function (string $action): string {
             <td><?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
             <td><span class="badge <?= $actionBadgeClass((string) ($row['action'] ?? '')); ?>"><?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span></td>
             <td><?= htmlspecialchars((string) ($row['entity_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-            <td><?= htmlspecialchars((string) ($row['entity_id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
             <td>
               <span><?= htmlspecialchars($userLabel, ENT_QUOTES, 'UTF-8'); ?></span>
               <?php if (!empty($row['performed_by_user_id']) && authCan('log.userTimeline')): ?>
@@ -177,11 +177,11 @@ $actionBadgeClass = static function (string $action): string {
             <td><code><?= htmlspecialchars((string) ($row['route'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></code></td>
             <td class="text-end text-nowrap">
               <?php if (authCan('log.informations')): ?>
-                <a class="btn btn-sm btn-outline-primary" href="<?= url('log/informations/' . (int) $row['id']); ?>">
-                  <i class="bi bi-search me-1"></i> Ver
+                <a class="btn btn-sm btn-primary" href="<?= url('log/informations/' . (int) $row['id']); ?>" title="Ver log" aria-label="Ver log">
+                  <i class="bi bi-search"></i>
                 </a>
-                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) $row['id']; ?>" data-log-label="Log #<?= (int) $row['id']; ?> - <?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) $row['id']); ?>">
-                  <i class="bi bi-trash me-1"></i> Remover
+                <button class="btn btn-sm btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) $row['id']; ?>" data-log-label="Log #<?= (int) $row['id']; ?> - <?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) $row['id']); ?>" title="Remover log" aria-label="Remover log">
+                  <i class="bi bi-trash"></i>
                 </button>
               <?php endif; ?>
             </td>

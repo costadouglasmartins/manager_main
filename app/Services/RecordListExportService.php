@@ -10,6 +10,7 @@ use App\Models\Email;
 use App\Models\FinancialOperation;
 use App\Models\FinancialOperationCategory;
 use App\Models\FinancialOperationPayment;
+use App\Models\Log;
 use App\Models\Neighborhood;
 use App\Models\Person;
 use App\Models\PhoneNumber;
@@ -135,6 +136,27 @@ class RecordListExportService
 				['label' => 'Pagamento', 'callback' => fn (array $row): string => $this->dateTime($row['payment_date'] ?? '')],
 				['label' => 'Vencimento', 'callback' => fn (array $row): string => $this->date($row['due_date'] ?? '')],
 			]),
+			'log' => [
+				'model' => Log::class,
+				'title' => 'Logs do sistema',
+				'filename' => 'logs_sistema',
+				'filters' => ['id', 'tenant', 'module', 'action', 'entity_name', 'entity_id', 'performed_by', 'route', 'date_from', 'date_to'],
+				'sortableColumns' => [Log::class, 'sortableColumns'],
+				'defaultSort' => 'occurred_at',
+				'defaultDirection' => 'desc',
+				'orientation' => 'landscape',
+				'columns' => [
+					['label' => '#', 'field' => 'id', 'align' => 'right'],
+					['label' => 'Data e hora', 'callback' => fn (array $row): string => $this->dateTime($row['occurred_at'] ?? '')],
+					['label' => 'Tenant', 'callback' => fn (array $row): string => $this->logTenantLabel($row)],
+					['label' => 'Módulo', 'field' => 'module'],
+					['label' => 'Ação', 'callback' => fn (array $row): string => $this->logActionLabel($row['action'] ?? '')],
+					['label' => 'Entidade', 'field' => 'entity_name'],
+					['label' => 'Registro', 'field' => 'entity_id'],
+					['label' => 'Usuário', 'callback' => fn (array $row): string => $this->logUserLabel($row)],
+					['label' => 'Rota', 'field' => 'route'],
+				],
+			],
 			'neighborhood' => $this->standardDefinition(Neighborhood::class, 'Lista de bairros', 'bairros', ['id', 'name', 'country_id', 'state_id', 'city_id'], [Neighborhood::class, 'sortableColumns'], [
 				['label' => '#', 'field' => 'id', 'align' => 'right'],
 				['label' => 'Nome', 'field' => 'name'],
@@ -359,6 +381,13 @@ class RecordListExportService
 			'date_from' => 'Data inicial',
 			'date_to' => 'Data final',
 			'participant' => 'Participante',
+			'tenant' => 'Tenant',
+			'module' => 'Módulo',
+			'action' => 'Ação',
+			'entity_name' => 'Entidade',
+			'entity_id' => 'Registro',
+			'performed_by' => 'Usuário',
+			'route' => 'Rota',
 		];
 
 		return $labels[$key] ?? ucwords(str_replace('_', ' ', $key));
@@ -504,6 +533,53 @@ class RecordListExportService
 
 		$databaseNumber = trim((string) ($row['tenant_database_number'] ?? ''));
 		return $databaseNumber !== '' ? 'Tenant ' . $databaseNumber : '';
+		}
+
+	/**
+	 * Returns the tenant label used in log exports.
+	 *
+	 * @param array<string, mixed> $row Export row.
+	 * @return string
+	 */
+	private function logTenantLabel(array $row): string
+		{
+		$tenantName = trim((string) ($row['tenant_name_snapshot'] ?? ''));
+		if ($tenantName !== '')
+			{
+			return $tenantName;
+			}
+
+		$tenantDatabase = trim((string) ($row['tenant_database'] ?? ''));
+		return $tenantDatabase !== '' ? $tenantDatabase : 'Sem tenant';
+		}
+
+	/**
+	 * Returns the user label used in log exports.
+	 *
+	 * @param array<string, mixed> $row Export row.
+	 * @return string
+	 */
+	private function logUserLabel(array $row): string
+		{
+		$userName = trim((string) ($row['performed_by_name'] ?? ''));
+		if ($userName !== '')
+			{
+			return $userName;
+			}
+
+		$username = trim((string) ($row['performed_by_username'] ?? ''));
+		return $username !== '' ? $username : 'Sistema';
+		}
+
+	/**
+	 * Returns the localized action label used in log exports.
+	 *
+	 * @param string $action Raw action value.
+	 * @return string
+	 */
+	private function logActionLabel(string $action): string
+		{
+		return Log::actionLabels()[$action] ?? $action;
 		}
 	}
 

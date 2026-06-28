@@ -16,6 +16,8 @@ class LogController extends Controller
 	 * @var array<string, string>
 	 */
 	protected $routeAliases = [
+		'export-excel' => 'exportExcel',
+		'export-pdf' => 'exportPdf',
 		'user-timeline' => 'userTimeline',
 		'user_timeline' => 'userTimeline',
 	];
