@@ -29,6 +29,7 @@ $actionBadgeClass = static function (string $action): string {
     'delete' => 'text-bg-danger',
     'login' => 'text-bg-info',
     'logout' => 'text-bg-dark',
+    'list' => 'text-bg-primary',
     default => 'text-bg-secondary',
   };
 };
@@ -124,7 +125,7 @@ $actionBadgeClass = static function (string $action): string {
   <p class="text-muted mb-0" id="auditLogTotal" data-total="<?= (int) $total; ?>"><?= (int) $total; ?> log(s) encontrado(s)</p>
 </div>
 
-<div class="table-responsive audit-log-table-wrap">
+<div class="table-responsive">
   <table class="table table-striped table-hover align-middle audit-log-table">
     <thead>
       <tr>

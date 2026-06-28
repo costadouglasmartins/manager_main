@@ -54,6 +54,7 @@ class Log extends Model
 			'delete' => 'Exclusão',
 			'login' => 'Login',
 			'logout' => 'Logoff',
+			'list' => 'Listagem',
 		];
 		}
 

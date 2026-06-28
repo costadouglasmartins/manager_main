@@ -180,6 +180,7 @@ $actionBadgeClass = static function (string $action): string {
     'delete' => 'text-bg-danger',
     'login' => 'text-bg-info',
     'logout' => 'text-bg-dark',
+    'list' => 'text-bg-primary',
     default => 'text-bg-secondary',
   };
 };
