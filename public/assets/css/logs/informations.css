@@ -36,6 +36,37 @@
   font-size: 0.85rem;
 }
 
+.audit-log-diff {
+  min-height: 14rem;
+  margin: 0;
+  padding: 0.9rem 0;
+  overflow: auto;
+  border-radius: 0.85rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: var(--bs-font-monospace);
+  font-size: 0.85rem;
+}
+
+.audit-log-diff-line {
+  padding: 0.16rem 1rem 0.16rem calc(1rem + (var(--audit-indent) * 1.35rem));
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-left: 3px solid transparent;
+}
+
+.audit-log-diff--before .audit-log-diff-line.is-changed,
+.audit-log-diff--before .audit-log-diff-line.is-removed {
+  background: rgba(220, 53, 69, 0.16);
+  border-left-color: rgba(220, 53, 69, 0.9);
+}
+
+.audit-log-diff--after .audit-log-diff-line.is-changed,
+.audit-log-diff--after .audit-log-diff-line.is-added {
+  background: rgba(25, 135, 84, 0.18);
+  border-left-color: rgba(25, 135, 84, 0.92);
+}
+
 .audit-log-mini-timeline {
   position: relative;
   display: grid;

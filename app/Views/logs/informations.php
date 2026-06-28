@@ -25,10 +25,143 @@ $prettyJson = static function ($value): string {
   return $json !== false ? $json : 'Não foi possível formatar o conteúdo.';
 };
 
+$buildDiffStates = static function ($before, $after, string $path = '') use (&$buildDiffStates): array {
+  $states = ['before' => [], 'after' => []];
+
+  if ($before === $after) {
+    return $states;
+  }
+
+  $beforeIsArray = is_array($before);
+  $afterIsArray = is_array($after);
+
+  if ($beforeIsArray && $afterIsArray && !array_is_list($before) && !array_is_list($after)) {
+    $keys = array_values(array_unique(array_merge(array_keys($before), array_keys($after))));
+
+    foreach ($keys as $key) {
+      $beforeHas = array_key_exists($key, $before);
+      $afterHas = array_key_exists($key, $after);
+      $childPath = ($path === '') ? (string) $key : ($path . '.' . (string) $key);
+
+      if (!$beforeHas) {
+        $states['after'][$childPath] = 'added';
+        continue;
+      }
+
+      if (!$afterHas) {
+        $states['before'][$childPath] = 'removed';
+        continue;
+      }
+
+      $childStates = $buildDiffStates($before[$key], $after[$key], $childPath);
+      $states['before'] = array_merge($states['before'], $childStates['before']);
+      $states['after'] = array_merge($states['after'], $childStates['after']);
+    }
+
+    return $states;
+  }
+
+  if ($before === null && $after !== null) {
+    $states['after'][$path] = 'added';
+    return $states;
+  }
+
+  if ($after === null && $before !== null) {
+    $states['before'][$path] = 'removed';
+    return $states;
+  }
+
+  if ($before !== null) {
+    $states['before'][$path] = 'changed';
+  }
+
+  if ($after !== null) {
+    $states['after'][$path] = 'changed';
+  }
+
+  return $states;
+};
+
+$encodeJsonFragment = static function ($value): string {
+  $encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  if ($encoded === false) {
+    $encoded = 'null';
+  }
+
+  return htmlspecialchars($encoded, ENT_QUOTES, 'UTF-8');
+};
+
+$renderDiffLine = static function (string $content, int $depth = 0, ?string $state = null): string {
+  $classes = ['audit-log-diff-line'];
+  if ($state !== null && $state !== '') {
+    $classes[] = 'is-' . $state;
+  }
+
+  return '<div class="' . implode(' ', $classes) . '" style="--audit-indent:' . $depth . ';">' . $content . '</div>';
+};
+
+$renderDiffValue = static function (
+  $value,
+  array $states,
+  string $path = '',
+  int $depth = 0,
+  bool $withComma = false,
+  ?string $prefix = null,
+  ?string $inheritedState = null
+) use (&$renderDiffValue, $encodeJsonFragment, $renderDiffLine): string {
+  $state = $states[$path] ?? $inheritedState;
+  $prefixHtml = $prefix !== null ? ($prefix . ': ') : '';
+  $comma = $withComma ? ',' : '';
+
+  if (!is_array($value)) {
+    return $renderDiffLine($prefixHtml . $encodeJsonFragment($value) . $comma, $depth, $state);
+  }
+
+  $isList = array_is_list($value);
+  if ($value === []) {
+    return $renderDiffLine($prefixHtml . ($isList ? '[]' : '{}') . $comma, $depth, $state);
+  }
+
+  $html = $renderDiffLine($prefixHtml . ($isList ? '[' : '{'), $depth, $state);
+  $keys = array_keys($value);
+  $lastIndex = count($keys) - 1;
+
+  foreach ($keys as $index => $key) {
+    $childPath = ($path === '') ? (string) $key : ($path . '.' . (string) $key);
+    $childPrefix = null;
+
+    if (!$isList) {
+      $childPrefix = htmlspecialchars(json_encode((string) $key, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""', ENT_QUOTES, 'UTF-8');
+    }
+
+    $html .= $renderDiffValue(
+      $value[$key],
+      $states,
+      $childPath,
+      $depth + 1,
+      $index < $lastIndex,
+      $childPrefix,
+      $state
+    );
+  }
+
+  $html .= $renderDiffLine(($isList ? ']' : '}') . $comma, $depth, $state);
+  return $html;
+};
+
+$renderDiffPanel = static function ($value, array $states, string $side) use ($renderDiffLine, $renderDiffValue): string {
+  if ($value === null) {
+    return '<div class="audit-log-diff audit-log-diff--' . $side . '">' . $renderDiffLine('Nenhum dado disponível.', 0, null) . '</div>';
+  }
+
+  return '<div class="audit-log-diff audit-log-diff--' . $side . '">' . $renderDiffValue($value, $states) . '</div>';
+};
+
 $beforeData = $decodeJson($log['before_data'] ?? null);
 $afterData = $decodeJson($log['after_data'] ?? null);
 $changedFields = $decodeJson($log['changed_fields'] ?? null);
 $contextData = $decodeJson($log['context_json'] ?? null);
+$diffStates = $buildDiffStates($beforeData, $afterData);
 
 $tenantLabel = trim((string) ($log['tenant_name_snapshot'] ?? ''));
 if ($tenantLabel === '') {
@@ -52,7 +185,7 @@ $actionBadgeClass = static function (string $action): string {
 };
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=4'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=5'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -166,7 +299,7 @@ $actionBadgeClass = static function (string $action): string {
           <h6 class="mb-0">Antes da alteração</h6>
         </div>
         <div class="card-body">
-          <pre class="audit-log-json"><?= htmlspecialchars($prettyJson($beforeData), ENT_QUOTES, 'UTF-8'); ?></pre>
+          <?= $renderDiffPanel($beforeData, $diffStates['before'], 'before'); ?>
         </div>
       </div>
     </div>
@@ -177,7 +310,7 @@ $actionBadgeClass = static function (string $action): string {
           <h6 class="mb-0">Depois da alteração</h6>
         </div>
         <div class="card-body">
-          <pre class="audit-log-json"><?= htmlspecialchars($prettyJson($afterData), ENT_QUOTES, 'UTF-8'); ?></pre>
+          <?= $renderDiffPanel($afterData, $diffStates['after'], 'after'); ?>
         </div>
       </div>
     </div>
