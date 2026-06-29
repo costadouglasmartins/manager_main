@@ -184,9 +184,57 @@ $actionBadgeClass = static function (string $action): string {
     default => 'text-bg-secondary',
   };
 };
+
+$permissionChanges = null;
+if (
+  ($log['module'] ?? '') === 'permission'
+  && ($log['entity_name'] ?? '') === 'user_permissions'
+  && is_array($contextData)
+  && isset($contextData['permission_changes'])
+  && is_array($contextData['permission_changes'])
+) {
+  $permissionChanges = $contextData['permission_changes'];
+}
+
+$renderPermissionRows = static function (array $permissions, string $emptyText): string {
+  if ($permissions === []) {
+    return '<div class="text-muted small">' . htmlspecialchars($emptyText, ENT_QUOTES, 'UTF-8') . '</div>';
+  }
+
+  $html = '<div class="audit-log-permission-list">';
+
+  foreach ($permissions as $permission) {
+    if (!is_array($permission)) {
+      continue;
+    }
+
+    $ability = trim((string) ($permission['ability'] ?? ''));
+    $description = trim((string) ($permission['description'] ?? ''));
+    $id = (string) ($permission['id'] ?? '');
+
+    $html .= '<div class="audit-log-permission-item">';
+    $html .= '<div class="d-flex flex-wrap align-items-center gap-2">';
+    $html .= '<code>' . htmlspecialchars($ability !== '' ? $ability : '-', ENT_QUOTES, 'UTF-8') . '</code>';
+
+    if ($id !== '') {
+      $html .= '<span class="badge text-bg-light">#' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '</span>';
+    }
+
+    $html .= '</div>';
+
+    if ($description !== '') {
+      $html .= '<div class="audit-log-permission-description">' . htmlspecialchars($description, ENT_QUOTES, 'UTF-8') . '</div>';
+    }
+
+    $html .= '</div>';
+  }
+
+  $html .= '</div>';
+  return $html;
+};
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=5'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/logs/informations.css?v=8'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -205,7 +253,7 @@ $actionBadgeClass = static function (string $action): string {
         <div>
           <span class="audit-log-kicker">Evento #<?= (int) ($log['id'] ?? 0); ?></span>
           <h5 class="mb-1"><?= htmlspecialchars((string) ($log['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?> / <?= htmlspecialchars((string) ($log['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></h5>
-          <p class="text-muted mb-0">Ocorrido em <?= htmlspecialchars(maskDateTimeBr((string) ($log['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></p>
+          <p class="text-muted mb-0">Ocorrido em <?= htmlspecialchars(maskLogDateTimeBr((string) ($log['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></p>
         </div>
         <div class="d-flex flex-wrap gap-2">
           <?php if (!empty($log['performed_by_user_id']) && authCan('log.userTimeline')): ?>
@@ -282,12 +330,62 @@ $actionBadgeClass = static function (string $action): string {
                 <span class="d-flex flex-wrap align-items-center gap-2 mb-1">
                   <span class="badge <?= $actionBadgeClass((string) ($timelineRow['action'] ?? '')); ?>"><?= htmlspecialchars((string) ($actions[$timelineRow['action']] ?? $timelineRow['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                   <strong><?= htmlspecialchars((string) ($timelineRow['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
-                  <small class="text-muted"><?= htmlspecialchars(maskDateTimeBr((string) ($timelineRow['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></small>
+                  <small class="text-muted"><?= htmlspecialchars(maskLogDateTimeBr((string) ($timelineRow['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></small>
                 </span>
                 <span class="text-muted"><?= htmlspecialchars($timelineTenant, ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) ($timelineRow['entity_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?> #<?= htmlspecialchars((string) ($timelineRow['entity_id'] ?? '-'), ENT_QUOTES, 'UTF-8'); ?></span>
               </span>
             </a>
           <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($permissionChanges !== null): ?>
+    <?php
+    $addedPermissions = (isset($permissionChanges['added']) && is_array($permissionChanges['added'])) ? $permissionChanges['added'] : [];
+    $removedPermissions = (isset($permissionChanges['removed']) && is_array($permissionChanges['removed'])) ? $permissionChanges['removed'] : [];
+    $addedCount = (int) ($permissionChanges['added_count'] ?? count($addedPermissions));
+    $removedCount = (int) ($permissionChanges['removed_count'] ?? count($removedPermissions));
+    $unchangedCount = (int) ($permissionChanges['unchanged_count'] ?? 0);
+    $beforePermissionCount = is_array($contextData) ? (int) ($contextData['before_permission_count'] ?? 0) : 0;
+    $afterPermissionCount = is_array($contextData) ? (int) ($contextData['after_permission_count'] ?? 0) : 0;
+    $noChangesDetected = is_array($contextData) && !empty($contextData['no_changes_detected']);
+    ?>
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-0 pb-0">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+          <div>
+            <h6 class="mb-1">Permissões alteradas</h6>
+            <div class="text-muted small">
+              Antes: <?= (int) $beforePermissionCount; ?> · Depois: <?= (int) $afterPermissionCount; ?> · Sem alteração: <?= (int) $unchangedCount; ?>
+            </div>
+          </div>
+          <?php if ($noChangesDetected): ?>
+            <span class="badge text-bg-secondary">Nenhuma diferença detectada</span>
+          <?php endif; ?>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12 col-xl-6">
+            <div class="audit-log-permission-panel audit-log-permission-panel--added">
+              <div class="audit-log-permission-panel-title">
+                <span>Adicionadas</span>
+                <span class="badge text-bg-success"><?= (int) $addedCount; ?></span>
+              </div>
+              <?= $renderPermissionRows($addedPermissions, 'Nenhuma permissão adicionada.'); ?>
+            </div>
+          </div>
+          <div class="col-12 col-xl-6">
+            <div class="audit-log-permission-panel audit-log-permission-panel--removed">
+              <div class="audit-log-permission-panel-title">
+                <span>Removidas</span>
+                <span class="badge text-bg-danger"><?= (int) $removedCount; ?></span>
+              </div>
+              <?= $renderPermissionRows($removedPermissions, 'Nenhuma permissão removida.'); ?>
+            </div>
+          </div>
         </div>
       </div>
     </div>

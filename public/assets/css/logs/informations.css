@@ -36,6 +36,50 @@
   font-size: 0.85rem;
 }
 
+.audit-log-permission-panel {
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #fff;
+}
+
+.audit-log-permission-panel--added {
+  border-left: 4px solid #198754;
+}
+
+.audit-log-permission-panel--removed {
+  border-left: 4px solid #dc3545;
+}
+
+.audit-log-permission-panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.audit-log-permission-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.audit-log-permission-item {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.65rem;
+  background: #f8fafc;
+}
+
+.audit-log-permission-description {
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
 .audit-log-diff {
   min-height: 14rem;
   margin: 0;
@@ -71,6 +115,11 @@
   position: relative;
   display: grid;
   gap: 0.75rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  padding-left: 0.35rem;
+  padding-right: 0.5rem;
+  scrollbar-gutter: stable;
 }
 
 .audit-log-mini-timeline::before {
@@ -78,7 +127,7 @@
   position: absolute;
   top: 0.5rem;
   bottom: 0.5rem;
-  left: 0.45rem;
+  left: calc(0.35rem + 0.375rem - 1px);
   width: 2px;
   background: #e2e8f0;
 }

@@ -235,6 +235,62 @@ if (!function_exists('maskDateTimeBr'))
 		}
 
 	}
+
+/**
+ * Formats audit log datetimes stored in UTC using the application timezone.
+ */
+if (!function_exists('maskLogDateTimeBr'))
+	{
+
+	function maskLogDateTimeBr(?string $input): string
+		{
+		if ($input === null)
+			{
+			return '';
+			}
+
+		$value = trim($input);
+		if ($value === '')
+			{
+			return '';
+			}
+
+		$value = str_replace('T', ' ', $value);
+		$utcTimezone = new DateTimeZone('UTC');
+		$appTimezoneName = (string) (getenv('APP_TIMEZONE') ?: 'America/Sao_Paulo');
+
+		try
+			{
+			$appTimezone = new DateTimeZone($appTimezoneName);
+			}
+		catch (Throwable $e)
+			{
+			$appTimezone = new DateTimeZone('America/Sao_Paulo');
+			}
+
+		$formats = ['Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d'];
+
+		foreach ($formats as $format)
+			{
+			$date = DateTimeImmutable::createFromFormat('!' . $format, $value, $utcTimezone);
+			$errors = DateTimeImmutable::getLastErrors();
+
+			if ($date !== false && ($errors['warning_count'] ?? 0) === 0 && ($errors['error_count'] ?? 0) === 0)
+				{
+				if ($format === 'Y-m-d')
+					{
+					return $date->format('d/m/Y');
+					}
+
+				$date = $date->setTimezone($appTimezone);
+				return $date->format('d/m/Y H:i');
+				}
+			}
+
+		return $input;
+		}
+
+	}
 	
 /**
  * Convers brazilian dates to american dates 

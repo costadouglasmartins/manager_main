@@ -147,7 +147,7 @@ class RecordListExportService
 				'orientation' => 'landscape',
 				'columns' => [
 					['label' => '#', 'field' => 'id', 'align' => 'right'],
-					['label' => 'Data e hora', 'callback' => fn (array $row): string => $this->dateTime($row['occurred_at'] ?? '')],
+					['label' => 'Data e hora', 'callback' => fn (array $row): string => $this->logDateTime($row['occurred_at'] ?? '')],
 					['label' => 'Tenant', 'callback' => fn (array $row): string => $this->logTenantLabel($row)],
 					['label' => 'Módulo', 'field' => 'module'],
 					['label' => 'Ação', 'callback' => fn (array $row): string => $this->logActionLabel($row['action'] ?? '')],
@@ -477,6 +477,11 @@ class RecordListExportService
 	private function dateTime($value): string
 		{
 		return \maskDateTimeBr($this->stringValue($value));
+		}
+
+	private function logDateTime($value): string
+		{
+		return \maskLogDateTimeBr($this->stringValue($value));
 		}
 
 	private function categoryLabel(array $row): string

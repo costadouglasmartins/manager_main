@@ -158,7 +158,7 @@ $actionBadgeClass = static function (string $action): string {
           ?>
           <tr data-log-row data-log-id="<?= (int) $row['id']; ?>">
             <td><?= (int) $row['id']; ?></td>
-            <td><?= htmlspecialchars(maskDateTimeBr((string) ($row['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
+            <td><?= htmlspecialchars(maskLogDateTimeBr((string) ($row['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
             <td>
               <strong><?= htmlspecialchars($tenantLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
               <?php if (!empty($row['tenant_database'])): ?>

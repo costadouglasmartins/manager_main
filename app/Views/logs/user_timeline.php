@@ -115,7 +115,7 @@ $actionBadgeClass = static function (string $action): string {
           <span class="audit-user-timeline-card-top">
             <span class="badge <?= $actionBadgeClass((string) ($row['action'] ?? '')); ?>"><?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
             <strong><?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
-            <small class="text-muted"><?= htmlspecialchars(maskDateTimeBr((string) ($row['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></small>
+            <small class="text-muted"><?= htmlspecialchars(maskLogDateTimeBr((string) ($row['occurred_at'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></small>
           </span>
           <span class="audit-user-timeline-card-body">
             <span><?= htmlspecialchars($tenantLabel, ENT_QUOTES, 'UTF-8'); ?></span>
