@@ -240,6 +240,53 @@ class SupportChat extends Model
 		}
 
 	/**
+	 * Reopens a closed support chat and preserves its current attendant.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function reopenChat(int $chatId): ?array
+		{
+		$chat = $this->findChatById($chatId);
+		if (!$chat)
+			{
+			return null;
+			}
+
+		if ((string) ($chat['status'] ?? '') !== 'closed')
+			{
+			return $chat;
+			}
+
+		$status = empty($chat['attendant_user_id']) ? 'pending' : 'open';
+		$stmt = $this->db->prepare("
+			UPDATE support_chats
+			SET status = :status,
+			    closed_at = NULL,
+			    closed_by_user_id = NULL,
+			    modified = :modified
+			WHERE id = :chat_id
+		");
+		$stmt->execute([
+			'status' => $status,
+			'modified' => $this->now(),
+			'chat_id' => $chatId,
+		]);
+
+		return $this->findChatById($chatId);
+		}
+
+	/**
+	 * Deletes a support chat and its messages through database cascades.
+	 */
+	public function deleteChat(int $chatId): bool
+		{
+		$stmt = $this->db->prepare("DELETE FROM support_chats WHERE id = :chat_id");
+		$stmt->execute(['chat_id' => $chatId]);
+
+		return $stmt->rowCount() > 0;
+		}
+
+	/**
 	 * Returns customer messages that have not been seen by an attendant yet.
 	 *
 	 * @return array{count: int, notifications: array<int, array<string, mixed>>}

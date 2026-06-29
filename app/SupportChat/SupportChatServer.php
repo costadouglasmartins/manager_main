@@ -2,6 +2,7 @@
 
 namespace App\SupportChat;
 
+use App\Services\SupportChatTypingService;
 use PDO;
 
 class SupportChatServer
@@ -352,6 +353,7 @@ class SupportChatServer
 
 			$messageRow = $repository->createMessage($chatId, $userId, $role === 'root' ? 'attendant' : 'customer', $userName, $text);
 			$chat = $repository->findChatById($chatId) ?? $chat;
+			SupportChatTypingService::setTyping($chatId, $userId, $role === 'root' ? 'attendant' : 'customer', $userName, false);
 
 			$this->broadcastMessageCreated($chatId, $messageRow, $chat);
 			}
@@ -395,6 +397,13 @@ class SupportChatServer
 			'is_typing' => $isTyping,
 			'user_name' => (string) ($claims['user_name'] ?? $claims['username'] ?? ''),
 		];
+		SupportChatTypingService::setTyping(
+			$chatId,
+			(int) ($claims['user_id'] ?? 0),
+			$role === 'root' ? 'attendant' : 'customer',
+			(string) ($claims['user_name'] ?? $claims['username'] ?? ''),
+			$isTyping
+		);
 
 		if ($role === 'root')
 			{

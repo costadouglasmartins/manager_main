@@ -11,9 +11,17 @@ $queryFilters = http_build_query([
   'status' => $filters['status'] ?? '',
   'participant' => $filters['participant'] ?? '',
 ]);
+$currentListQuery = http_build_query([
+  'date_from' => $filters['date_from'] ?? '',
+  'date_to' => $filters['date_to'] ?? '',
+  'status' => $filters['status'] ?? '',
+  'participant' => $filters['participant'] ?? '',
+  'page' => (int) $page,
+]);
+$currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentListQuery : '');
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/support_chats/index.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/support_chats/index.css?v=3'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -95,6 +103,7 @@ $queryFilters = http_build_query([
           if ($tenantName === '') {
             $tenantName = 'Tenant ' . (string) ($chat['tenant_database_number'] ?? '');
           }
+          $chatLabel = 'Chat #' . (int) $chat['id'] . ' - ' . (string) ($chat['customer_name'] ?? $chat['customer_username'] ?? '');
           ?>
           <tr>
             <td><?= (int) $chat['id']; ?></td>
@@ -108,11 +117,23 @@ $queryFilters = http_build_query([
             <td><?= htmlspecialchars((string) ($chat['attendant_name'] ?? $chat['attendant_username'] ?? 'Sem atendente'), ENT_QUOTES, 'UTF-8'); ?></td>
             <td><?= htmlspecialchars(maskDateTimeBr((string) ($chat['last_message_at'] ?? $chat['created'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
             <td class="text-end text-nowrap">
-              <?php if ($status !== 'closed'): ?>
-                <a class="btn btn-sm btn-outline-primary" href="<?= url('support_chat/attend/' . (int) $chat['id']); ?>">
-                  <i class="bi bi-chat-dots me-1"></i> Atender
+              <div class="support-chat-actions">
+                <a class="btn btn-sm btn-outline-secondary support-chat-action-button" href="<?= url('support_chat/informations/' . (int) $chat['id']); ?>" aria-label="Visualizar registros" title="Visualizar registros" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Visualizar registros">
+                  <i class="bi bi-search"></i>
                 </a>
-              <?php endif; ?>
+                <?php if ($status !== 'closed'): ?>
+                  <a class="btn btn-sm btn-outline-primary support-chat-action-button" href="<?= url('support_chat/attend/' . (int) $chat['id']); ?>" aria-label="Atender" title="Atender" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Atender">
+                    <i class="bi bi-chat-dots"></i>
+                  </a>
+                <?php else: ?>
+                  <button class="btn btn-sm btn-outline-success support-chat-action-button" type="button" aria-label="Reabrir" title="Reabrir" data-bs-toggle="modal" data-bs-target="#reopenModal" data-id="<?= (int) $chat['id']; ?>" data-name="<?= htmlspecialchars($chatLabel, ENT_QUOTES, 'UTF-8'); ?>">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                <?php endif; ?>
+                <button class="btn btn-sm btn-outline-danger support-chat-action-button" type="button" aria-label="Excluir" title="Excluir" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $chat['id']; ?>" data-name="<?= htmlspecialchars($chatLabel, ENT_QUOTES, 'UTF-8'); ?>">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -129,4 +150,49 @@ $queryFilters = http_build_query([
   <?= paginationLinks('support_chat', (int) $page, (int) $totalPages, $queryFilters, 2, 'Anterior', 'Próxima'); ?>
 <?php endif; ?>
 
-<script src="<?= url('assets/js/support_chats/index.js?v=1'); ?>"></script>
+<div class="modal fade" id="reopenModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar reabertura</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja reabrir o <strong id="reopenRecordName"></strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="reopenForm" data-action-base-url="<?= url('support_chat/reopen'); ?>" class="d-inline">
+          <input type="hidden" name="id" id="reopenRecordId">
+          <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($currentListPath, ENT_QUOTES, 'UTF-8'); ?>">
+          <button type="submit" class="btn btn-success">Reabrir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir o <strong id="deleteRecordName"></strong>?
+        <p class="text-muted mb-0 mt-2">Os registros da conversa também serão removidos.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="deleteForm" data-action-base-url="<?= url('support_chat/delete'); ?>" class="d-inline">
+          <input type="hidden" name="id" id="deleteRecordId">
+          <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($currentListPath, ENT_QUOTES, 'UTF-8'); ?>">
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="<?= url('assets/js/support_chats/index.js?v=2'); ?>"></script>
