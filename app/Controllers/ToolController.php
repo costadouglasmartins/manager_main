@@ -359,6 +359,7 @@ class ToolController extends Controller
 		$autoSaveCity = array_key_exists('save_city', $_GET) ? $this->readBooleanFlag($_GET['save_city']) : true;
 		$autoSaveNeighborhood = array_key_exists('save_neighborhood', $_GET) ? $this->readBooleanFlag($_GET['save_neighborhood']) : true;
 		$createCity = $this->readBooleanFlag($_GET['create_city'] ?? null);
+		$runId = (string) ($_GET['run_id'] ?? '');
 
 		ignore_user_abort(true);
 		set_time_limit(0);
@@ -377,6 +378,7 @@ class ToolController extends Controller
 		session_write_close();
 
 		$service = new ZipCodeCrawlerService();
+		$service->setRunId($runId);
 		$stream = $stateAcronym !== ''
 			? $service->crawlState($stateAcronym, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode)
 			: $service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
@@ -394,6 +396,31 @@ class ToolController extends Controller
 			}
 
 		exit;
+		}
+
+	/**
+	 * Request a running zip code crawler stream to stop.
+	 * @return void
+	 **/
+	public function stopZipCodeCrawler(): void
+		{
+		$this->requireAuth();
+
+		$runId = $this->readZipCodeCrawlerRunId();
+		if ($runId === '' || !ZipCodeCrawlerService::requestStop($runId))
+			{
+			$this->json([
+				'success' => false,
+				'status' => 422,
+				'message' => 'Não foi possível solicitar a parada do crawler.',
+			], 422);
+			}
+
+		$this->json([
+			'success' => true,
+			'status' => 200,
+			'message' => 'Parada solicitada.',
+		]);
 		}
 
 	/**
@@ -1205,6 +1232,35 @@ class ToolController extends Controller
 		{
 		$value = strtoupper(trim($value));
 		return preg_match('/^[A-Z]{2}$/', $value) ? $value : '';
+		}
+
+	/**
+	 * Read the zip code crawler run id from the request.
+	 * @return string
+	 **/
+	private function readZipCodeCrawlerRunId(): string
+		{
+		$value = (string) ($_POST['run_id'] ?? ($_GET['run_id'] ?? ''));
+		if ($value === '')
+			{
+			$rawBody = (string) file_get_contents('php://input');
+			if ($rawBody !== '')
+				{
+				$payload = json_decode($rawBody, true);
+				if (is_array($payload))
+					{
+					$value = (string) ($payload['run_id'] ?? '');
+					}
+				else
+					{
+					parse_str($rawBody, $parsedBody);
+					$value = (string) ($parsedBody['run_id'] ?? '');
+					}
+				}
+			}
+
+		$value = preg_replace('/[^a-zA-Z0-9_-]+/', '', $value) ?? '';
+		return substr($value, 0, 80);
 		}
 
 	/**

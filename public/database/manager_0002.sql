@@ -16,6 +16,7 @@
 
 
 -- Dumping database structure for manager_0002
+DROP DATABASE IF EXISTS `manager_0002`;
 CREATE DATABASE IF NOT EXISTS `manager_0002` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `manager_0002`;
 

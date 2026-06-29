@@ -16,7 +16,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
 </nav>
 <!-- /Breadcrumbs -->
 
-<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
+<section class="zip-code-crawler-tool" id="zipCodeCrawlerApp" data-stream-url="<?= url('tool/streamZipCodeCrawler'); ?>" data-stop-url="<?= url('tool/stopZipCodeCrawler'); ?>" data-state-options="<?= $zipCodeStateOptionsJson; ?>">
   <div class="zip-code-crawler-busy-overlay" aria-hidden="true"></div>
   <div class="row g-4">
     <div class="col-12 col-xxl-4">
@@ -142,4 +142,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=29'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=30'); ?>"></script>

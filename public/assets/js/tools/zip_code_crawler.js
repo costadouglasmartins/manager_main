@@ -32,10 +32,13 @@
 		const statusText = document.getElementById("crawlerStatusText");
 		const monitorCard = document.querySelector(".zip-code-crawler-monitor-card");
 		const streamUrl = app.dataset.streamUrl || "";
+		const stopUrl = app.dataset.stopUrl || "";
 		const stateOptions = parseStateOptions();
 		const stateOptionRegistry = buildStateOptionRegistry(stateOptions);
 
 		let eventSource = null;
+		let activeRunId = "";
+		let crawlerStoppedByUser = false;
 		let streamStartedAt = 0;
 		let rateTimer = null;
 		let resultsStickToBottom = true;
@@ -63,6 +66,35 @@
 					}
 
 				return digits.slice(0, 5) + "-" + digits.slice(5, 8);
+			}
+
+		function generateRunId()
+			{
+				return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+			}
+
+		function requestCrawlerStop(runId)
+			{
+				if (!stopUrl || !runId)
+					{
+						return;
+					}
+
+				const body = new URLSearchParams();
+				body.set("run_id", runId);
+
+				fetch(stopUrl, {
+					method: "POST",
+					headers: {
+						"Accept": "application/json",
+						"Content-Type": "application/x-www-form-urlencoded",
+						"X-Requested-With": "XMLHttpRequest"
+					},
+					body: body.toString(),
+					keepalive: true
+				}).catch(function ()
+					{
+					});
 			}
 
 		function formatInteger(value)
@@ -404,6 +436,12 @@
 				resultsFlushScheduled = false;
 				clearResultsInfo();
 				resultsBody.innerHTML = '<div class="list-group-item text-secondary zip-code-crawler-results-empty"><div class="d-flex align-items-center gap-2"><i class="bi bi-hourglass-split"></i><span>Aguardando início - selecione um estado e execute o crawler.</span></div></div>';
+			}
+
+		function clearQueuedResults()
+			{
+				queuedResults = [];
+				resultsFlushScheduled = false;
 			}
 
 		function isResultsScrolledToBottom()
@@ -839,9 +877,13 @@
 
 				if (eventSource)
 					{
+						crawlerStoppedByUser = true;
+						requestCrawlerStop(activeRunId);
 						eventSource.close();
 					}
 
+				activeRunId = generateRunId();
+				crawlerStoppedByUser = false;
 				clearResults();
 				stopRateTimer();
 				streamStartedAt = 0;
@@ -862,11 +904,17 @@
 				url.searchParams.set("save_city", "1");
 				url.searchParams.set("save_neighborhood", "1");
 				url.searchParams.set("create_city", "0");
+				url.searchParams.set("run_id", activeRunId);
 
 				eventSource = new EventSource(url.toString());
 
 				eventSource.addEventListener("cache", function (event)
 					{
+						if (crawlerStoppedByUser)
+							{
+								return;
+							}
+
 						const payload = JSON.parse(event.data || "{}");
 						const text = cacheStatusText(payload);
 						const isDone = String(payload.stage || "") === "loaded";
@@ -879,6 +927,11 @@
 
 				eventSource.addEventListener("start", function (event)
 					{
+						if (crawlerStoppedByUser)
+							{
+								return;
+							}
+
 						const payload = JSON.parse(event.data || "{}");
 						streamStartedAt = Date.now();
 						updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
@@ -905,6 +958,11 @@
 
 				eventSource.addEventListener("progress", function (event)
 					{
+						if (crawlerStoppedByUser)
+							{
+								return;
+							}
+
 						const payload = JSON.parse(event.data || "{}");
 						updateStats(payload);
 						updateProgress(payload.position || 0, payload.total || 1);
@@ -914,6 +972,11 @@
 
 				eventSource.addEventListener("done", function (event)
 					{
+						if (crawlerStoppedByUser)
+							{
+								return;
+							}
+
 						const payload = JSON.parse(event.data || "{}");
 						updateStats(payload);
 						stopRateTimer();
@@ -924,11 +987,18 @@
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
+						activeRunId = "";
+						crawlerStoppedByUser = false;
 					});
 
 				eventSource.addEventListener("error", function ()
 					{
 						if (!eventSource)
+							{
+								return;
+							}
+
+						if (crawlerStoppedByUser)
 							{
 								return;
 							}
@@ -940,6 +1010,7 @@
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
+						activeRunId = "";
 					});
 			}
 
@@ -974,12 +1045,18 @@
 
 		stopButton.addEventListener("click", function ()
 			{
+				const runId = activeRunId;
+				crawlerStoppedByUser = true;
+				requestCrawlerStop(runId);
+
 				if (eventSource)
 					{
 						eventSource.close();
 						eventSource = null;
 					}
 
+				activeRunId = "";
+				clearQueuedResults();
 				appendSystemLine("STOP", "Pesquisa interrompida pelo usuário");
 				setMessage("warning", "Pesquisa interrompida pelo usuário.");
 				statusText.textContent = "Parado";
@@ -989,12 +1066,20 @@
 
 		clearButton.addEventListener("click", function ()
 			{
+				const runId = activeRunId;
+				if (runId)
+					{
+						crawlerStoppedByUser = true;
+						requestCrawlerStop(runId);
+					}
+
 				if (eventSource)
 					{
 						eventSource.close();
 						eventSource = null;
 					}
 
+				activeRunId = "";
 				stopRateTimer();
 				streamStartedAt = 0;
 				if (stateInput)

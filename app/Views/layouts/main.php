@@ -267,6 +267,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                 <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-sliders me-2"></i>Configurações</a>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="<?= url('permission'); ?>"><i class="bi bi-gear me-2"></i>Permissões</a></li>
+                  <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('log'); ?>"><i class="bi bi-journal-text me-2"></i>Logs do sistema</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
@@ -307,6 +308,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><a class="dropdown-item" href="<?= url('tool/ipRangeWebCrawler'); ?>"><i class="bi bi-hdd-network me-2"></i>Webcrawler de IPs</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawler'); ?>"><i class="bi bi-geo-alt me-2"></i>Webcrawler de endereços</a></li>
+                  <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawlerResults'); ?>"><i class="bi bi-list-check me-2"></i>Registros encontrados</a></li>
                 </ul>
               </li>
