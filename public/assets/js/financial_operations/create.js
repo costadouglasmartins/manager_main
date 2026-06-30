@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const preview = document.getElementById("recurrencePreview");
   const installmentsPreview = document.getElementById("recurrenceInstallments");
   const recurrenceControls = form.querySelectorAll("[data-recurrence-field]");
+  const inlineStatus = document.getElementById("financialOperationCreateStatus");
+  const ajaxSubmit = form.dataset.ajaxSubmit === "1";
   const moneyFormatter = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
@@ -131,6 +133,27 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function parseMoney(value) {
     return Number.parseFloat(String(value || "0").replace(",", "."));
+  }
+
+  /**
+   * Updates the inline submit status, when available.
+   * @param {string} type Alert type.
+   * @param {string} message Message to show.
+   */
+  function setInlineStatus(type, message) {
+    if (!inlineStatus) {
+      return;
+    }
+
+    inlineStatus.className = "alert";
+    if (!message) {
+      inlineStatus.classList.add("d-none");
+      inlineStatus.textContent = "";
+      return;
+    }
+
+    inlineStatus.classList.add(`alert-${type}`);
+    inlineStatus.textContent = message;
   }
 
   /**
@@ -435,10 +458,52 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   startDateInput.addEventListener("change", syncRecurrence);
   endDateInput.addEventListener("change", updatePreview);
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     if (!updatePreview()) {
       event.preventDefault();
       form.reportValidity();
+      return;
+    }
+
+    if (!ajaxSubmit) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+    setInlineStatus("info", "Salvando operação...");
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.message || "Não foi possível cadastrar a operação financeira.");
+      }
+
+      window.dispatchEvent(new CustomEvent("financial-operation:create-success", {
+        detail: {
+          payload,
+          formData: Object.fromEntries(new FormData(form).entries()),
+        },
+      }));
+      setInlineStatus("success", "Operação cadastrada com sucesso.");
+    } catch (error) {
+      setInlineStatus("danger", error.message || "Não foi possível cadastrar a operação financeira.");
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
     }
   });
 

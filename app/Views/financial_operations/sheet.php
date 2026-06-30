@@ -81,6 +81,58 @@ if (!function_exists('financialSheetEntryButton'))
     }
   }
 
+if (!function_exists('financialSheetCreateButton'))
+  {
+  function financialSheetCreateButton(array $data, bool $canCreate): string
+    {
+    $label = '0,00';
+    if (!$canCreate)
+      {
+      return $label;
+      }
+
+    $attributes = [
+      'type' => 'button',
+      'class' => 'financial-sheet-entry-create',
+      'data-sheet-create' => '1',
+      'aria-label' => 'Criar lançamento',
+      'title' => 'Criar lançamento',
+    ];
+    foreach ($data as $name => $value)
+      {
+      $attributes['data-' . str_replace('_', '-', $name)] = (string) $value;
+      }
+
+    $htmlAttributes = [];
+    foreach ($attributes as $name => $value)
+      {
+      $htmlAttributes[] = htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
+      }
+
+    return '<span class="financial-sheet-entry financial-sheet-entry-create-wrap">'
+      . '<button ' . implode(' ', $htmlAttributes) . '><i class="bi bi-plus-lg"></i></button>'
+      . '<span class="financial-sheet-entry-value">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>'
+      . '</span>';
+    }
+  }
+
+if (!function_exists('financialSheetCategoryLabel'))
+  {
+  function financialSheetCategoryLabel(string $label): string
+    {
+    $escapedLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+
+    return '<span class="financial-sheet-category-label" tabindex="0"'
+      . ' data-bs-toggle="popover"'
+      . ' data-bs-trigger="hover focus"'
+      . ' data-bs-placement="right"'
+      . ' data-bs-container="body"'
+      . ' data-bs-content="' . $escapedLabel . '">'
+      . $escapedLabel
+      . '</span>';
+    }
+  }
+
 $sheet = $sheet ?? [];
 $year = (int) ($sheet['year'] ?? date('Y'));
 $yearOptions = $yearOptions ?? range(2026, 2031);
@@ -109,6 +161,7 @@ $financialSheetMonthClass = static function ($monthNumber) use ($currentMonthNum
   {
   return ($currentMonthNumber !== 0 && (int) $monthNumber === $currentMonthNumber) ? 'financial-sheet-month-current' : '';
   };
+$canCreateSheetOperations = authCan('financial_operation.create');
 $sessionUserLabel = trim((string) ($sessionUser['name'] ?? ''));
 if (!empty($sessionUser['username']))
   {
@@ -120,7 +173,8 @@ if ($sessionUserLabel === '')
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=17'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/create.css?v=3'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=23'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -133,7 +187,10 @@ if ($sessionUserLabel === '')
 <div class="financial-sheet-page"
      data-sheet-operations-url="<?= url('financial_operation/sheetOperations'); ?>"
      data-sheet-update-base-url="<?= url('financial_operation/sheetUpdateOperation'); ?>"
-     data-sheet-edit-base-url="<?= url('financial_operation/edit'); ?>">
+     data-sheet-edit-base-url="<?= url('financial_operation/edit'); ?>"
+     data-sheet-create-base-url="<?= url('financial_operation/create'); ?>"
+     data-can-edit-sheet-operations="<?= $canEditSheetOperations ? '1' : '0'; ?>"
+     data-can-create-sheet-operations="<?= $canCreateSheetOperations ? '1' : '0'; ?>">
   <header class="financial-sheet-header">
     <div class="financial-sheet-title">
       <span class="financial-sheet-title-icon"><i class="bi bi-table"></i></span>
@@ -216,21 +273,34 @@ if ($sessionUserLabel === '')
             <?php foreach ($incomeRows as $row): ?>
               <?php $rowLabel = htmlspecialchars((string) ($row['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
               <?php $categoryId = (int) ($row['category_id'] ?? 0); ?>
-              <tr class="financial-sheet-data-row financial-sheet-income-data">
-                <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
+              <tr class="financial-sheet-data-row financial-sheet-income-data" data-sheet-row="1" data-sheet-type="CREDIT" data-sheet-category-id="<?= $categoryId; ?>">
+                <th scope="row"><?= financialSheetCategoryLabel((string) ($row['label'] ?? '')); ?></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
-                  <?php
-                  $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
-                  $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
-                  ?>
-                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetEntryButton($monthCents, [
-                    'sheet_year' => $year,
-                    'sheet_type' => 'CREDIT',
-                    'sheet_category_id' => $categoryId,
-                    'sheet_category_label' => (string) ($row['label'] ?? ''),
-                    'sheet_month' => (int) $monthNumber,
-                    'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
-                  ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?></td>
+                <?php
+                $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
+                $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
+                ?>
+                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>">
+                    <?php if ($monthCents === 0): ?>
+                      <?= financialSheetCreateButton([
+                        'sheet_year' => $year,
+                        'sheet_type' => 'CREDIT',
+                        'sheet_category_id' => $categoryId,
+                        'sheet_category_label' => (string) ($row['label'] ?? ''),
+                        'sheet_month' => (int) $monthNumber,
+                        'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
+                      ], $canCreateSheetOperations); ?>
+                    <?php else: ?>
+                      <?= financialSheetEntryButton($monthCents, [
+                        'sheet_year' => $year,
+                        'sheet_type' => 'CREDIT',
+                        'sheet_category_id' => $categoryId,
+                        'sheet_category_label' => (string) ($row['label'] ?? ''),
+                        'sheet_month' => (int) $monthNumber,
+                        'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
+                      ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?>
+                    <?php endif; ?>
+                  </td>
                 <?php endforeach; ?>
                 <?php
                 $rowTotalCents = (int) ($row['total'] ?? 0);
@@ -272,21 +342,34 @@ if ($sessionUserLabel === '')
             <?php foreach ($expenseRows as $row): ?>
               <?php $rowLabel = htmlspecialchars((string) ($row['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
               <?php $categoryId = (int) ($row['category_id'] ?? 0); ?>
-              <tr class="financial-sheet-data-row financial-sheet-expense-data">
-                <th scope="row" title="<?= $rowLabel; ?>"><span class="d-block text-truncate"><?= $rowLabel; ?></span></th>
+              <tr class="financial-sheet-data-row financial-sheet-expense-data" data-sheet-row="1" data-sheet-type="DEBIT" data-sheet-category-id="<?= $categoryId; ?>">
+                <th scope="row"><?= financialSheetCategoryLabel((string) ($row['label'] ?? '')); ?></th>
                 <?php foreach (array_keys($months) as $monthNumber): ?>
-                  <?php
-                  $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
-                  $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
-                  ?>
-                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>"><?= financialSheetEntryButton($monthCents, [
-                    'sheet_year' => $year,
-                    'sheet_type' => 'DEBIT',
-                    'sheet_category_id' => $categoryId,
-                    'sheet_category_label' => (string) ($row['label'] ?? ''),
-                    'sheet_month' => (int) $monthNumber,
-                    'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
-                  ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?></td>
+                <?php
+                $monthCents = (int) ($row['months'][$monthNumber] ?? 0);
+                $monthPaidCents = (int) ($row['paidMonths'][$monthNumber] ?? 0);
+                ?>
+                  <td class="<?= $financialSheetMonthClass($monthNumber); ?>">
+                    <?php if ($monthCents === 0): ?>
+                      <?= financialSheetCreateButton([
+                        'sheet_year' => $year,
+                        'sheet_type' => 'DEBIT',
+                        'sheet_category_id' => $categoryId,
+                        'sheet_category_label' => (string) ($row['label'] ?? ''),
+                        'sheet_month' => (int) $monthNumber,
+                        'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
+                      ], $canCreateSheetOperations); ?>
+                    <?php else: ?>
+                      <?= financialSheetEntryButton($monthCents, [
+                        'sheet_year' => $year,
+                        'sheet_type' => 'DEBIT',
+                        'sheet_category_id' => $categoryId,
+                        'sheet_category_label' => (string) ($row['label'] ?? ''),
+                        'sheet_month' => (int) $monthNumber,
+                        'sheet_month_label' => (string) ($months[$monthNumber] ?? ''),
+                      ], true, $canEditSheetOperations, financialSheetIsPaidValue($monthCents, $monthPaidCents)); ?>
+                    <?php endif; ?>
+                  </td>
                 <?php endforeach; ?>
                 <?php
                 $rowTotalCents = (int) ($row['total'] ?? 0);
@@ -346,6 +429,113 @@ if ($sessionUserLabel === '')
   </div>
 </div>
 
+<div class="modal fade" id="financialSheetCreateModal" tabindex="-1" aria-labelledby="financialSheetCreateModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="financialSheetCreateModalTitle">Nova operação financeira</h5>
+          <span class="financial-sheet-modal-subtitle" id="financialSheetCreateModalSubtitle"></span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert d-none" id="financialOperationCreateStatus" role="alert"></div>
+        <div class="alert alert-info d-none" id="financialOperationCreatePeriodNotice" role="alert"></div>
+
+        <form action="<?= url('financial_operation/store/'); ?>" method="POST" id="financialOperationCreateForm" data-ajax-submit="1">
+          <div class="row">
+            <div class="mb-2 col-md-6 col-lg-4">
+              <label class="form-label" for="financial_operation_category_id">Categoria</label>
+              <select class="form-select" id="financial_operation_category_id" name="financial_operation_category_id" required>
+                <option value="">Selecione</option>
+                <?php foreach ($categories as $category): ?>
+                  <?php
+                  $categoryLabel = trim((string) ($category['name'] ?? ''));
+                  if (!empty($category['description']))
+                    {
+                    $categoryLabel .= ' - ' . trim((string) $category['description']);
+                    }
+                  ?>
+                  <option value="<?= (int) $category['id'] ?>"><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="mb-2 col-md-6 col-lg-4">
+              <label class="form-label" for="type">Tipo</label>
+              <select class="form-select" id="type" name="type" required>
+                <option value="">Selecione</option>
+                <?php foreach ($types as $value => $label): ?>
+                  <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="mb-2 col-md-6 col-lg-4">
+              <label class="form-label" for="total_value">Valor total</label>
+              <input autocomplete="off" class="form-control" id="total_value" name="total_value" min="0" step="0.01" type="number" required>
+            </div>
+          </div>
+
+          <div class="financial-operation-recurrence">
+            <div class="financial-operation-recurrence__header">
+              <div>
+                <span>Recorrência mensal</span>
+                <strong>Lançar parcelas por faixa de datas</strong>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" id="generate_installments" name="generate_installments" type="checkbox" value="1">
+                <label class="form-check-label" for="generate_installments">Gerar parcelas</label>
+              </div>
+            </div>
+
+            <div class="row d-none" id="recurrenceFields">
+              <div class="mb-2 col-md-6 col-lg-3">
+                <label class="form-label" for="installment_value">Valor da parcela</label>
+                <input autocomplete="off" class="form-control" id="installment_value" name="installment_value" min="0.01" step="0.01" type="number" data-recurrence-field disabled>
+              </div>
+
+              <div class="mb-2 col-md-6 col-lg-3">
+                <label class="form-label" for="payment_type">Tipo do pagamento</label>
+                <select class="form-select" id="payment_type" name="payment_type" data-recurrence-field disabled>
+                  <option value="">Selecione</option>
+                  <?php foreach ($paymentTypes as $value => $label): ?>
+                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $value === 'PIX' ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div class="mb-2 col-md-6 col-lg-3">
+                <label class="form-label" for="recurrence_start_date">Data inicial</label>
+                <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
+              </div>
+
+              <div class="mb-2 col-md-6 col-lg-3">
+                <label class="form-label" for="recurrence_end_date">Data final</label>
+                <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
+              </div>
+            </div>
+
+            <div class="financial-operation-recurrence__preview" id="recurrencePreview">
+              <i class="bi bi-calendar-check"></i>
+              <span>Informe a faixa para calcular as parcelas mensais.</span>
+            </div>
+
+            <div class="financial-operation-recurrence-installments d-none" id="recurrenceInstallments"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-primary" id="financialSheetCreateSaveButton" form="financialOperationCreateForm">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="financialSheetOperationModal" tabindex="-1" aria-labelledby="financialSheetOperationModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
@@ -353,6 +543,7 @@ if ($sessionUserLabel === '')
         <div>
           <h5 class="modal-title" id="financialSheetOperationModalTitle">Editar lançamento</h5>
           <span class="financial-sheet-modal-subtitle" id="financialSheetOperationModalSubtitle"></span>
+          <span class="financial-sheet-modal-subtitle" id="financialSheetOperationSelectedValue"></span>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
@@ -451,4 +642,5 @@ if ($sessionUserLabel === '')
   </div>
 </div>
 
-<script src="<?= url('assets/js/financial_operations/sheet.js?v=3'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/create.js?v=5'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/sheet.js?v=6'); ?>"></script>

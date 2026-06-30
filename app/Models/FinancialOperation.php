@@ -291,6 +291,7 @@ class FinancialOperation extends Model
 
 		try
 			{
+			$beforeData = $this->findAllByFinancialOperationId($id);
 			$this->db->beginTransaction();
 
 			$paymentId = (int) ($data['payment_id'] ?? 0);

@@ -3,6 +3,12 @@ $categories = $categories ?? [];
 $types = $types ?? [];
 $paymentTypes = $paymentTypes ?? [];
 $sessionUser = $sessionUser ?? [];
+$defaultCategoryId = (int) ($defaultCategoryId ?? 0);
+$defaultType = (string) ($defaultType ?? '');
+$defaultGenerateInstallments = !empty($defaultGenerateInstallments);
+$defaultRecurrenceStartDate = (string) ($defaultRecurrenceStartDate ?? '');
+$defaultRecurrenceEndDate = (string) ($defaultRecurrenceEndDate ?? '');
+$defaultMonthLabel = trim((string) ($defaultMonthLabel ?? ''));
 
 $sessionUserLabel = trim((string) ($sessionUser['name'] ?? ''));
 if (!empty($sessionUser['username']))
@@ -25,6 +31,12 @@ if ($sessionUserLabel === '')
   </ol>
 </nav>
 
+<?php if ($defaultMonthLabel !== ''): ?>
+  <div class="alert alert-info">
+    Nova operação para <?= htmlspecialchars($defaultMonthLabel, ENT_QUOTES, 'UTF-8'); ?>.
+  </div>
+<?php endif; ?>
+
 <form action="<?= url('financial_operation/store/'); ?>" method="POST" id="financialOperationCreateForm">
   <div class="row">
 
@@ -40,7 +52,7 @@ if ($sessionUserLabel === '')
             $categoryLabel .= ' - ' . trim((string) $category['description']);
             }
           ?>
-          <option value="<?= (int) $category['id'] ?>"><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8') ?></option>
+          <option value="<?= (int) $category['id'] ?>" <?= (int) $category['id'] === $defaultCategoryId ? 'selected' : ''; ?>><?= htmlspecialchars($categoryLabel, ENT_QUOTES, 'UTF-8') ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -50,7 +62,7 @@ if ($sessionUserLabel === '')
       <select class="form-select" id="type" name="type" required>
         <option value="">Selecione</option>
         <?php foreach ($types as $value => $label): ?>
-          <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+          <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $value === $defaultType ? 'selected' : ''; ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -69,7 +81,7 @@ if ($sessionUserLabel === '')
         <strong>Lançar parcelas por faixa de datas</strong>
       </div>
       <div class="form-check form-switch">
-        <input class="form-check-input" id="generate_installments" name="generate_installments" type="checkbox" value="1">
+        <input class="form-check-input" id="generate_installments" name="generate_installments" type="checkbox" value="1" <?= $defaultGenerateInstallments ? 'checked' : ''; ?>>
         <label class="form-check-label" for="generate_installments">Gerar parcelas</label>
       </div>
     </div>
@@ -94,12 +106,12 @@ if ($sessionUserLabel === '')
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_start_date">Data inicial</label>
-        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_start_date" name="recurrence_start_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field value="<?= htmlspecialchars($defaultRecurrenceStartDate, ENT_QUOTES, 'UTF-8'); ?>" disabled>
       </div>
 
       <div class="mb-2 col-md-6 col-lg-3">
         <label class="form-label" for="recurrence_end_date">Data final</label>
-        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field disabled>
+        <input autocomplete="off" class="form-control" id="recurrence_end_date" name="recurrence_end_date" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/aaaa" type="text" inputmode="numeric" data-recurrence-field value="<?= htmlspecialchars($defaultRecurrenceEndDate, ENT_QUOTES, 'UTF-8'); ?>" disabled>
       </div>
     </div>
 
@@ -121,4 +133,4 @@ if ($sessionUserLabel === '')
   </div>
 </form>
 
-<script src="<?= url('assets/js/financial_operations/create.js?v=4'); ?>"></script>
+<script src="<?= url('assets/js/financial_operations/create.js?v=5'); ?>"></script>

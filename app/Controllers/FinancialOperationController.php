@@ -81,13 +81,53 @@ class FinancialOperationController extends Controller
 		$this->requirePermission('financial_operation.create');
 
 		$category = new FinancialOperationCategory();
+		$sheetYear = isset($_GET['sheet_year']) ? (int) $_GET['sheet_year'] : 0;
+		$sheetMonth = isset($_GET['sheet_month']) ? (int) $_GET['sheet_month'] : 0;
+		$sheetCategoryId = isset($_GET['sheet_category_id']) ? (int) $_GET['sheet_category_id'] : 0;
+		$sheetType = isset($_GET['sheet_type']) ? strtoupper(trim((string) $_GET['sheet_type'])) : '';
+		$sheetYearMonthLabel = '';
+		$generateInstallments = false;
+		$recurrenceStartDate = '';
+		$recurrenceEndDate = '';
+		if ($sheetYear >= 2000 && $sheetYear <= 2100 && $sheetMonth >= 1 && $sheetMonth <= 12)
+			{
+			$monthDate = \DateTimeImmutable::createFromFormat('!Y-n-j', sprintf('%04d-%d-1', $sheetYear, $sheetMonth));
+			if ($monthDate instanceof \DateTimeImmutable)
+				{
+				$sheetYearMonthLabel = self::formatMonthYearLabel($sheetMonth, $sheetYear);
+				$recurrenceStartDate = $monthDate->format('d/m/Y');
+				$recurrenceEndDate = $monthDate->modify('last day of this month')->format('d/m/Y');
+				$generateInstallments = true;
+				}
+			}
 		$this->view('financial_operations/create', [
-			'title'         => 'Nova operação financeira',
-			'categories'    => $category->getAll(),
-			'types'         => FinancialOperation::typeOptions(),
-			'paymentTypes'  => FinancialOperationPayment::typeOptions(),
-			'sessionUser'   => $_SESSION['manager_main']['user'] ?? [],
+			'title'                   => 'Nova operação financeira',
+			'categories'              => $category->getAll(),
+			'types'                   => FinancialOperation::typeOptions(),
+			'paymentTypes'            => FinancialOperationPayment::typeOptions(),
+			'sessionUser'             => $_SESSION['manager_main']['user'] ?? [],
+			'defaultCategoryId'       => $sheetCategoryId,
+			'defaultType'             => array_key_exists($sheetType, FinancialOperation::typeOptions()) ? $sheetType : '',
+			'defaultGenerateInstallments' => $generateInstallments,
+			'defaultRecurrenceStartDate' => $recurrenceStartDate,
+			'defaultRecurrenceEndDate' => $recurrenceEndDate,
+			'defaultMonthLabel'       => $sheetYearMonthLabel,
 		]);
+		}
+
+	/**
+	 * Formats a month and year label for the create screen.
+	 *
+	 * @param int $month Month number.
+	 * @param int $year Year number.
+	 * @return string
+	 */
+	private static function formatMonthYearLabel(int $month, int $year): string
+		{
+		$months = FinancialOperation::monthOptions();
+		$monthLabel = $months[$month] ?? '';
+
+		return $monthLabel !== '' ? $monthLabel . '/' . $year : '';
 		}
 
 	/**
@@ -222,15 +262,37 @@ class FinancialOperationController extends Controller
 		$financialOperation = new FinancialOperation();
 		$data = $_POST;
 		$data['user_id'] = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+		$expectsJson = $this->wantsJson();
 
 		try
 			{
-			$financialOperation->create($data);
+			$result = $financialOperation->create($data);
+
+			if ($expectsJson)
+				{
+				$this->json([
+					'success' => true,
+					'message' => 'Operação financeira cadastrada com sucesso.',
+					'financial_operation_id' => (int) ($result['financial_operation_id'] ?? 0),
+					'type' => (string) ($data['type'] ?? ''),
+					'financial_operation_category_id' => (int) ($data['financial_operation_category_id'] ?? 0),
+					'total_value' => (string) ($data['total_value'] ?? '0.00'),
+				]);
+				}
+
 			setFlashMessage('success', 'Operação financeira cadastrada com sucesso.');
 			$this->redirect('financial_operation');
 			}
 		catch (\Throwable $e)
 			{
+			if ($expectsJson)
+				{
+				$this->json([
+					'error' => 'create_failed',
+					'message' => 'Não foi possível cadastrar a operação financeira. Verifique os dados e tente novamente.',
+				], 500);
+				}
+
 			setFlashMessage('danger', 'Não foi possível cadastrar a operação financeira. Verifique os dados e tente novamente.');
 			$this->redirect('financial_operation/create');
 			}
