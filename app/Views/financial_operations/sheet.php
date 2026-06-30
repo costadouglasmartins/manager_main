@@ -40,12 +40,14 @@ if (!function_exists('financialSheetEntryButton'))
     $label = financialSheetMoney($cents, $blankWhenZero);
     if (!$canEdit || $cents === 0 || $label === '')
       {
-      if ($isPaid && $label !== '')
+      $displayLabel = $label !== '' ? $label : financialSheetMoney($cents);
+
+      if ($isPaid && $displayLabel !== '')
         {
-        return '<span class="financial-sheet-entry-paid">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>';
+        return '<span class="financial-sheet-entry-paid">' . htmlspecialchars($displayLabel, ENT_QUOTES, 'UTF-8') . '</span>';
         }
 
-      return $label;
+      return $displayLabel;
       }
 
     $attributes = [

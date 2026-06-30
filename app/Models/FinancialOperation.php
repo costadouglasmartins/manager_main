@@ -123,7 +123,6 @@ class FinancialOperation extends Model
 		{
 		try
 			{
-			$beforeData = $this->findAllByFinancialOperationId($id);
 			$this->db->beginTransaction();
 			$userId = (int) ($data['user_id'] ?? 0);
 			if ($userId <= 0)
