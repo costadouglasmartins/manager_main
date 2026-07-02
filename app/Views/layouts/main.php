@@ -140,7 +140,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                 <?php if (authCan('person.index')): ?>
                   <!-- Person -->
                   <li class="dropdown-submenu">
-                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-people-fill me-2"></i>Pessoas / Tennants</a>
+                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-people-fill me-2"></i>Pessoas / Tenants</a>
                     <ul class="dropdown-menu">
 
                       <li><a class="dropdown-item" href="<?= url('person/create'); ?>"><i class="bi bi-person-fill-add me-2"></i>Cadastrar</a></li>
@@ -198,24 +198,9 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                           <li><a class="dropdown-item" href="<?= url('financial_operation/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
                           <li><hr class="dropdown-divider" /></li>
                         <?php endif; ?>
+                        <li><a class="dropdown-item" href="<?= url('financial_operation_category'); ?>"><i class="bi bi-tags me-2"></i>Categorias</a></li>
+                        <li><hr class="dropdown-divider" /></li>
                         <li><a class="dropdown-item" href="<?= url('financial_operation'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
-                      </ul>
-                    </li>
-                  <?php endif; ?>
-
-                  <?php if (authCan('financial_operation.index') && (authCan('financial_operation_category.index') || authCan('financial_operation_payment.index'))): ?>
-                    <li><hr class="dropdown-divider" /></li>
-                  <?php endif; ?>
-
-                  <?php if (authCan('financial_operation_category.index')): ?>
-                    <li class="dropdown-submenu">
-                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-tags me-2"></i>Categorias de Operações Financeiras</a>
-                      <ul class="dropdown-menu">
-                        <?php if (authCan('financial_operation_category.create')): ?>
-                          <li><a class="dropdown-item" href="<?= url('financial_operation_category/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
-                          <li><hr class="dropdown-divider" /></li>
-                        <?php endif; ?>
-                        <li><a class="dropdown-item" href="<?= url('financial_operation_category'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
                       </ul>
                     </li>
                   <?php endif; ?>
