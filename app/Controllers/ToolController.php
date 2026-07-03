@@ -357,7 +357,7 @@ class ToolController extends Controller
 		$delayMs = $this->readPositiveInt((string) ($_GET['delay_ms'] ?? '500'), 500, 0, 10000);
 		$maxResults = $this->readPositiveInt((string) ($_GET['max_results'] ?? '100'), 100, 1, PHP_INT_MAX);
 		$providerMode = $this->readCrawlerProviderMode((string) ($_GET['provider_mode'] ?? 'fallback'));
-		$concurrency = $this->readPositiveInt((string) ($_GET['concurrency'] ?? '3'), 3, 1, 100);
+		$concurrency = $this->readPositiveInt((string) ($_GET['concurrency'] ?? '3'), 3, 1, 500);
 		$autoSaveCity = array_key_exists('save_city', $_GET) ? $this->readBooleanFlag($_GET['save_city']) : true;
 		$autoSaveNeighborhood = array_key_exists('save_neighborhood', $_GET) ? $this->readBooleanFlag($_GET['save_neighborhood']) : true;
 		$createCity = $this->readBooleanFlag($_GET['create_city'] ?? null);

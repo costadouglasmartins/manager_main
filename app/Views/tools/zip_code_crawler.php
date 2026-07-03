@@ -74,7 +74,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
                 <span>Consultas simultâneas</span>
                 <strong id="crawlerConcurrencyLabel">3</strong>
               </label>
-              <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="100" step="1" value="3">
+              <input class="form-range" id="crawlerConcurrency" name="concurrency" type="range" min="1" max="500" step="1" value="3">
             </div>
 
             <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center zip-code-crawler-actions">
@@ -108,6 +108,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
             <div class="zip-code-crawler-stat-card"><small>Novos salvos</small><strong id="crawlerFoundCount">0</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Falhas</small><strong id="crawlerFailedCount">0</strong></div>
             <div class="zip-code-crawler-stat-card"><small>CEPs/seg</small><strong id="crawlerLookupRateCount">0,00</strong></div>
+            <div class="zip-code-crawler-stat-card"><small>Tempo restante</small><strong id="crawlerRemainingTimeText">-</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Status</small><strong id="crawlerStatusText">Aguardando início</strong></div>
           </div>
 
@@ -142,4 +143,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=30'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=31'); ?>"></script>

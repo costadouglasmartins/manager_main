@@ -15,7 +15,7 @@ class ZipCodeCrawlerService
 	private const NOT_FOUND_FLUSH_THRESHOLD = 5;
 	private const NOT_FOUND_RESUME_WINDOW = 5;
 	private const DEFAULT_CONCURRENCY = 3;
-	private const MAX_CONCURRENCY = 100;
+	private const MAX_CONCURRENCY = 500;
 	private const RANDOM_DELAY_MIN_MS = 250;
 	private const RANDOM_DELAY_MAX_MS = 750;
 	private const VIACEP_TRANSIENT_FAILURE_THRESHOLD = 1;
@@ -584,6 +584,8 @@ class ZipCodeCrawlerService
 			'looked_up' => 0,
 			'lookup_elapsed_ms' => 0,
 			'lookup_rate' => 0.0,
+			'handled' => 0,
+			'remaining' => $totalToProcess,
 			'auto_save_city' => $autoSaveCity,
 			'auto_save_neighborhood' => $autoSaveNeighborhood,
 			'create_city' => $createCity,
@@ -600,6 +602,7 @@ class ZipCodeCrawlerService
 			'skipped' => 0,
 			'looked_up' => 0,
 			'lookup_elapsed_ms' => 0,
+			'handled' => 0,
 		];
 		$lookupBatch = [];
 
@@ -615,6 +618,7 @@ class ZipCodeCrawlerService
 				if ($this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
 					{
 					$stats['skipped']++;
+					$stats['handled']++;
 					continue;
 					}
 
@@ -651,6 +655,8 @@ class ZipCodeCrawlerService
 			'looked_up' => $stats['looked_up'],
 			'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
 			'lookup_rate' => $this->lookupRateForStats($stats),
+			'handled' => $stats['handled'],
+			'remaining' => max(0, $totalToProcess - $stats['handled']),
 			'total' => $totalToProcess,
 			'total_available' => $totalAvailable,
 			'concurrency' => $concurrency,
@@ -751,6 +757,7 @@ class ZipCodeCrawlerService
 			$result = $skippedResults[$zipCode] ?? null;
 
 			$stats['processed']++;
+			$stats['handled']++;
 			if ($result !== null)
 				{
 				$stats['skipped']++;
@@ -788,6 +795,8 @@ class ZipCodeCrawlerService
 				'looked_up' => $stats['looked_up'],
 				'lookup_elapsed_ms' => $stats['lookup_elapsed_ms'],
 				'lookup_rate' => $this->lookupRateForStats($stats),
+				'handled' => $stats['handled'],
+				'remaining' => max(0, $totalToProcess - $stats['handled']),
 				'delay_mode' => $delayMode,
 				'round_delay_ms' => $roundDelayMs,
 				'zip_code' => $zipCode,

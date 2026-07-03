@@ -29,6 +29,7 @@
 		const foundCount = document.getElementById("crawlerFoundCount");
 		const failedCount = document.getElementById("crawlerFailedCount");
 		const lookupRateCount = document.getElementById("crawlerLookupRateCount");
+		const remainingTimeText = document.getElementById("crawlerRemainingTimeText");
 		const statusText = document.getElementById("crawlerStatusText");
 		const monitorCard = document.querySelector(".zip-code-crawler-monitor-card");
 		const streamUrl = app.dataset.streamUrl || "";
@@ -48,8 +49,12 @@
 			processed: 0,
 			found: 0,
 			failed: 0,
+			skipped: 0,
 			looked_up: 0,
-			lookup_rate: 0
+			lookup_rate: 0,
+			handled: 0,
+			remaining: 0,
+			total: 0
 		};
 
 		function onlyDigits(value)
@@ -241,9 +246,14 @@
 				return Number.isFinite(number) ? number : 0;
 			}
 
+		function hasMetric(payload, metric)
+			{
+				return payload && Object.prototype.hasOwnProperty.call(payload, metric);
+			}
+
 		function getLookedUpCount(payload)
 			{
-				if (payload && Object.prototype.hasOwnProperty.call(payload, "looked_up"))
+				if (hasMetric(payload, "looked_up"))
 					{
 						return numericMetric(payload.looked_up);
 					}
@@ -261,7 +271,7 @@
 
 		function getLookupRate(payload)
 			{
-				if (payload && Object.prototype.hasOwnProperty.call(payload, "lookup_rate"))
+				if (hasMetric(payload, "lookup_rate"))
 					{
 						return numericMetric(payload.lookup_rate);
 					}
@@ -269,6 +279,73 @@
 				const elapsedMs = streamStartedAt > 0 ? Date.now() - streamStartedAt : 0;
 				const lookedUp = getLookedUpCount(payload || latestStats);
 				return elapsedMs > 0 ? lookedUp / (elapsedMs / 1000) : 0;
+			}
+
+		function getTotalCount(payload)
+			{
+				if (hasMetric(payload, "total"))
+					{
+						return numericMetric(payload.total);
+					}
+
+				if (numericMetric(latestStats.total) > 0)
+					{
+						return numericMetric(latestStats.total);
+					}
+
+				return calculateZipCodeRangeCount();
+			}
+
+		function getHandledCount(payload)
+			{
+				if (hasMetric(payload, "handled"))
+					{
+						return numericMetric(payload.handled);
+					}
+
+				if (hasMetric(payload, "position"))
+					{
+						return numericMetric(payload.position);
+					}
+
+				return numericMetric(payload ? payload.processed : 0);
+			}
+
+		function getRemainingCount(payload, total, handled)
+			{
+				if (hasMetric(payload, "remaining"))
+					{
+						return numericMetric(payload.remaining);
+					}
+
+				return Math.max(0, numericMetric(total) - numericMetric(handled));
+			}
+
+		function formatDurationSeconds(value)
+			{
+				const totalSeconds = Math.max(0, Math.round(numericMetric(value)));
+				if (totalSeconds < 60)
+					{
+						return totalSeconds + "s";
+					}
+
+				const seconds = totalSeconds % 60;
+				const totalMinutes = Math.floor(totalSeconds / 60);
+				if (totalMinutes < 60)
+					{
+						return totalMinutes + "min " + String(seconds).padStart(2, "0") + "s";
+					}
+
+				const minutes = totalMinutes % 60;
+				const totalHours = Math.floor(totalMinutes / 60);
+				if (totalHours < 24)
+					{
+						return totalHours + "h " + String(minutes).padStart(2, "0") + "min";
+					}
+
+				const days = Math.floor(totalHours / 24);
+				const hours = totalHours % 24;
+				return days + "d " + String(hours).padStart(2, "0") + "h";
 			}
 
 		function formatClockTimeFromTimestamp(timestamp)
@@ -370,6 +447,45 @@
 				lookupRateCount.textContent = formatLookupRate(getLookupRate(payload || latestStats));
 			}
 
+		function updateRemainingTime(payload)
+			{
+				if (!remainingTimeText)
+					{
+						return;
+					}
+
+				const stats = payload || latestStats;
+				const total = getTotalCount(stats);
+				const handled = getHandledCount(stats);
+				const remaining = getRemainingCount(stats, total, handled);
+				const elapsedMs = streamStartedAt > 0 ? Date.now() - streamStartedAt : 0;
+				const handledRate = elapsedMs > 0 ? handled / (elapsedMs / 1000) : 0;
+
+				remainingTimeText.title = total > 0
+					? formatInteger(remaining) + " CEP(s) restantes de " + formatInteger(total)
+					: "";
+
+				if (total <= 0)
+					{
+						remainingTimeText.textContent = "-";
+						return;
+					}
+
+				if (remaining <= 0 && handled > 0)
+					{
+						remainingTimeText.textContent = "0s";
+						return;
+					}
+
+				if (handled <= 0 || handledRate <= 0)
+					{
+						remainingTimeText.textContent = "Calculando";
+						return;
+					}
+
+				remainingTimeText.textContent = formatDurationSeconds(remaining / handledRate);
+			}
+
 		function stopRateTimer()
 			{
 				if (rateTimer)
@@ -385,23 +501,31 @@
 				rateTimer = window.setInterval(function ()
 					{
 						updateLookupRate(latestStats);
+						updateRemainingTime(latestStats);
 					}, 1000);
 			}
 
 		function updateStats(payload)
 			{
+				const total = getTotalCount(payload);
+				const handled = getHandledCount(payload);
 				latestStats = {
 					processed: numericMetric(payload.processed),
 					found: numericMetric(payload.found),
 					failed: numericMetric(payload.failed),
+					skipped: numericMetric(payload.skipped),
 					looked_up: getLookedUpCount(payload),
-					lookup_rate: getLookupRate(payload)
+					lookup_rate: getLookupRate(payload),
+					handled: handled,
+					remaining: getRemainingCount(payload, total, handled),
+					total: total
 				};
 
 				processedCount.textContent = String(latestStats.processed);
 				foundCount.textContent = String(latestStats.found);
 				failedCount.textContent = String(latestStats.failed);
 				updateLookupRate(latestStats);
+				updateRemainingTime(latestStats);
 			}
 
 		function updateProgress(position, total)
@@ -887,7 +1011,7 @@
 				clearResults();
 				stopRateTimer();
 				streamStartedAt = 0;
-				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
+				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0, handled: 0, remaining: numericMetric(maxResults), total: numericMetric(maxResults)});
 				updateProgress(0, 1);
 				setLoading(true);
 				setMessage("info", "Iniciando webcrawler com intervalo " + delayText + " entre consultas...");
@@ -934,7 +1058,7 @@
 
 						const payload = JSON.parse(event.data || "{}");
 						streamStartedAt = Date.now();
-						updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
+						updateStats({processed: 0, found: 0, failed: 0, looked_up: 0, handled: 0, remaining: payload.total || maxResults, total: payload.total || maxResults});
 						startRateTimer();
 						statusText.textContent = "Em execução";
 						const ranges = payload.ranges || selectedState.ranges || [];
@@ -1007,6 +1131,7 @@
 						statusText.textContent = "Interrompido";
 						appendSystemLine("ERROR", "Conexão interrompida - verifique a rede e tente novamente");
 						stopRateTimer();
+						updateRemainingTime({processed: 0, handled: 0, total: 0, remaining: 0});
 						setLoading(false);
 						eventSource.close();
 						eventSource = null;
@@ -1061,6 +1186,7 @@
 				setMessage("warning", "Pesquisa interrompida pelo usuário.");
 				statusText.textContent = "Parado";
 				stopRateTimer();
+				updateRemainingTime({processed: 0, handled: 0, total: 0, remaining: 0});
 				setLoading(false);
 			});
 
@@ -1096,7 +1222,7 @@
 				updateConcurrencyLabel();
 				updateStateRangeSummary();
 				clearResults();
-				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0});
+				updateStats({processed: 0, found: 0, failed: 0, looked_up: 0, handled: 0, remaining: 0, total: 0});
 				updateProgress(0, 1);
 				statusText.textContent = "Aguardando início";
 				setMessage("secondary", "Selecione um estado e inicie a pesquisa.");
