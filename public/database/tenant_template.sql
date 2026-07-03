@@ -9,17 +9,21 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-INSERT IGNORE INTO `schema_versions` (
+INSERT INTO `schema_versions` (
   `version`,
   `description`,
   `created`,
   `modified`
-) VALUES (
+)
+VALUES (
   '1.0.0',
   'Initial tenant schema',
   NOW(),
   NOW()
-);
+)
+ON DUPLICATE KEY UPDATE
+  `description` = VALUES(`description`),
+  `modified` = NOW();
 
 
 INSERT IGNORE INTO `manager_main`.`user_permissions` (
@@ -46,6 +50,10 @@ WHERE DATABASE() REGEXP '^manager_[0-9]{4}$'
   AND TenantUser.`role` = 'owner';
 
 
+-- -----------------------------------------------------
+-- Bank Accounts
+-- -----------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `bank_id` INT NOT NULL,
@@ -59,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `bank_slip_instructions_line_3` VARCHAR(255) NULL DEFAULT NULL,
   `bank_slip_instructions_line_4` VARCHAR(255) NULL DEFAULT NULL,
   `bank_slip_protest` TINYINT(1) NULL DEFAULT NULL,
-  `bank_slip_protest_number_of_days` TINYINT(2) NULL DEFAULT NULL,
+  `bank_slip_protest_number_of_days` TINYINT UNSIGNED NULL DEFAULT NULL,
   `bank_slip_wallet` VARCHAR(50) NULL DEFAULT NULL,
   `bank_slip_species_title` VARCHAR(50) NULL DEFAULT NULL,
   `bank_slip_interest_type` ENUM('DAILY','MONTHLY') NULL DEFAULT NULL,
@@ -72,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
 
   PRIMARY KEY (`id`),
 
-  INDEX `fk_bank_accounts_manager_main_banks_idx` (`bank_id`),
+  KEY `idx_bank_accounts_bank_id` (`bank_id`),
 
   CONSTRAINT `fk_bank_accounts_manager_main_banks`
     FOREIGN KEY (`bank_id`)
@@ -82,6 +90,10 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- -----------------------------------------------------
+-- Financial Operations
+-- -----------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
@@ -90,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
+  UNIQUE KEY `uq_financial_operations_categories_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -103,12 +115,12 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `financial_operations_subcategories_category_name_unique` (
+  UNIQUE KEY `uq_financial_operations_subcategories_category_name` (
     `financial_operation_category_id`,
     `name`
   ),
 
-  INDEX `fk_financial_operations_subcategories_categories_idx` (
+  KEY `idx_financial_operations_subcategories_category_id` (
     `financial_operation_category_id`
   ),
 
@@ -130,11 +142,11 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
 
   PRIMARY KEY (`id`),
 
-  INDEX `fk_financial_operations_categories_idx` (
+  KEY `idx_financial_operations_category_id` (
     `financial_operation_category_id`
   ),
 
-  INDEX `fk_financial_operations_subcategories_idx` (
+  KEY `idx_financial_operations_subcategory_id` (
     `financial_operation_subcategory_id`
   ),
 
@@ -161,7 +173,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
 
   PRIMARY KEY (`id`),
 
-  INDEX `fk_financial_operations_payments_operations_idx` (
+  KEY `idx_financial_operations_payments_operation_id` (
     `financial_operation_id`
   ),
 
@@ -172,6 +184,10 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- -----------------------------------------------------
+-- Bank Files
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `bank_files` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -187,8 +203,8 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
 
   UNIQUE KEY `uq_bank_files_path` (`file_path`),
 
-  INDEX `idx_bank_files_bank_account_id` (`bank_account_id`),
-  INDEX `idx_bank_files_file_type` (`file_type`),
+  KEY `idx_bank_files_bank_account_id` (`bank_account_id`),
+  KEY `idx_bank_files_file_type` (`file_type`),
 
   CONSTRAINT `fk_bank_files_bank_accounts`
     FOREIGN KEY (`bank_account_id`)
@@ -197,6 +213,10 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- -----------------------------------------------------
+-- Bank Slips
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `bank_slips` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -271,12 +291,12 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
     `our_number`
   ),
 
-  INDEX `idx_bank_slips_bank_account_id` (`bank_account_id`),
-  INDEX `idx_bank_slips_bank_file_id` (`bank_file_id`),
-  INDEX `idx_bank_slips_status` (`status`),
-  INDEX `idx_bank_slips_due_date` (`due_date`),
-  INDEX `idx_bank_slips_document_number` (`document_number`),
-  INDEX `idx_bank_slips_payer_document` (`payer_document`),
+  KEY `idx_bank_slips_bank_account_id` (`bank_account_id`),
+  KEY `idx_bank_slips_bank_file_id` (`bank_file_id`),
+  KEY `idx_bank_slips_status` (`status`),
+  KEY `idx_bank_slips_due_date` (`due_date`),
+  KEY `idx_bank_slips_document_number` (`document_number`),
+  KEY `idx_bank_slips_payer_document` (`payer_document`),
 
   CONSTRAINT `fk_bank_slips_bank_accounts`
     FOREIGN KEY (`bank_account_id`)
@@ -299,7 +319,7 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
 
 
 -- -----------------------------------------------------
--- Store module
+-- Store Module
 -- products pertence a manager_main.users
 -- manager_main.users has many products
 -- -----------------------------------------------------
@@ -321,9 +341,7 @@ CREATE TABLE IF NOT EXISTS `products_categories` (
 
 CREATE TABLE IF NOT EXISTS `products` (
   `id` INT NOT NULL AUTO_INCREMENT,
-
   `user_id` INT NOT NULL,
-
   `product_category_id` INT DEFAULT NULL,
   `sku` VARCHAR(60) DEFAULT NULL,
   `barcode` VARCHAR(80) DEFAULT NULL,
@@ -381,6 +399,7 @@ CREATE TABLE IF NOT EXISTS `products_images` (
   PRIMARY KEY (`id`),
 
   UNIQUE KEY `uq_products_images_file_path` (`file_path`),
+
   KEY `idx_products_images_product` (`product_id`),
   KEY `idx_products_images_main` (`product_id`, `is_main`),
 
@@ -430,6 +449,175 @@ INSERT INTO `schema_versions` (
 VALUES (
   'store-001',
   'Store products, images and stock module',
+  NOW(),
+  NOW()
+)
+ON DUPLICATE KEY UPDATE
+  `description` = VALUES(`description`),
+  `modified` = NOW();
+
+
+-- -----------------------------------------------------
+-- Tasks Module
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `task_categories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(120) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_task_categories_name` (`name`),
+  KEY `idx_task_categories_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `tasks` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_category_id` INT DEFAULT NULL,
+  `title` VARCHAR(160) NOT NULL,
+  `status` VARCHAR(40) NOT NULL DEFAULT 'open',
+  `third_party_person_id` INT DEFAULT NULL,
+  `third_party_name` VARCHAR(160) DEFAULT NULL,
+  `description` MEDIUMTEXT NOT NULL,
+  `created_by_user_id` INT NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_tasks_category` (`task_category_id`),
+  KEY `idx_tasks_status` (`status`),
+  KEY `idx_tasks_third_party_person` (`third_party_person_id`),
+  KEY `idx_tasks_created_by_user` (`created_by_user_id`),
+  KEY `idx_tasks_created` (`created`),
+
+  CONSTRAINT `fk_tasks_task_categories`
+    FOREIGN KEY (`task_category_id`)
+    REFERENCES `task_categories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_tasks_manager_main_people_third_party`
+    FOREIGN KEY (`third_party_person_id`)
+    REFERENCES `manager_main`.`people` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_tasks_manager_main_users_created_by`
+    FOREIGN KEY (`created_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `task_assignees` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_id` INT NOT NULL,
+  `person_id` INT NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_task_assignees_task_person` (`task_id`, `person_id`),
+
+  KEY `idx_task_assignees_task_active` (`task_id`, `active`),
+  KEY `idx_task_assignees_person` (`person_id`),
+
+  CONSTRAINT `fk_task_assignees_tasks`
+    FOREIGN KEY (`task_id`)
+    REFERENCES `tasks` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_assignees_manager_main_people`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `manager_main`.`people` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `task_comments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `comment` TEXT NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_task_comments_task_created` (`task_id`, `created`),
+  KEY `idx_task_comments_user` (`user_id`),
+
+  CONSTRAINT `fk_task_comments_tasks`
+    FOREIGN KEY (`task_id`)
+    REFERENCES `tasks` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_comments_manager_main_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `task_executions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_assignee_id` INT NOT NULL,
+  `started_by_user_id` INT NOT NULL,
+  `paused_by_user_id` INT DEFAULT NULL,
+  `started_at` DATETIME NOT NULL,
+  `paused_at` DATETIME DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_task_executions_assignee` (`task_assignee_id`),
+  KEY `idx_task_executions_open` (`task_assignee_id`, `paused_at`),
+  KEY `idx_task_executions_started_by_user` (`started_by_user_id`),
+  KEY `idx_task_executions_paused_by_user` (`paused_by_user_id`),
+
+  CONSTRAINT `fk_task_executions_task_assignees`
+    FOREIGN KEY (`task_assignee_id`)
+    REFERENCES `task_assignees` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_executions_manager_main_users_started_by`
+    FOREIGN KEY (`started_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_executions_manager_main_users_paused_by`
+    FOREIGN KEY (`paused_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO `schema_versions` (
+  `version`,
+  `description`,
+  `created`,
+  `modified`
+)
+VALUES (
+  'tasks-001',
+  'Tasks, assignees, comments and executions module',
   NOW(),
   NOW()
 )

@@ -287,12 +287,110 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `schema_versions_version_unique` (`version`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.schema_versions: ~2 rows (approximately)
 INSERT INTO `schema_versions` (`id`, `version`, `description`, `created`, `modified`) VALUES
 	(1, '1.0.0', 'Initial tenant schema', '2026-06-23 00:14:54', '2026-06-23 00:14:54'),
-	(2, 'store-001', 'Store products, images and stock module', '2026-06-23 00:14:54', '2026-06-23 00:14:54');
+	(2, 'store-001', 'Store products, images and stock module', '2026-06-23 00:14:54', '2026-06-23 00:14:54'),
+	(3, 'tasks-001', 'Tasks categories, assignments, executions and comments module', '2026-07-03 12:00:56', '2026-07-03 12:00:56');
+
+-- Dumping structure for table manager_0002.tasks
+CREATE TABLE IF NOT EXISTS `tasks` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `task_category_id` int DEFAULT NULL,
+  `title` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
+  `third_party_person_id` int DEFAULT NULL,
+  `third_party_name` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_by_user_id` int NOT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_tasks_category` (`task_category_id`),
+  KEY `idx_tasks_status` (`status`),
+  KEY `idx_tasks_third_party_person` (`third_party_person_id`),
+  KEY `idx_tasks_created_by_user` (`created_by_user_id`),
+  KEY `idx_tasks_created` (`created`),
+  CONSTRAINT `fk_tasks_manager_main_people_third_party` FOREIGN KEY (`third_party_person_id`) REFERENCES `manager_main`.`people` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_tasks_manager_main_users_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_tasks_task_categories` FOREIGN KEY (`task_category_id`) REFERENCES `task_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.tasks: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.task_assignees
+CREATE TABLE IF NOT EXISTS `task_assignees` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `task_id` int NOT NULL,
+  `person_id` int NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_task_assignees_task_person` (`task_id`,`person_id`),
+  KEY `idx_task_assignees_task_active` (`task_id`,`active`),
+  KEY `idx_task_assignees_person` (`person_id`),
+  CONSTRAINT `fk_task_assignees_manager_main_people` FOREIGN KEY (`person_id`) REFERENCES `manager_main`.`people` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_task_assignees_tasks` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.task_assignees: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.task_categories
+CREATE TABLE IF NOT EXISTS `task_categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_task_categories_name` (`name`),
+  KEY `idx_task_categories_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.task_categories: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.task_comments
+CREATE TABLE IF NOT EXISTS `task_comments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `task_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `comment` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_task_comments_task_created` (`task_id`,`created`),
+  KEY `idx_task_comments_user` (`user_id`),
+  CONSTRAINT `fk_task_comments_manager_main_users` FOREIGN KEY (`user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_task_comments_tasks` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.task_comments: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.task_executions
+CREATE TABLE IF NOT EXISTS `task_executions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `task_assignee_id` int NOT NULL,
+  `started_by_user_id` int NOT NULL,
+  `paused_by_user_id` int DEFAULT NULL,
+  `started_at` datetime NOT NULL,
+  `paused_at` datetime DEFAULT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_task_executions_assignee` (`task_assignee_id`),
+  KEY `idx_task_executions_open` (`task_assignee_id`,`paused_at`),
+  KEY `idx_task_executions_started_by_user` (`started_by_user_id`),
+  KEY `idx_task_executions_paused_by_user` (`paused_by_user_id`),
+  CONSTRAINT `fk_task_executions_manager_main_users_paused_by` FOREIGN KEY (`paused_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_task_executions_manager_main_users_started_by` FOREIGN KEY (`started_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_task_executions_task_assignees` FOREIGN KEY (`task_assignee_id`) REFERENCES `task_assignees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.task_executions: ~0 rows (approximately)
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
