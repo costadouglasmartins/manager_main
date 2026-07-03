@@ -2,7 +2,7 @@
 -- Host:                         127.0.0.1
 -- Server version:               8.0.46 - MySQL Community Server - GPL
 -- Server OS:                    Linux
--- HeidiSQL Version:             12.18.1.1
+-- HeidiSQL Version:             12.20.1.1
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
