@@ -130,8 +130,8 @@ class Person extends Model
 	/**
 	 * Creates a person and related records within a transaction.
 	 *
-	 * Saves the main record, user, phones, addresses, emails and, when provided,
-	 * creates or links the corresponding tenant.
+	 * Saves the main record, user, phones, addresses, emails and, when requested,
+	 * creates the corresponding tenant.
 	 * Expected top-level sections are `person`, `user`, `tenant`, `phones`,
 	 * `addresses` and `emails`.
 	 *
@@ -149,9 +149,22 @@ class Person extends Model
 		$this->assertUniqueCreateValues($data);
 		$document = onlyAlphanumeric($data['person']['document'] ?? '');
 		$username = trim((string) ($data['user']['username'] ?? ''));
+		$userType = trim((string) ($data['user']['type'] ?? ''));
+		$tenantMode = trim((string) ($data['tenant']['mode'] ?? 'none'));
+		$tenantMode = $tenantMode !== '' ? $tenantMode : 'none';
 		$tenantProvisionDatabaseNumber = null;
 		$tenantProvisionObservations = null;
 		$tenantProvisionStatus = null;
+
+		if (!in_array($tenantMode, ['none', 'new'], true))
+			{
+			throw new \InvalidArgumentException('Modo de tenant inválido.');
+			}
+
+		if ($userType === 'root' && $tenantMode !== 'none')
+			{
+			throw new \InvalidArgumentException('Usuário Root não pode ser associado a tenant.');
+			}
 
 		try
 			{
@@ -197,7 +210,6 @@ class Person extends Model
 
 			// Resolve the tenant relationship requested by the form.
 			$tenantId = null;
-			$tenantMode = $data['tenant']['mode'] ?? 'none';
 
 			if ($tenantMode === 'new')
 				{
@@ -214,11 +226,6 @@ class Person extends Model
 					'status'          => $tenantStatus,
 					'observations'    => $data['tenant']['observations'] ?? null,
 				]);
-				}
-			elseif ($tenantMode === 'existing' && !empty($data['tenant']['existing_id']))
-				{
-				// Link the new user to an existing tenant selected in the form.
-				$tenantId = (int) $data['tenant']['existing_id'];
 				}
 
 			// Store the primary tenant on the user and create the pivot link.

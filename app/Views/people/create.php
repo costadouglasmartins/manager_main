@@ -181,9 +181,8 @@
 					<div class="col-12">
 						<label class="form-label">Associar tenant?</label>
 						<select autocomplete="off" class="form-select" id="tenantMode" name="tenant[mode]">
-							<option value="none" selected>Não associar tenant</option>
-							<option value="new">Criar novo tenant</option>
-							<option value="existing">Selecionar tenant existente</option>
+							<option value="none">Não associar tenant</option>
+							<option value="new" selected>Criar novo tenant</option>
 						</select>
 					</div>
 
@@ -210,27 +209,6 @@
 						</div>
 					</div>
 
-					<!-- Selecionar tenant existente -->
-					<div class="col-12 d-none" id="tenantExistingFields">
-						<div class="border rounded p-3 people-inline-panel">
-							<div class="row g-3">
-								<div class="col-12">
-									<label class="form-label" for="tenantExistingId">Selecionar tenant</label>
-									<select autocomplete="off" class="form-select" id="tenantExistingId" name="tenant[existing_id]">
-										<option value="" selected disabled>Selecione um tenant...</option>
-										<?php foreach ($tenants as $t): ?>
-											<option value="<?= (int) $t['id']; ?>">
-												<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id'])); ?>
-												— <?= htmlspecialchars($t['database_number']); ?>
-												(<?= htmlspecialchars($t['status']); ?>)
-											</option>
-										<?php endforeach; ?>
-									</select>
-									<div class="invalid-feedback">Selecione um tenant.</div>
-								</div>
-							</div>
-						</div>
-					</div>
 				</div>
 			</section>
 			<!-- /Step 3 -->
@@ -486,5 +464,5 @@
 	const PERSON_PHONE_NUMBER_EXISTS_URL = "<?= url('person/phoneNumberExists'); ?>";
 	const PERSON_EMAIL_EXISTS_URL        = "<?= url('person/emailExists'); ?>";
 </script>
-<script src="<?= url('assets/js/people/create.js?v=16'); ?>"></script>
+<script src="<?= url('assets/js/people/create.js?v=19'); ?>"></script>
 <script src="<?= url('assets/js/masks.js?v=5'); ?>"></script>

@@ -36,6 +36,7 @@
 		const personType = document.getElementById("personType");
 		const personDocument = document.getElementById("personDocument");
 		const userUsername = document.getElementById("userUsername");
+		const userType = document.getElementById("userType");
 		const userPassword  = document.getElementById("userPassword");
 		const userPassword2 = document.getElementById("userPassword2");
 		const personDocumentFeedback = personDocument && personDocument.parentElement
@@ -62,16 +63,15 @@
 		// Tenant elements
 		const tenantMode            = document.getElementById("tenantMode");
 		const tenantNewFields       = document.getElementById("tenantNewFields");
-		const tenantExistingFields  = document.getElementById("tenantExistingFields");
 		const requiredIds = [
 			"stepTitle", "stepSubtitle", "stepBadge", "progressBar",
 			"btnBack", "btnNext", "btnSubmit",
-			"personName", "personFantasy", "personType", "personDocument", "userUsername",
+			"personName", "personFantasy", "personType", "personDocument", "userUsername", "userType",
 			"addressesContainer", "phonesContainer", "emailsContainer",
 			"addressTemplate", "phoneTemplate", "emailTemplate",
 			"btnAddAddress", "btnAddPhone", "btnAddEmail",
 			"reviewBody", "userPassword", "userPassword2",
-			"tenantMode", "tenantNewFields", "tenantExistingFields"
+			"tenantMode", "tenantNewFields"
 		];
 
 		const missing = requiredIds.filter((id) => !document.getElementById(id));
@@ -839,7 +839,7 @@
 							});
 					});
 
-				updateTenantPanels();
+				updateTenantPanels(true);
 
 				const targetStep = Math.min(TOTAL_STEPS, Math.max(1, parseInt(state.currentStep, 10) || 1));
 				showStep(targetStep);
@@ -1651,28 +1651,44 @@
 		// -----------------------------------------------------------------------
 		// Tenant: alternar painéis conforme modo selecionado
 		// -----------------------------------------------------------------------
-		function updateTenantPanels()
+		function updateTenantPanels(forceDefaultMode)
 			{
+				const isRootUser = userType.value === "root";
+				const tenantCreateOption = tenantMode.querySelector('option[value="new"]');
+
+				tenantMode.disabled = isRootUser;
+
+				if (tenantCreateOption)
+					{
+						tenantCreateOption.disabled = isRootUser;
+						tenantCreateOption.hidden = isRootUser;
+					}
+
+				if (isRootUser)
+					{
+						tenantMode.value = "none";
+					}
+				else if (forceDefaultMode === true && userType.value !== "")
+					{
+						tenantMode.value = "new";
+					}
+				else if (tenantMode.value !== "none" && tenantMode.value !== "new")
+					{
+						tenantMode.value = "new";
+					}
+
 				const mode = tenantMode.value;
 				tenantNewFields.classList.toggle("d-none", mode !== "new");
-				tenantExistingFields.classList.toggle("d-none", mode !== "existing");
-
-				// Existing tenant select required only when mode is existing
-				const tenantExistingId = document.getElementById("tenantExistingId");
-				if (tenantExistingId)
-					{
-						if (mode === "existing")
-							{
-								tenantExistingId.setAttribute("required", "");
-							}
-						else
-							{
-								tenantExistingId.removeAttribute("required");
-							}
-					}
 			}
 
-		tenantMode.addEventListener("change", updateTenantPanels);
+		tenantMode.addEventListener("change", function ()
+			{
+				updateTenantPanels(false);
+			});
+		userType.addEventListener("change", function ()
+			{
+				updateTenantPanels(true);
+			});
 
 		// -----------------------------------------------------------------------
 		// Navegação de etapas
@@ -1748,14 +1764,10 @@
 				// Validação do tenant
 				const mode = tenantMode.value;
 
-				if (mode === "existing")
+				if (userType.value === "root" && mode !== "none")
 					{
-						const tenantExistingId = document.getElementById("tenantExistingId");
-						if (!tenantExistingId || !tenantExistingId.value)
-							{
-								showAlert("Selecione um tenant existente.");
-								return false;
-							}
+						showAlert("Usuário Root não pode ser associado a tenant.");
+						return false;
 					}
 
 				return true;
@@ -2048,11 +2060,6 @@
 						rows.push(["Tenant / N. Banco", normalizeValue(document.getElementById("tenantDatabaseNumber"))]);
 						rows.push(["Tenant / Observações", normalizeValue(document.getElementById("tenantObservations"))]);
 					}
-				else if (tMode === "existing")
-					{
-						rows.push(["Tenant / Modo", "Selecionar existente"]);
-						rows.push(["Tenant / Tenant", normalizeValue(document.getElementById("tenantExistingId"))]);
-					}
 				else
 					{
 						rows.push(["Tenant", "Não associado"]);
@@ -2309,4 +2316,5 @@
 		addEmailRow();
 		showStep(1);
 		restoreFormState();
+		updateTenantPanels(false);
 	})();

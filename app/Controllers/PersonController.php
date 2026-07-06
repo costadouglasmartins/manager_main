@@ -124,8 +124,7 @@ class PersonController extends Controller
 	/**
 	 * Displays the person creation form.
 	 *
-	 * Loads tenant data needed by the form, including the next database number
-	 * suggestion for a newly provisioned tenant.
+	 * Loads the next database number suggestion for a newly provisioned tenant.
 	 *
 	 * @return void
 	 */
@@ -135,12 +134,10 @@ class PersonController extends Controller
 
 		$tenantModel = new Tenant();
 		$nextDatabaseNumber = $tenantModel->nextDatabaseNumber();
-		$tenants = $tenantModel->getAll();
 
 		$this->view('people/create', [
 			'title'              => 'Nova pessoa',
 			'nextDatabaseNumber' => $nextDatabaseNumber,
-			'tenants'            => $tenants,
 		]);
 		}
 
