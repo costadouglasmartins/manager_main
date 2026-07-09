@@ -324,7 +324,7 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
 -- manager_main.users has many products
 -- -----------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `products_categories` (
+CREATE TABLE IF NOT EXISTS `product_categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(120) NOT NULL,
   `description` VARCHAR(255) DEFAULT NULL,
@@ -334,8 +334,8 @@ CREATE TABLE IF NOT EXISTS `products_categories` (
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `uq_products_categories_name` (`name`),
-  KEY `idx_products_categories_active` (`active`)
+  UNIQUE KEY `uq_product_categories_name` (`name`),
+  KEY `idx_product_categories_active` (`active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -362,7 +362,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   UNIQUE KEY `uq_products_barcode` (`barcode`),
 
   KEY `idx_products_user_id` (`user_id`),
-  KEY `idx_products_category` (`product_category_id`),
+  KEY `idx_products_product_category` (`product_category_id`),
   KEY `idx_products_name` (`name`),
   KEY `idx_products_active` (`active`),
   KEY `idx_products_stock_quantity` (`stock_quantity`),
@@ -373,15 +373,15 @@ CREATE TABLE IF NOT EXISTS `products` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-  CONSTRAINT `fk_products_categories`
+  CONSTRAINT `fk_products_product_categories`
     FOREIGN KEY (`product_category_id`)
-    REFERENCES `products_categories` (`id`)
+    REFERENCES `product_categories` (`id`)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE IF NOT EXISTS `products_images` (
+CREATE TABLE IF NOT EXISTS `product_images` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `product_id` INT NOT NULL,
   `original_name` VARCHAR(255) DEFAULT NULL,
@@ -398,12 +398,12 @@ CREATE TABLE IF NOT EXISTS `products_images` (
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `uq_products_images_file_path` (`file_path`),
+  UNIQUE KEY `uq_product_images_file_path` (`file_path`),
 
-  KEY `idx_products_images_product` (`product_id`),
-  KEY `idx_products_images_main` (`product_id`, `is_main`),
+  KEY `idx_product_images_product` (`product_id`),
+  KEY `idx_product_images_main` (`product_id`, `is_main`),
 
-  CONSTRAINT `fk_products_images_products`
+  CONSTRAINT `fk_product_images_products`
     FOREIGN KEY (`product_id`)
     REFERENCES `products` (`id`)
     ON DELETE CASCADE
@@ -411,7 +411,7 @@ CREATE TABLE IF NOT EXISTS `products_images` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
+CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `product_id` INT NOT NULL,
   `movement_type` ENUM('IN','OUT','ADJUSTMENT') NOT NULL,
@@ -428,11 +428,11 @@ CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
 
   PRIMARY KEY (`id`),
 
-  KEY `idx_products_stocks_movements_product` (`product_id`),
-  KEY `idx_products_stocks_movements_type` (`movement_type`),
-  KEY `idx_products_stocks_movements_date` (`movement_date`),
+  KEY `idx_product_stocks_movements_product` (`product_id`),
+  KEY `idx_product_stocks_movements_type` (`movement_type`),
+  KEY `idx_product_stocks_movements_date` (`movement_date`),
 
-  CONSTRAINT `fk_products_stocks_movements_products`
+  CONSTRAINT `fk_product_stocks_movements_products`
     FOREIGN KEY (`product_id`)
     REFERENCES `products` (`id`)
     ON DELETE RESTRICT
