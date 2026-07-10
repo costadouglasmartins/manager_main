@@ -6,7 +6,6 @@ use App\Core\Controller;
 use App\Models\State;
 use App\Services\EmailMxValidatorService;
 use App\Services\IpRangeWebCrawlerService;
-use App\Services\WebAddressCrawlerService;
 use App\Services\ZipCodeCrawlerService;
 use App\Services\ZipCodeNeighborhoodService;
 use App\Services\ZipCodeSearchService;
@@ -138,57 +137,6 @@ class ToolController extends Controller
 			'sort' => $sort,
 			'paginationQuery' => sortQueryString($queryFilters, $sort),
 			'ipRangeCountryOptions' => $countryOptions,
-		]);
-		}
-
-	/**
-	 * Render the web address prospect crawler page.
-	 * @return void
-	 **/
-	public function webAddressCrawler(): void
-		{
-		$this->requireAuth();
-
-		$this->view('tools/web_address_crawler', [
-			'title' => 'Webcrawler de endereços',
-			'stateOptions' => $this->readBrazilStateOptions(),
-			'userAgentOptions' => WebAddressCrawlerService::userAgentOptions(),
-			'maxResults' => WebAddressCrawlerService::maxResults(),
-		]);
-		}
-
-	/**
-	 * Render the prospect results listing with filters and pagination.
-	 * @return void
-	 **/
-	public function webAddressCrawlerResults(): void
-		{
-		$this->requireAuth();
-
-		$service = new WebAddressCrawlerService();
-		$filters = $this->readWebAddressCrawlerResultsFilters();
-		$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-		$perPage = 20;
-		$offset = ($page - 1) * $perPage;
-		$sort = sortRequest($this->webAddressCrawlerResultsSortableColumns(), 'checked_at', 'desc');
-		$results = $service->searchResults($filters, $perPage, $offset, $sort);
-		$total = $service->countResults($filters);
-		$totalPages = max(1, (int) ceil($total / $perPage));
-		$summary = $service->reportSummary($filters);
-		$queryFilters = http_build_query($filters);
-
-		$this->view('tools/web_address_crawler_results', [
-			'title' => 'Registros encontrados',
-			'filters' => $filters,
-			'results' => $results,
-			'summary' => $summary,
-			'page' => $page,
-			'perPage' => $perPage,
-			'totalPages' => $totalPages,
-			'total' => $total,
-			'sort' => $sort,
-			'paginationQuery' => sortQueryString($queryFilters, $sort),
-			'stateOptions' => $this->readBrazilStateOptions(),
 		]);
 		}
 
@@ -363,63 +311,6 @@ class ToolController extends Controller
 			}
 
 		exit;
-		}
-
-	/**
-	 * Stream web address prospect crawler progress through Server-Sent Events.
-	 * @return void
-	 **/
-	public function streamWebAddressCrawler(): void
-		{
-		$this->requireAuth();
-
-		ignore_user_abort(true);
-		set_time_limit(0);
-
-		header('Content-Type: text/event-stream; charset=utf-8');
-		header('Cache-Control: no-cache, no-transform');
-		header('Connection: keep-alive');
-		header('X-Accel-Buffering: no');
-
-		while (ob_get_level() > 0)
-			{
-			ob_end_flush();
-			}
-
-		ob_implicit_flush(true);
-		session_write_close();
-
-		$service = new WebAddressCrawlerService();
-
-		foreach ($service->stream($this->readWebAddressCrawlerInput()) as $payload)
-			{
-			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
-			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
-			flush();
-
-			if (connection_aborted())
-				{
-				break;
-				}
-			}
-
-		exit;
-		}
-
-	/**
-	 * Import the filtered prospect results into the people registry.
-	 * @return void
-	 **/
-	public function importProspects(): void
-		{
-		$this->requireAuth();
-
-		$user = $_SESSION['manager_main']['user'] ?? [];
-		$service = new WebAddressCrawlerService();
-		$result = $service->importByFilters($this->readWebAddressCrawlerImportFilters(), (int) ($user['id'] ?? 0));
-		$status = (int) ($result['status'] ?? 500);
-
-		$this->json($result, $status);
 		}
 
 	/**
@@ -666,132 +557,6 @@ class ToolController extends Controller
 			'checked_at' => 'r.checked_at',
 			'title' => 'r.title',
 		];
-		}
-
-	/**
-	 * Read the web address crawler input from the request.
-	 * @return array<string, mixed>
-	 **/
-	private function readWebAddressCrawlerInput(): array
-		{
-		$user = $_SESSION['manager_main']['user'] ?? [];
-
-		return [
-			'user_id' => (int) ($user['id'] ?? 0),
-			'keywords' => trim((string) ($_GET['keywords'] ?? '')),
-			'state_acronym' => strtoupper(trim((string) ($_GET['state_acronym'] ?? ($_GET['state'] ?? '')))),
-			'city' => trim((string) ($_GET['city'] ?? '')),
-			'zip_code' => trim((string) ($_GET['zip_code'] ?? '')),
-			'max_results' => $this->readPositiveInt((string) ($_GET['max_results'] ?? '50'), 50, 1, WebAddressCrawlerService::maxResults()),
-			'concurrency' => $this->readPositiveInt((string) ($_GET['concurrency'] ?? '5'), 5, 1, 20),
-			'delay_ms' => $this->readPositiveInt((string) ($_GET['delay_ms'] ?? '1000'), 1000, 100, 10000),
-			'user_agent' => trim((string) ($_GET['user_agent'] ?? '')),
-		];
-		}
-
-	/**
-	 * Read filters for the prospect results listing.
-	 * @return array<string, string>
-	 **/
-	private function readWebAddressCrawlerResultsFilters(): array
-		{
-		return [
-			'search_id' => trim((string) ($_GET['search_id'] ?? '')),
-			'state_acronym' => strtoupper(trim((string) ($_GET['state_acronym'] ?? ''))),
-			'city' => trim((string) ($_GET['city'] ?? '')),
-			'import_status' => trim((string) ($_GET['import_status'] ?? '')),
-			'has_phone' => trim((string) ($_GET['has_phone'] ?? '')),
-			'has_email' => trim((string) ($_GET['has_email'] ?? '')),
-			'has_document' => trim((string) ($_GET['has_document'] ?? '')),
-			'term' => trim((string) ($_GET['term'] ?? '')),
-			'date_from' => trim((string) ($_GET['date_from'] ?? '')),
-			'date_to' => trim((string) ($_GET['date_to'] ?? '')),
-		];
-		}
-
-	/**
-	 * Read filters used to import the filtered prospect results.
-	 * @return array<string, string>
-	 **/
-	private function readWebAddressCrawlerImportFilters(): array
-		{
-		$source = $_POST;
-		$rawBody = (string) file_get_contents('php://input');
-		if ($rawBody !== '')
-			{
-			$contentType = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
-			if (strpos($contentType, 'application/json') !== false)
-				{
-				$payload = json_decode($rawBody, true);
-				if (is_array($payload))
-					{
-					$source = is_array($payload['filters'] ?? null) ? $payload['filters'] : $payload;
-					}
-				}
-			}
-
-		return [
-			'search_id' => trim((string) ($source['search_id'] ?? '')),
-			'state_acronym' => strtoupper(trim((string) ($source['state_acronym'] ?? ''))),
-			'city' => trim((string) ($source['city'] ?? '')),
-			'import_status' => trim((string) ($source['import_status'] ?? '')),
-			'has_phone' => trim((string) ($source['has_phone'] ?? '')),
-			'has_email' => trim((string) ($source['has_email'] ?? '')),
-			'has_document' => trim((string) ($source['has_document'] ?? '')),
-			'term' => trim((string) ($source['term'] ?? '')),
-			'date_from' => trim((string) ($source['date_from'] ?? '')),
-			'date_to' => trim((string) ($source['date_to'] ?? '')),
-		];
-		}
-
-	/**
-	 * Return allowed sort columns for the prospect results listing.
-	 * @return array<string, string>
-	 **/
-	private function webAddressCrawlerResultsSortableColumns(): array
-		{
-		return [
-			'id' => 'r.id',
-			'business_name' => 'r.business_name',
-			'city' => 'r.city',
-			'state_acronym' => 'r.state_acronym',
-			'import_status' => 'r.import_status',
-			'phone' => 'r.phone',
-			'email' => 'r.email',
-			'checked_at' => 'r.checked_at',
-		];
-		}
-
-	/**
-	 * Return Brazilian state options for the prospect crawler filters.
-	 * @return array<int, array<string, string>>
-	 **/
-	private function readBrazilStateOptions(): array
-		{
-		$stateModel = new State();
-		$states = $stateModel->search(
-			['country_id' => 1],
-			100,
-			0,
-			['sort' => 'name', 'direction' => 'asc']
-		);
-		$options = [];
-
-		foreach ($states as $state)
-			{
-			$acronym = strtoupper((string) ($state['acronym'] ?? ''));
-			if ($acronym === '')
-				{
-				continue;
-				}
-
-			$options[] = [
-				'acronym' => $acronym,
-				'name' => (string) ($state['name'] ?? $acronym),
-			];
-			}
-
-		return $options;
 		}
 
 	/**
