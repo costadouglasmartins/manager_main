@@ -290,10 +290,6 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/ipRangeWebCrawler'); ?>"><i class="bi bi-hdd-network me-2"></i>Webcrawler de IPs</a></li>
                   <li><hr class="dropdown-divider" /></li>
-                  <li><a class="dropdown-item" href="<?= url('tool/serpApiWebCrawler'); ?>"><i class="bi bi-search me-2"></i>SERPAPI Webcrawler</a></li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li><a class="dropdown-item" href="<?= url('tool/serpApiWebCrawlerResults'); ?>"><i class="bi bi-card-list me-2"></i>Resultados SERPAPI</a></li>
-                  <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawler'); ?>"><i class="bi bi-geo-alt me-2"></i>Webcrawler de endereços</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tool/webAddressCrawlerResults'); ?>"><i class="bi bi-list-check me-2"></i>Registros encontrados</a></li>

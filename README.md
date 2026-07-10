@@ -112,8 +112,3 @@ $addressesStmt->execute(['id' => $id]);
 - Para mudanças em JavaScript, valide o comportamento da tela afetada no navegador quando possível.
 - Atualize versões de cache (`?v={numero}`) ao alterar JS ou CSS específico de view.
 - Prefira verificações manuais focadas no fluxo alterado em vez de testes amplos sem relação com a mudança.
-
-## Configuração de integrações
-
-- `SERPAPI_API_KEY` ou `APP_SERPAPI_API_KEY`: chave privada usada pela ferramenta SERPAPI Webcrawler.
-- O teto mensal interno da ferramenta SERPAPI Webcrawler é fixo em `250` consultas.

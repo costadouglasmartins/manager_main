@@ -6,7 +6,6 @@ use App\Core\Controller;
 use App\Models\State;
 use App\Services\EmailMxValidatorService;
 use App\Services\IpRangeWebCrawlerService;
-use App\Services\SerpApiWebCrawlerService;
 use App\Services\WebAddressCrawlerService;
 use App\Services\ZipCodeCrawlerService;
 use App\Services\ZipCodeNeighborhoodService;
@@ -140,106 +139,6 @@ class ToolController extends Controller
 			'paginationQuery' => sortQueryString($queryFilters, $sort),
 			'ipRangeCountryOptions' => $countryOptions,
 		]);
-		}
-
-	/**
-	 * Render the SerpApi webcrawler page.
-	 * @return void
-	 **/
-	public function serpApiWebCrawler(): void
-		{
-		$this->requireAuth();
-
-		$service = new SerpApiWebCrawlerService();
-
-		$this->view('tools/serpapi_webcrawler', [
-			'title' => 'SERPAPI Webcrawler',
-			'serpApiUsage' => $service->usageSnapshot(),
-			'serpApiHasKey' => SerpApiWebCrawlerService::hasApiKey(),
-			'serpApiSearchTypeOptions' => SerpApiWebCrawlerService::searchTypeOptions(),
-			'serpApiCountryOptions' => SerpApiWebCrawlerService::countryOptions(),
-			'serpApiLanguageOptions' => SerpApiWebCrawlerService::languageOptions(),
-			'serpApiMaxResults' => SerpApiWebCrawlerService::maxResults(),
-			'serpApiQueryLimitMax' => SerpApiWebCrawlerService::maxMonthlyLimit(),
-		]);
-		}
-
-	/**
-	 * Render the stored SerpApi results listing.
-	 * @return void
-	 **/
-	public function serpApiWebCrawlerResults(): void
-		{
-		$this->requireAuth();
-
-		$service = new SerpApiWebCrawlerService();
-		$filters = $this->readSerpApiWebCrawlerResultsFilters();
-		$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-		$perPage = 20;
-		$offset = ($page - 1) * $perPage;
-		$sort = sortRequest($this->serpApiWebCrawlerResultsSortableColumns(), 'checked_at', 'desc');
-		$results = $service->searchResults($filters, $perPage, $offset, $sort);
-		$total = $service->countResults($filters);
-		$totalPages = max(1, (int) ceil($total / $perPage));
-		$summary = $service->reportSummary($filters);
-		$queryFilters = http_build_query($filters);
-
-		$this->view('tools/serpapi_webcrawler_results', [
-			'title' => 'Resultados SERPAPI',
-			'filters' => $filters,
-			'results' => $results,
-			'summary' => $summary,
-			'page' => $page,
-			'perPage' => $perPage,
-			'totalPages' => $totalPages,
-			'total' => $total,
-			'sort' => $sort,
-			'paginationQuery' => sortQueryString($queryFilters, $sort),
-			'serpApiSearchTypeOptions' => SerpApiWebCrawlerService::searchTypeOptions(),
-			'serpApiCountryOptions' => SerpApiWebCrawlerService::countryOptions(),
-		]);
-		}
-
-	/**
-	 * Delete selected stored SerpApi results.
-	 * @return void
-	 **/
-	public function deleteSerpApiWebCrawlerResults(): void
-		{
-		$this->requireAuth();
-
-		$redirectPath = $this->readSerpApiWebCrawlerResultsRedirectPath();
-		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-			{
-			$this->redirect($redirectPath);
-			}
-
-		$ids = $this->readSerpApiWebCrawlerResultIds();
-		if (empty($ids))
-			{
-			setFlashMessage('warning', 'Selecione ao menos um resultado para excluir.');
-			$this->redirect($redirectPath);
-			}
-
-		$service = new SerpApiWebCrawlerService();
-		try
-			{
-			$deleted = $service->deleteResultsByIds($ids);
-			if ($deleted > 0)
-				{
-				setFlashMessage('success', $deleted . ' resultado(s) excluído(s) com sucesso.');
-				}
-			else
-				{
-				setFlashMessage('warning', 'Nenhum resultado foi excluído.');
-				}
-			}
-		catch (\Throwable $exception)
-			{
-			setFlashMessage('danger', 'Não foi possível excluir os resultados selecionados.');
-			}
-
-		$this->redirect($redirectPath);
 		}
 
 	/**
@@ -452,47 +351,6 @@ class ToolController extends Controller
 		$service = new IpRangeWebCrawlerService();
 
 		foreach ($service->stream($this->readIpRangeWebCrawlerInput()) as $payload)
-			{
-			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
-			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
-			flush();
-
-			if (connection_aborted())
-				{
-				break;
-				}
-			}
-
-		exit;
-		}
-
-	/**
-	 * Stream SerpApi webcrawler progress through Server-Sent Events.
-	 * @return void
-	 **/
-	public function streamSerpApiWebCrawler(): void
-		{
-		$this->requireAuth();
-
-		ignore_user_abort(true);
-		set_time_limit(0);
-
-		header('Content-Type: text/event-stream; charset=utf-8');
-		header('Cache-Control: no-cache, no-transform');
-		header('Connection: keep-alive');
-		header('X-Accel-Buffering: no');
-
-		while (ob_get_level() > 0)
-			{
-			ob_end_flush();
-			}
-
-		ob_implicit_flush(true);
-		session_write_close();
-
-		$service = new SerpApiWebCrawlerService();
-
-		foreach ($service->stream($this->readSerpApiWebCrawlerInput()) as $payload)
 			{
 			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
 			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
@@ -807,103 +665,6 @@ class ToolController extends Controller
 			'response_time_ms' => 'r.response_time_ms',
 			'checked_at' => 'r.checked_at',
 			'title' => 'r.title',
-		];
-		}
-
-	/**
-	 * Read the SerpApi webcrawler input from the request.
-	 * @return array<string, mixed>
-	 **/
-	private function readSerpApiWebCrawlerInput(): array
-		{
-		$user = $_SESSION['manager_main']['user'] ?? [];
-
-		return [
-			'user_id' => (int) ($user['id'] ?? 0),
-			'query' => trim((string) ($_GET['query'] ?? '')),
-			'search_type' => strtolower(trim((string) ($_GET['search_type'] ?? 'web'))),
-			'location' => trim((string) ($_GET['location'] ?? '')),
-			'country_code' => strtolower(trim((string) ($_GET['country_code'] ?? 'br'))),
-			'language_code' => strtolower(trim((string) ($_GET['language_code'] ?? 'pt'))),
-			'result_count' => $this->readPositiveInt((string) ($_GET['result_count'] ?? '10'), 10, 1, SerpApiWebCrawlerService::maxResults()),
-			'start_offset' => $this->readPositiveInt((string) ($_GET['start_offset'] ?? '0'), 0, 0, 900),
-			'execution_query_limit' => $this->readNonNegativeInt((string) ($_GET['execution_query_limit'] ?? '1'), 1, SerpApiWebCrawlerService::maxMonthlyLimit()),
-			'device' => strtolower(trim((string) ($_GET['device'] ?? 'desktop'))),
-			'safe_search' => strtolower(trim((string) ($_GET['safe_search'] ?? 'active'))),
-		];
-		}
-
-	/**
-	 * Read filters for the SerpApi results listing.
-	 * @return array<string, string>
-	 **/
-	private function readSerpApiWebCrawlerResultsFilters(): array
-		{
-		return [
-			'search_id' => trim((string) ($_GET['search_id'] ?? '')),
-			'search_type' => strtolower(trim((string) ($_GET['search_type'] ?? ''))),
-			'country_code' => strtolower(trim((string) ($_GET['country_code'] ?? ''))),
-			'term' => trim((string) ($_GET['term'] ?? '')),
-			'date_from' => trim((string) ($_GET['date_from'] ?? '')),
-			'date_to' => trim((string) ($_GET['date_to'] ?? '')),
-		];
-		}
-
-	/**
-	 * Read selected SerpApi result ids from the request.
-	 * @return array<int, int>
-	 **/
-	private function readSerpApiWebCrawlerResultIds(): array
-		{
-		$rawIds = $_POST['result_ids'] ?? [];
-		if (!is_array($rawIds))
-			{
-			$rawIds = [$rawIds];
-			}
-
-		$ids = [];
-		foreach ($rawIds as $rawId)
-			{
-			$id = (int) preg_replace('/\D+/', '', (string) $rawId);
-			if ($id > 0)
-				{
-				$ids[] = $id;
-				}
-			}
-
-		return array_values(array_unique($ids));
-		}
-
-	/**
-	 * Read the safe redirect path for the SerpApi results listing.
-	 * @return string
-	 **/
-	private function readSerpApiWebCrawlerResultsRedirectPath(): string
-		{
-		$basePath = 'tool/serpApiWebCrawlerResults';
-		$path = str_replace(["\r", "\n"], '', trim((string) ($_POST['redirect_to'] ?? '')));
-		if ($path === $basePath || str_starts_with($path, $basePath . '?'))
-			{
-			return $path;
-			}
-
-		return $basePath;
-		}
-
-	/**
-	 * Return allowed sort columns for the SerpApi results listing.
-	 * @return array<string, string>
-	 **/
-	private function serpApiWebCrawlerResultsSortableColumns(): array
-		{
-		return [
-			'id' => 'Result.id',
-			'search_id' => 'Result.search_id',
-			'search_type' => 'Result.search_type',
-			'position' => 'Result.position',
-			'title' => 'Result.title',
-			'source' => 'Result.source',
-			'checked_at' => 'Result.checked_at',
 		];
 		}
 
