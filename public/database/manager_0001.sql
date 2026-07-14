@@ -24,21 +24,21 @@ USE `manager_0001`;
 CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `id` int NOT NULL AUTO_INCREMENT,
   `bank_id` int NOT NULL,
-  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `agency` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `pix_key_type` enum('CPF','CNPJ','EMAIL','PHONE','RANDOM') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pix_key` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_instructions_line_1` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_instructions_line_2` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_instructions_line_3` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_instructions_line_4` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `agency` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `pix_key_type` enum('CPF','CNPJ','EMAIL','PHONE','RANDOM') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pix_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_instructions_line_1` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_instructions_line_2` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_instructions_line_3` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_instructions_line_4` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bank_slip_protest` tinyint(1) DEFAULT NULL,
   `bank_slip_protest_number_of_days` tinyint DEFAULT NULL,
-  `bank_slip_wallet` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_species_title` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_interest_type` enum('DAILY','MONTHLY') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_interest_amount_type` enum('PERCENTAGE','FIXED_AMOUNT') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_wallet` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_species_title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_interest_type` enum('DAILY','MONTHLY') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_slip_interest_amount_type` enum('PERCENTAGE','FIXED_AMOUNT') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bank_slip_interest` decimal(10,2) DEFAULT NULL,
   `bank_slip_late_fee_amount` decimal(10,2) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
@@ -58,10 +58,10 @@ INSERT INTO `bank_accounts` (`id`, `bank_id`, `name`, `agency`, `account`, `pix_
 CREATE TABLE IF NOT EXISTS `bank_files` (
   `id` int NOT NULL AUTO_INCREMENT,
   `bank_account_id` int DEFAULT NULL,
-  `file_type` enum('REMITTANCE','RETURN_FILE') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_hash` char(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_type` enum('REMITTANCE','RETURN_FILE') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_hash` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -79,19 +79,19 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   `financial_operation_payment_id` int DEFAULT NULL,
   `bank_account_id` int NOT NULL,
   `bank_file_id` int DEFAULT NULL,
-  `status` enum('DRAFT','READY','REMITTANCE_GENERATED','SENT','REGISTERED','REJECTED','PAID','CANCELED','WRITTEN_OFF') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
-  `document_number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `our_number` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `our_number_digit` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `portfolio` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_document_type` enum('CPF','CNPJ') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_document` varchar(14) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_street` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_neighborhood` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `payer_city` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_state` char(2) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payer_zip_code` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('DRAFT','READY','REMITTANCE_GENERATED','SENT','REGISTERED','REJECTED','PAID','CANCELED','WRITTEN_OFF') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
+  `document_number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `our_number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `our_number_digit` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `portfolio` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_document_type` enum('CPF','CNPJ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_document` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_street` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_neighborhood` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payer_city` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_state` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payer_zip_code` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(12,2) NOT NULL,
   `due_date` date NOT NULL,
   `issue_date` date NOT NULL,
@@ -105,12 +105,12 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   `discount_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
   `fine_date` date DEFAULT NULL,
   `fine_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `protest_code` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `protest_code` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `protest_days` tinyint unsigned DEFAULT NULL,
-  `write_off_code` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `write_off_code` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `write_off_days` tinyint unsigned DEFAULT NULL,
-  `last_occurrence_code` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `last_occurrence_message` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_occurrence_code` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_occurrence_message` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -152,14 +152,14 @@ INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `fi
 -- Dumping structure for table manager_0001.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_categories: ~8 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_categories: ~9 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `created`, `modified`) VALUES
 	(1, 'Ajuda financeira', '2026-06-02 23:21:58', '2026-06-02 23:21:58'),
 	(2, 'Alimentação', '2026-06-02 23:22:18', '2026-06-02 23:22:18'),
@@ -192,7 +192,7 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `va
 CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `financial_operation_category_id` int NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_subcategories: ~21 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_subcategories: ~22 rows (approximately)
 INSERT INTO `financial_operations_subcategories` (`id`, `financial_operation_category_id`, `name`, `created`, `modified`) VALUES
 	(1, 2, 'Café da manhã fins de semana', '2026-06-02 23:24:42', '2026-06-02 23:24:42'),
 	(2, 2, 'Café da manhã segunda à sexta', '2026-06-02 23:25:11', '2026-06-02 23:25:11'),
@@ -231,15 +231,15 @@ CREATE TABLE IF NOT EXISTS `products` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `product_category_id` int DEFAULT NULL,
-  `sku` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `barcode` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `sku` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `barcode` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `cost_price` decimal(12,2) NOT NULL DEFAULT '0.00',
   `sale_price` decimal(12,2) NOT NULL DEFAULT '0.00',
   `stock_quantity` decimal(12,3) NOT NULL DEFAULT '0.000',
   `minimum_stock` decimal(12,3) NOT NULL DEFAULT '0.000',
-  `unit` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UN',
+  `unit` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UN',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -262,8 +262,8 @@ INSERT INTO `products` (`id`, `user_id`, `product_category_id`, `sku`, `barcode`
 -- Dumping structure for table manager_0001.products_categories
 CREATE TABLE IF NOT EXISTS `products_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -272,7 +272,7 @@ CREATE TABLE IF NOT EXISTS `products_categories` (
   KEY `idx_products_categories_active` (`active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.products_categories: ~0 rows (approximately)
+-- Dumping data for table manager_0001.products_categories: ~1 rows (approximately)
 INSERT INTO `products_categories` (`id`, `name`, `description`, `active`, `created`, `modified`) VALUES
 	(1, 'Carros', NULL, 1, '2026-06-08 22:31:24', '2026-06-08 22:31:24');
 
@@ -280,10 +280,10 @@ INSERT INTO `products_categories` (`id`, `name`, `description`, `active`, `creat
 CREATE TABLE IF NOT EXISTS `products_images` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
-  `original_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `thumb_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `mime_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `original_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `thumb_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mime_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_size` int unsigned DEFAULT NULL,
   `width` int unsigned DEFAULT NULL,
   `height` int unsigned DEFAULT NULL,
@@ -298,7 +298,7 @@ CREATE TABLE IF NOT EXISTS `products_images` (
   CONSTRAINT `fk_products_images_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.products_images: ~1 rows (approximately)
+-- Dumping data for table manager_0001.products_images: ~3 rows (approximately)
 INSERT INTO `products_images` (`id`, `product_id`, `original_name`, `file_path`, `thumb_path`, `mime_type`, `file_size`, `width`, `height`, `position`, `is_main`, `created`, `modified`) VALUES
 	(2, 5, 'black_1200x1200.png', 'tenant_files/manager_0001/products/5/product_5_d13f06ea6de7e566.png', 'tenant_files/manager_0001/products/5/product_5_d13f06ea6de7e566.png', 'image/png', 608926, 1200, 1200, 0, 1, '2026-07-03 21:55:11', '2026-07-03 21:55:11'),
 	(3, 5, 'grey_1200x1200.png', 'tenant_files/manager_0001/products/5/product_5_cec68a74703c8e47.png', 'tenant_files/manager_0001/products/5/product_5_cec68a74703c8e47.png', 'image/png', 607043, 1200, 1200, 1, 0, '2026-07-03 21:55:11', '2026-07-03 21:55:11'),
@@ -308,14 +308,14 @@ INSERT INTO `products_images` (`id`, `product_id`, `original_name`, `file_path`,
 CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
-  `movement_type` enum('IN','OUT','ADJUSTMENT') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `movement_type` enum('IN','OUT','ADJUSTMENT') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(12,3) NOT NULL,
   `previous_quantity` decimal(12,3) NOT NULL,
   `new_quantity` decimal(12,3) NOT NULL,
   `unit_cost` decimal(12,2) DEFAULT NULL,
   `unit_price` decimal(12,2) DEFAULT NULL,
-  `reference` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `observations` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `observations` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `movement_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -326,15 +326,110 @@ CREATE TABLE IF NOT EXISTS `products_stocks_movements` (
   CONSTRAINT `fk_products_stocks_movements_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.products_stocks_movements: ~0 rows (approximately)
+-- Dumping data for table manager_0001.products_stocks_movements: ~1 rows (approximately)
 INSERT INTO `products_stocks_movements` (`id`, `product_id`, `movement_type`, `quantity`, `previous_quantity`, `new_quantity`, `unit_cost`, `unit_price`, `reference`, `observations`, `movement_date`, `created`, `modified`) VALUES
 	(5, 5, 'IN', 1000.000, 0.000, 1000.000, 0.50, 1200.39, 'Estoque inicial', NULL, '2026-07-03 21:55:11', '2026-07-03 21:55:11', '2026-07-03 21:55:11');
+
+-- Dumping structure for table manager_0001.schedule_categories
+CREATE TABLE IF NOT EXISTS `schedule_categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `background_color` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#0d6efd',
+  `description_color` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#ffffff',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_schedule_categories_name` (`name`),
+  KEY `idx_schedule_categories_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.schedule_categories: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0001.schedule_events
+CREATE TABLE IF NOT EXISTS `schedule_events` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `schedule_category_id` int DEFAULT NULL,
+  `schedule_events_recurrence_id` int DEFAULT NULL,
+  `recurrence_sequence` int unsigned DEFAULT NULL,
+  `title` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `location` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `all_day` tinyint(1) NOT NULL DEFAULT '0',
+  `starts_at` datetime NOT NULL,
+  `ends_at` datetime DEFAULT NULL,
+  `status` enum('scheduled','completed','canceled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'scheduled',
+  `created_by_user_id` int NOT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_schedule_events_recurrence_sequence` (`schedule_events_recurrence_id`,`recurrence_sequence`),
+  KEY `idx_schedule_events_category` (`schedule_category_id`),
+  KEY `idx_schedule_events_recurrence` (`schedule_events_recurrence_id`),
+  KEY `idx_schedule_events_starts_at` (`starts_at`),
+  KEY `idx_schedule_events_status` (`status`),
+  KEY `idx_schedule_events_created_by_user` (`created_by_user_id`),
+  CONSTRAINT `fk_schedule_events_categories` FOREIGN KEY (`schedule_category_id`) REFERENCES `schedule_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_schedule_events_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_schedule_events_recurrences` FOREIGN KEY (`schedule_events_recurrence_id`) REFERENCES `schedule_events_recurrences` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.schedule_events: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0001.schedule_events_participants
+CREATE TABLE IF NOT EXISTS `schedule_events_participants` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `schedule_event_id` int NOT NULL,
+  `person_id` int NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_schedule_events_participants_event_person` (`schedule_event_id`,`person_id`),
+  KEY `idx_schedule_events_participants_event_active` (`schedule_event_id`,`active`),
+  KEY `idx_schedule_events_participants_person` (`person_id`),
+  CONSTRAINT `fk_schedule_events_participants_events` FOREIGN KEY (`schedule_event_id`) REFERENCES `schedule_events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_schedule_events_participants_manager_main_people` FOREIGN KEY (`person_id`) REFERENCES `manager_main`.`people` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.schedule_events_participants: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0001.schedule_events_recurrences
+CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `schedule_category_id` int DEFAULT NULL,
+  `title` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `location` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `all_day` tinyint(1) NOT NULL DEFAULT '0',
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `frequency` enum('daily','weekly','monthly') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `interval_value` int unsigned NOT NULL DEFAULT '1',
+  `period_start` date NOT NULL,
+  `period_end` date NOT NULL,
+  `allow_weekends` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_schedule_events_recurrences_category` (`schedule_category_id`),
+  KEY `idx_schedule_events_recurrences_period` (`period_start`,`period_end`),
+  KEY `idx_schedule_events_recurrences_created_by_user` (`created_by_user_id`),
+  KEY `idx_schedule_events_recurrences_active` (`active`),
+  CONSTRAINT `fk_schedule_events_recurrences_categories` FOREIGN KEY (`schedule_category_id`) REFERENCES `schedule_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_schedule_events_recurrences_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.schedule_events_recurrences: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.schema_versions
 CREATE TABLE IF NOT EXISTS `schema_versions` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Version number (e.g.: 1.5.0)',
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `version` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Version number (e.g.: 1.5.0)',
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -351,11 +446,11 @@ INSERT INTO `schema_versions` (`id`, `version`, `description`, `created`, `modif
 CREATE TABLE IF NOT EXISTS `tasks` (
   `id` int NOT NULL AUTO_INCREMENT,
   `task_category_id` int DEFAULT NULL,
-  `title` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
+  `title` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
   `third_party_person_id` int DEFAULT NULL,
-  `third_party_name` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `third_party_name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_by_user_id` int NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -370,7 +465,7 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   CONSTRAINT `fk_tasks_task_categories` FOREIGN KEY (`task_category_id`) REFERENCES `task_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.tasks: ~1 rows (approximately)
+-- Dumping data for table manager_0001.tasks: ~0 rows (approximately)
 INSERT INTO `tasks` (`id`, `task_category_id`, `title`, `status`, `third_party_person_id`, `third_party_name`, `description`, `created_by_user_id`, `created`, `modified`) VALUES
 	(1, 1, 'Efetuar ligação para cliente XPTO', 'completed', NULL, NULL, 'Teste teste <b>teste</b>', 2, '2026-07-03 12:25:37', '2026-07-03 19:13:04');
 
@@ -390,15 +485,15 @@ CREATE TABLE IF NOT EXISTS `task_assignees` (
   CONSTRAINT `fk_task_assignees_tasks` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.task_assignees: ~1 rows (approximately)
+-- Dumping data for table manager_0001.task_assignees: ~0 rows (approximately)
 INSERT INTO `task_assignees` (`id`, `task_id`, `person_id`, `active`, `created`, `modified`) VALUES
 	(1, 1, 4, 1, '2026-07-03 12:25:37', '2026-07-03 19:13:04');
 
 -- Dumping structure for table manager_0001.task_categories
 CREATE TABLE IF NOT EXISTS `task_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -416,7 +511,7 @@ CREATE TABLE IF NOT EXISTS `task_comments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `task_id` int NOT NULL,
   `user_id` int NOT NULL,
-  `comment` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -426,7 +521,7 @@ CREATE TABLE IF NOT EXISTS `task_comments` (
   CONSTRAINT `fk_task_comments_tasks` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.task_comments: ~0 rows (approximately)
+-- Dumping data for table manager_0001.task_comments: ~1 rows (approximately)
 INSERT INTO `task_comments` (`id`, `task_id`, `user_id`, `comment`, `created`, `modified`) VALUES
 	(1, 1, 2, 'Teste', '2026-07-03 19:22:46', '2026-07-03 19:22:46');
 

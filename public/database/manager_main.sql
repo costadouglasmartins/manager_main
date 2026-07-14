@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.addresses: ~2 rows (approximately)
+-- Dumping data for table manager_main.addresses: ~7 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(1, '88137-335', 'Rua do Amor-perfeito', '266', 'Apt 203', 4, 17792, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
 	(6, '88137-335', 'Rua do Amor-perfeito', '', NULL, 10, 17792, '2026-06-24 00:45:29', '2026-06-25 20:12:07'),
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5823 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 801 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -5755,7 +5755,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.emails: ~5 rows (approximately)
+-- Dumping data for table manager_main.emails: ~10 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'admin@admin.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'Login', 4, 1, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
@@ -5784,7 +5784,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations: ~15 rows (approximately)
+-- Dumping data for table manager_main.financial_operations: ~19 rows (approximately)
 INSERT INTO `financial_operations` (`id`, `financial_operation_category_id`, `type`, `total_value`, `user_id`, `created`, `modified`) VALUES
 	(3, 2, 'DEBIT', 15511.89, 1, '2026-06-17 19:46:28', '2026-06-30 21:53:59'),
 	(4, 1, 'CREDIT', 63140.88, 1, '2026-06-17 19:47:16', '2026-07-02 00:11:55'),
@@ -5816,7 +5816,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_categories: ~26 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_categories: ~29 rows (approximately)
 INSERT INTO `financial_operations_categories` (`id`, `name`, `description`, `created`, `modified`) VALUES
 	(1, 'Receita', 'Salário', '2026-06-16 22:43:04', '2026-06-17 19:45:23'),
 	(2, 'Moradia', 'Aluguel', '2026-06-16 22:43:50', '2026-06-17 19:44:58'),
@@ -5863,7 +5863,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=186 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.financial_operations_payments: ~149 rows (approximately)
+-- Dumping data for table manager_main.financial_operations_payments: ~162 rows (approximately)
 INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `type`, `value`, `payment_date`, `due_date`, `created`, `modified`) VALUES
 	(13, 3, 'PIX', 1300.00, NULL, '2026-01-09', '2026-06-17 19:46:28', '2026-06-17 19:46:28'),
 	(14, 3, 'PIX', 1300.00, NULL, '2026-02-09', '2026-06-17 19:46:28', '2026-06-17 19:46:28'),
@@ -6032,12 +6032,12 @@ INSERT INTO `financial_operations_payments` (`id`, `financial_operation_id`, `ty
 CREATE TABLE IF NOT EXISTS `internal_chats` (
   `id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
-  `tenant_database_number` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `chat_type` enum('direct','group') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'direct',
-  `title` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `conversation_key` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tenant_database_number` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `chat_type` enum('direct','group') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'direct',
+  `title` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `conversation_key` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_by_user_id` int NOT NULL,
-  `status` enum('active','archived') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `status` enum('active','archived') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `last_message_at` datetime DEFAULT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -6050,7 +6050,7 @@ CREATE TABLE IF NOT EXISTS `internal_chats` (
   CONSTRAINT `fk_internal_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.internal_chats: ~1 rows (approximately)
+-- Dumping data for table manager_main.internal_chats: ~0 rows (approximately)
 INSERT INTO `internal_chats` (`id`, `tenant_id`, `tenant_database_number`, `chat_type`, `title`, `conversation_key`, `created_by_user_id`, `status`, `last_message_at`, `created`, `modified`) VALUES
 	(1, 1, '0001', 'direct', NULL, 'tenant:1:direct:2:6', 2, 'active', '2026-06-29 17:40:36', '2026-06-29 17:29:03', '2026-06-29 17:40:36');
 
@@ -6059,8 +6059,8 @@ CREATE TABLE IF NOT EXISTS `internal_chat_messages` (
   `id` int NOT NULL AUTO_INCREMENT,
   `internal_chat_id` int NOT NULL,
   `sender_user_id` int NOT NULL,
-  `sender_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message_text` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sender_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_internal_chat_messages_chat_id` (`internal_chat_id`,`id`),
@@ -6102,21 +6102,21 @@ INSERT INTO `internal_chat_participants` (`internal_chat_id`, `user_id`, `joined
 -- Dumping structure for table manager_main.logs
 CREATE TABLE IF NOT EXISTS `logs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `event_uuid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `event_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `tenant_id` int DEFAULT NULL,
-  `tenant_database` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tenant_name_snapshot` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `module` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `action` enum('create','update','delete','login','logout','list') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `entity_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `entity_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tenant_database` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tenant_name_snapshot` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `action` enum('create','update','delete','login','logout','list') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `entity_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `entity_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `performed_by_user_id` int DEFAULT NULL,
-  `performed_by_username` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `performed_by_name` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `request_method` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `route` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `performed_by_username` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `performed_by_name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `route` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `occurred_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `before_data` json DEFAULT NULL,
   `after_data` json DEFAULT NULL,
@@ -6133,9 +6133,9 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=421 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=423 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.logs: ~334 rows (approximately)
+-- Dumping data for table manager_main.logs: ~400 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
 	(4, '9f44f17d-f453-4bfd-b416-0181bae55efa', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '10', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/10', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:12:07', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tal", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-24 00:45:29", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tals", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-25 20:12:07", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "from": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}]}, "person": {"name": {"to": "Fulano de Tals", "from": "Fulano de Tal"}, "modified": {"to": "2026-06-25 20:12:07", "from": "2026-06-24 00:45:29"}}, "addresses": {"to": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/10"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:12:07', '2026-06-25 20:12:07'),
 	(5, '6b0c687a-87cf-43f8-9b83-ab970b2aeef4', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '4', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:17:03', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-01 22:34:47", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-25 20:17:03", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "from": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}]}, "person": {"modified": {"to": "2026-06-25 20:17:03", "from": "2026-06-01 22:34:47"}}, "phones": {"to": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "from": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}]}, "addresses": {"to": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/4"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:17:03', '2026-06-25 20:17:03'),
@@ -6554,7 +6554,9 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(417, 'dfd9d710-fcef-4b39-9e97-d94428fa4b0e', 1, 'manager_0001', 'Tenant 0001', 'auth', 'logout', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-12 22:23:08', '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-12 22:23:08', '2026-07-12 22:23:08'),
 	(418, '5bbe702b-7122-4dee-a79e-1eca179216e9', 6, 'manager_0006', 'Tenant 0006', 'auth', 'login', 'users', '13', 13, 'maika.monroe', 'Maika Monroe', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-12 22:23:27', NULL, '{"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}', '{"to": {"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-12 22:23:27', '2026-07-12 22:23:27'),
 	(419, '57b6fefd-4696-4da9-842e-dfa93f1564b3', 6, 'manager_0006', 'Tenant 0006', 'person', 'list', 'people', NULL, 13, 'maika.monroe', 'Maika Monroe', 'GET', 'person', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-12 22:23:49', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"url": "person"}, "filters_applied": false, "response_format": "html"}', '2026-07-12 22:23:49', '2026-07-12 22:23:49'),
-	(420, 'e467852b-573b-431f-86f0-165b62b3dcc5', 6, 'manager_0006', 'Tenant 0006', 'auth', 'logout', 'users', '13', 13, 'maika.monroe', 'Maika Monroe', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-12 22:24:01', '{"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}', NULL, '{"to": null, "from": {"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-12 22:24:01', '2026-07-12 22:24:01');
+	(420, 'e467852b-573b-431f-86f0-165b62b3dcc5', 6, 'manager_0006', 'Tenant 0006', 'auth', 'logout', 'users', '13', 13, 'maika.monroe', 'Maika Monroe', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-12 22:24:01', '{"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}', NULL, '{"to": null, "from": {"id": 13, "name": "Maika Monroe", "type": "admin", "email": "maika@monroe.com", "username": "maika.monroe", "tenant_id": 6}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-12 22:24:01', '2026-07-12 22:24:01'),
+	(421, '10e4eff3-8923-42b7-bb7d-a12f27f30370', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-14 20:12:57', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-14 20:12:57', '2026-07-14 20:12:57'),
+	(422, '51f918fe-296e-4229-891e-021b27650411', 1, 'manager_0001', 'Tenant 0001', 'schedule', 'list', 'schedule_events', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'schedule', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-14 20:16:45', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "schedule"}, "filters_applied": false, "response_format": "html"}', '2026-07-14 20:16:45', '2026-07-14 20:16:45');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6566,9 +6568,9 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18028 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18029 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~17 325 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~18 232 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -24594,7 +24596,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18024, 'Paese', 4542, '2026-07-09 13:23:31', '2026-07-09 13:23:31'),
 	(18025, 'Maresia', 4542, '2026-07-09 13:23:54', '2026-07-09 13:23:54'),
 	(18026, 'Centro', 4542, '2026-07-09 13:25:03', '2026-07-09 13:25:03'),
-	(18027, 'Área Rural de Pomerode', 4614, '2026-07-09 13:29:33', '2026-07-09 13:29:33');
+	(18027, 'Área Rural de Pomerode', 4614, '2026-07-09 13:29:33', '2026-07-09 13:29:33'),
+	(18028, 'Itaió', 4538, '2026-07-14 22:07:28', '2026-07-14 22:07:28');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -24611,7 +24614,7 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~5 rows (approximately)
+-- Dumping data for table manager_main.people: ~10 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(4, 'Emma Watson', 'Emma Watson', 'company', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
@@ -24636,7 +24639,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.permissions: ~274 rows (approximately)
+-- Dumping data for table manager_main.permissions: ~341 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
 	(7, 'person.index', 'manager_main', 'Listar pessoas', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
 	(8, 'person.create', 'manager_main', 'Exibir formulário de criação de pessoa', '2025-12-28 09:23:21', '2025-12-28 09:23:21'),
@@ -24993,7 +24996,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
+-- Dumping data for table manager_main.phone_numbers: ~7 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(1, '554930331033', 'Comercial', 4, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
 	(5, '5566777889999', 'Celular', 9, '2026-06-23 00:14:54', '2026-06-23 00:14:54'),
@@ -25182,7 +25185,7 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~2 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~6 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
 	(2, '0002', 'active', 'Banco da Kristen Stewart', '2026-06-23 00:14:54', '2026-06-23 00:14:54'),
@@ -25204,7 +25207,7 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~1 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~9 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
 	(1, 6, 'admin', '2026-06-19 22:42:37', '2026-06-19 22:42:37'),
@@ -25235,7 +25238,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.users: ~9 rows (approximately)
+-- Dumping data for table manager_main.users: ~10 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'douglas.costa', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
 	(2, 4, 1, 'emma.watson', '$2y$12$Khyya83myBcKkftWu4AMIu6.uGdt5BoBcBIq/tRK8wn3aGPPWM2pe', 'admin', 1, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
@@ -25260,7 +25263,7 @@ CREATE TABLE IF NOT EXISTS `user_permissions` (
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_permissions: ~1 081 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~1 326 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-06-25 20:08:34', '2026-06-25 20:08:34'),
 	(1, 8, '2026-06-25 20:08:34', '2026-06-25 20:08:34'),
@@ -26605,27 +26608,29 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   KEY `idx_user_remember_tokens_user` (`user_id`),
   KEY `idx_user_remember_tokens_expires` (`expires_at`),
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.user_remember_tokens: ~4 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(3, 1, '905a7df5beae6bb5a81499b60591bf8e', '1e0e3daa52c36a5977a17e734340e2c79b3d8c286c2c0e4985be6203ffb82a80', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1 OPT/6.5.2', '172.18.0.1', '2026-07-16 22:48:07', '2026-06-16 22:48:07', NULL),
 	(4, 1, '1ab58a491af7c8c2160a37e11a6a11b5', 'a6507617840e8aa70992966684af3bd48fa73fe2be9b96ab88a7e7e99431de63', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-19 11:06:13', '2026-06-16 23:05:33', '2026-06-19 11:06:13'),
 	(8, 1, '5a2397e38fd116df2976165421440be8', 'd18ef4703a0c4c0f838c2e6cc0705a0660e9fe0518d7f441380ae0343c0cd1d3', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-07-29 21:02:25', '2026-06-29 21:02:25', NULL),
-	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03');
+	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
+	(12, 1, 'd08be8bc2fcd7c8595852afaba0c3a2e', '3ded9c7ae99afe08a40f67a3b011ed89deae8a8a61d78748de8b945d2c7b8f60', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-13 20:10:23', '2026-07-14 20:10:23', NULL),
+	(13, 1, '29e5ce28596ca1ea8139846902d796e9', '384f910739f9a3789ab33a858b41cb01db324d13f7ac51b3b9826c2e716567da', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-13 21:48:14', '2026-07-14 21:48:14', NULL);
 
 -- Dumping structure for table manager_main.webcrawler_ip_ranges
 CREATE TABLE IF NOT EXISTS `webcrawler_ip_ranges` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `country_code` char(2) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `country_name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `start_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `end_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country_code` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `start_ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `end_ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `start_ip_number` bigint unsigned NOT NULL,
   `end_ip_number` bigint unsigned NOT NULL,
   `ip_count` bigint unsigned NOT NULL,
-  `source` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `source_reference` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_reference` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
@@ -26636,7 +26641,7 @@ CREATE TABLE IF NOT EXISTS `webcrawler_ip_ranges` (
   KEY `idx_webcrawler_ip_ranges_active` (`active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12923 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.webcrawler_ip_ranges: ~12 783 rows (approximately)
+-- Dumping data for table manager_main.webcrawler_ip_ranges: ~12 922 rows (approximately)
 INSERT INTO `webcrawler_ip_ranges` (`id`, `country_code`, `country_name`, `start_ip`, `end_ip`, `start_ip_number`, `end_ip_number`, `ip_count`, `source`, `source_reference`, `active`, `created`, `modified`) VALUES
 	(1, 'BR', 'Brasil', '93.158.236.0', '93.158.239.255', 1570696192, 1570697215, 1024, 'ripencc', 'https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest|2008-05-30', 1, '2026-06-23 00:56:02', '2026-06-23 00:56:02'),
 	(2, 'BR', 'Brasil', '185.30.164.0', '185.30.167.255', 3105793024, 3105794047, 1024, 'ripencc', 'https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest|2013-07-11', 1, '2026-06-23 00:56:02', '2026-06-23 00:56:02'),
@@ -39568,10 +39573,10 @@ INSERT INTO `webcrawler_ip_ranges` (`id`, `country_code`, `country_name`, `start
 CREATE TABLE IF NOT EXISTS `webcrawler_ip_range_executions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
-  `range_mode` enum('amount','manual','country') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `country_code` char(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `start_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `end_ip` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `range_mode` enum('amount','manual','country') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country_code` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `start_ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `end_ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `generated_ip_count` int unsigned NOT NULL DEFAULT '0',
   `target_total` int unsigned NOT NULL DEFAULT '0',
   `processed_total` int unsigned NOT NULL DEFAULT '0',
@@ -39579,13 +39584,13 @@ CREATE TABLE IF NOT EXISTS `webcrawler_ip_range_executions` (
   `found_total` int unsigned NOT NULL DEFAULT '0',
   `matched_total` int unsigned NOT NULL DEFAULT '0',
   `failed_total` int unsigned NOT NULL DEFAULT '0',
-  `keywords` text COLLATE utf8mb4_unicode_ci,
-  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `timeout_ms` int unsigned NOT NULL DEFAULT '3000',
   `concurrency` int unsigned NOT NULL DEFAULT '10',
   `skip_existing` tinyint(1) NOT NULL DEFAULT '1',
-  `status` enum('running','completed','failed','stopped') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'running',
-  `message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('running','completed','failed','stopped') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'running',
+  `message` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `started_at` datetime DEFAULT NULL,
   `finished_at` datetime DEFAULT NULL,
   `created` datetime NOT NULL,
@@ -39598,7 +39603,7 @@ CREATE TABLE IF NOT EXISTS `webcrawler_ip_range_executions` (
   CONSTRAINT `fk_webcrawler_ip_range_executions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.webcrawler_ip_range_executions: ~15 rows (approximately)
+-- Dumping data for table manager_main.webcrawler_ip_range_executions: ~0 rows (approximately)
 INSERT INTO `webcrawler_ip_range_executions` (`id`, `user_id`, `range_mode`, `country_code`, `start_ip`, `end_ip`, `generated_ip_count`, `target_total`, `processed_total`, `skipped_total`, `found_total`, `matched_total`, `failed_total`, `keywords`, `user_agent`, `timeout_ms`, `concurrency`, `skip_existing`, `status`, `message`, `started_at`, `finished_at`, `created`, `modified`) VALUES
 	(1, 1, 'country', 'BR', '24.152.0.0', '24.152.1.243', 500, 1000, 0, 0, 0, 0, 0, 'vidraçaria', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36', 500, 200, 1, 'completed', 'Pesquisa finalizada.', '2026-06-23 00:56:38', '2026-06-23 00:56:41', '2026-06-23 00:56:38', '2026-06-23 01:36:57'),
 	(2, 1, 'country', 'BR', '24.152.0.0', '24.152.1.243', 500, 1000, 0, 0, 0, 0, 0, NULL, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36', 500, 200, 1, 'completed', 'Pesquisa finalizada.', '2026-06-23 00:57:09', '2026-06-23 00:57:12', '2026-06-23 00:57:09', '2026-06-23 01:36:57'),
@@ -39625,27 +39630,27 @@ CREATE TABLE IF NOT EXISTS `webcrawler_ip_range_results` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `execution_id` bigint unsigned DEFAULT NULL,
   `user_id` int DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ip_number` bigint unsigned NOT NULL,
-  `protocol` enum('http','https') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `protocol` enum('http','https') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `port` smallint unsigned NOT NULL,
-  `url` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `url_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `url` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `url_hash` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `http_status` smallint unsigned NOT NULL DEFAULT '0',
-  `scan_status` enum('found','not_found','timeout','error','skipped') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_found',
+  `scan_status` enum('found','not_found','timeout','error','skipped') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_found',
   `curl_errno` smallint unsigned NOT NULL DEFAULT '0',
-  `curl_error` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `page_description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `content_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `curl_error` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `page_description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `content_length` bigint unsigned NOT NULL DEFAULT '0',
   `body_size` int unsigned NOT NULL DEFAULT '0',
   `keyword_matched` tinyint(1) NOT NULL DEFAULT '0',
-  `matched_keywords` text COLLATE utf8mb4_unicode_ci,
-  `snippet` text COLLATE utf8mb4_unicode_ci,
+  `matched_keywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `snippet` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `response_time_ms` int unsigned NOT NULL DEFAULT '0',
-  `redirect_url` varchar(2048) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `server_header` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `redirect_url` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `server_header` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `checked_at` datetime NOT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
@@ -39663,7 +39668,7 @@ CREATE TABLE IF NOT EXISTS `webcrawler_ip_range_results` (
   CONSTRAINT `fk_webcrawler_ip_range_results_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=20532 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.webcrawler_ip_range_results: ~7 215 rows (approximately)
+-- Dumping data for table manager_main.webcrawler_ip_range_results: ~8 106 rows (approximately)
 INSERT INTO `webcrawler_ip_range_results` (`id`, `execution_id`, `user_id`, `ip_address`, `ip_number`, `protocol`, `port`, `url`, `url_hash`, `http_status`, `scan_status`, `curl_errno`, `curl_error`, `title`, `page_description`, `content_type`, `content_length`, `body_size`, `keyword_matched`, `matched_keywords`, `snippet`, `response_time_ms`, `redirect_url`, `server_header`, `checked_at`, `created`, `modified`) VALUES
 	(1, 3, 1, '24.152.2.8', 412615176, 'http', 80, 'http://24.152.2.8:80/', '70ac5cad9d49c7a3798181e67d105d4a0e9ccf3f083b3169f9604ed09cebb7b7', 200, 'found', 0, NULL, 'nPerfServer', '', 'text/html; charset=utf8', 198, 198, 0, NULL, 'nPerfServer nPerfServernPerfServerRunning OK!nPerfServer v2.2.10 2025-10-06', 202, NULL, 'nPerf/2.2.10 2025-10-06', '2026-06-23 01:00:51', '2026-06-23 01:00:51', '2026-06-23 01:00:51'),
 	(2, 3, 1, '24.152.2.8', 412615176, 'https', 443, 'https://24.152.2.8:443/', 'c9d8e8233906fae012ff2d9d3bf6b4b576790bbb3e390ea0f78f68db9caffdb7', 200, 'found', 0, NULL, 'nPerfServer', '', 'text/html; charset=utf8', 198, 198, 0, NULL, 'nPerfServer nPerfServernPerfServerRunning OK!nPerfServer v2.2.10 2025-10-06', 389, NULL, 'nPerf/2.2.10 2025-10-06', '2026-06-23 01:00:51', '2026-06-23 01:00:51', '2026-06-23 01:00:51'),
