@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\City;
+use App\Models\Country;
+use App\Models\State;
 
 class CityController extends Controller
 	{
@@ -57,8 +59,24 @@ class CityController extends Controller
 			]);
 			}
 
+		// Countries available in the first dependent filter.
+		$countries = (new Country())->getAll();
+		usort($countries, static function (array $left, array $right): int
+			{
+			return strnatcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+			});
+
+		// States available for the country restored from the current filters.
+		$states = [];
+		if ($filters['country_id'] !== '')
+			{
+			$states = (new State())->getAllByCountryId((int) $filters['country_id']);
+			}
+
 		$this->view('cities/index', [
 			'cities'     => $cities,
+			'countries'  => $countries,
+			'states'     => $states,
 			'title'      => 'Lista de cidades',
 			'filters'    => $filters,
 			'page'       => $page,
@@ -184,6 +202,28 @@ class CityController extends Controller
 			}, $rows);
 
 		$this->json(['items' => $items]);
+		}
+
+	/**
+	 * Return the states that belong to the selected country.
+	 * @return void
+	 **/
+	public function getStatesByCountry(): void
+		{
+		$this->requirePermission('city.index');
+
+		// Country identifier received from the dependent select.
+		$countryId = isset($_GET['country_id']) ? (int) $_GET['country_id'] : 0;
+
+		if ($countryId <= 0)
+			{
+			$this->json(['states' => []]);
+			}
+
+		// States used to populate the second dependent select.
+		$states = (new State())->getAllByCountryId($countryId);
+
+		$this->json(['states' => $states]);
 		}
 
 	/**

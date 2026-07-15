@@ -7,6 +7,7 @@
 
   function setValue(id, value)
     {
+    // Form element whose value must be updated.
     const element = byId(id);
     if (element)
       {
@@ -14,65 +15,120 @@
       }
     }
 
+  function resetSelect(select, placeholder)
+    {
+    select.replaceChildren(new Option(placeholder, ''));
+    }
+
   function clearCity()
     {
     setValue('id', '');
-    setValue('name', '');
-    }
 
-  function clearState()
-    {
-    setValue('state_id', '');
-    setValue('stateName', '');
-    clearCity();
-    }
-
-  const countryName = byId('countryName');
-  const stateName = byId('stateName');
-  const cityName = byId('name');
-
-  if (countryName)
-    {
-    countryName.addEventListener('input', clearState);
-    countryName.addEventListener('autocomplete:selected', clearState);
-    }
-
-  if (stateName)
-    {
-    stateName.addEventListener('input', clearCity);
-    stateName.addEventListener('autocomplete:selected', function (event)
+    if (cityName)
       {
-      const item = event.detail || {};
-      const countryId = byId('country_id');
+      cityName.value = '';
+      cityName.dispatchEvent(new Event('input'));
+      cityName.disabled = !stateSelect || !stateSelect.value;
+      }
+    }
 
-      if (item.country_id && countryId && !countryId.value)
+  async function loadStates(countryId)
+    {
+    if (!countrySelect || !stateSelect)
+      {
+      return;
+      }
+
+    if (statesAbort)
+      {
+      statesAbort.abort();
+      }
+
+    resetSelect(stateSelect, countryId ? 'Carregando estados...' : 'Estado');
+    stateSelect.disabled = true;
+    clearCity();
+
+    if (!countryId || !countrySelect.dataset.statesEndpoint)
+      {
+      return;
+      }
+
+    statesAbort = new AbortController();
+
+    try
+      {
+      // Endpoint URL scoped to the selected country.
+      const url = new URL(countrySelect.dataset.statesEndpoint, window.location.origin);
+      url.searchParams.set('country_id', countryId);
+
+      // JSON response containing the states for the selected country.
+      const response = await fetch(url.toString(), {
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        signal: statesAbort.signal
+      });
+
+      if (!response.ok)
         {
-        setValue('country_id', item.country_id);
-        setValue('countryName', item.country_name);
+        throw new Error('HTTP ' + response.status);
         }
 
-      clearCity();
+      // Parsed response payload.
+      const data = await response.json();
+      // Valid state collection returned by the endpoint.
+      const states = Array.isArray(data.states) ? data.states : [];
+
+      resetSelect(stateSelect, states.length ? 'Estado' : 'Nenhum estado encontrado');
+
+      states.forEach(function (state)
+        {
+        // Select option for the current state.
+        const option = new Option(state.name || '', state.id || '');
+        stateSelect.appendChild(option);
+        });
+
+      stateSelect.disabled = states.length === 0;
+      }
+    catch (error)
+      {
+      if (error && error.name === 'AbortError')
+        {
+        return;
+        }
+
+      resetSelect(stateSelect, 'Não foi possível carregar os estados');
+      console.error('Erro ao carregar estados:', error);
+      }
+    }
+
+  // Country filter that controls the available states.
+  const countrySelect = byId('country_id');
+  // State filter used by the city autocomplete.
+  const stateSelect = byId('state_id');
+  // City autocomplete enabled after selecting a state.
+  const cityName = byId('name');
+  // Active states request, aborted when the country changes again.
+  let statesAbort = null;
+
+  if (countrySelect)
+    {
+    countrySelect.addEventListener('change', function ()
+      {
+      loadStates(this.value);
       });
+    }
+
+  if (stateSelect)
+    {
+    stateSelect.addEventListener('change', clearCity);
     }
 
   if (cityName)
     {
-    cityName.addEventListener('autocomplete:selected', function (event)
-      {
-      const item = event.detail || {};
-
-      if (item.country_id)
-        {
-        setValue('country_id', item.country_id);
-        setValue('countryName', item.country_name);
-        }
-
-      if (item.state_id)
-        {
-        setValue('state_id', item.state_id);
-        setValue('stateName', item.state_name);
-        }
-      });
+    cityName.disabled = !stateSelect || !stateSelect.value;
     }
 
   const deleteModal = byId('deleteModal');

@@ -29,6 +29,13 @@
       return;
       }
 
+    // Original list parent used to restore the element after it closes.
+    const listParent = list.parentNode;
+    // Original next sibling used to preserve the list position in the DOM.
+    const listNextSibling = list.nextSibling;
+    // Whether the list must escape containers that clip positioned content.
+    const portalToBody = input.dataset.autocompletePortal === 'body';
+
     let hidden = null;
     if (hiddenSelector)
       {
@@ -49,28 +56,58 @@
     let lastAbort = null;
     let activeIndex = -1;
     let itemsCache = [];
+    // Sequence used to ignore responses from outdated input events.
+    let requestSequence = 0;
+
+    function restoreListParent()
+      {
+      if (!portalToBody || !listParent || list.parentNode === listParent)
+        {
+        return;
+        }
+
+      if (listNextSibling && listNextSibling.parentNode === listParent)
+        {
+        listParent.insertBefore(list, listNextSibling);
+        return;
+        }
+
+      listParent.appendChild(list);
+      }
 
     function clearList()
       {
       list.innerHTML = '';
       list.removeAttribute('style');
+      restoreListParent();
       activeIndex = -1;
       itemsCache = [];
       }
 
     function positionList()
       {
+      if (portalToBody && list.parentNode !== document.body)
+        {
+        document.body.appendChild(list);
+        }
+
       const rect = input.getBoundingClientRect();
-      const maxH = window.innerHeight - rect.bottom - 8;
+      const listTop = rect.bottom + (portalToBody ? 4 : 0);
+      const maxH = window.innerHeight - listTop - 8;
 
       list.style.setProperty('position',   'fixed',                          'important');
-      list.style.setProperty('top',        rect.bottom + 'px',               'important');
+      list.style.setProperty('top',        listTop + 'px',                    'important');
       list.style.setProperty('left',       rect.left + 'px',                 'important');
       list.style.setProperty('width',      rect.width + 'px',                'important');
       list.style.setProperty('max-height', Math.min(240, maxH) + 'px',       'important');
       list.style.setProperty('overflow-y', 'auto',                           'important');
       list.style.setProperty('overflow-x', 'hidden',                         'important');
       list.style.setProperty('z-index',    '1050',                           'important');
+
+      if (portalToBody)
+        {
+        list.style.setProperty('margin-top', '0', 'important');
+        }
       }
 
     function setActive(index)
@@ -203,9 +240,17 @@
 
     input.addEventListener('input', async () =>
       {
+      // Identifier of the input event currently loading suggestions.
+      const currentSequence = ++requestSequence;
       const term = input.value.trim();
 
       clearList();
+
+      if (lastAbort)
+        {
+        lastAbort.abort();
+        lastAbort = null;
+        }
 
       if (hidden)
         {
@@ -217,7 +262,15 @@
         return;
         }
 
-      itemsCache = await fetchItems(term);
+      // Suggestions returned for this specific input value.
+      const fetchedItems = await fetchItems(term);
+
+      if (currentSequence !== requestSequence)
+        {
+        return;
+        }
+
+      itemsCache = fetchedItems;
 
       itemsCache.forEach((item, idx) =>
         {

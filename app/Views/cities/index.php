@@ -1,11 +1,9 @@
 <?php
 $filters = array_merge([
-  'id'           => '',
-  'name'         => '',
-  'country_id'   => '',
-  'country_name' => '',
-  'state_id'     => '',
-  'state_name'   => '',
+  'id'         => '',
+  'name'       => '',
+  'country_id' => '',
+  'state_id'   => '',
 ], $filters ?? []);
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
@@ -13,12 +11,10 @@ $total = $total ?? (is_array($cities) ? count($cities) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
 
 $queryFilters = http_build_query([
-  'id'           => $filters['id'],
-  'name'         => $filters['name'],
-  'country_id'   => $filters['country_id'],
-  'country_name' => $filters['country_name'],
-  'state_id'     => $filters['state_id'],
-  'state_name'   => $filters['state_name'],
+  'id'         => $filters['id'],
+  'name'       => $filters['name'],
+  'country_id' => $filters['country_id'],
+  'state_id'   => $filters['state_id'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
 ?>
@@ -42,20 +38,26 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-6 position-relative">
-        <input type="hidden" id="country_id" name="country_id" value="<?= htmlspecialchars($filters['country_id'], ENT_QUOTES, 'UTF-8') ?>">
-        <input id="countryName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="País" name="country_name" data-endpoint="<?= url('country/autocomplete'); ?>" data-results="#countryResults" data-hidden="#country_id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['country_name'], ENT_QUOTES, 'UTF-8') ?>">
-        <ul id="countryResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <div class="col-12 col-md-6 col-lg-6">
+        <select class="form-select" id="country_id" name="country_id" aria-label="País" data-states-endpoint="<?= url('city/getStatesByCountry'); ?>">
+          <option value="">País</option>
+          <?php foreach ($countries ?? [] as $country): ?>
+            <option value="<?= (int) $country['id'] ?>" <?= (string) $filters['country_id'] === (string) $country['id'] ? 'selected' : '' ?>><?= htmlspecialchars($country['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
-      <div class="col-12 col-md-6 col-lg-6 position-relative">
-        <input type="hidden" id="state_id" name="state_id" value="<?= htmlspecialchars($filters['state_id'], ENT_QUOTES, 'UTF-8') ?>">
-        <input id="stateName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Estado" name="state_name" data-endpoint="<?= url('state/autocomplete'); ?>" data-results="#stateResults" data-hidden="#state_id" data-minlen="1" data-param="term" data-extra='{"country_id":"#country_id","country_name":"#countryName"}' value="<?= htmlspecialchars($filters['state_name'], ENT_QUOTES, 'UTF-8') ?>">
-        <ul id="stateResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <div class="col-12 col-md-6 col-lg-6">
+        <select class="form-select" id="state_id" name="state_id" aria-label="Estado" <?= $filters['country_id'] === '' ? 'disabled' : '' ?>>
+          <option value="">Estado</option>
+          <?php foreach ($states ?? [] as $state): ?>
+            <option value="<?= (int) $state['id'] ?>" <?= (string) $filters['state_id'] === (string) $state['id'] ? 'selected' : '' ?>><?= htmlspecialchars($state['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <div class="col-12 col-md-6 col-lg-12 position-relative">
-        <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Cidade" name="name" data-endpoint="<?= url('city/autocomplete'); ?>" data-results="#cityResults" data-hidden="#id" data-minlen="1" data-param="term" data-extra='{"country_id":"#country_id","country_name":"#countryName","state_id":"#state_id","state_name":"#stateName"}' value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <input id="name" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Cidade" name="name" data-endpoint="<?= url('city/autocomplete'); ?>" data-results="#cityResults" data-hidden="#id" data-minlen="1" data-param="term" data-extra='{"state_id":"#state_id"}' data-autocomplete-portal="body" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>" <?= $filters['state_id'] === '' ? 'disabled' : '' ?>>
         <ul id="cityResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
       </div>
 
@@ -151,5 +153,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
-<script src="<?= url('assets/js/cities/index.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/autocomplete.js?v=4'); ?>"></script>
+<script src="<?= url('assets/js/cities/index.js?v=2'); ?>"></script>
