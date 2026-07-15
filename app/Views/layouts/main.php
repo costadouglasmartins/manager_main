@@ -12,16 +12,16 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
       document.documentElement.setAttribute("data-bs-theme", savedTheme);
     })();
   </script>
-  <link rel="stylesheet" href="<?= url('assets/css/bootstrap.min.css'); ?>">
-  <link rel="stylesheet" href="<?= url('assets/images/bootstrap-icons.min.css'); ?>">
+  <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?= url('assets/css/main.css?v=5'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=4'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
   <?php endif; ?>
-  <link rel="apple-touch-icon" sizes="180x180" href="<?= url('assets/images/apple-touch-icon.png'); ?>">
-  <link rel="icon" type="image/png" sizes="32x32" href="<?= url('assets/images/favicon-32x32.png'); ?>">
-  <link rel="icon" type="image/png" sizes="16x16" href="<?= url('assets/images/favicon-16x16.png'); ?>">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/bootstrap/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/bootstrap/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/bootstrap/images/favicon-16x16.png">
   <link rel="manifest" href="<?= url('/site.webmanifest'); ?>">
   <title>Manager - <?=$title?></title>
 </head>
@@ -31,7 +31,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
     <div class="container-fluid">
       <a class="navbar-brand d-flex align-items-center" href="<?= url('/'); ?>">
         <!--<i class="bi bi-boxes me-2"></i>-->
-        <img src="<?= url('/assets/images/favicon-32x32.png'); ?>">
+        <img src="/assets/bootstrap/images/favicon-32x32.png">
       </a>
 
       <!-- Botão toggle mobile -->
@@ -361,7 +361,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
     <?= $content ?>
   </div>
   
-  <script src="<?= url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
+  <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="<?= url('assets/js/menu.js?v=3'); ?>"></script>
   <script src="<?= url('assets/js/helper.js?v=2'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=2'); ?>"></script>
