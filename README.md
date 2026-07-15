@@ -3,6 +3,17 @@ Manager System
 - Apenas para usuários root;
 - Este é a administração para todos os outros sistemas.
 
+## Dependências compartilhadas
+
+As dependências PHP deste sistema são centralizadas no diretório `assets`, localizado no mesmo nível de `manager_main` e `manager`. Instale-as uma única vez:
+
+```sh
+cd ../assets
+composer install --no-dev --optimize-autoloader
+```
+
+O caminho pode ser substituído pela variável de ambiente `SHARED_ASSETS_PATH`. O `composer.json`, o `composer.lock` e o diretório `vendor` não são mantidos dentro deste projeto.
+
 # Regras de programação do projeto
 
 Este documento registra as convenções de desenvolvimento que devem ser seguidas neste projeto.
