@@ -16,6 +16,8 @@ use PDO;
  */
 class Person extends Model
 	{
+	public const PROTECTED_PERSON_IDS = [3, 4];
+
 	/**
 	 * Returns sortable columns for list queries.
 	 *
@@ -1549,14 +1551,20 @@ class Person extends Model
 	 */
 	public function delete($id): void
 		{
+		$personId = (int) $id;
+		if (in_array($personId, self::PROTECTED_PERSON_IDS, true))
+			{
+			throw new \RuntimeException('Esta pessoa é protegida e não pode ser excluída.');
+			}
+
 		try
 			{
-			$beforeData = $this->findAllByPersonId($id);
+			$beforeData = $this->findAllByPersonId($personId);
 			$this->db->beginTransaction();
 
 			// Load users first so their pivot/dependency rows can be removed.
 			$stmt = $this->db->prepare("SELECT id FROM users WHERE person_id = :id");
-			$stmt->execute(['id' => $id]);
+			$stmt->execute(['id' => $personId]);
 			$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 			// Remove dependencies owned by each user before deleting the users.
@@ -1575,22 +1583,22 @@ class Person extends Model
 
 			// Delete users after their dependency rows have been removed.
 			$stmt = $this->db->prepare("DELETE FROM users WHERE person_id = :id");
-			$stmt->execute(['id' => $id]);
+			$stmt->execute(['id' => $personId]);
 
 			// Delete child rows that directly reference the person.
 			$stmt = $this->db->prepare("DELETE FROM addresses WHERE person_id = :id");
-			$stmt->execute(['id' => $id]);
+			$stmt->execute(['id' => $personId]);
 
 			$stmt = $this->db->prepare("DELETE FROM emails WHERE person_id = :id");
-			$stmt->execute(['id' => $id]);
+			$stmt->execute(['id' => $personId]);
 
 			$stmt = $this->db->prepare("DELETE FROM phone_numbers WHERE person_id = :id");
-			$stmt->execute(['id' => $id]);
+			$stmt->execute(['id' => $personId]);
 
 			// Delete the person record last.
 			$stmt = $this->db->prepare("DELETE FROM people WHERE id = :id");
-			$stmt->execute(['id' => $id]);
-			$this->auditDelete('person', 'people', $id, $beforeData, [
+			$stmt->execute(['id' => $personId]);
+			$this->auditDelete('person', 'people', $personId, $beforeData, [
 				'affected_tables' => ['people', 'users', 'user_permissions', 'tenant_users', 'addresses', 'emails', 'phone_numbers'],
 			]);
 

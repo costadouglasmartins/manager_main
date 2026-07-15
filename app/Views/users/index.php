@@ -5,6 +5,7 @@ $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($users) ? count($users) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
+$protectedUserIds = \App\Models\User::PROTECTED_USER_IDS;
 
 // Create an array of filters to use on pagination
 $queryFilters = http_build_query([
@@ -146,15 +147,27 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
           <td><?= $user['type']; ?></td>
 					<td class="text-nowrap text-end">
 						<?php if (authCan('user.edit')): ?>
-							<a href="<?= url('user/edit/' . $user['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+							<?php if (in_array((int) $user['id'], $protectedUserIds, true)): ?>
+								<button class="btn btn-sm btn-link p-0 text-warning" type="button" data-bs-toggle="modal" data-bs-target="#protectedEditModal" data-id="<?= (int) $user['id'] ?>" data-name="<?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>" title="Editar com senha de proteção" aria-label="Editar usuário protegido">
+									<i class="bi bi-pencil-square"></i>
+								</button>
+							<?php else: ?>
+								<a href="<?= url('user/edit/' . $user['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+							<?php endif; ?>
 						<?php endif; ?>
 						<?php if (authCan('user.informations')): ?>
 							<a href="<?= url('user/informations/' . $user['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
 						<?php endif; ?>
 						<?php if (authCan('user.delete')): ?>
-							<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $user['id'] ?>" data-name="<?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>">
-								<i class="bi bi-trash"></i>
-							</button>
+							<?php if (in_array((int) $user['id'], $protectedUserIds, true)): ?>
+								<button class="btn btn-sm btn-secondary" type="button" disabled title="Este usuário é protegido e não pode ser excluído" aria-label="Usuário protegido contra exclusão">
+									<i class="bi bi-shield-lock"></i>
+								</button>
+							<?php else: ?>
+								<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $user['id'] ?>" data-name="<?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>">
+									<i class="bi bi-trash"></i>
+								</button>
+							<?php endif; ?>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -179,22 +192,80 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 <?php endif; ?>
 <!-- /Pagination -->
 
+<!-- Protected Edit Authorization Modal -->
+<div class="modal fade" id="protectedEditModal" tabindex="-1" aria-labelledby="protectedEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content border-warning">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title" id="protectedEditModalLabel">Liberar edição protegida</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="POST" action="#" id="protectedEditForm" data-authorization-base-url="<?= url('user/authorizeProtectedEdit'); ?>">
+        <div class="modal-body">
+          <p class="small">Informe a senha do usuário ID 1 para editar <strong id="protectedEditRecordName"></strong>.</p>
+          <label class="form-label" for="protectedEditPassword">Senha</label>
+          <input class="form-control" type="password" id="protectedEditPassword" name="authorization_password" autocomplete="current-password" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Liberar edição</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" data-impact-base-url="<?= url('user/deletionImpact'); ?>">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirmar exclusão integral do usuário</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
+        <div class="alert alert-danger" role="alert">
+          A exclusão do usuário "<strong id="recordName"></strong>", da pessoa associada e de todos os registros apresentados abaixo é permanente.
+        </div>
+
+        <div class="alert alert-success" role="alert">
+          <strong>Nenhuma base de dados será excluída.</strong> Somente os registros associados ao usuário serão removidos.
+        </div>
+
+        <div id="deletionImpactLoading" class="py-4 text-center" role="status">
+          <div class="spinner-border text-danger" aria-hidden="true"></div>
+          <div class="mt-2">Consultando módulos e registros associados...</div>
+        </div>
+
+        <div id="deletionImpactError" class="alert alert-danger d-none" role="alert"></div>
+
+        <div id="deletionImpactContent" class="d-none">
+          <div id="deletionWarnings"></div>
+
+          <div class="alert alert-secondary">
+            <strong>Dados preservados:</strong> <span id="preservedRecords"></span>.
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0 text-danger">Dados que serão excluídos por módulo</h6>
+            <span class="badge text-bg-danger" id="deletionTotalRecords"></span>
+          </div>
+          <div id="deletionModules" class="border border-danger rounded p-2"></div>
+
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" value="1" id="confirmDeletionReview" disabled>
+            <label class="form-check-label" for="confirmDeletionReview">
+              Revisei os módulos e confirmo a exclusão permanente de todos os registros apresentados.
+            </label>
+          </div>
+        </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer border-danger">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+        <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('user/delete'); ?>" class="d-inline">
           <input type="hidden" name="id" id="recordId">
-          <button type="submit" class="btn btn-danger">Excluir</button>
+          <input type="hidden" name="confirm_full_deletion" value="1">
+          <button type="submit" class="btn btn-danger" id="confirmDeleteButton" disabled>Excluir usuário, pessoa e registros</button>
         </form>
       </div>
     </div>
@@ -202,10 +273,171 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </div>
 
 <script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const recordId = e.relatedTarget.dataset.id;
-  document.getElementById('recordId').value = recordId;
-  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
-  document.getElementById('deleteForm').action = '<?= url('user/delete') ?>/' + recordId;
-});
+(function () {
+  const modal = document.getElementById('deleteModal');
+  const form = document.getElementById('deleteForm');
+  const reviewCheckbox = document.getElementById('confirmDeletionReview');
+  const confirmButton = document.getElementById('confirmDeleteButton');
+  const loading = document.getElementById('deletionImpactLoading');
+  const error = document.getElementById('deletionImpactError');
+  const content = document.getElementById('deletionImpactContent');
+  const modulesContainer = document.getElementById('deletionModules');
+  const warningsContainer = document.getElementById('deletionWarnings');
+  let impactRequest = null;
+
+  function resetImpact() {
+    if (impactRequest) {
+      impactRequest.abort();
+    }
+
+    impactRequest = new AbortController();
+    loading.classList.remove('d-none');
+    error.classList.add('d-none');
+    error.textContent = '';
+    content.classList.add('d-none');
+    modulesContainer.replaceChildren();
+    warningsContainer.replaceChildren();
+    reviewCheckbox.checked = false;
+    reviewCheckbox.disabled = true;
+    confirmButton.disabled = true;
+  }
+
+  function appendRecordList(module, section) {
+    const list = document.createElement('ul');
+    list.className = 'mb-0 small';
+
+    (module.records || []).forEach(function (record) {
+      const item = document.createElement('li');
+      item.className = 'mb-1';
+
+      const label = document.createElement('span');
+      label.textContent = record.label || ('Registro #' + record.id);
+      item.appendChild(label);
+
+      const source = document.createElement('code');
+      source.className = 'ms-2 text-muted';
+      source.textContent = record.table + '#' + record.id;
+      item.appendChild(source);
+      list.appendChild(item);
+    });
+
+    section.appendChild(list);
+  }
+
+  function renderImpact(impact) {
+    (impact.warnings || []).forEach(function (message) {
+      const warning = document.createElement('div');
+      warning.className = 'alert alert-warning';
+      warning.textContent = message;
+      warningsContainer.appendChild(warning);
+    });
+
+    document.getElementById('preservedRecords').textContent = (impact.preserved || []).join('; ');
+    document.getElementById('deletionTotalRecords').textContent = Number(impact.total_records || 0).toLocaleString('pt-BR') + ' registro(s)';
+
+    (impact.modules || []).forEach(function (module) {
+      const section = document.createElement('section');
+      section.className = 'mb-3 pb-3 border-bottom border-danger-subtle';
+
+      const heading = document.createElement('div');
+      heading.className = 'd-flex flex-wrap gap-2 align-items-center mb-2';
+
+      const scope = document.createElement('span');
+      scope.className = 'badge text-bg-dark';
+      scope.textContent = module.scope || 'manager_main';
+      heading.appendChild(scope);
+
+      const title = document.createElement('strong');
+      title.className = 'text-danger';
+      title.textContent = module.label;
+      heading.appendChild(title);
+
+      const count = document.createElement('span');
+      count.className = 'badge text-bg-danger';
+      count.textContent = Number(module.count || 0).toLocaleString('pt-BR');
+      heading.appendChild(count);
+
+      section.appendChild(heading);
+      appendRecordList(module, section);
+      modulesContainer.appendChild(section);
+    });
+
+    loading.classList.add('d-none');
+    content.classList.remove('d-none');
+    reviewCheckbox.disabled = false;
+  }
+
+  reviewCheckbox.addEventListener('change', function () {
+    confirmButton.disabled = !reviewCheckbox.checked;
+  });
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    if (!trigger) {
+      return;
+    }
+
+    resetImpact();
+    const recordId = trigger.dataset.id;
+    document.getElementById('recordId').value = recordId;
+    document.getElementById('recordName').textContent = trigger.dataset.name;
+    form.action = form.dataset.deleteBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+
+    const impactUrl = modal.dataset.impactBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+    fetch(impactUrl, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      signal: impactRequest.signal
+    })
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (payload) {
+          if (!response.ok) {
+            throw new Error(payload.message || 'Não foi possível carregar os registros associados.');
+          }
+          return payload;
+        });
+      })
+      .then(renderImpact)
+      .catch(function (requestError) {
+        if (requestError.name === 'AbortError') {
+          return;
+        }
+        loading.classList.add('d-none');
+        error.textContent = requestError.message;
+        error.classList.remove('d-none');
+      });
+  });
+
+  modal.addEventListener('hidden.bs.modal', function () {
+    if (impactRequest) {
+      impactRequest.abort();
+      impactRequest = null;
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  const modal = document.getElementById('protectedEditModal');
+  const form = document.getElementById('protectedEditForm');
+  const password = document.getElementById('protectedEditPassword');
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    if (!trigger) {
+      return;
+    }
+
+    const recordId = trigger.dataset.id;
+    document.getElementById('protectedEditRecordName').textContent = trigger.dataset.name;
+    form.action = form.dataset.authorizationBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+    password.value = '';
+  });
+
+  modal.addEventListener('shown.bs.modal', function () {
+    password.focus();
+  });
+})();
 </script>

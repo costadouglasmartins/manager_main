@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Core\Authorization;
 use App\Core\Controller;
 use App\Models\Tenant;
-use App\Services\TenantProvisioner;
+use App\Services\TenantDeletionService;
 
 class TenantController extends Controller
 	{
@@ -345,6 +345,58 @@ class TenantController extends Controller
 		}
 
 	/**
+	 * Returns the row-by-row deletion manifest used by the confirmation modal.
+	 *
+	 * Route: GET tenant/deletionImpact/{tenantId}
+	 * @param Integer $id Tenant id.
+	 * @return void
+	 */
+	public function deletionImpact($id): void
+		{
+		$this->requirePermission('tenant.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'GET')
+			{
+			$this->json(['error' => 'method_not_allowed', 'message' => 'Método não permitido.'], 405, ['Allow' => 'GET']);
+			}
+
+		$tenantId = (int) $id;
+		if ($tenantId <= 0)
+			{
+			$this->json(['error' => 'invalid_tenant', 'message' => 'Tenant inválido.'], 422);
+			}
+		if ($tenantId === TenantDeletionService::PROTECTED_TENANT_ID)
+			{
+			$this->json([
+				'error' => 'protected_tenant',
+				'message' => 'O tenant principal não pode ser excluído.',
+			], 403);
+			}
+
+		try
+			{
+			$impact = (new TenantDeletionService())->impact($tenantId);
+			$this->json($impact, 200, ['Cache-Control' => 'no-store, no-cache, must-revalidate']);
+			}
+		catch (\RuntimeException $e)
+			{
+			$status = $e->getMessage() === 'Tenant não encontrado.' ? 404 : 500;
+			$this->json([
+				'error' => $status === 404 ? 'tenant_not_found' : 'impact_unavailable',
+				'message' => $status === 404 ? 'Tenant não encontrado.' : 'Não foi possível consultar os registros associados ao tenant.',
+			], $status);
+			}
+		catch (\Throwable $e)
+			{
+			error_log('TenantController::deletionImpact error: ' . $e->getMessage());
+			$this->json([
+				'error' => 'impact_unavailable',
+				'message' => 'Não foi possível consultar os registros associados ao tenant.',
+			], 500);
+			}
+		}
+
+	/**
 	 * Delete method
 	 * @param Integer $id Record id
 	 */
@@ -352,17 +404,39 @@ class TenantController extends Controller
 		{
 		$this->requirePermission('tenant.delete');
 
-		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-			$tenant = new Tenant();
-			try {
-				$tenant->delete($id);
-				setFlashMessage('success', 'Tenant excluído com sucesso.');
-				$this->redirect('tenant');
-			} catch (\Exception $e) {
-				setFlashMessage('danger', 'Não foi possível excluir o tenant.');
-				$this->redirect('tenant');
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('tenant');
 			}
-		}
+
+		$tenantId = (int) $id;
+		if ($tenantId === TenantDeletionService::PROTECTED_TENANT_ID)
+			{
+			setFlashMessage('danger', 'O tenant principal não pode ser excluído.');
+			$this->redirect('tenant');
+			}
+
+		if ($tenantId <= 0 || (string) ($_POST['confirm_full_deletion'] ?? '') !== '1')
+			{
+			setFlashMessage('danger', 'A exclusão integral do tenant não foi confirmada.');
+			$this->redirect('tenant');
+			}
+
+		try
+			{
+			(new TenantDeletionService())->delete($tenantId);
+			setFlashMessage('success', 'Tenant, base de dados, permissões e registros associados excluídos com sucesso.');
+			}
+		catch (\Throwable $e)
+			{
+			error_log('TenantController::delete error for tenant ' . $tenantId . ': ' . $e->getMessage());
+			setFlashMessage(
+				'danger',
+				'Não foi possível concluir a exclusão do tenant. A base dedicada pode já ter sido removida; tente novamente para concluir a limpeza central.'
+			);
+			}
+
+		$this->redirect('tenant');
 		}
 	}
 

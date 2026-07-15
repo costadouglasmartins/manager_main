@@ -4,6 +4,7 @@ $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($emails) ? count($emails) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
+$protectedPersonIds = \App\Models\Person::PROTECTED_PERSON_IDS;
 
 $queryFilters = http_build_query([
   'id'          => $filters['id'],
@@ -85,7 +86,13 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
             <td><?= htmlspecialchars($row['observations'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
             <td style="width:1%;" class="text-nowrap text-end">
               <?php if (authCan('email.edit')): ?>
-                <a href="<?= url('email/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+                <?php if (in_array((int) $row['person_id'], $protectedPersonIds, true)): ?>
+                  <button class="btn btn-sm btn-link p-0 text-warning" type="button" data-bs-toggle="modal" data-bs-target="#protectedEditModal" data-id="<?= (int) $row['id'] ?>" data-name="<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>" data-person-name="<?= htmlspecialchars($row['person_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" title="Editar com senha de proteção" aria-label="Editar e-mail protegido">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                <?php else: ?>
+                  <a href="<?= url('email/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+                <?php endif; ?>
               <?php endif; ?>
               <?php if (authCan('email.informations')): ?>
                 <a href="<?= url('email/informations/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
@@ -112,6 +119,29 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 <?php if ($totalPages > 1): ?>
   <?= paginationLinks('email', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
+
+<!-- Protected Edit Authorization Modal -->
+<div class="modal fade" id="protectedEditModal" tabindex="-1" aria-labelledby="protectedEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content border-warning">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title" id="protectedEditModalLabel">Liberar edição protegida</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="POST" action="#" id="protectedEditForm" data-authorization-base-url="<?= url('email/authorizeProtectedEdit'); ?>">
+        <div class="modal-body">
+          <p class="small">Informe a senha do usuário ID 1 para editar o e-mail <strong id="protectedEditRecordName"></strong>, vinculado a <strong id="protectedEditPersonName"></strong>.</p>
+          <label class="form-label" for="protectedEditPassword">Senha</label>
+          <input class="form-control" type="password" id="protectedEditPassword" name="authorization_password" autocomplete="current-password" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Liberar edição</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -142,6 +172,31 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
   document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
   document.getElementById('deleteForm').action = '<?= url('email/delete') ?>/' + recordId;
 });
+</script>
+
+<script>
+(function () {
+  const modal = document.getElementById('protectedEditModal');
+  const form = document.getElementById('protectedEditForm');
+  const password = document.getElementById('protectedEditPassword');
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    if (!trigger) {
+      return;
+    }
+
+    const recordId = trigger.dataset.id;
+    document.getElementById('protectedEditRecordName').textContent = trigger.dataset.name;
+    document.getElementById('protectedEditPersonName').textContent = trigger.dataset.personName;
+    form.action = form.dataset.authorizationBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+    password.value = '';
+  });
+
+  modal.addEventListener('shown.bs.modal', function () {
+    password.focus();
+  });
+})();
 </script>
 
 <script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

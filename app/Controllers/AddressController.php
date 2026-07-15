@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Address;
+use App\Services\ProtectedEditAuthorizationService;
 use App\Services\ZipCodeSearchService;
 
 class AddressController extends Controller
@@ -162,8 +163,16 @@ class AddressController extends Controller
 	public function edit($id)
 		{
 		$this->requirePermission('address.edit');
+		$addressId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('address', $addressId))
+			{
+			setFlashMessage('danger', 'Informe a senha do usuário ID 1 para editar o endereço desta pessoa protegida.');
+			$this->redirect('address');
+			}
+
 		$address = new Address();
-		$data = $address->find($id);
+		$data = $address->find($addressId);
 		$this->view('addresses/edit', ['title' => 'Editar endereço', 'address' => $data]);
 		}
 
@@ -174,19 +183,61 @@ class AddressController extends Controller
 	public function update($id)
 		{
 		$this->requirePermission('address.update');
+		$addressId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('address', $addressId))
+			{
+			setFlashMessage('danger', 'A autorização para editar este endereço protegido é inválida ou expirou.');
+			$this->redirect('address');
+			}
+
 		$address = new Address();
 
 		try
 			{
-			$address->update($id, $_POST);
+			$address->update($addressId, $_POST);
+			$editAuthorization->revoke('address', $addressId);
 			setFlashMessage('success', 'Endereço atualizado com sucesso.');
 			$this->redirect('address');
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar o endereço. Verifique os dados e tente novamente.');
-			$this->redirect('address/edit/' . $id);
+			$this->redirect('address/edit/' . $addressId);
 			}
+		}
+
+	/**
+	 * Verifies user 1's password before opening a protected address edit screen.
+	 * @param int|string $id Address ID.
+	 * @return void
+	 **/
+	public function authorizeProtectedEdit($id): void
+		{
+		$this->requirePermission('address.edit');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('address');
+			}
+
+		$addressId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isProtected('address', $addressId))
+			{
+			$this->redirect('address/edit/' . $addressId);
+			}
+
+		$password = (string) ($_POST['authorization_password'] ?? '');
+		if ($editAuthorization->authorize('address', $addressId, $password))
+			{
+			unset($password);
+			$this->redirect('address/edit/' . $addressId);
+			}
+
+		unset($password);
+		setFlashMessage('danger', 'Senha inválida ou limite de tentativas atingido.');
+		$this->redirect('address');
 		}
 
 	/**

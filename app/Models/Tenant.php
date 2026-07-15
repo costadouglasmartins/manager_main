@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Services\TenantDeletionService;
 use PDO;
 
 class Tenant extends Model
@@ -883,40 +884,13 @@ class Tenant extends Model
 		}
 
 	/**
-	 * Delete method - Deletes tenant_users, then updates users (set tenant_id to NULL) before deleting tenant
+	 * Delete the complete tenant aggregate and its dedicated database.
 	 * @param Integer $id Tenant id
 	 * @throws \Exception
 	 */
 	public function delete($id): void
 		{
-		try
-			{
-			$beforeData = $this->findAllByTenantId((int) $id);
-			$this->db->beginTransaction();
-
-			// Delete tenant_users
-			$stmt = $this->db->prepare("DELETE FROM tenant_users WHERE tenant_id = :id");
-			$stmt->execute(['id' => $id]);
-
-			// Update users to set tenant_id to NULL
-			$stmt = $this->db->prepare("UPDATE users SET tenant_id = NULL WHERE tenant_id = :id");
-			$stmt->execute(['id' => $id]);
-
-			// Delete tenant
-			$stmt = $this->db->prepare("DELETE FROM tenants WHERE id = :id");
-			$stmt->execute(['id' => $id]);
-			$this->auditDelete('tenant', 'tenants', $id, $beforeData, [
-				'tenant_id' => (int) $id,
-				'affected_tables' => ['tenants', 'tenant_users', 'users'],
-			]);
-
-			$this->db->commit();
-			}
-		catch (\Exception $e)
-			{
-			$this->db->rollBack();
-			throw $e;
-			}
+		(new TenantDeletionService($this->db))->delete((int) $id);
 		}
 	}
 

@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Core\RememberLogin;
 use App\Models\User;
+use App\Services\ProtectedEditAuthorizationService;
+use App\Services\UserDeletionService;
 
 class UserController extends Controller
 	{
@@ -67,8 +69,16 @@ class UserController extends Controller
 	public function edit($id)
 		{
 		$this->requirePermission('user.edit');
+		$userId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('user', $userId))
+			{
+			setFlashMessage('danger', 'Informe a senha do usuário ID 1 para editar este usuário protegido.');
+			$this->redirect('user');
+			}
+
 		$user = new User();
-		$data = $user->find($id);
+		$data = $user->find($userId);
 
 		// Load all tenants for the dropdown (all statuses)
 		$tenantModel = new \App\Models\Tenant();
@@ -88,19 +98,61 @@ class UserController extends Controller
 	public function update($id)
 		{
 		$this->requirePermission('user.update');
+		$userId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('user', $userId))
+			{
+			setFlashMessage('danger', 'A autorização para editar este usuário protegido é inválida ou expirou.');
+			$this->redirect('user');
+			}
+
 		$user = new User();
 
 		try
 			{
-			$user->update($id, $_POST);
+			$user->update($userId, $_POST);
+			$editAuthorization->revoke('user', $userId);
 			setFlashMessage('success', 'Usuário atualizado com sucesso.');
 			$this->redirect('user');
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar o usuário. Verifique os dados e tente novamente.');
-			$this->redirect('user/edit/' . $id);
+			$this->redirect('user/edit/' . $userId);
 			}
+		}
+
+	/**
+	 * Verifies user 1's password before opening a protected user edit screen.
+	 * @param int|string $id Protected user ID.
+	 * @return void
+	 **/
+	public function authorizeProtectedEdit($id): void
+		{
+		$this->requirePermission('user.edit');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('user');
+			}
+
+		$userId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isProtected('user', $userId))
+			{
+			$this->redirect('user/edit/' . $userId);
+			}
+
+		$password = (string) ($_POST['authorization_password'] ?? '');
+		if ($editAuthorization->authorize('user', $userId, $password))
+			{
+			unset($password);
+			$this->redirect('user/edit/' . $userId);
+			}
+
+		unset($password);
+		setFlashMessage('danger', 'Senha inválida ou limite de tentativas atingido.');
+		$this->redirect('user');
 		}
 
 	/**
@@ -188,24 +240,95 @@ class UserController extends Controller
 		}
 
 	/**
-	 * Delete method
+	 * Returns the row-by-row deletion manifest used by the confirmation modal.
+	 *
+	 * @param int|string $id User ID.
+	 * @return void
+	 */
+	public function deletionImpact($id): void
+		{
+		$this->requirePermission('user.delete');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'GET')
+			{
+			$this->json(['error' => 'method_not_allowed', 'message' => 'Método não permitido.'], 405, ['Allow' => 'GET']);
+			}
+
+		$userId = (int) $id;
+		if ($userId <= 0)
+			{
+			$this->json(['error' => 'invalid_user', 'message' => 'Usuário inválido.'], 422);
+			}
+		if (in_array($userId, User::PROTECTED_USER_IDS, true))
+			{
+			$this->json(['error' => 'protected_user', 'message' => 'Este usuário é protegido e não pode ser excluído.'], 403);
+			}
+
+		try
+			{
+			$this->json(
+				(new UserDeletionService())->impact($userId),
+				200,
+				['Cache-Control' => 'no-store, no-cache, must-revalidate']
+			);
+			}
+		catch (\RuntimeException $e)
+			{
+			$status = $e->getMessage() === 'Usuário não encontrado.' ? 404 : 500;
+			$this->json([
+				'error' => $status === 404 ? 'user_not_found' : 'impact_unavailable',
+				'message' => $status === 404 ? 'Usuário não encontrado.' : 'Não foi possível consultar os registros associados ao usuário.',
+			], $status);
+			}
+		catch (\Throwable $e)
+			{
+			error_log('UserController::deletionImpact error: ' . $e->getMessage());
+			$this->json(['error' => 'impact_unavailable', 'message' => 'Não foi possível consultar os registros associados ao usuário.'], 500);
+			}
+		}
+
+	/**
+	 * Deletes the user and every record confirmed in the deletion manifest.
 	 * @param Integer $id User id
 	 */
 	public function delete($id)
 		{
 		$this->requirePermission('user.delete');
 
-		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-			$user = new User();
-			try {
-				$user->delete($id);
-				setFlashMessage('success', 'Usuário excluído com sucesso.');
-				$this->redirect('user');
-			} catch (\Exception $e) {
-				setFlashMessage('danger', 'Não foi possível excluir o usuário.');
-				$this->redirect('user');
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('user');
 			}
-		}
+
+		$userId = (int) $id;
+		if ($userId <= 0)
+			{
+			setFlashMessage('danger', 'Usuário inválido.');
+			$this->redirect('user');
+			}
+		if (in_array($userId, User::PROTECTED_USER_IDS, true))
+			{
+			setFlashMessage('danger', 'Os usuários de ID 1 e 2 são protegidos e não podem ser excluídos.');
+			$this->redirect('user');
+			}
+		if ((string) ($_POST['confirm_full_deletion'] ?? '') !== '1')
+			{
+			setFlashMessage('danger', 'A exclusão integral do usuário não foi confirmada.');
+			$this->redirect('user');
+			}
+
+		try
+			{
+			(new UserDeletionService())->delete($userId);
+			setFlashMessage('success', 'Usuário, pessoa e registros associados excluídos com sucesso. Nenhuma base de dados foi removida.');
+			}
+		catch (\Throwable $e)
+			{
+			error_log('UserController::delete error for user ' . $userId . ': ' . $e->getMessage());
+			setFlashMessage('danger', 'Não foi possível excluir o usuário e seus registros associados.');
+			}
+
+		$this->redirect('user');
 		}
 	}
 

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Email;
+use App\Services\ProtectedEditAuthorizationService;
 
 class EmailController extends Controller
 	{
@@ -103,8 +104,16 @@ class EmailController extends Controller
 	public function edit($id)
 		{
 		$this->requirePermission('email.edit');
+		$emailId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('email', $emailId))
+			{
+			setFlashMessage('danger', 'Informe a senha do usuário ID 1 para editar o e-mail desta pessoa protegida.');
+			$this->redirect('email');
+			}
+
 		$email = new Email();
-		$data = $email->find($id);
+		$data = $email->find($emailId);
 		$this->view('emails/edit', ['title' => 'Editar e-mail', 'email' => $data]);
 		}
 
@@ -115,19 +124,61 @@ class EmailController extends Controller
 	public function update($id)
 		{
 		$this->requirePermission('email.update');
+		$emailId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('email', $emailId))
+			{
+			setFlashMessage('danger', 'A autorização para editar este e-mail protegido é inválida ou expirou.');
+			$this->redirect('email');
+			}
+
 		$email = new Email();
 
 		try
 			{
-			$email->update($id, $_POST);
+			$email->update($emailId, $_POST);
+			$editAuthorization->revoke('email', $emailId);
 			setFlashMessage('success', 'E-mail atualizado com sucesso.');
 			$this->redirect('email');
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar o e-mail. Verifique os dados e tente novamente.');
-			$this->redirect('email/edit/' . $id);
+			$this->redirect('email/edit/' . $emailId);
 			}
+		}
+
+	/**
+	 * Verifies user 1's password before opening a protected email edit screen.
+	 * @param int|string $id Email ID.
+	 * @return void
+	 **/
+	public function authorizeProtectedEdit($id): void
+		{
+		$this->requirePermission('email.edit');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('email');
+			}
+
+		$emailId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isProtected('email', $emailId))
+			{
+			$this->redirect('email/edit/' . $emailId);
+			}
+
+		$password = (string) ($_POST['authorization_password'] ?? '');
+		if ($editAuthorization->authorize('email', $emailId, $password))
+			{
+			unset($password);
+			$this->redirect('email/edit/' . $emailId);
+			}
+
+		unset($password);
+		setFlashMessage('danger', 'Senha inválida ou limite de tentativas atingido.');
+		$this->redirect('email');
 		}
 
 	/**

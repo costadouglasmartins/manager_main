@@ -8,6 +8,7 @@ use App\Models\Person;
 use App\Models\Tenant;
 use App\Models\Neighborhood;
 use App\Models\City;
+use App\Services\ProtectedEditAuthorizationService;
 
 /**
  * Handles person management screens and supporting JSON endpoints.
@@ -478,8 +479,16 @@ class PersonController extends Controller
 	public function edit($id)
 		{
 		$this->requirePermission('person.edit');
+		$personId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('person', $personId))
+			{
+			setFlashMessage('danger', 'Informe a senha do usuário ID 1 para editar esta pessoa protegida.');
+			$this->redirect('person');
+			}
+
 		$person = new Person();
-		$data = $person->findAllByPersonId($id);
+		$data = $person->findAllByPersonId($personId);
 
 		$tenantModel = new Tenant();
 		$allTenants = $tenantModel->getAll();
@@ -510,19 +519,61 @@ class PersonController extends Controller
 	public function update($id)
 		{
 		$this->requirePermission('person.update');
+		$personId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('person', $personId))
+			{
+			setFlashMessage('danger', 'A autorização para editar esta pessoa protegida é inválida ou expirou.');
+			$this->redirect('person');
+			}
+
 		$person = new Person();
 
 		try
 			{
-			$person->update($id, $_POST);
+			$person->update($personId, $_POST);
+			$editAuthorization->revoke('person', $personId);
 			setFlashMessage('success', 'Pessoa atualizada com sucesso.');
 			$this->redirect('person');
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar a pessoa. Verifique os dados e tente novamente.');
-			$this->redirect('person/edit/' . $id);
+			$this->redirect('person/edit/' . $personId);
 			}
+		}
+
+	/**
+	 * Verifies user 1's password before opening a protected person edit screen.
+	 * @param int|string $id Protected person ID.
+	 * @return void
+	 **/
+	public function authorizeProtectedEdit($id): void
+		{
+		$this->requirePermission('person.edit');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('person');
+			}
+
+		$personId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isProtected('person', $personId))
+			{
+			$this->redirect('person/edit/' . $personId);
+			}
+
+		$password = (string) ($_POST['authorization_password'] ?? '');
+		if ($editAuthorization->authorize('person', $personId, $password))
+			{
+			unset($password);
+			$this->redirect('person/edit/' . $personId);
+			}
+
+		unset($password);
+		setFlashMessage('danger', 'Senha inválida ou limite de tentativas atingido.');
+		$this->redirect('person');
 		}
 
 	/**
@@ -598,17 +649,30 @@ class PersonController extends Controller
 		{
 		$this->requirePermission('person.delete');
 
-		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-			$person = new Person();
-			try {
-				$person->delete($id);
-				setFlashMessage('success', 'Pessoa excluída com sucesso.');
-				$this->redirect('person');
-			} catch (\Exception $e) {
-				setFlashMessage('danger', 'Não foi possível excluir a pessoa.');
-				$this->redirect('person');
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('person');
 			}
+
+		$personId = (int) $id;
+		if (in_array($personId, Person::PROTECTED_PERSON_IDS, true))
+			{
+			setFlashMessage('danger', 'As pessoas de ID 3 e 4 são protegidas e não podem ser excluídas.');
+			$this->redirect('person');
 			}
+
+		$person = new Person();
+		try
+			{
+			$person->delete($personId);
+			setFlashMessage('success', 'Pessoa excluída com sucesso.');
+			}
+		catch (\Exception $e)
+			{
+			setFlashMessage('danger', 'Não foi possível excluir a pessoa.');
+			}
+
+		$this->redirect('person');
 		}
 
 	}

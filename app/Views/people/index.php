@@ -5,6 +5,7 @@ $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($people) ? count($people) : 0);
 $sort = $sort ?? ['sort' => 'id', 'direction' => 'desc'];
+$protectedPersonIds = \App\Models\Person::PROTECTED_PERSON_IDS;
 
 // Create an array of filters to use on pagination
 $queryFilters = http_build_query([
@@ -99,15 +100,27 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 					<td><?= ($person['type'] == 'company' ? 'Pessoa jurídica' : 'Pessoa física') ?></td>
 					<td style="width: 1%;" class="text-nowrap text-end">
 						<?php if (authCan('person.edit')): ?>
-							<a href="<?= url('person/edit/' . $person['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+							<?php if (in_array((int) $person['id'], $protectedPersonIds, true)): ?>
+								<button class="btn btn-sm btn-link p-0 text-warning" type="button" data-bs-toggle="modal" data-bs-target="#protectedEditModal" data-id="<?= (int) $person['id'] ?>" data-name="<?= htmlspecialchars($person['name'], ENT_QUOTES, 'UTF-8') ?>" title="Editar com senha de proteção" aria-label="Editar pessoa protegida">
+									<i class="bi bi-pencil-square"></i>
+								</button>
+							<?php else: ?>
+								<a href="<?= url('person/edit/' . $person['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+							<?php endif; ?>
 						<?php endif; ?>
 						<?php if (authCan('person.informations')): ?>
 							<a href="<?= url('person/informations/' . $person['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
 						<?php endif; ?>
 						<?php if (authCan('person.delete')): ?>
-							<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $person['id'] ?>" data-name="<?= htmlspecialchars($person['name'], ENT_QUOTES, 'UTF-8') ?>">
-								<i class="bi bi-trash"></i>
-							</button>
+							<?php if (in_array((int) $person['id'], $protectedPersonIds, true)): ?>
+								<button class="btn btn-sm btn-secondary" type="button" disabled title="Esta pessoa é protegida e não pode ser excluída" aria-label="Pessoa protegida contra exclusão">
+									<i class="bi bi-shield-lock"></i>
+								</button>
+							<?php else: ?>
+								<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $person['id'] ?>" data-name="<?= htmlspecialchars($person['name'], ENT_QUOTES, 'UTF-8') ?>">
+									<i class="bi bi-trash"></i>
+								</button>
+							<?php endif; ?>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -131,6 +144,29 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 	<?= paginationLinks('person', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
 <?php endif; ?>
 <!-- /Pagination -->
+
+<!-- Protected Edit Authorization Modal -->
+<div class="modal fade" id="protectedEditModal" tabindex="-1" aria-labelledby="protectedEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content border-warning">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title" id="protectedEditModalLabel">Liberar edição protegida</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="POST" action="#" id="protectedEditForm" data-authorization-base-url="<?= url('person/authorizeProtectedEdit'); ?>">
+        <div class="modal-body">
+          <p class="small">Informe a senha do usuário ID 1 para editar <strong id="protectedEditRecordName"></strong>.</p>
+          <label class="form-label" for="protectedEditPassword">Senha</label>
+          <input class="form-control" type="password" id="protectedEditPassword" name="authorization_password" autocomplete="current-password" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Liberar edição</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -161,6 +197,30 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
   document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
   document.getElementById('deleteForm').action = '<?= url('person/delete') ?>/' + recordId;
 });
+</script>
+
+<script>
+(function () {
+  const modal = document.getElementById('protectedEditModal');
+  const form = document.getElementById('protectedEditForm');
+  const password = document.getElementById('protectedEditPassword');
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    if (!trigger) {
+      return;
+    }
+
+    const recordId = trigger.dataset.id;
+    document.getElementById('protectedEditRecordName').textContent = trigger.dataset.name;
+    form.action = form.dataset.authorizationBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+    password.value = '';
+  });
+
+  modal.addEventListener('shown.bs.modal', function () {
+    password.focus();
+  });
+})();
 </script>
 
 <script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>

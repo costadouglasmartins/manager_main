@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Services\UserDeletionService;
 use PDO;
 
 class User extends Model
 	{
+	public const PROTECTED_USER_IDS = [1, 2];
+
 	/**
 	 * Returns sortable columns for list queries.
 	 *
@@ -462,33 +465,7 @@ class User extends Model
 	 */
 	public function delete($id): void
 		{
-		try
-			{
-			$beforeData = $this->findAuditSnapshot((int) $id);
-			$this->db->beginTransaction();
-
-			// Delete user permissions
-			$stmt = $this->db->prepare("DELETE FROM user_permissions WHERE user_id = :id");
-			$stmt->execute(['id' => $id]);
-
-			// Delete tenant users
-			$stmt = $this->db->prepare("DELETE FROM tenant_users WHERE user_id = :id");
-			$stmt->execute(['id' => $id]);
-
-			// Delete user
-			$stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
-			$stmt->execute(['id' => $id]);
-			$this->auditDelete('user', 'users', $id, $beforeData, [
-				'affected_tables' => ['users', 'user_permissions', 'tenant_users'],
-			]);
-
-			$this->db->commit();
-			}
-		catch (\Exception $e)
-			{
-			$this->db->rollBack();
-			throw $e;
-			}
+		(new UserDeletionService($this->db))->delete((int) $id);
 		}
 
 	/**

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\PhoneNumber;
+use App\Services\ProtectedEditAuthorizationService;
 
 class PhoneNumberController extends Controller
 	{
@@ -103,8 +104,16 @@ class PhoneNumberController extends Controller
 	public function edit($id)
 		{
 		$this->requirePermission('phone_number.edit');
+		$phoneNumberId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('phone_number', $phoneNumberId))
+			{
+			setFlashMessage('danger', 'Informe a senha do usuário ID 1 para editar o telefone desta pessoa protegida.');
+			$this->redirect('phone_number');
+			}
+
 		$phoneNumber = new PhoneNumber();
-		$data = $phoneNumber->find($id);
+		$data = $phoneNumber->find($phoneNumberId);
 		$this->view('phone_numbers/edit', ['title' => 'Editar telefone', 'phone_number' => $data]);
 		}
 
@@ -115,19 +124,61 @@ class PhoneNumberController extends Controller
 	public function update($id)
 		{
 		$this->requirePermission('phone_number.update');
+		$phoneNumberId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isAuthorized('phone_number', $phoneNumberId))
+			{
+			setFlashMessage('danger', 'A autorização para editar este telefone protegido é inválida ou expirou.');
+			$this->redirect('phone_number');
+			}
+
 		$phoneNumber = new PhoneNumber();
 
 		try
 			{
-			$phoneNumber->update($id, $_POST);
+			$phoneNumber->update($phoneNumberId, $_POST);
+			$editAuthorization->revoke('phone_number', $phoneNumberId);
 			setFlashMessage('success', 'Telefone atualizado com sucesso.');
 			$this->redirect('phone_number');
 			}
 		catch (\Throwable $e)
 			{
 			setFlashMessage('danger', 'Não foi possível atualizar o telefone. Verifique os dados e tente novamente.');
-			$this->redirect('phone_number/edit/' . $id);
+			$this->redirect('phone_number/edit/' . $phoneNumberId);
 			}
+		}
+
+	/**
+	 * Verifies user 1's password before opening a protected phone edit screen.
+	 * @param int|string $id Phone number ID.
+	 * @return void
+	 **/
+	public function authorizeProtectedEdit($id): void
+		{
+		$this->requirePermission('phone_number.edit');
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->redirect('phone_number');
+			}
+
+		$phoneNumberId = (int) $id;
+		$editAuthorization = new ProtectedEditAuthorizationService();
+		if (!$editAuthorization->isProtected('phone_number', $phoneNumberId))
+			{
+			$this->redirect('phone_number/edit/' . $phoneNumberId);
+			}
+
+		$password = (string) ($_POST['authorization_password'] ?? '');
+		if ($editAuthorization->authorize('phone_number', $phoneNumberId, $password))
+			{
+			unset($password);
+			$this->redirect('phone_number/edit/' . $phoneNumberId);
+			}
+
+		unset($password);
+		setFlashMessage('danger', 'Senha inválida ou limite de tentativas atingido.');
+		$this->redirect('phone_number');
 		}
 
 	/**

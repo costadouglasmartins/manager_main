@@ -99,9 +99,15 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
               <a href="<?= url('tenant/informations/' . $t['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
             <?php endif; ?>
             <?php if (authCan('tenant.delete')): ?>
-              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= $t['id'] ?>" data-name="<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?>">
-                <i class="bi bi-trash"></i>
-              </button>
+              <?php if ((int) $t['id'] === 1): ?>
+                <button class="btn btn-sm btn-secondary" type="button" disabled title="O tenant principal não pode ser excluído" aria-label="Tenant principal protegido contra exclusão">
+                  <i class="bi bi-shield-lock"></i>
+                </button>
+              <?php else: ?>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $t['id'] ?>" data-name="<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?>">
+                  <i class="bi bi-trash"></i>
+                </button>
+              <?php endif; ?>
             <?php endif; ?>
           </td>
         </tr>
@@ -121,21 +127,58 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" data-impact-base-url="<?= url('tenant/deletionImpact'); ?>">
+  <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Confirmar exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title" id="deleteModalLabel">Confirmar exclusão integral do tenant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        Tem certeza que deseja excluir o registro "<strong id="recordName"></strong>"?
+        <p class="mb-3">
+          A exclusão de "<strong id="recordName"></strong>" é permanente. A base dedicada e os registros abaixo serão removidos.
+        </p>
+
+        <div class="alert alert-danger" role="alert">
+          <strong>Atenção:</strong> todas as permissões de todos os usuários associados a este tenant serão removidas, mesmo que algum usuário também esteja vinculado a outro tenant.
+        </div>
+
+        <div id="deletionImpactLoading" class="py-4 text-center" role="status">
+          <div class="spinner-border text-danger" aria-hidden="true"></div>
+          <div class="mt-2">Consultando módulos e registros associados...</div>
+        </div>
+
+        <div id="deletionImpactError" class="alert alert-danger d-none" role="alert"></div>
+
+        <div id="deletionImpactContent" class="d-none">
+          <div id="deletionDatabaseSummary" class="alert alert-warning"></div>
+          <div id="deletionWarnings"></div>
+
+          <div class="alert alert-success">
+            <strong>Registros preservados no manager_main:</strong>
+            <span id="preservedRecords"></span>.
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Registros que serão removidos por módulo</h6>
+            <span class="badge text-bg-danger" id="deletionTotalRecords"></span>
+          </div>
+          <div id="deletionModules" class="border rounded p-2"></div>
+
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" value="1" id="confirmDeletionReview" disabled>
+            <label class="form-check-label" for="confirmDeletionReview">
+              Revisei a lista e confirmo a exclusão permanente de todos os itens apresentados.
+            </label>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" style="display: inline;">
+        <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('tenant/delete'); ?>" class="d-inline">
           <input type="hidden" name="id" id="recordId">
-          <button type="submit" class="btn btn-danger">Excluir</button>
+          <input type="hidden" name="confirm_full_deletion" value="1">
+          <button type="submit" class="btn btn-danger" id="confirmDeleteButton" disabled>Excluir tenant e registros</button>
         </form>
       </div>
     </div>
@@ -143,10 +186,159 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </div>
 
 <script>
-document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-  const recordId = e.relatedTarget.dataset.id;
-  document.getElementById('recordId').value = recordId;
-  document.getElementById('recordName').textContent = e.relatedTarget.dataset.name;
-  document.getElementById('deleteForm').action = '<?= url('tenant/delete') ?>/' + recordId;
-});
+(function () {
+  const modal = document.getElementById('deleteModal');
+  const form = document.getElementById('deleteForm');
+  const reviewCheckbox = document.getElementById('confirmDeletionReview');
+  const confirmButton = document.getElementById('confirmDeleteButton');
+  const loading = document.getElementById('deletionImpactLoading');
+  const error = document.getElementById('deletionImpactError');
+  const content = document.getElementById('deletionImpactContent');
+  const modulesContainer = document.getElementById('deletionModules');
+  const warningsContainer = document.getElementById('deletionWarnings');
+  let impactRequest = null;
+
+  function resetImpact() {
+    if (impactRequest) {
+      impactRequest.abort();
+    }
+
+    impactRequest = new AbortController();
+    loading.classList.remove('d-none');
+    error.classList.add('d-none');
+    error.textContent = '';
+    content.classList.add('d-none');
+    modulesContainer.replaceChildren();
+    warningsContainer.replaceChildren();
+    reviewCheckbox.checked = false;
+    reviewCheckbox.disabled = true;
+    confirmButton.disabled = true;
+  }
+
+  function appendRecordList(module, section) {
+    const list = document.createElement('ul');
+    list.className = 'mb-0 small';
+
+    if (!Array.isArray(module.records) || module.records.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'text-muted';
+      empty.textContent = 'Nenhum registro encontrado.';
+      list.appendChild(empty);
+    } else {
+      module.records.forEach(function (record) {
+        const item = document.createElement('li');
+        item.className = 'mb-1';
+
+        const label = document.createElement('span');
+        label.textContent = record.label || ('Registro #' + record.id);
+        item.appendChild(label);
+
+        const source = document.createElement('code');
+        source.className = 'ms-2 text-muted';
+        source.textContent = record.table + '#' + record.id;
+        item.appendChild(source);
+        list.appendChild(item);
+      });
+    }
+
+    section.appendChild(list);
+  }
+
+  function renderImpact(impact) {
+    const database = impact.database || {};
+    const databaseSummary = document.getElementById('deletionDatabaseSummary');
+    databaseSummary.textContent = database.exists
+      ? 'A base ' + database.name + ' será excluída por completo (' + database.table_count + ' tabela(s) e ' + database.record_count + ' registro(s) listados).'
+      : 'A base ' + database.name + ' não existe; a limpeza dos registros no manager_main continuará normalmente.';
+
+    (impact.warnings || []).forEach(function (message) {
+      const warning = document.createElement('div');
+      warning.className = 'alert alert-warning';
+      warning.textContent = message;
+      warningsContainer.appendChild(warning);
+    });
+
+    document.getElementById('preservedRecords').textContent = (impact.preserved || []).join(', ');
+    document.getElementById('deletionTotalRecords').textContent = Number(impact.total_records || 0).toLocaleString('pt-BR') + ' registro(s)';
+
+    (impact.modules || []).forEach(function (module) {
+      const section = document.createElement('section');
+      section.className = 'mb-3 pb-3 border-bottom';
+
+      const heading = document.createElement('div');
+      heading.className = 'd-flex flex-wrap gap-2 align-items-center mb-2';
+
+      const scope = document.createElement('span');
+      scope.className = 'badge text-bg-secondary';
+      scope.textContent = module.scope || 'manager_main';
+      heading.appendChild(scope);
+
+      const title = document.createElement('strong');
+      title.textContent = module.label;
+      heading.appendChild(title);
+
+      const count = document.createElement('span');
+      count.className = 'badge text-bg-danger';
+      count.textContent = Number(module.count || 0).toLocaleString('pt-BR');
+      heading.appendChild(count);
+
+      section.appendChild(heading);
+      appendRecordList(module, section);
+      modulesContainer.appendChild(section);
+    });
+
+    loading.classList.add('d-none');
+    content.classList.remove('d-none');
+    reviewCheckbox.disabled = false;
+  }
+
+  reviewCheckbox.addEventListener('change', function () {
+    confirmButton.disabled = !reviewCheckbox.checked;
+  });
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    if (!trigger) {
+      return;
+    }
+
+    resetImpact();
+    const recordId = trigger.dataset.id;
+    document.getElementById('recordId').value = recordId;
+    document.getElementById('recordName').textContent = trigger.dataset.name;
+    form.action = form.dataset.deleteBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+
+    const impactUrl = modal.dataset.impactBaseUrl.replace(/\/$/, '') + '/' + encodeURIComponent(recordId);
+    fetch(impactUrl, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      signal: impactRequest.signal
+    })
+      .then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (payload) {
+          if (!response.ok) {
+            throw new Error(payload.message || 'Não foi possível carregar os registros associados.');
+          }
+          return payload;
+        });
+      })
+      .then(renderImpact)
+      .catch(function (requestError) {
+        if (requestError.name === 'AbortError') {
+          return;
+        }
+        loading.classList.add('d-none');
+        error.textContent = requestError.message;
+        error.classList.remove('d-none');
+      });
+  });
+
+  modal.addEventListener('hidden.bs.modal', function () {
+    if (impactRequest) {
+      impactRequest.abort();
+      impactRequest = null;
+    }
+  });
+})();
 </script>
