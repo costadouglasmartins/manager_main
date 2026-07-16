@@ -206,4 +206,4 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
 })();
 </script>
 
-<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
+<script src="/assets/autocomplete/autocomplete.js?v=2"></script>

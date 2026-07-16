@@ -181,5 +181,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script src="<?= url('assets/js/masks.js?v=5'); ?>"></script>
+<script src="/assets/masks/masks.js?v=5"></script>
 <script src="<?= url('assets/js/financial_operations_payments/index.js?v=1'); ?>"></script>

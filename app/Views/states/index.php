@@ -140,5 +140,5 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 </div>
 
-<script src="<?= url('assets/js/autocomplete.js?v=2'); ?>"></script>
+<script src="/assets/autocomplete/autocomplete.js?v=2"></script>
 <script src="<?= url('assets/js/states/index.js?v=1'); ?>"></script>
