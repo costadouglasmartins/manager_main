@@ -1,22 +1,22 @@
 .people-create-page {
   --people-border: rgba(var(--bs-body-color-rgb), 0.12);
-  --people-panel-bg: var(--bs-body-bg);
+  --people-panel-bg: var(--bs-tertiary-bg);
   --people-ink: var(--bs-body-color);
   --people-muted: var(--bs-secondary-color);
   --people-primary: #3b82f6;
   --people-active: #38bdf8;
-  --people-shadow: 0 14px 32px rgba(20, 28, 35, 0.1);
+  --people-shadow: 0 4px 14px rgba(20, 28, 35, 0.06);
   margin-bottom: 2rem;
 }
 
 [data-bs-theme="dark"] .people-create-page {
-  --people-border: rgba(255, 255, 255, 0.12);
-  --people-panel-bg: #151a1f;
+  --people-border: rgba(255, 255, 255, 0.1);
+  --people-panel-bg: var(--bs-tertiary-bg);
   --people-ink: #edf2f4;
   --people-muted: #aab4bc;
   --people-primary: #93c5fd;
   --people-active: #67e8f9;
-  --people-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  --people-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 .people-create-page .breadcrumb {
@@ -54,42 +54,19 @@
 .people-progress-card,
 .people-form-card {
   border: 1px solid var(--people-border);
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .people-progress-card {
   position: relative;
-  overflow: hidden;
-  padding: 1.35rem;
+  padding: 1.1rem;
   color: var(--people-ink);
   box-shadow: var(--people-shadow);
-  background:
-    linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(56, 189, 248, 0.08)),
-    linear-gradient(90deg, rgba(var(--bs-body-bg-rgb), 0.88), rgba(var(--bs-body-bg-rgb), 0.72)),
-    var(--people-panel-bg);
-}
-
-.people-progress-card::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-}
-
-.people-progress-card > .row,
-.people-progress-controls {
-  position: relative;
-  z-index: 1;
+  background: var(--people-panel-bg);
 }
 
 .people-card-accent-primary {
-  border-bottom: 4px solid var(--people-primary);
+  border-color: var(--people-border);
 }
 
 .people-progress-card .people-create-eyebrow {
@@ -98,7 +75,7 @@
 
 .people-create-title {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.65rem;
   font-weight: 800;
   letter-spacing: 0;
 }

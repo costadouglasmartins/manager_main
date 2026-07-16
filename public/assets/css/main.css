@@ -3,41 +3,51 @@ body { padding-top: 70px; transition: background-color 0.3s ease, color 0.3s eas
 .index-search-card {
   position: relative;
   margin-top: 0.5rem;
-  padding: 1.35rem;
-  overflow: hidden;
+  padding: 1.1rem;
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.12);
-  border-bottom: 4px solid #3b82f6;
-  border-radius: 8px;
-  box-shadow: 0 14px 32px rgba(20, 28, 35, 0.1);
-  background:
-    linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(56, 189, 248, 0.08)),
-    linear-gradient(90deg, rgba(var(--bs-body-bg-rgb), 0.88), rgba(var(--bs-body-bg-rgb), 0.72)),
-    var(--bs-body-bg);
-}
-
-.index-search-card::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--bs-body-color-rgb), 0.04) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-}
-
-.index-search-card > .row {
-  position: relative;
-  z-index: 1;
+  border-radius: 12px;
+  background: var(--bs-tertiary-bg);
+  box-shadow: 0 4px 14px rgba(20, 28, 35, 0.06);
 }
 
 [data-bs-theme="dark"] .index-search-card {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
-  background:
-    linear-gradient(135deg, rgba(147, 197, 253, 0.12), rgba(103, 232, 249, 0.1)),
-    linear-gradient(90deg, rgba(21, 26, 31, 0.9), rgba(21, 26, 31, 0.76)),
-    #151a1f;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.index-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-height: 100%;
+}
+
+.index-search-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border-radius: 0.625rem;
+}
+
+.index-search-action > i {
+  margin: 0 !important;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.index-search-action:focus-visible {
+  outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 991.98px) {
+  .index-search-actions {
+    justify-content: flex-start;
+  }
 }

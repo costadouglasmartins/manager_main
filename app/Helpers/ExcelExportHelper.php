@@ -44,14 +44,15 @@ if (!function_exists('excelExportButton'))
 		string $route,
 		string $queryString = '',
 		string $label = 'Exportar Excel',
-		string $class = 'btn btn-success w-100'
+		string $class = 'btn btn-outline-success btn-sm index-search-action'
 	): string
 		{
 		$href = excelExportUrl($route, $queryString);
+		$escapedLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
 
-		return '<a href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '" class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '">' .
-			'<i class="bi bi-file-earmark-spreadsheet me-1" aria-hidden="true"></i>' .
-			htmlspecialchars($label, ENT_QUOTES, 'UTF-8') .
+		return '<a href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '" class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '" aria-label="' . $escapedLabel . '" title="' . $escapedLabel . '">' .
+			'<i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i>' .
+			'<span class="visually-hidden">' . $escapedLabel . '</span>' .
 			'</a>';
 		}
 	}

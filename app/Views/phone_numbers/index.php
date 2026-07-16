@@ -55,13 +55,13 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 
   <div class="col-12 col-lg-3">
-    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
-      <a href="<?= url('phone_number'); ?>" class="btn btn-secondary w-100">Limpar</a>
+    <div class="index-search-actions">
+      <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
+      <a href="<?= url('phone_number'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('phone_number', $paginationQuery); ?>
       <?= excelExportButton('phone_number', $paginationQuery); ?>
       <?php if (authCan('phone_number.create')): ?>
-        <a href="<?= url('phone_number/create'); ?>" class="btn btn-success w-100">Novo(a)</a>
+        <a href="<?= url('phone_number/create'); ?>" class="btn btn-success btn-sm index-search-action" aria-label="Novo telefone" title="Novo telefone"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo telefone</span></a>
       <?php endif; ?>
     </div>
   </div>

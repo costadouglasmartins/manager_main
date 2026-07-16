@@ -121,10 +121,10 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     </div>
 
     <div class="col-12 col-lg-3">
-      <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-        <a href="<?= url('tool/ipRangeWebCrawlerReport'); ?>" class="btn btn-secondary w-100">Limpar</a>
-        <a href="<?= url('tool/ipRangeWebCrawler'); ?>" class="btn btn-outline-primary w-100">Voltar ao crawler</a>
+      <div class="index-search-actions">
+        <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
+        <a href="<?= url('tool/ipRangeWebCrawlerReport'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
+        <a href="<?= url('tool/ipRangeWebCrawler'); ?>" class="btn btn-outline-primary btn-sm index-search-action" aria-label="Voltar ao crawler" title="Voltar ao crawler"><i class="bi bi-arrow-left" aria-hidden="true"></i><span class="visually-hidden">Voltar ao crawler</span></a>
       </div>
     </div>
   </div>

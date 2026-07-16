@@ -116,13 +116,12 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 
   <div class="col-12 col-lg-3">
-    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <!--<label>&nbsp;</label>-->
-      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
-      <a href="<?= url('user'); ?>" class="btn btn-secondary w-100">Limpar</a>
+    <div class="index-search-actions">
+      <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
+      <a href="<?= url('user'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('user', $paginationQuery); ?>
       <?= excelExportButton('user', $paginationQuery); ?>
-      <a href="<?= url('person/create'); ?>" class="btn btn-success w-100" target="_blank">Novo(a) usuário(a)</a>
+      <a href="<?= url('person/create'); ?>" class="btn btn-success btn-sm index-search-action" target="_blank" rel="noopener" aria-label="Novo usuário" title="Novo usuário"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo usuário</span></a>
     </div>
   </div>
   </div>

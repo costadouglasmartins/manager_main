@@ -62,14 +62,12 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
     </div>
 
     <div class="col-12 col-xl-2">
-      <div class="d-flex flex-column gap-2 align-items-center align-items-xl-end">
-        <button class="btn btn-primary w-100" type="submit">Filtrar</button>
-        <a class="btn btn-secondary w-100" href="<?= url('support_chat'); ?>">Limpar</a>
-        <?= pdfExportButton('support_chat', $queryFilters, 'Exportar PDF', 'btn btn-danger w-100'); ?>
-        <?= excelExportButton('support_chat', $queryFilters, 'Exportar Excel', 'btn btn-success w-100'); ?>
-        <a class="btn btn-success w-100" href="<?= url('support_chat/attend'); ?>">
-          <i class="bi bi-headset me-1"></i> Abrir atendimento
-        </a>
+      <div class="index-search-actions">
+        <button class="btn btn-primary btn-sm index-search-action" type="submit" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
+        <a class="btn btn-outline-secondary btn-sm index-search-action" href="<?= url('support_chat'); ?>" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
+        <?= pdfExportButton('support_chat', $queryFilters); ?>
+        <?= excelExportButton('support_chat', $queryFilters); ?>
+        <a class="btn btn-success btn-sm index-search-action" href="<?= url('support_chat/attend'); ?>" aria-label="Abrir atendimento" title="Abrir atendimento"><i class="bi bi-headset" aria-hidden="true"></i><span class="visually-hidden">Abrir atendimento</span></a>
       </div>
     </div>
   </div>

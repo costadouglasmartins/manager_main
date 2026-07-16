@@ -51,13 +51,13 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </div>
 
   <div class="col-12 col-lg-3">
-    <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-      <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
-      <a href="<?= url('tenant'); ?>" class="btn btn-secondary w-100">Limpar</a>
+    <div class="index-search-actions">
+      <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
+      <a href="<?= url('tenant'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('tenant', $paginationQuery); ?>
       <?= excelExportButton('tenant', $paginationQuery); ?>
       <?php if (authCan('tenant.create')): ?>
-        <a href="<?= url('tenant/create'); ?>" class="btn btn-success w-100">Novo tenant</a>
+        <a href="<?= url('tenant/create'); ?>" class="btn btn-success btn-sm index-search-action" aria-label="Novo tenant" title="Novo tenant"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo tenant</span></a>
       <?php endif; ?>
     </div>
   </div>

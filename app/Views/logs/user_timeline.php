@@ -92,9 +92,9 @@ $actionBadgeClass = static function (string $action): string {
     </div>
 
     <div class="col-12">
-      <div class="d-flex flex-wrap gap-2 justify-content-end">
-        <button class="btn btn-primary" type="submit">Filtrar</button>
-        <a class="btn btn-secondary" href="<?= url('log/user-timeline/' . (int) $userId); ?>">Limpar</a>
+      <div class="index-search-actions">
+        <button class="btn btn-primary btn-sm index-search-action" type="submit" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
+        <a class="btn btn-outline-secondary btn-sm index-search-action" href="<?= url('log/user-timeline/' . (int) $userId); ?>" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       </div>
     </div>
   </div>

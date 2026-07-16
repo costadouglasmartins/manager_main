@@ -113,9 +113,9 @@ $actionBadgeClass = static function (string $action): string {
     </div>
 
     <div class="col-12 col-xl-2">
-      <div class="d-flex flex-column gap-2 align-items-center align-items-xl-end">
-        <button class="btn btn-primary w-100" type="submit">Filtrar</button>
-        <a class="btn btn-secondary w-100" href="<?= url('log'); ?>">Limpar</a>
+      <div class="index-search-actions">
+        <button class="btn btn-primary btn-sm index-search-action" type="submit" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
+        <a class="btn btn-outline-secondary btn-sm index-search-action" href="<?= url('log'); ?>" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
         <?= pdfExportButton('log', $paginationQuery); ?>
         <?= excelExportButton('log', $paginationQuery); ?>
       </div>
