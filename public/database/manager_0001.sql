@@ -49,10 +49,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   CONSTRAINT `fk_bank_accounts_manager_main_banks` FOREIGN KEY (`bank_id`) REFERENCES `manager_main`.`banks` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.bank_accounts: ~2 rows (approximately)
-INSERT INTO `bank_accounts` (`id`, `bank_id`, `name`, `agency`, `account`, `pix_key_type`, `pix_key`, `bank_slip_instructions_line_1`, `bank_slip_instructions_line_2`, `bank_slip_instructions_line_3`, `bank_slip_instructions_line_4`, `bank_slip_protest`, `bank_slip_protest_number_of_days`, `bank_slip_wallet`, `bank_slip_species_title`, `bank_slip_interest_type`, `bank_slip_interest_amount_type`, `bank_slip_interest`, `bank_slip_late_fee_amount`, `active`, `created`, `modified`) VALUES
-	(1, 75, 'Itaú CNAB 400', '1234', '56789-0', NULL, NULL, 'AAAA', 'BBBB', 'CCCC', 'DDDD', 1, 5, '109', '02', 'DAILY', 'PERCENTAGE', 1.05, 10.58, 1, '2026-06-01 23:03:58', '2026-06-01 23:56:57'),
-	(2, 46, 'Itaú CNAB 240', '1234', '56789-0', NULL, NULL, 'AAAA', 'BBBB', 'CCCC', 'DDDD', 1, 6, '109', '02', 'DAILY', 'PERCENTAGE', 11.23, 14.35, 1, '2026-06-01 23:53:41', '2026-06-01 23:57:15');
+-- Dumping data for table manager_0001.bank_accounts: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.bank_files
 CREATE TABLE IF NOT EXISTS `bank_files` (
@@ -256,8 +253,6 @@ CREATE TABLE IF NOT EXISTS `products` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.products: ~0 rows (approximately)
-INSERT INTO `products` (`id`, `user_id`, `product_category_id`, `sku`, `barcode`, `name`, `description`, `cost_price`, `sale_price`, `stock_quantity`, `minimum_stock`, `unit`, `active`, `created`, `modified`) VALUES
-	(5, 2, 1, 'AOSDIJ@21312', '094823490583455728371939003', 'Teste produto', '<p>\r\n<b>Nulla bibendum sem et magna elementum tempor. </b>Quisque auctor tristique \r\nturpis id malesuada. Vivamus tincidunt ultricies gravida. In et \r\nimperdiet est, nec convallis ante. Maecenas posuere ultrices convallis. \r\nInteger molestie erat at vulputate fermentum. Sed ut consectetur ligula.\r\n Vestibulum ante ipsum primis in faucibus orci luctus et ultrices \r\nposuere cubilia curae; Morbi volutpat at lacus quis rhoncus. In molestie\r\n ante quis eleifend feugiat. In ut augue velit. Aliquam scelerisque \r\nipsum augue, in molestie ante sagittis in.\r\n</p>\r\n<p>\r\n<i>Proin finibus at nisi at cursus.</i> Phasellus placerat aliquam magna \r\ntincidunt aliquam. Morbi pretium vehicula diam, nec gravida arcu \r\ntincidunt non. Class aptent taciti sociosqu ad litora torquent per \r\nconubia nostra, per inceptos himenaeos. Sed pulvinar ornare leo et \r\ntempus. Aenean eros nunc, pharetra ac accumsan ut, pulvinar nec quam. \r\nQuisque vestibulum, nunc et pulvinar ultrices, turpis diam efficitur \r\npurus, id malesuada felis enim id leo. Pellentesque laoreet augue mi, \r\nnec tempor lorem tempus quis. Nulla metus mi, dignissim convallis est a,\r\n <u>tincidunt molestie ipsum. </u>Praesent nisl libero, facilisis sed velit at,\r\n faucibus congue arcu. Nam blandit rhoncus ante id porttitor. Aliquam \r\nurna nunc, elementum eget efficitur a, mattis vel felis.\r\n</p>', 0.50, 1200.39, 1000.000, 10.000, 'UN', 1, '2026-07-03 21:55:11', '2026-07-03 21:55:11');
 
 -- Dumping structure for table manager_0001.product_categories
 CREATE TABLE IF NOT EXISTS `product_categories` (
@@ -298,11 +293,7 @@ CREATE TABLE IF NOT EXISTS `product_images` (
   CONSTRAINT `fk_products_images_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_images: ~3 rows (approximately)
-INSERT INTO `product_images` (`id`, `product_id`, `original_name`, `file_path`, `thumb_path`, `mime_type`, `file_size`, `width`, `height`, `position`, `is_main`, `created`, `modified`) VALUES
-	(2, 5, 'black_1200x1200.png', 'tenant_files/manager_0001/products/5/product_5_d13f06ea6de7e566.png', 'tenant_files/manager_0001/products/5/product_5_d13f06ea6de7e566.png', 'image/png', 608926, 1200, 1200, 0, 1, '2026-07-03 21:55:11', '2026-07-03 21:55:11'),
-	(3, 5, 'grey_1200x1200.png', 'tenant_files/manager_0001/products/5/product_5_cec68a74703c8e47.png', 'tenant_files/manager_0001/products/5/product_5_cec68a74703c8e47.png', 'image/png', 607043, 1200, 1200, 1, 0, '2026-07-03 21:55:11', '2026-07-03 21:55:11'),
-	(4, 5, 'white_1200x1200.png', 'tenant_files/manager_0001/products/5/product_5_166915525aa7d4b9.png', 'tenant_files/manager_0001/products/5/product_5_166915525aa7d4b9.png', 'image/png', 445566, 1200, 1200, 2, 0, '2026-07-03 21:55:11', '2026-07-03 21:55:11');
+-- Dumping data for table manager_0001.product_images: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.product_stocks_movements
 CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
@@ -327,8 +318,6 @@ CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.product_stocks_movements: ~0 rows (approximately)
-INSERT INTO `product_stocks_movements` (`id`, `product_id`, `movement_type`, `quantity`, `previous_quantity`, `new_quantity`, `unit_cost`, `unit_price`, `reference`, `observations`, `movement_date`, `created`, `modified`) VALUES
-	(5, 5, 'IN', 1000.000, 0.000, 1000.000, 0.50, 1200.39, 'Estoque inicial', NULL, '2026-07-03 21:55:11', '2026-07-03 21:55:11', '2026-07-03 21:55:11');
 
 -- Dumping structure for table manager_0001.schedule_categories
 CREATE TABLE IF NOT EXISTS `schedule_categories` (
@@ -466,9 +455,6 @@ CREATE TABLE IF NOT EXISTS `tasks` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.tasks: ~0 rows (approximately)
-INSERT INTO `tasks` (`id`, `task_category_id`, `title`, `status`, `third_party_person_id`, `third_party_name`, `description`, `created_by_user_id`, `created`, `modified`) VALUES
-	(1, 1, 'Efetuar ligação para cliente XPTO', 'completed', NULL, NULL, 'Teste teste <b>teste</b>', 2, '2026-07-03 12:25:37', '2026-07-03 19:13:04'),
-	(2, 1, 'TESTE', 'in_progress', NULL, NULL, 'TEste', 2, '2026-07-14 22:22:24', '2026-07-14 22:22:24');
 
 -- Dumping structure for table manager_0001.task_assignees
 CREATE TABLE IF NOT EXISTS `task_assignees` (
@@ -487,9 +473,6 @@ CREATE TABLE IF NOT EXISTS `task_assignees` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.task_assignees: ~0 rows (approximately)
-INSERT INTO `task_assignees` (`id`, `task_id`, `person_id`, `active`, `created`, `modified`) VALUES
-	(1, 1, 4, 1, '2026-07-03 12:25:37', '2026-07-03 19:13:04'),
-	(2, 2, 4, 1, '2026-07-14 22:22:24', '2026-07-14 22:22:24');
 
 -- Dumping structure for table manager_0001.task_categories
 CREATE TABLE IF NOT EXISTS `task_categories` (
@@ -524,8 +507,6 @@ CREATE TABLE IF NOT EXISTS `task_comments` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.task_comments: ~0 rows (approximately)
-INSERT INTO `task_comments` (`id`, `task_id`, `user_id`, `comment`, `created`, `modified`) VALUES
-	(1, 1, 2, 'Teste', '2026-07-03 19:22:46', '2026-07-03 19:22:46');
 
 -- Dumping structure for table manager_0001.task_executions
 CREATE TABLE IF NOT EXISTS `task_executions` (
@@ -547,10 +528,7 @@ CREATE TABLE IF NOT EXISTS `task_executions` (
   CONSTRAINT `fk_task_executions_task_assignees` FOREIGN KEY (`task_assignee_id`) REFERENCES `task_assignees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.task_executions: ~2 rows (approximately)
-INSERT INTO `task_executions` (`id`, `task_assignee_id`, `started_by_user_id`, `paused_by_user_id`, `started_at`, `paused_at`, `created`, `modified`) VALUES
-	(1, 1, 2, 2, '2026-07-03 12:25:53', '2026-07-03 12:26:15', '2026-07-03 12:25:53', '2026-07-03 12:26:15'),
-	(2, 1, 2, 2, '2026-07-03 12:26:17', '2026-07-03 18:46:01', '2026-07-03 12:26:17', '2026-07-03 18:46:01');
+-- Dumping data for table manager_0001.task_executions: ~0 rows (approximately)
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
