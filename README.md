@@ -50,6 +50,14 @@ Exemplo recomendado para comentários de métodos:
 - Retorne JSON com `$this->json()` em endpoints AJAX.
 - Evite refatorações sem relação direta com a alteração solicitada.
 
+## Código reutilizável
+
+- Sempre que um código puder ser reutilizado por mais de uma aplicação não o mantenha duplicado ou embutido em uma view.
+- Antes de criar uma nova biblioteca, verifique se já existe uma biblioteca em `assets/` que possa ser estendida.
+- Quando for necessária uma nova biblioteca JavaScript reutilizável, crie-a no diretório compartilhado seguindo o padrão `assets/<nome_da_lib>/<nome_da_lib>.js`.
+- Mantenha a biblioteca independente dos detalhes de uma tela específica e exponha somente as opções necessárias para que cada tela configure seu comportamento.
+- Nas views de `manager` e `manager_main`, apenas carregue e inicialize a biblioteca compartilhada; mantenha nelas somente o código que for realmente exclusivo daquela tela.
+
 ## Views e assets
 
 - Para arquivos de view PHP, coloque JavaScript específico da tela em:
