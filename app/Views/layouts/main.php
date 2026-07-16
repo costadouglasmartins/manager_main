@@ -6,11 +6,9 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script src="/assets/helpers/helper.js?v=3"></script>
   <script>
-    (function() {
-      const savedTheme = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-bs-theme", savedTheme);
-    })();
+    AppTheme.initialize({ storageKey: "theme-manager-main" });
   </script>
   <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
@@ -362,8 +360,7 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   </div>
   
   <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="<?= url('assets/js/menu.js?v=3'); ?>"></script>
-  <script src="/assets/helpers/helper.js?v=2"></script>
+  <script src="<?= url('assets/js/menu.js?v=4'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=2'); ?>"></script>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>

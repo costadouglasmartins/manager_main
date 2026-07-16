@@ -4,33 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const CLOSE_DELAY = 2000;
 
   /**
-   * Theme
-   */
-  const themeBtn = document.getElementById("themeToggle");
-  if (themeBtn) 
-    {
-    const themeIcon = themeBtn.querySelector("i");
-    const root = document.documentElement;
-    
-    /**
-     * Apply theme 
-     * @param {string} theme 
-     */
-    function applyTheme(theme) 
-      {
-      root.setAttribute("data-bs-theme", theme);
-      localStorage.setItem("theme", theme);
-      themeIcon.className = theme === "dark" ? "bi bi-sun-fill" : "bi bi-moon-fill";
-      }
-
-    applyTheme(localStorage.getItem("theme") || "light");
-
-    themeBtn.addEventListener("click", () => {
-      applyTheme(root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark");
-    });
-    }
-
-  /**
    * Defines which side has enough room to render a submenu.
    * @param {component} submenu
    */
