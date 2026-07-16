@@ -47,9 +47,11 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   PRIMARY KEY (`id`),
   KEY `fk_bank_accounts_manager_main_banks_idx` (`bank_id`),
   CONSTRAINT `fk_bank_accounts_manager_main_banks` FOREIGN KEY (`bank_id`) REFERENCES `manager_main`.`banks` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.bank_accounts: ~0 rows (approximately)
+INSERT INTO `bank_accounts` (`id`, `bank_id`, `name`, `agency`, `account`, `pix_key_type`, `pix_key`, `bank_slip_instructions_line_1`, `bank_slip_instructions_line_2`, `bank_slip_instructions_line_3`, `bank_slip_instructions_line_4`, `bank_slip_protest`, `bank_slip_protest_number_of_days`, `bank_slip_wallet`, `bank_slip_species_title`, `bank_slip_interest_type`, `bank_slip_interest_amount_type`, `bank_slip_interest`, `bank_slip_late_fee_amount`, `active`, `created`, `modified`) VALUES
+	(3, 46, 'Banco Itaú', '0001-2', '234560-7', 'CPF', '03599033986', 'AAA', 'BBB', 'CCC', 'DDD', 1, 5, '109', 'DMI', 'DAILY', 'PERCENTAGE', 10.00, 40.00, 1, '2026-07-16 23:21:26', '2026-07-16 23:21:26');
 
 -- Dumping structure for table manager_0001.bank_files
 CREATE TABLE IF NOT EXISTS `bank_files` (
@@ -122,9 +124,11 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   CONSTRAINT `fk_bank_slips_bank_accounts` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_bank_slips_bank_files` FOREIGN KEY (`bank_file_id`) REFERENCES `bank_files` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_bank_slips_financial_operations_payments` FOREIGN KEY (`financial_operation_payment_id`) REFERENCES `financial_operations_payments` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.bank_slips: ~0 rows (approximately)
+INSERT INTO `bank_slips` (`id`, `financial_operation_payment_id`, `bank_account_id`, `bank_file_id`, `status`, `document_number`, `our_number`, `our_number_digit`, `portfolio`, `payer_document_type`, `payer_document`, `payer_name`, `payer_street`, `payer_neighborhood`, `payer_city`, `payer_state`, `payer_zip_code`, `amount`, `due_date`, `issue_date`, `payment_date`, `paid_amount`, `credited_amount`, `credit_date`, `interest_date`, `interest_amount_per_day`, `discount_date`, `discount_amount`, `fine_date`, `fine_amount`, `protest_code`, `protest_days`, `write_off_code`, `write_off_days`, `last_occurrence_code`, `last_occurrence_message`, `created`, `modified`) VALUES
+	(5, NULL, 3, NULL, 'DRAFT', '1', '1', '2', '109', 'CPF', '03599033986', 'Nome do Pagador', 'Rua Brescia', 'Pagani', 'Palhoça', 'SC', '88132241', 1.50, '2026-11-09', '2026-07-16', NULL, NULL, NULL, NULL, NULL, 0.00, NULL, 0.00, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-07-16 23:39:13', '2026-07-16 23:39:13');
 
 -- Dumping structure for table manager_0001.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
