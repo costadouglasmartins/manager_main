@@ -17,6 +17,7 @@ $queryFilters = http_build_query([
   'due_date_end'             => $filters['due_date_end'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
+$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
 ?>
 
 <nav aria-label="breadcrumb">
@@ -26,23 +27,39 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
   </ol>
 </nav>
 
-<form action="<?= url('financial_operation_payment'); ?>" class="index-search-card mb-4" method="get">
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-credit-card fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Financeiro</p><h1 class="h3 fw-bold mb-1">Pagamentos financeiros</h1><p class="text-body-secondary mb-0">Consulte e acompanhe os pagamentos das operações.</p></div>
+  </div>
+  <?php if (authCan('financial_operation_payment.create')): ?><a href="<?= url('financial_operation_payment/create'); ?>" class="btn btn-success d-inline-flex align-items-center justify-content-center gap-2"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>Novo pagamento</span></a><?php endif; ?>
+</header>
+
+<form action="<?= url('financial_operation_payment'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters" method="get">
   <?= sortHiddenInputs($sort) ?>
 
-  <div class="row g-3 align-items-center">
+  <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div><h2 class="h5 fw-bold mb-1">Filtros de pesquisa</h2><p class="small text-body-secondary mb-0">Refine a lista de pagamentos financeiros.</p></div>
+    <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
+  </div>
 
-  <div class="col-12 col-lg-9">
+  <div class="row g-3 align-items-end">
+
+  <div class="col-12">
     <div class="row g-3">
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="id">Código</label>
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="financial_operation_id">Operação</label>
         <input class="form-control" id="financial_operation_id" name="financial_operation_id" type="text" placeholder="Operação" value="<?= htmlspecialchars($filters['financial_operation_id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="financial_operation_type">Tipo da operação</label>
         <select class="form-select" id="financial_operation_type" name="financial_operation_type">
           <option value="">Tipo operação</option>
           <?php foreach ($operationTypes as $value => $label): ?>
@@ -54,6 +71,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       </div>
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="type">Tipo do pagamento</label>
         <select class="form-select" id="type" name="type">
           <option value="">Tipo pagamento</option>
           <?php foreach ($types as $value => $label): ?>
@@ -65,10 +83,12 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       </div>
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="payment_date">Data de pagamento</label>
         <input class="form-control" id="payment_date" name="payment_date" type="date" value="<?= htmlspecialchars($filters['payment_date'], ENT_QUOTES, 'UTF-8') ?>" title="Data de pagamento">
       </div>
 
       <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="due_date_start">Período de vencimento</label>
         <div class="input-group">
           <input autocomplete="off" class="form-control mask-date" id="due_date_start" name="due_date_start" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" value="<?= htmlspecialchars(maskDateBr($filters['due_date_start']) ?? '', ENT_QUOTES, 'UTF-8') ?>" title="Vencimento inicial" aria-label="Vencimento inicial">
           <span class="input-group-text">até</span>
@@ -79,15 +99,12 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     </div>
   </div>
 
-  <div class="col-12 col-lg-3">
+  <div class="col-12">
     <div class="index-search-actions">
       <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
       <a href="<?= url('financial_operation_payment'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('financial_operation_payment', $paginationQuery); ?>
       <?= excelExportButton('financial_operation_payment', $paginationQuery); ?>
-      <?php if (authCan('financial_operation_payment.create')): ?>
-        <a href="<?= url('financial_operation_payment/create'); ?>" class="btn btn-success btn-sm index-search-action" aria-label="Novo pagamento financeiro" title="Novo pagamento financeiro"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo pagamento financeiro</span></a>
-      <?php endif; ?>
     </div>
   </div>
 
@@ -95,10 +112,16 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 
 </form>
 
-<hr>
+<div class="app-index-results-header">
+  <div>
+    <h2 class="h5 fw-bold mb-1">Resultados</h2>
+    <p class="small text-body-secondary mb-0"><?= $activeFilterCount > 0 ? 'Registros encontrados para os filtros informados.' : 'Todos os registros cadastrados.'; ?></p>
+  </div>
+  <span class="badge rounded-pill text-bg-primary"><?= (int) $total; ?> registro(s)</span>
+</div>
 
-<div class="table-responsive">
-  <table class="table table-striped table-hover">
+<div class="table-responsive app-index-results-table">
+  <table class="table table-hover align-middle mb-0">
     <thead>
       <tr>
         <?= sortableTh('financial_operation_payment', 'id', '#', $sort, $queryFilters) ?>
@@ -110,7 +133,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <th class="text-end">Ações</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-group-divider">
       <?php if (!empty($financial_operations_payments)): ?>
         <?php foreach ($financial_operations_payments as $row): ?>
           <?php
@@ -135,10 +158,10 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
                 <a href="<?= url('financial_operation_payment/edit/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
               <?php endif; ?>
               <?php if (authCan('financial_operation_payment.informations')): ?>
-                <a href="<?= url('financial_operation_payment/informations/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
+                <a href="<?= url('financial_operation_payment/informations/' . $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Ver detalhes"><i class="bi bi-eye"></i></a>
               <?php endif; ?>
               <?php if (authCan('financial_operation_payment.delete')): ?>
-                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $row['id'] ?>" data-name="Pagamento #<?= (int) $row['id'] ?>">
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $row['id'] ?>" data-name="Pagamento #<?= (int) $row['id'] ?>">
                   <i class="bi bi-trash"></i>
                 </button>
               <?php endif; ?>
@@ -147,17 +170,18 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="7" class="text-center">Nenhum registro encontrado.</td>
+          <td colspan="7" class="app-index-results-empty">Nenhum registro encontrado.</td>
         </tr>
       <?php endif; ?>
     </tbody>
   </table>
 </div>
 
-<p class="text-muted"><?= (int) $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
+  <div class="app-index-pagination">
   <?= paginationLinks('financial_operation_payment', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
+  </div>
 <?php endif; ?>
 
 <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -172,7 +196,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('financial_operation_payment/delete'); ?>" style="display: inline;">
+        <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('financial_operation_payment/delete'); ?>" class="d-inline">
           <input type="hidden" name="id" id="recordId">
           <button type="submit" class="btn btn-danger">Excluir</button>
         </form>

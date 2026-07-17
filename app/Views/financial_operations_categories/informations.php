@@ -11,12 +11,18 @@ $modified = !empty($financial_operation_category['modified']) ? date('d/m/Y H:i'
   </ol>
 </nav>
 
-<h5>Dados da categoria financeira</h5>
-<div class="table-responsive mb-3">
-  <table class="table table-hover align-middle">
+<header class="app-detail-heading">
+  <span class="app-detail-heading-icon"><i class="bi bi-tags"></i></span>
+  <div class="app-detail-heading-content">
+    <span class="app-detail-eyebrow">Detalhes do cadastro</span>
+    <h1>Dados da categoria financeira</h1>
+  </div>
+</header>
+<div class="table-responsive app-detail-table">
+  <table class="table table-hover align-middle mb-0">
     <tbody>
       <tr>
-        <th class="text-muted" style="width: 220px;">Código</th>
+        <th>Código</th>
         <td><?= (int) $financial_operation_category['id']; ?></td>
       </tr>
       <tr>

@@ -24,7 +24,12 @@ $catalogJson = json_encode(
 </nav>
 <!-- /Breadcrumbs -->
 
-<h5 class="mb-3">Database manager</h5>
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-database-gear fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Administração</p><h1 class="h3 fw-bold mb-1">Database manager</h1><p class="text-body-secondary mb-0">Execute comandos SQL em bases selecionadas com acompanhamento em tempo real.</p></div>
+  </div>
+</header>
 
 <div class="alert alert-secondary mb-4">
   Execute comandos SQL em todos os bancos <code>manager_####</code> encontrados ou informe

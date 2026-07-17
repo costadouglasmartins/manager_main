@@ -174,10 +174,10 @@ if ($sessionUserLabel === '')
 ?>
 
 <link rel="stylesheet" href="<?= url('assets/css/financial_operations/create.css?v=3'); ?>">
-<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=23'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/financial_operations/sheet.css?v=24'); ?>">
 
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
+<nav class="financial-sheet-breadcrumb mb-3" aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item"><a href="<?= url('home'); ?>">Início</a></li>
     <li class="breadcrumb-item"><a href="<?= url('financial_operation'); ?>">Operações financeiras</a></li>
     <li class="breadcrumb-item active" aria-current="page">Planilha anual</li>
@@ -193,15 +193,20 @@ if ($sessionUserLabel === '')
      data-can-create-sheet-operations="<?= $canCreateSheetOperations ? '1' : '0'; ?>">
   <header class="financial-sheet-header">
     <div class="financial-sheet-title">
-      <span class="financial-sheet-title-icon"><i class="bi bi-table"></i></span>
-      <div>
-        <span class="financial-sheet-kicker">Resumo anual</span>
-        <h5>Planilha financeira <?= $year; ?></h5>
+      <span class="financial-sheet-title-icon" aria-hidden="true"><i class="bi bi-table"></i></span>
+      <div class="financial-sheet-title-content">
+        <span class="financial-sheet-kicker">Financeiro</span>
+        <h1 class="h4">Planilha financeira <?= (int) $year; ?></h1>
+        <p>Visão anual consolidada das receitas, despesas e lançamentos mensais.</p>
       </div>
     </div>
     <div class="financial-sheet-actions">
-      <form class="financial-sheet-year-filter" action="<?= url('financial_operation/sheet'); ?>" method="get">
-        <label for="financial_sheet_year">Ano</label>
+      <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center gap-2" href="<?= url('financial_operation'); ?>">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span>Voltar</span>
+      </a>
+      <form class="financial-sheet-year-filter input-group input-group-sm" action="<?= url('financial_operation/sheet'); ?>" method="get" aria-label="Filtrar planilha por ano">
+        <label class="input-group-text" for="financial_sheet_year"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Ano</label>
         <select class="form-select form-select-sm" id="financial_sheet_year" name="year">
           <?php foreach ($yearOptions as $yearOption): ?>
             <option value="<?= (int) $yearOption; ?>" <?= (int) $yearOption === $year ? 'selected' : ''; ?>>
@@ -209,11 +214,15 @@ if ($sessionUserLabel === '')
             </option>
           <?php endforeach; ?>
         </select>
-        <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
+        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" type="submit">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+          <span>Aplicar</span>
+        </button>
       </form>
       <?php if (authCan('financial_operation.create')): ?>
-        <a class="btn btn-success btn-sm" href="<?= url('financial_operation/create'); ?>">
-          <i class="bi bi-plus-lg me-1"></i>Novo lançamento
+        <a class="btn btn-success btn-sm d-inline-flex align-items-center justify-content-center gap-2" href="<?= url('financial_operation/create'); ?>">
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          <span>Novo lançamento</span>
         </a>
       <?php endif; ?>
     </div>

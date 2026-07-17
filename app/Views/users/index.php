@@ -15,6 +15,7 @@ $queryFilters = http_build_query([
 	'active' => $filters['active']
 	]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
+$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
 ?>
 
 <!-- Breadcrumbs -->
@@ -27,20 +28,33 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </nav>
 <!-- /Breadcrumbs -->
 
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-person-badge fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Acessos</p><h1 class="h3 fw-bold mb-1">Usuários</h1><p class="text-body-secondary mb-0">Consulte e gerencie os acessos ao sistema.</p></div>
+  </div>
+  <a href="<?= url('person/create'); ?>" target="_blank" rel="noopener" class="btn btn-success d-inline-flex align-items-center justify-content-center gap-2"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>Novo usuário</span></a>
+</header>
+
 <!-- Search form -->
-<form action="<?= url('user'); ?>" class="index-search-card mb-4">
+<form action="<?= url('user'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters">
   <?= sortHiddenInputs($sort) ?>
 
-  <div class="row g-3 align-items-center">
-  <div class="col-12 col-lg-9">
+  <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div><h2 class="h5 fw-bold mb-1">Filtros de pesquisa</h2><p class="small text-body-secondary mb-0">Refine a lista de usuários.</p></div>
+    <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
+  </div>
+
+  <div class="row g-3 align-items-end">
+  <div class="col-12">
     <div class="row g-3">
       <!-- Linha 1 -->
       <div class="col-12 col-md-6 col-lg-4">
-        <!--<label class="form-label" for="id">#</label>-->
+        <label class="form-label small fw-semibold" for="id">Código</label>
         <input class="form-control" id="id" name="id" placeholder="Código usuário" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-4">
-        <!--<label class="form-label" for="username">Username</label>-->
+        <label class="form-label small fw-semibold" for="username">Nome de usuário</label>
         <input class="form-control" id="username" name="username" placeholder="Nome de usuário" type="text" value="<?= htmlspecialchars($filters['username'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <!--
@@ -50,20 +64,20 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
         -->
       <!-- Linha 2 -->
       <div class="col-12 col-md-6 col-lg-4">
-        <!--<label for="type" class="form-label">Tipo</label>-->
-        <select autocomplete="off" class="form-control" id="type" name="type">
+        <label for="type" class="form-label small fw-semibold">Tipo</label>
+        <select autocomplete="off" class="form-select" id="type" name="type">
           <option value="">Selecione um tipo de usuário...</option>
           <option value="root" <?= ($filters['type'] === 'root' ? 'selected="selected"' : ''); ?>>ROOT</option>
           <option value="admin" <?= ($filters['type'] === 'admin' ? 'selected="selected"' : ''); ?>>ADMIN</option>
           <option value="user" <?= ($filters['type'] === 'user' ? 'selected="selected"' : ''); ?>>USUÁRIO(A)</option>
         </select>
       </div> 
-      <div class="col-12 col-md-6 col-lg-8">
-        <!--<label for="active" class="form-label">Situação</label>-->
-        <select autocomplete="off" class="form-control" id="active" name="active">
+      <div class="col-12 col-md-6 col-lg-12">
+        <label for="active" class="form-label small fw-semibold">Situação</label>
+        <select autocomplete="off" class="form-select" id="active" name="active">
           <option value="">Selecione uma situação...</option>
           <option value="1" <?= ($filters['active'] === '1' ? 'selected="selected"' : ''); ?>>Ativa</option>
-          <option value="0" <?= ($filters['active'] === '0' ? 'selected="selected"' : ''); ?>>Inativa</options>
+          <option value="0" <?= ($filters['active'] === '0' ? 'selected="selected"' : ''); ?>>Inativa</option>
         </select>
       </div>
       <!--
@@ -115,35 +129,43 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     </div>
   </div>
 
-  <div class="col-12 col-lg-3">
+  <div class="col-12">
     <div class="index-search-actions">
       <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
       <a href="<?= url('user'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('user', $paginationQuery); ?>
       <?= excelExportButton('user', $paginationQuery); ?>
-      <a href="<?= url('person/create'); ?>" class="btn btn-success btn-sm index-search-action" target="_blank" rel="noopener" aria-label="Novo usuário" title="Novo usuário"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo usuário</span></a>
     </div>
   </div>
   </div>
 
 </form>
 
-<hr>
+<div class="app-index-results-header">
+  <div>
+    <h2 class="h5 fw-bold mb-1">Resultados</h2>
+    <p class="small text-body-secondary mb-0"><?= $activeFilterCount > 0 ? 'Registros encontrados para os filtros informados.' : 'Todos os registros cadastrados.'; ?></p>
+  </div>
+  <span class="badge rounded-pill text-bg-primary"><?= (int) $total; ?> registro(s)</span>
+</div>
 
-<div class="table-responsive">
-  <table class="table table-striped table-hover">
+<div class="table-responsive app-index-results-table">
+  <table class="table table-hover align-middle mb-0">
+    <thead>
     <tr>
-      <?= sortableTh('user', 'id', '#', $sort, $queryFilters, 'style="width: 1%;"') ?>
+      <?= sortableTh('user', 'id', '#', $sort, $queryFilters, 'class="text-nowrap"') ?>
       <?= sortableTh('user', 'username', 'Usuário', $sort, $queryFilters) ?>
       <?= sortableTh('user', 'type', 'Tipo', $sort, $queryFilters) ?>
-      <th style="width: 1%;" class="text-nowrap text-end">Ações</th>
+      <th class="text-nowrap text-end">Ações</th>
     </tr>
+		</thead>
+		<tbody class="table-group-divider">
 		<?php if (!empty($users)): ?>
 			<?php foreach ($users as $user): ?>
 				<tr>
-					<td><?= $user['id'] ?></td>
-					<td><?= $user['username'] ?></td>
-          <td><?= $user['type']; ?></td>
+					<td class="text-nowrap"><span class="badge bg-body-tertiary border text-body">#<?= (int) $user['id']; ?></span></td>
+					<td class="fw-semibold"><?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8'); ?></td>
+          <td><?= htmlspecialchars($user['type'], ENT_QUOTES, 'UTF-8'); ?></td>
 					<td class="text-nowrap text-end">
 						<?php if (authCan('user.edit')): ?>
 							<?php if (in_array((int) $user['id'], $protectedUserIds, true)): ?>
@@ -155,7 +177,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 							<?php endif; ?>
 						<?php endif; ?>
 						<?php if (authCan('user.informations')): ?>
-							<a href="<?= url('user/informations/' . $user['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
+							<a href="<?= url('user/informations/' . $user['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Ver detalhes"><i class="bi bi-eye"></i></a>
 						<?php endif; ?>
 						<?php if (authCan('user.delete')): ?>
 							<?php if (in_array((int) $user['id'], $protectedUserIds, true)): ?>
@@ -163,7 +185,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 									<i class="bi bi-shield-lock"></i>
 								</button>
 							<?php else: ?>
-								<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $user['id'] ?>" data-name="<?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>">
+								<button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $user['id'] ?>" data-name="<?= htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8') ?>">
 									<i class="bi bi-trash"></i>
 								</button>
 							<?php endif; ?>
@@ -173,21 +195,18 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 			<?php endforeach; ?>
 		<?php else: ?>
 			<tr>
-				<td colspan="4">Nenhum registro encontrado.</td>
+				<td colspan="4" class="app-index-results-empty">Nenhum registro encontrado.</td>
 			</tr>
 		<?php endif; ?>
+		</tbody>
   </table>
 </div>
 
-<!-- Total records -->
-<p class="text-muted">
-	<?= $total ?> registro(s) encontrado(s)
-</p>
-<!-- /Total records -->
-
 <!-- Pagination -->
 <?php if ($totalPages > 1): ?>
+  <div class="app-index-pagination">
 	<?= paginationLinks('user', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima') ?>
+  </div>
 <?php endif; ?>
 <!-- /Pagination -->
 

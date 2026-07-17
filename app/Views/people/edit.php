@@ -46,7 +46,7 @@ foreach ($allTenants as $tenantOption)
   }
 ?>
 
-<link rel="stylesheet" href="<?= url('assets/css/people/edit.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/people/edit.css?v=2'); ?>">
 
 <div class="people-edit-page">
   <!-- Breadcrumbs -->
@@ -419,7 +419,7 @@ foreach ($allTenants as $tenantOption)
                     <label class="form-label">Bairro</label>
                     <input type="hidden" class="addr-neighborhood-id" name="addresses[<?= (int) $i; ?>][neighborhood_id]" value="<?= (int) ($address['neighborhood_id'] ?? 0); ?>">
                     <input type="text" class="form-control addr-neighborhood-input" autocomplete="off" value="<?= $e($neighborhoodLabel); ?>" placeholder="Digite o nome do bairro...">
-                    <ul class="list-group addr-neighborhood-results" style="display:none; position:absolute; width:100%; z-index:1050; max-height:220px; overflow-y:auto;"></ul>
+                    <ul class="list-group addr-neighborhood-results"></ul>
                   </div>
                   <div class="col-12 col-lg-4">
                     <label class="form-label">Logradouro</label>
@@ -455,7 +455,7 @@ foreach ($allTenants as $tenantOption)
                           <label class="form-label small">Cidade</label>
                           <input type="hidden" class="addr-new-city-id" value="">
                           <input type="text" class="form-control form-control-sm addr-new-city-input" autocomplete="off" placeholder="Digite o nome da cidade...">
-                          <ul class="list-group addr-new-city-results" style="display:none; position:absolute; width:100%; z-index:1060; max-height:180px; overflow-y:auto;"></ul>
+                          <ul class="list-group addr-new-city-results"></ul>
                         </div>
                         <div class="col-12 col-md-2 d-flex gap-2 align-items-end flex-wrap">
                           <button type="button" class="btn btn-warning btn-sm addr-btn-save-neighborhood">Salvar</button>
@@ -477,7 +477,7 @@ foreach ($allTenants as $tenantOption)
                   <label class="form-label">Bairro</label>
                   <input type="hidden" class="addr-neighborhood-id" name="addresses[__INDEX__][neighborhood_id]" value="">
                   <input type="text" class="form-control addr-neighborhood-input" autocomplete="off" placeholder="Digite o nome do bairro...">
-                  <ul class="list-group addr-neighborhood-results" style="display:none; position:absolute; width:100%; z-index:1050; max-height:220px; overflow-y:auto;"></ul>
+                  <ul class="list-group addr-neighborhood-results"></ul>
                 </div>
                 <div class="col-12 col-lg-4">
                   <label class="form-label">Logradouro</label>
@@ -513,7 +513,7 @@ foreach ($allTenants as $tenantOption)
                         <label class="form-label small">Cidade</label>
                         <input type="hidden" class="addr-new-city-id" value="">
                         <input type="text" class="form-control form-control-sm addr-new-city-input" autocomplete="off" placeholder="Digite o nome da cidade...">
-                        <ul class="list-group addr-new-city-results" style="display:none; position:absolute; width:100%; z-index:1060; max-height:180px; overflow-y:auto;"></ul>
+                        <ul class="list-group addr-new-city-results"></ul>
                       </div>
                       <div class="col-12 col-md-2 d-flex gap-2 align-items-end flex-wrap">
                         <button type="button" class="btn btn-warning btn-sm addr-btn-save-neighborhood">Salvar</button>

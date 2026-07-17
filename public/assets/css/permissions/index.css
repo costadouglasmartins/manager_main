@@ -236,10 +236,13 @@
 }
 
 .permission-results {
+  z-index: 1050;
+  display: none;
+  max-height: 18.75rem;
+  overflow-y: auto;
   border: 1px solid var(--permission-border);
   border-top: 0;
   border-radius: 0 0 0.75rem 0.75rem;
-  overflow: hidden;
 }
 
 .permission-empty-card {

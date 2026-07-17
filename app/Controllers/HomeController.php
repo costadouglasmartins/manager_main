@@ -1,12 +1,16 @@
 <?php
 namespace App\Controllers;
 
+use App\Core\Authorization;
 use App\Core\Controller;
 use App\Models\Address;
 use App\Models\City;
+use App\Models\Dashboard;
 use App\Models\Email;
+use App\Models\Log;
 use App\Models\Person;
 use App\Models\PhoneNumber;
+use App\Models\SupportChat;
 use App\Models\Tenant;
 use App\Models\User;
 
@@ -39,6 +43,7 @@ class HomeController extends Controller
 		$phoneModel = new PhoneNumber();
 		$addressModel = new Address();
 		$cityModel = new City();
+		$dashboardModel = new Dashboard();
 
 		$peopleTotal = $personModel->count();
 		$peopleActive = $personModel->count(['active' => '1']);
@@ -60,6 +65,35 @@ class HomeController extends Controller
 		$phonesTotal = $phoneModel->count();
 		$addressesTotal = $addressModel->count();
 		$citiesTotal = $cityModel->count();
+
+		$canViewSupport = Authorization::isRoot();
+		$support = [
+			'available' => $canViewSupport,
+			'pending' => 0,
+			'open' => 0,
+			'closed' => 0,
+		];
+		if ($canViewSupport)
+			{
+			$supportModel = new SupportChat();
+			$support['pending'] = $supportModel->countChats(['status' => 'pending']);
+			$support['open'] = $supportModel->countChats(['status' => 'open']);
+			$support['closed'] = $supportModel->countChats(['status' => 'closed']);
+			}
+
+		$canViewLogs = Authorization::can('log.index');
+		$activity = [
+			'available' => $canViewLogs,
+			'last_seven_days' => 0,
+		];
+		if ($canViewLogs)
+			{
+			$logModel = new Log();
+			$activity['last_seven_days'] = $logModel->count([
+				'date_from' => date('Y-m-d', strtotime('-6 days')),
+				'date_to' => date('Y-m-d'),
+			]);
+			}
 
 		return [
 			'people' => [
@@ -89,11 +123,11 @@ class HomeController extends Controller
 			'locations' => [
 				'cities' => $citiesTotal,
 			],
+			'support' => $support,
+			'activity' => $activity,
+			'monthlyRegistrations' => $dashboardModel->getMonthlyRegistrations(6),
 			'recentPeople'  => $personModel->search([], 5, 0),
 			'recentTenants' => $tenantModel->search([], 5, 0),
 		];
 		}
-  //
-  
 	}
-?>

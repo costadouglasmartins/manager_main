@@ -220,9 +220,19 @@
 
 .people-edit-page .addr-neighborhood-results,
 .people-edit-page .addr-new-city-results {
-  overflow: hidden;
+  position: absolute;
+  z-index: 1050;
+  display: none;
+  width: 100%;
+  max-height: 13.75rem;
+  overflow-y: auto;
   border-radius: 8px;
   box-shadow: 0 14px 30px rgba(20, 28, 35, 0.16);
+}
+
+.people-edit-page .addr-new-city-results {
+  z-index: 1060;
+  max-height: 11.25rem;
 }
 
 .people-edit-page .addr-create-panel > .border {

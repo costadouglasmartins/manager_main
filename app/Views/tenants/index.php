@@ -12,6 +12,7 @@ $queryFilters = http_build_query([
 	'status'          => $filters['status'],
 	]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
+$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
 ?>
 
 <!-- Breadcrumbs -->
@@ -23,24 +24,41 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
 </nav>
 <!-- /Breadcrumbs -->
 
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-buildings fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Administração</p><h1 class="h3 fw-bold mb-1">Tenants</h1><p class="text-body-secondary mb-0">Consulte e gerencie empresas, bases e situações operacionais.</p></div>
+  </div>
+  <?php if (authCan('tenant.create')): ?><a href="<?= url('tenant/create'); ?>" class="btn btn-success d-inline-flex align-items-center justify-content-center gap-2"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>Novo tenant</span></a><?php endif; ?>
+</header>
+
 <!-- Search form -->
-<form action="<?= url('tenant'); ?>" class="index-search-card mb-4">
+<form action="<?= url('tenant'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters">
   <?= sortHiddenInputs($sort) ?>
 
-  <div class="row g-3 align-items-center">
-  <div class="col-12 col-lg-9">
+  <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div><h2 class="h5 fw-bold mb-1">Filtros de pesquisa</h2><p class="small text-body-secondary mb-0">Refine a lista de tenants.</p></div>
+    <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
+  </div>
+
+  <div class="row g-3 align-items-end">
+  <div class="col-12">
     <div class="row g-3">
       <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label small fw-semibold" for="id">Código</label>
         <input class="form-control" id="id" name="id" placeholder="Codigo" type="text" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label small fw-semibold" for="name">Pessoa associada</label>
         <input class="form-control" id="name" name="name" placeholder="Pessoa associada" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label small fw-semibold" for="database_number">Número do banco</label>
         <input class="form-control" id="database_number" name="database_number" placeholder="N. banco" type="text" value="<?= htmlspecialchars($filters['database_number'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
       <div class="col-12 col-md-6 col-lg-3">
-        <select autocomplete="off" class="form-control" id="status" name="status">
+        <label class="form-label small fw-semibold" for="status">Situação</label>
+        <select autocomplete="off" class="form-select" id="status" name="status">
           <option value="">Situacao...</option>
           <option value="active" <?= ($filters['status'] === 'active' ? 'selected="selected"' : ''); ?>>Ativo</option>
           <option value="suspended" <?= ($filters['status'] === 'suspended' ? 'selected="selected"' : ''); ?>>Suspenso</option>
@@ -50,36 +68,42 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
     </div>
   </div>
 
-  <div class="col-12 col-lg-3">
+  <div class="col-12">
     <div class="index-search-actions">
       <button type="submit" class="btn btn-primary btn-sm index-search-action" aria-label="Pesquisar" title="Pesquisar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Pesquisar</span></button>
       <a href="<?= url('tenant'); ?>" class="btn btn-outline-secondary btn-sm index-search-action" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
       <?= pdfExportButton('tenant', $paginationQuery); ?>
       <?= excelExportButton('tenant', $paginationQuery); ?>
-      <?php if (authCan('tenant.create')): ?>
-        <a href="<?= url('tenant/create'); ?>" class="btn btn-success btn-sm index-search-action" aria-label="Novo tenant" title="Novo tenant"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="visually-hidden">Novo tenant</span></a>
-      <?php endif; ?>
     </div>
   </div>
   </div>
 
 </form>
 
-<hr>
+<div class="app-index-results-header">
+  <div>
+    <h2 class="h5 fw-bold mb-1">Resultados</h2>
+    <p class="small text-body-secondary mb-0"><?= $activeFilterCount > 0 ? 'Registros encontrados para os filtros informados.' : 'Todos os registros cadastrados.'; ?></p>
+  </div>
+  <span class="badge rounded-pill text-bg-primary"><?= (int) $total; ?> registro(s)</span>
+</div>
 
-<div class="table-responsive">
-  <table class="table table-striped table-hover">
+<div class="table-responsive app-index-results-table">
+  <table class="table table-hover align-middle mb-0">
+    <thead>
     <tr>
-      <?= sortableTh('tenant', 'id', '#', $sort, $queryFilters, 'style="width: 1%;"') ?>
+      <?= sortableTh('tenant', 'id', '#', $sort, $queryFilters, 'class="text-nowrap"') ?>
       <?= sortableTh('tenant', 'name', 'Pessoa associada', $sort, $queryFilters) ?>
       <?= sortableTh('tenant', 'database_number', 'Banco', $sort, $queryFilters) ?>
-      <?= sortableTh('tenant', 'status', 'Situacao', $sort, $queryFilters) ?>
-      <th style="width: 1%;" class="text-nowrap text-end">Acoes</th>
+      <?= sortableTh('tenant', 'status', 'Situação', $sort, $queryFilters) ?>
+      <th class="text-nowrap text-end">Ações</th>
     </tr>
+    </thead>
+    <tbody class="table-group-divider">
     <?php if (!empty($tenants)): ?>
       <?php foreach ($tenants as $t): ?>
         <tr>
-          <td><?= $t['id'] ?></td>
+          <td class="text-nowrap"><span class="badge bg-body-tertiary border text-body">#<?= (int) $t['id']; ?></span></td>
           <td><?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?></td>
           <td><code>manager_<?= htmlspecialchars($t['database_number']) ?></code></td>
           <td>
@@ -96,7 +120,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
               <a href="<?= url('tenant/edit/' . $t['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
             <?php endif; ?>
             <?php if (authCan('tenant.informations')): ?>
-              <a href="<?= url('tenant/informations/' . $t['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Saiba mais"><i class="bi bi-search"></i></a>
+              <a href="<?= url('tenant/informations/' . $t['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Ver detalhes"><i class="bi bi-eye"></i></a>
             <?php endif; ?>
             <?php if (authCan('tenant.delete')): ?>
               <?php if ((int) $t['id'] === 1): ?>
@@ -104,7 +128,7 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
                   <i class="bi bi-shield-lock"></i>
                 </button>
               <?php else: ?>
-                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $t['id'] ?>" data-name="<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?>">
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $t['id'] ?>" data-name="<?= htmlspecialchars($t['associated_person_name'] ?? ('Tenant #' . (int) $t['id']), ENT_QUOTES, 'UTF-8') ?>">
                   <i class="bi bi-trash"></i>
                 </button>
               <?php endif; ?>
@@ -114,16 +138,18 @@ $paginationQuery = sortQueryString($queryFilters, $sort);
       <?php endforeach; ?>
     <?php else: ?>
       <tr>
-        <td colspan="5">Nenhum registro encontrado.</td>
+        <td colspan="5" class="app-index-results-empty">Nenhum registro encontrado.</td>
       </tr>
     <?php endif; ?>
+    </tbody>
   </table>
 </div>
 
-<p class="text-muted"><?= $total ?> registro(s) encontrado(s)</p>
 
 <?php if ($totalPages > 1): ?>
+  <div class="app-index-pagination">
   <?= paginationLinks('tenant', $page, $totalPages, $paginationQuery, 2, 'Anterior', 'Proxima') ?>
+  </div>
 <?php endif; ?>
 
 <!-- Delete Confirmation Modal -->

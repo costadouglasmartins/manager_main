@@ -1,5 +1,6 @@
 <?php
 $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && function_exists('authIsRoot') && authIsRoot();
+$isFinancialSheetView = strpos((string) ($content ?? ''), 'financial-sheet-page') !== false;
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" id="htmlRoot" data-bs-theme="light">
@@ -12,8 +13,8 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   </script>
   <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=6'); ?>">
-  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=4'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=9'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=5'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
   <?php endif; ?>
@@ -23,9 +24,9 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
   <link rel="manifest" href="<?= url('/site.webmanifest'); ?>">
   <title>Manager - <?=$title?></title>
 </head>
-<body class="font-monospace">
+<body class="app-shell">
   
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm app-navbar">
     <div class="container-fluid">
       <a class="navbar-brand d-flex align-items-center" href="<?= url('/'); ?>">
         <!--<i class="bi bi-boxes me-2"></i>-->
@@ -61,23 +62,6 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                     </ul>
                   </li>
                   <!-- /Neighborhood -->
-                <?php endif; ?>
-
-                <li><hr class="dropdown-divider" /></li>
-
-                <?php if (authCan('bank.index')): ?>
-                  <!-- Bank -->
-                  <li class="dropdown-submenu">
-                    <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-bank me-2"></i>Bancos</a>
-                    <ul class="dropdown-menu">
-                      <?php if (authCan('bank.create')): ?>
-                        <li><a class="dropdown-item" href="<?= url('bank/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                      <?php endif; ?>
-                      <li><a class="dropdown-item" href="<?= url('bank'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
-                    </ul>
-                  </li>
-                  <!-- /Bank -->
                 <?php endif; ?>
 
                 <?php if (authCan('bank.index')): ?>
@@ -187,6 +171,21 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
                   <i class="bi bi-cash-coin me-1"></i> Financeiro
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="financeMenu">
+                  <?php if (authCan('bank.index')): ?>
+                    <!-- Bank -->
+                    <li class="dropdown-submenu">
+                      <a class="dropdown-item submenu-toggle" href="#"><i class="bi bi-bank me-2"></i>Bancos</a>
+                      <ul class="dropdown-menu">
+                        <?php if (authCan('bank.create')): ?>
+                          <li><a class="dropdown-item" href="<?= url('bank/create'); ?>"><i class="bi bi-plus-square me-2"></i>Cadastrar</a></li>
+                          <li><hr class="dropdown-divider" /></li>
+                        <?php endif; ?>
+                        <li><a class="dropdown-item" href="<?= url('bank'); ?>"><i class="bi bi-list me-2"></i>Listar</a></li>
+                      </ul>
+                    </li>
+                    <!-- /Bank -->
+                    <li><hr classs="dropdown-divider" /></li>
+                  <?php endif; ?>
                   <!-- Financial operations -->
                   <?php if (authCan('financial_operation.index')): ?>
                     <li class="dropdown-submenu">
@@ -354,14 +353,20 @@ $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && 
     </div>
   </nav>
 
-  <div class="container-fluid">
-    <?= renderFlashMessages() ?>
-    <?= $content ?>
-  </div>
+  <main class="app-main">
+    <div class="container-fluid app-container<?= $isFinancialSheetView ? ' app-container--legacy' : ''; ?>">
+      <div class="app-flash-stack">
+        <?= renderFlashMessages() ?>
+      </div>
+      <div class="<?= $isFinancialSheetView ? 'app-view-legacy' : 'app-view'; ?>">
+        <?= $content ?>
+      </div>
+    </div>
+  </main>
   
   <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="<?= url('assets/js/menu.js?v=4'); ?>"></script>
-  <script src="<?= url('assets/js/main.js?v=2'); ?>"></script>
+  <script src="<?= url('assets/js/main.js?v=3'); ?>"></script>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>
   <?php endif; ?>

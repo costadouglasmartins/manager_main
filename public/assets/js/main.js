@@ -1,8 +1,35 @@
 /**
  * Popover
  */
-const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+if (window.bootstrap?.Popover) {
+  document.querySelectorAll('[data-bs-toggle="popover"]').forEach((trigger) => {
+    bootstrap.Popover.getOrCreateInstance(trigger);
+  });
+}
+
+/**
+ * Regiões de tabela com rolagem acessível por teclado.
+ */
+const appView = document.querySelector(".app-view");
+
+appView?.querySelectorAll(".table-responsive").forEach((region) => {
+  const card = region.closest(".card");
+  const title = card?.querySelector(".card-title, .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6")
+    || appView.querySelector("h1, h2, h3, h4, h5, h6");
+
+  if (!region.hasAttribute("tabindex")) {
+    region.setAttribute("tabindex", "0");
+  }
+
+  if (!region.hasAttribute("role")) {
+    region.setAttribute("role", "region");
+  }
+
+  if (!region.hasAttribute("aria-label")) {
+    const titleText = title?.textContent?.trim();
+    region.setAttribute("aria-label", titleText ? `Tabela: ${titleText}` : "Tabela de dados");
+  }
+});
 
 /**
  * Flash messages

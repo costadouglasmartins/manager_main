@@ -29,12 +29,18 @@ $activeLabel = static function ($value): string {
   </ol>
 </nav>
 
-<h5>Dados do banco</h5>
-<div class="table-responsive mb-3">
-  <table class="table table-hover align-middle">
+<header class="app-detail-heading">
+  <span class="app-detail-heading-icon"><i class="bi bi-bank"></i></span>
+  <div class="app-detail-heading-content">
+    <span class="app-detail-eyebrow">Detalhes do cadastro</span>
+    <h1>Dados do banco</h1>
+  </div>
+</header>
+<div class="table-responsive app-detail-table">
+  <table class="table table-hover align-middle mb-0">
     <tbody>
       <tr>
-        <th class="text-muted" style="width: 220px;">Código</th>
+        <th>Código</th>
         <td><?= (int) $bank['id']; ?></td>
       </tr>
       <tr>
@@ -65,6 +71,6 @@ $activeLabel = static function ($value): string {
   </table>
 </div>
 
-<div class="d-flex flex-column gap-2 align-items-start">
-  <a href="<?= url('bank'); ?>" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+<div class="d-flex flex-wrap gap-2">
+  <a href="<?= url('bank'); ?>" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Voltar</a>
 </div>

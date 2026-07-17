@@ -182,7 +182,7 @@ if (isset($_GET['created']))
 	}
 ?>
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/permissions/index.css?v=3'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/permissions/index.css?v=4'); ?>">
 <!-- /CSS -->
 <!-- Breadcrumbs -->
 <nav aria-label="breadcrumb">
@@ -192,7 +192,12 @@ if (isset($_GET['created']))
   </ol>
 </nav>
 
-<h5 class="mb-3">Gerenciar permissões (por usuário)</h5>
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-shield-lock fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Segurança</p><h1 class="h3 fw-bold mb-1">Permissões por usuário</h1><p class="text-body-secondary mb-0">Consulte, distribua e sincronize permissões dos sistemas.</p></div>
+  </div>
+</header>
 
 <?php if ($syncCount !== null): ?>
   <div class="alert <?= ($syncCount > 0 ? 'alert-success' : 'alert-warning'); ?> py-2">
@@ -230,7 +235,7 @@ if (isset($_GET['created']))
           <small class="text-muted d-block mb-3">Digite nome, e-mail ou username para abrir o catálogo.</small>
           <div class="position-relative" id="userSearchWrapper">
             <input type="text" id="userSearchInput" class="form-control form-control-lg" placeholder="Digite o nome, e-mail ou username do usuário..." autocomplete="off">
-            <div id="userSearchResults" class="list-group position-absolute w-100 shadow-sm permission-results" style="z-index:1050; max-height:300px; overflow-y:auto; display:none;"></div>
+            <div id="userSearchResults" class="list-group position-absolute w-100 shadow-sm permission-results"></div>
           </div>
         </div>
       </div>

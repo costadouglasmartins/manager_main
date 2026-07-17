@@ -30,7 +30,7 @@
         data-hidden="#city_id"
         data-minlen="1"
         data-param="term">
-      <ul id="cityResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <ul id="cityResults" class="list-group mt-1 w-100"></ul>
     </div>
 
   </div>
@@ -45,4 +45,4 @@
 </form>
 <!-- /Bairro -->
 
-<script src="/assets/autocomplete/autocomplete.js?v=2"></script>
+<script src="/assets/autocomplete/autocomplete.js?v=4"></script>

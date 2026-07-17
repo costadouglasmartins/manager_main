@@ -11,6 +11,7 @@ $queryFilters = http_build_query([
   'status' => $filters['status'] ?? '',
   'participant' => $filters['participant'] ?? '',
 ]);
+$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
 $currentListQuery = http_build_query([
   'date_from' => $filters['date_from'] ?? '',
   'date_to' => $filters['date_to'] ?? '',
@@ -30,9 +31,20 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
   </ol>
 </nav>
 
-<form action="<?= url('support_chat'); ?>" class="index-search-card support-chat-filter mb-4" method="get">
-  <div class="row g-3 align-items-center">
-    <div class="col-12 col-xl-10">
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-chat-dots fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Atendimento</p><h1 class="h3 fw-bold mb-1">Chats de suporte</h1><p class="text-body-secondary mb-0">Acompanhe conversas, participantes e situação dos atendimentos.</p></div>
+  </div>
+</header>
+
+<form action="<?= url('support_chat'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters support-chat-filter" method="get">
+  <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div><h2 class="h5 fw-bold mb-1">Filtros de pesquisa</h2><p class="small text-body-secondary mb-0">Refine a lista de atendimentos.</p></div>
+    <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
+  </div>
+  <div class="row g-3 align-items-end">
+    <div class="col-12">
       <div class="row g-3">
         <div class="col-12 col-md-6 col-xl-2">
           <label class="form-label" for="date_from">Data inicial</label>
@@ -61,7 +73,7 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
       </div>
     </div>
 
-    <div class="col-12 col-xl-2">
+    <div class="col-12">
       <div class="index-search-actions">
         <button class="btn btn-primary btn-sm index-search-action" type="submit" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
         <a class="btn btn-outline-secondary btn-sm index-search-action" href="<?= url('support_chat'); ?>" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
@@ -73,12 +85,16 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
   </div>
 </form>
 
-<div class="support-chat-toolbar mb-3">
-  <p class="text-muted mb-0"><?= (int) $total; ?> chat(s) encontrado(s)</p>
+<div class="app-index-results-header support-chat-toolbar">
+  <div>
+    <h2 class="h5 fw-bold mb-1">Resultados</h2>
+    <p class="small text-body-secondary mb-0"><?= $activeFilterCount > 0 ? 'Atendimentos encontrados para os filtros informados.' : 'Todos os atendimentos registrados.'; ?></p>
+  </div>
+  <span class="badge rounded-pill text-bg-primary"><?= (int) $total; ?> registro(s)</span>
 </div>
 
-<div class="table-responsive support-chat-table-wrap">
-  <table class="table table-striped table-hover align-middle support-chat-table">
+<div class="table-responsive app-index-results-table support-chat-table-wrap">
+  <table class="table table-hover align-middle mb-0 support-chat-table">
     <thead>
       <tr>
         <th>#</th>
@@ -91,7 +107,7 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
         <th class="text-end">Ações</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-group-divider">
       <?php if (!empty($chats)): ?>
         <?php foreach ($chats as $chat): ?>
           <?php
@@ -137,7 +153,7 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="8" class="text-center text-muted py-4">Nenhum chat encontrado para os filtros informados.</td>
+          <td colspan="8" class="app-index-results-empty">Nenhum chat encontrado para os filtros informados.</td>
         </tr>
       <?php endif; ?>
     </tbody>
@@ -145,7 +161,9 @@ $currentListPath = 'support_chat' . ($currentListQuery !== '' ? '?' . $currentLi
 </div>
 
 <?php if ($totalPages > 1): ?>
+  <div class="app-index-pagination">
   <?= paginationLinks('support_chat', (int) $page, (int) $totalPages, $queryFilters, 2, 'Anterior', 'Próxima'); ?>
+  </div>
 <?php endif; ?>
 
 <div class="modal fade" id="reopenModal" tabindex="-1">

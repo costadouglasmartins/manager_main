@@ -36,6 +36,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   dashboard.querySelectorAll(".home-counter").forEach(animateCounter);
 
+  dashboard.querySelectorAll(".js-home-series-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const seriesName = button.dataset.series;
+      const series = Array.from(dashboard.querySelectorAll("[data-chart-series]")).find(
+        (item) => item.dataset.chartSeries === seriesName,
+      );
+
+      if (!series) {
+        return;
+      }
+
+      const isVisible = button.getAttribute("aria-pressed") === "true";
+      button.setAttribute("aria-pressed", String(!isVisible));
+      series.classList.toggle("is-hidden", isVisible);
+    });
+  });
+
   window.requestAnimationFrame(() => {
     dashboard.classList.add("is-ready");
   });

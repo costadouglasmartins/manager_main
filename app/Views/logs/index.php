@@ -21,6 +21,7 @@ $queryFilters = http_build_query([
   'date_to' => $filters['date_to'] ?? '',
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
+$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
 
 $actionBadgeClass = static function (string $action): string {
   return match ($action) {
@@ -44,11 +45,23 @@ $actionBadgeClass = static function (string $action): string {
   </ol>
 </nav>
 
-<form action="<?= url('log'); ?>" class="index-search-card audit-log-filter mb-4" method="get">
+<header class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-3" aria-hidden="true"><i class="bi bi-activity fs-4"></i></span>
+    <div><p class="small fw-semibold text-primary text-uppercase mb-1">Auditoria</p><h1 class="h3 fw-bold mb-1">Logs do sistema</h1><p class="text-body-secondary mb-0">Consulte eventos, responsáveis e alterações registradas.</p></div>
+  </div>
+</header>
+
+<form action="<?= url('log'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters audit-log-filter" method="get">
   <?= sortHiddenInputs($sort) ?>
 
+  <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div><h2 class="h5 fw-bold mb-1">Filtros de pesquisa</h2><p class="small text-body-secondary mb-0">Refine os eventos do histórico de auditoria.</p></div>
+    <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
+  </div>
+
   <div class="row g-3">
-    <div class="col-12 col-xl-10">
+    <div class="col-12">
       <div class="row g-3">
         <div class="col-12 col-md-6 col-xl-2">
           <label class="form-label" for="id">Código</label>
@@ -95,24 +108,24 @@ $actionBadgeClass = static function (string $action): string {
           <input class="form-control" id="performed_by" name="performed_by" type="text" placeholder="Nome ou username" value="<?= htmlspecialchars((string) ($filters['performed_by'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-12 col-md-6 col-xl-2">
           <label class="form-label" for="route">Rota</label>
           <input class="form-control" id="route" name="route" type="text" value="<?= htmlspecialchars((string) ($filters['route'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-12 col-md-6 col-xl-2">
           <label class="form-label" for="date_from">Data inicial</label>
           <input class="form-control" id="date_from" name="date_from" type="date" value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-12 col-md-6 col-xl-2">
           <label class="form-label" for="date_to">Data final</label>
           <input class="form-control" id="date_to" name="date_to" type="date" value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
         </div>
       </div>
     </div>
 
-    <div class="col-12 col-xl-2">
+    <div class="col-12">
       <div class="index-search-actions">
         <button class="btn btn-primary btn-sm index-search-action" type="submit" aria-label="Filtrar" title="Filtrar"><i class="bi bi-search" aria-hidden="true"></i><span class="visually-hidden">Filtrar</span></button>
         <a class="btn btn-outline-secondary btn-sm index-search-action" href="<?= url('log'); ?>" aria-label="Limpar filtros" title="Limpar filtros"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
@@ -123,12 +136,16 @@ $actionBadgeClass = static function (string $action): string {
   </div>
 </form>
 
-<div class="audit-log-toolbar mb-3">
-  <p class="text-muted mb-0" id="auditLogTotal" data-total="<?= (int) $total; ?>"><?= (int) $total; ?> log(s) encontrado(s)</p>
+<div class="app-index-results-header audit-log-toolbar">
+  <div>
+    <h2 class="h5 fw-bold mb-1">Resultados</h2>
+    <p class="small text-body-secondary mb-0"><?= $activeFilterCount > 0 ? 'Logs encontrados para os filtros informados.' : 'Todos os logs registrados.'; ?></p>
+  </div>
+  <span class="badge rounded-pill text-bg-primary" id="auditLogTotal" data-total="<?= (int) $total; ?>"><?= (int) $total; ?> registro(s)</span>
 </div>
 
-<div class="table-responsive">
-  <table class="table table-striped table-hover align-middle audit-log-table">
+<div class="table-responsive app-index-results-table">
+  <table class="table table-hover align-middle mb-0 audit-log-table">
     <thead>
       <tr>
         <?= sortableTh('log', 'id', '#', $sort, $queryFilters) ?>
@@ -142,7 +159,7 @@ $actionBadgeClass = static function (string $action): string {
         <th class="text-end">Ações</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-group-divider">
       <?php if (!empty($logs)): ?>
         <?php foreach ($logs as $row): ?>
           <?php
@@ -180,7 +197,7 @@ $actionBadgeClass = static function (string $action): string {
                 <a class="btn btn-sm btn-primary" href="<?= url('log/informations/' . (int) $row['id']); ?>" title="Ver log" aria-label="Ver log">
                   <i class="bi bi-search"></i>
                 </a>
-                <button class="btn btn-sm btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) $row['id']; ?>" data-log-label="Log #<?= (int) $row['id']; ?> - <?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) $row['id']); ?>" title="Remover log" aria-label="Remover log">
+                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#logDeleteModal" data-log-id="<?= (int) $row['id']; ?>" data-log-label="Log #<?= (int) $row['id']; ?> - <?= htmlspecialchars((string) ($row['module'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>/<?= htmlspecialchars((string) ($actions[$row['action']] ?? $row['action'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-delete-url="<?= url('log/delete/' . (int) $row['id']); ?>" title="Remover log" aria-label="Remover log">
                   <i class="bi bi-trash"></i>
                 </button>
               <?php endif; ?>
@@ -189,12 +206,18 @@ $actionBadgeClass = static function (string $action): string {
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="10" class="text-center text-muted py-4">Nenhum log encontrado para os filtros informados.</td>
+          <td colspan="10" class="app-index-results-empty">Nenhum log encontrado para os filtros informados.</td>
         </tr>
       <?php endif; ?>
     </tbody>
   </table>
 </div>
+
+<?php if ($totalPages > 1): ?>
+  <div class="app-index-pagination">
+    <?= paginationLinks('log', (int) $page, (int) $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima'); ?>
+  </div>
+<?php endif; ?>
 
 <div class="modal fade" id="logDeleteModal" tabindex="-1" aria-labelledby="logDeleteModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -223,8 +246,4 @@ $actionBadgeClass = static function (string $action): string {
   </div>
 </div>
 
-<?php if ($totalPages > 1): ?>
-  <?= paginationLinks('log', (int) $page, (int) $totalPages, $paginationQuery, 2, 'Anterior', 'Próxima'); ?>
-<?php endif; ?>
-
-<script src="<?= url('assets/js/logs/index.js?v=3'); ?>"></script>
+<script src="<?= url('assets/js/logs/index.js?v=4'); ?>"></script>

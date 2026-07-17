@@ -22,7 +22,7 @@ $isActiveChat = in_array($status, ['pending', 'open'], true);
   </ol>
 </nav>
 
-<section class="support-chat-record-page" data-events-url="<?= url('support_chat/events/' . (int) ($chat['id'] ?? 0)); ?>" data-active="<?= $isActiveChat ? '1' : '0'; ?>">
+<section class="support-chat-record-page app-detail-page" data-events-url="<?= url('support_chat/events/' . (int) ($chat['id'] ?? 0)); ?>" data-active="<?= $isActiveChat ? '1' : '0'; ?>">
   <header class="support-chat-record-header">
     <div>
       <div class="d-flex flex-wrap align-items-center gap-2 mb-2">

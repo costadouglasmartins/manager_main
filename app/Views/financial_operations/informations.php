@@ -163,7 +163,7 @@ $paymentCount = count($financial_operation_payments);
     <i class="bi bi-arrow-left me-1"></i>Voltar
   </a>
 <?php else: ?>
-  <section class="financial-operation-info">
+  <section class="financial-operation-info app-detail-page">
     <div class="foi-header mb-4">
       <div class="foi-header-main">
         <span class="foi-kicker">Operação financeira</span>
@@ -423,7 +423,7 @@ $paymentCount = count($financial_operation_payments);
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('financial_operation_payment/delete'); ?>" style="display: inline;">
+            <form method="POST" action="#" id="deleteForm" data-delete-base-url="<?= url('financial_operation_payment/delete'); ?>" class="d-inline">
               <input type="hidden" name="id" id="recordId">
               <input type="hidden" name="redirect_to" value="financial_operation/informations/<?= $operationId; ?>">
               <button type="submit" class="btn btn-danger">Excluir</button>

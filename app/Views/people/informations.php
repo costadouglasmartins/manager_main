@@ -8,21 +8,27 @@
 </nav>
 <!-- /Breadcrumbs -->
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0">Dados gerais da pessoa</h5>
+<header class="app-detail-heading app-detail-page">
+  <span class="app-detail-heading-icon"><i class="bi bi-person-vcard"></i></span>
+  <div class="app-detail-heading-content">
+    <span class="app-detail-eyebrow">Visão completa do cadastro</span>
+    <h1>Dados gerais da pessoa</h1>
+  </div>
   <?php if (authCan('person.edit')): ?>
-    <a href="<?= url('person/edit/' . $person['id']); ?>" class="btn btn-sm btn-outline-primary">Editar</a>
+    <div class="app-detail-heading-actions">
+      <a href="<?= url('person/edit/' . $person['id']); ?>" class="btn btn-primary"><i class="bi bi-pencil-square me-1"></i>Editar</a>
+    </div>
   <?php endif; ?>
-</div>
+</header>
 
 <!-- Pessoa -->
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">Pessoa</div>
-  <div class="table-responsive">
+  <div class="table-responsive app-detail-table mb-0">
     <table class="table table-hover align-middle mb-0">
       <tbody>
         <tr>
-          <th class="text-muted" style="width: 220px;">Nome</th>
+          <th class="text-muted">Nome</th>
           <td><?= htmlspecialchars($person['name']); ?></td>
         </tr>
         <tr>
@@ -59,13 +65,13 @@
 
 <!-- Usuário -->
 <?php if (!empty($user)): ?>
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">Usuário</div>
-  <div class="table-responsive">
+  <div class="table-responsive app-detail-table mb-0">
     <table class="table table-hover align-middle mb-0">
       <tbody>
         <tr>
-          <th class="text-muted" style="width: 220px;">Nome de usuário</th>
+          <th class="text-muted">Nome de usuário</th>
           <td><?= htmlspecialchars($user['username']); ?></td>
         </tr>
         <tr>
@@ -96,9 +102,9 @@
 
 <!-- Tenants -->
 <?php if (!empty($tenants)): ?>
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">Tenants vinculados</div>
-  <div class="table-responsive">
+  <div class="table-responsive app-detail-table mb-0">
     <table class="table table-hover align-middle mb-0">
       <thead>
         <tr>
@@ -145,10 +151,10 @@
 <!-- /Tenants -->
 
 <!-- Endereços -->
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">Endereços</div>
   <?php if (!empty($addresses)): ?>
-    <div class="table-responsive">
+    <div class="table-responsive app-detail-table mb-0">
       <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
@@ -193,10 +199,10 @@
 <!-- /Endereços -->
 
 <!-- Telefones -->
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">Telefones</div>
   <?php if (!empty($phones)): ?>
-    <div class="table-responsive">
+    <div class="table-responsive app-detail-table mb-0">
       <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
@@ -223,10 +229,10 @@
 <!-- /Telefones -->
 
 <!-- E-mails -->
-<div class="card shadow-sm mb-3">
+<div class="card app-detail-card mb-3">
   <div class="card-header fw-semibold">E-mails</div>
   <?php if (!empty($emails)): ?>
-    <div class="table-responsive">
+    <div class="table-responsive app-detail-table mb-0">
       <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>

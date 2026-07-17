@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     totalElement.dataset.total = String(nextTotal);
-    totalElement.textContent = `${nextTotal} log(s) encontrado(s)`;
+    totalElement.textContent = `${nextTotal} registro(s)`;
   };
 
   const ensureEmptyState = () => {
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const emptyRow = document.createElement('tr');
-    emptyRow.innerHTML = '<td colspan="10" class="text-center text-muted py-4">Nenhum log encontrado para os filtros informados.</td>';
+    emptyRow.innerHTML = '<td colspan="10" class="app-index-results-empty">Nenhum log encontrado para os filtros informados.</td>';
     tableBody.innerHTML = '';
     tableBody.appendChild(emptyRow);
   };

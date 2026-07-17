@@ -244,7 +244,7 @@ $renderPermissionRows = static function (array $permissions, string $emptyText):
   </ol>
 </nav>
 
-<div class="audit-log-detail-shell">
+<div class="audit-log-detail-shell app-detail-page">
   <div class="alert alert-success d-none mb-4" id="auditLogDeleteSuccess" role="alert"></div>
 
   <div class="card shadow-sm border-0 mb-4">

@@ -17,7 +17,7 @@
       <label class="form-label" for="personName">Pessoa</label>
       <input type="hidden" id="person_id" name="person_id" value="">
       <input id="personName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="Digite o nome da pessoa..." data-endpoint="<?= url('person/autocomplete'); ?>" data-results="#personResults" data-hidden="#person_id" data-minlen="1" data-param="term">
-      <ul id="personResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <ul id="personResults" class="list-group mt-1 w-100"></ul>
     </div>
 
     <div class="mb-2 col-md-6 col-lg-3">
@@ -51,7 +51,7 @@
         data-hidden="#neighborhood_id"
         data-minlen="1"
         data-param="term">
-      <ul id="neighborhoodResults" class="list-group mt-1 w-100" style="overflow:auto; max-height:240px; position:absolute; z-index:1050;"></ul>
+      <ul id="neighborhoodResults" class="list-group mt-1 w-100"></ul>
     </div>
 
   </div>
@@ -66,6 +66,6 @@
 </form>
 <!-- /Endereço -->
 <script src="/assets/masks/masks.js?v=4"></script>
-<script src="/assets/autocomplete/autocomplete.js?v=2"></script>
+<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
 <script src="/assets/viacep/viacep.js?v=1"></script>
 <script src="<?= url('assets/js/addresses/create.js?v=1'); ?>"></script>

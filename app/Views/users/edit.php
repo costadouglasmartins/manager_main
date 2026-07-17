@@ -28,7 +28,7 @@
     </div>
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="type">Tipo</label>
-      <select autocomplete="off" class="form-control" id="type" name="type" required="required">
+      <select autocomplete="off" class="form-select" id="type" name="type" required="required">
         <option value="">Selecione</option>
         <option value="root" <?= ($user['type'] === 'root' ? 'selected="selected"' : '' ); ?>>Root</option>
         <option value="admin" <?= ($user['type'] === 'admin' ? 'selected="selected"' : ''); ?>>Admin</option>
@@ -37,7 +37,7 @@
     </div>
     <div class="mb-2 col-md-6 col-lg-12">
       <label class="form-label" for="active">Ativo</label>
-      <select autocomplete="off" class="form-control" id="active" name="active" required="required">
+      <select autocomplete="off" class="form-select" id="active" name="active" required="required">
         <option value="">Selecione</option>
         <option value="1" <?= ((int) $user['active'] === 1 ? 'selected="selected"' : ''); ?>>Ativo</option>
         <option value="0" <?= ((int) $user['active'] === 0 ? 'selected="selected"' : ''); ?>>Inativo</option>
@@ -45,7 +45,7 @@
     </div>
     <div class="col-md-6 col-lg-12">
       <label class="form-label" for="tenant_id">Tenant (empresa)</label>
-      <select autocomplete="off" class="form-control" id="tenant_id" name="tenant_id">
+      <select autocomplete="off" class="form-select" id="tenant_id" name="tenant_id">
         <option value="">Sem tenant associado</option>
         <?php if (!empty($tenants)): ?>
           <?php foreach ($tenants as $tenant): ?>
