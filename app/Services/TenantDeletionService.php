@@ -132,6 +132,7 @@ class TenantDeletionService
 					'financial_operations_payments', 'internal_chats', 'internal_chat_messages',
 					'internal_chat_participants', 'support_chats', 'support_chats_messages', 'logs',
 					'webcrawler_ip_range_executions', 'webcrawler_ip_range_results',
+					'tenant_setting_values', 'user_presences',
 				],
 				'preserved_tables' => ['cities', 'neighborhoods', 'banks', 'states', 'countries'],
 				'source' => 'tenant_full_deletion',
@@ -141,6 +142,8 @@ class TenantDeletionService
 			// every associated user, including users shared with another tenant.
 			$this->deleteWhereIn('user_permissions', 'user_id', $plan['associated_user_ids']);
 			$this->deleteWhereIn('user_remember_tokens', 'user_id', $plan['associated_user_ids']);
+			$this->deleteWhere('tenant_setting_values', 'tenant_id', $tenantId);
+			$this->deleteWhere('user_presences', 'tenant_id', $tenantId);
 
 			if ($exclusiveUserIds !== [])
 				{
@@ -416,6 +419,32 @@ class TenantDeletionService
 			$logRecords[] = $this->record('logs', $row['id'], 'Log #' . $row['id'] . ' — ' . $row['module'] . '.' . $row['action'] . ' | ' . $row['entity_name'] . ' #' . ($row['entity_id'] ?? '-'));
 			}
 		$this->appendModule($modules, 'manager_main', 'Logs do tenant', $logRecords);
+
+		$settingRecords = [];
+		$stmt = $this->db->prepare("SELECT TenantSettingValue.id,
+		                                   SystemSettingDefinition.key_name
+		                            FROM tenant_setting_values AS TenantSettingValue
+		                            INNER JOIN system_setting_definitions AS SystemSettingDefinition ON SystemSettingDefinition.id = TenantSettingValue.setting_definition_id
+		                            WHERE TenantSettingValue.tenant_id = :tenant
+		                            ORDER BY TenantSettingValue.id");
+		$stmt->execute(['tenant' => $tenantId]);
+		foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
+			{
+			$settingRecords[] = $this->record('tenant_setting_values', $row['id'], 'Tenant setting #' . $row['id'] . ' - ' . $row['key_name']);
+			}
+
+		$stmt = $this->db->prepare("SELECT UserPresence.id,
+		                                   UserPresence.user_id,
+		                                   UserPresence.status
+		                            FROM user_presences AS UserPresence
+		                            WHERE UserPresence.tenant_id = :tenant
+		                            ORDER BY UserPresence.id");
+		$stmt->execute(['tenant' => $tenantId]);
+		foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
+			{
+			$settingRecords[] = $this->record('user_presences', $row['id'], 'Presence #' . $row['id'] . ' - user #' . $row['user_id'] . ' | status: ' . $row['status']);
+			}
+		$this->appendModule($modules, 'manager_main', 'Tenant settings and presence', $settingRecords);
 
 		$linkRecords = [];
 		$stmt = $this->db->prepare("SELECT TenantUser.user_id, TenantUser.role, UserRow.username, Person.name
@@ -744,6 +773,27 @@ class TenantDeletionService
 			. ' WHERE ' . $this->quoteIdentifier($column) . ' IN (' . $this->placeholders($ids) . ')';
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array_values($ids));
+		}
+
+	/**
+	 * Delete rows by one integer equality condition.
+	 *
+	 * @param string $table Table name.
+	 * @param string $column Column name.
+	 * @param int $id Record owner identifier.
+	 * @return void
+	 */
+	private function deleteWhere(string $table, string $column, int $id): void
+		{
+		if (!preg_match('/^[a-z_]+$/', $table) || !preg_match('/^[a-z_]+$/', $column))
+			{
+			throw new \InvalidArgumentException('Invalid SQL identifier.');
+			}
+
+		$sql = 'DELETE FROM ' . $this->quoteIdentifier($table)
+			. ' WHERE ' . $this->quoteIdentifier($column) . ' = :id';
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['id' => $id]);
 		}
 
 	/** @param array<int, mixed> $values */

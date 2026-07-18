@@ -1,6 +1,13 @@
 <?php
 $supportChatNotificationsEnabled = !empty($_SESSION['manager_main']['user']) && function_exists('authIsRoot') && authIsRoot();
 $isFinancialSheetView = strpos((string) ($content ?? ''), 'financial-sheet-page') !== false;
+$managerMainUser = $_SESSION['manager_main']['user'] ?? null;
+$userPresence = null;
+if (!empty($managerMainUser) && class_exists('App\\Services\\UserPresenceService'))
+  {
+  $userPresence = (new \App\Services\UserPresenceService())->current((int) ($managerMainUser['id'] ?? 0));
+  }
+$userPresence = is_array($userPresence) ? $userPresence : \App\Services\UserPresenceService::statusMeta('offline') + ['status' => 'offline'];
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" id="htmlRoot" data-bs-theme="light">
@@ -253,6 +260,10 @@ $isFinancialSheetView = strpos((string) ($content ?? ''), 'financial-sheet-page'
                   <li><a class="dropdown-item" href="<?= url('log'); ?>"><i class="bi bi-journal-text me-2"></i>Logs do sistema</a></li>
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <?php if (authCan('system_setting.index') || authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('system_setting'); ?>"><i class="bi bi-sliders2 me-2"></i>System settings</a></li>
+                  <?php endif; ?>
                 </ul>
               </li>
               <li><hr class="dropdown-divider" /></li>
@@ -307,6 +318,19 @@ $isFinancialSheetView = strpos((string) ($content ?? ''), 'financial-sheet-page'
               <li><a class="dropdown-item text-danger" href="<?= ('permission'); ?>"><i class="bi bi-box-arrow-right me-2"></i>Permissões</a></li>
               -->
               <?php if (!empty($_SESSION['manager_main']['user'])): ?>
+                <li class="px-3 py-2" data-user-presence data-status-url="<?= url('user_presence/status'); ?>">
+                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span class="small text-body-secondary">Presence</span>
+                    <span class="badge <?= htmlspecialchars((string) ($userPresence['class'] ?? 'text-bg-secondary'), ENT_QUOTES, 'UTF-8'); ?>" data-user-presence-badge><i class="bi <?= htmlspecialchars((string) ($userPresence['icon'] ?? 'bi-circle'), ENT_QUOTES, 'UTF-8'); ?> me-1" data-user-presence-icon aria-hidden="true"></i><span data-user-presence-label><?= htmlspecialchars((string) ($userPresence['label'] ?? 'Offline'), ENT_QUOTES, 'UTF-8'); ?></span></span>
+                  </div>
+                  <div class="btn-group btn-group-sm w-100" role="group" aria-label="Presence status">
+                    <button class="btn btn-outline-success" type="button" data-user-presence-status="online" title="Online"><i class="bi bi-circle-fill" aria-hidden="true"></i><span class="visually-hidden">Online</span></button>
+                    <button class="btn btn-outline-warning" type="button" data-user-presence-status="away" title="Away"><i class="bi bi-clock-fill" aria-hidden="true"></i><span class="visually-hidden">Away</span></button>
+                    <button class="btn btn-outline-danger" type="button" data-user-presence-status="busy" title="Busy"><i class="bi bi-dash-circle-fill" aria-hidden="true"></i><span class="visually-hidden">Busy</span></button>
+                    <button class="btn btn-outline-secondary" type="button" data-user-presence-status="offline" title="Offline"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">Offline</span></button>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" href="<?= url('user/edit/' . $_SESSION['manager_main']['user']['id']); ?>"><i class="bi bi-person-lines-fill"></i> Meus dados</a></li>
                 <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" href="<?= url('user/logout'); ?>" onclick="return confirm('Tem certeza que deseja sair?');"><i class="bi bi-box-arrow-right me-2"></i>Olá, <?= htmlspecialchars($_SESSION['manager_main']['user']['name']) ?>, encerrar sessão?</a></li>
@@ -367,6 +391,9 @@ $isFinancialSheetView = strpos((string) ($content ?? ''), 'financial-sheet-page'
   <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="<?= url('assets/js/menu.js?v=4'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=3'); ?>"></script>
+  <?php if (!empty($_SESSION['manager_main']['user'])): ?>
+    <script src="<?= url('assets/js/user_presences/user_presence.js?v=1'); ?>"></script>
+  <?php endif; ?>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>
   <?php endif; ?>

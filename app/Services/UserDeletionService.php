@@ -107,6 +107,7 @@ class UserDeletionService
 
 			$this->deleteWhereUserId('user_remember_tokens', $userId);
 			$this->deleteWhereUserId('user_permissions', $userId);
+			$this->deleteWhereUserId('user_presences', $userId);
 			$this->deleteWhereUserId('tenant_users', $userId);
 
 			$affectedTables = [];
@@ -354,6 +355,7 @@ class UserDeletionService
 		                                      ORDER BY PermissionCatalog.system, PermissionCatalog.ability", [$userId]);
 		$tokens = $this->queryRows('SELECT * FROM user_remember_tokens WHERE user_id = ? ORDER BY id', [$userId]);
 		$links = $this->queryRows('SELECT TenantUser.*, Tenant.database_number FROM tenant_users AS TenantUser INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id WHERE TenantUser.user_id = ? ORDER BY TenantUser.tenant_id', [$userId]);
+		$presences = $this->queryRows('SELECT * FROM user_presences WHERE user_id = ? ORDER BY id', [$userId]);
 		$accessRecords = [];
 		foreach ($permissions as $row)
 			{
@@ -362,6 +364,10 @@ class UserDeletionService
 		foreach ($tokens as $row)
 			{
 			$accessRecords[] = $this->record('user_remember_tokens', $row['id'], 'Sessão persistente #' . $row['id'] . ' — expira: ' . $row['expires_at']);
+			}
+		foreach ($presences as $row)
+			{
+			$accessRecords[] = $this->record('user_presences', $row['id'], 'Presence #' . $row['id'] . ' - status: ' . $row['status']);
 			}
 		foreach ($links as $row)
 			{

@@ -342,6 +342,7 @@ class SupportChatRepository
 		               COALESCE(Stats.open_total, 0) AS open_total
 		        FROM users AS User
 		        INNER JOIN people AS Person ON Person.id = User.person_id
+		        INNER JOIN user_presences AS UserPresence ON UserPresence.user_id = User.id
 		        LEFT JOIN (
 		          SELECT attendant_user_id,
 		                 COUNT(*) AS open_total
@@ -352,6 +353,7 @@ class SupportChatRepository
 		        ) AS Stats ON Stats.attendant_user_id = User.id
 		        WHERE User.active = 1
 		          AND User.type = 'root'
+		          AND UserPresence.status = 'online'
 		        ORDER BY COALESCE(Stats.open_total, 0) ASC, User.id ASC
 		        LIMIT 1";
 

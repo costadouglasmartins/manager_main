@@ -7,6 +7,7 @@ use App\Core\RememberLogin;
 use App\Models\User;
 use App\Services\ProtectedEditAuthorizationService;
 use App\Services\UserDeletionService;
+use App\Services\UserPresenceService;
 
 class UserController extends Controller
 	{
@@ -180,6 +181,7 @@ class UserController extends Controller
 				{
 				\App\Core\Authorization::clearCache();
 				RememberLogin::storeUserInSession($user);
+				$this->setInitialPresence($user);
 
 				if (!empty($_POST['remember_me']))
 					{
@@ -210,6 +212,12 @@ class UserController extends Controller
 	 */
 	public function logout()
 		{
+		$currentUserId = (int) ($_SESSION['manager_main']['user']['id'] ?? 0);
+		if ($currentUserId > 0)
+			{
+			(new UserPresenceService())->markOffline($currentUserId);
+			}
+
 		\App\Core\Authorization::clearCache();
 		RememberLogin::forgetCurrentDevice();
 		// Destroy session and redirect
@@ -225,6 +233,34 @@ class UserController extends Controller
 		session_destroy();
 		$this->redirect('user/login');
 		exit;
+		}
+
+	/**
+	 * Sets the authenticated user initial presence.
+	 * @param array<string, mixed> $user Authenticated user payload.
+	 * @return void
+	 **/
+	private function setInitialPresence(array $user): void
+		{
+		$userId = (int) ($user['id'] ?? 0);
+		$tenantId = isset($user['tenant_id']) && (int) $user['tenant_id'] > 0 ? (int) $user['tenant_id'] : null;
+
+		if ($userId <= 0)
+			{
+			return;
+			}
+
+		try
+			{
+			$presence = (new UserPresenceService())->setStatus($userId, $tenantId, UserPresenceService::STATUS_ONLINE);
+			$_SESSION['manager_main']['user']['presence_status'] = $presence['status'];
+			}
+		catch (\RuntimeException $e)
+			{
+			$presence = (new UserPresenceService())->setStatus($userId, $tenantId, UserPresenceService::STATUS_OFFLINE);
+			$_SESSION['manager_main']['user']['presence_status'] = $presence['status'];
+			setFlashMessage('warning', 'The tenant online user limit was reached. Your presence was set to offline.');
+			}
 		}
 
   /**

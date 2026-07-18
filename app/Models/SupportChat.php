@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Services\UserPresenceService;
 use PDO;
 
 class SupportChat extends Model
@@ -18,15 +19,28 @@ class SupportChat extends Model
 		{
 		$sql = "SELECT User.id,
 		               Person.name,
-		               User.username
+		               User.username,
+		               COALESCE(UserPresence.status, 'offline') AS presence_status
 		        FROM users AS User
 		        INNER JOIN people AS Person ON Person.id = User.person_id
+		        LEFT JOIN user_presences AS UserPresence ON UserPresence.user_id = User.id
 		        WHERE User.active = 1
 		          AND User.type = 'root'
 		        ORDER BY Person.name ASC, User.id ASC";
 
 		$stmt = $this->db->query($sql);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$attendants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+		foreach ($attendants as &$attendant)
+			{
+			$meta = UserPresenceService::statusMeta((string) ($attendant['presence_status'] ?? 'offline'));
+			$attendant['presence_label'] = $meta['label'];
+			$attendant['presence_class'] = $meta['class'];
+			$attendant['presence_icon'] = $meta['icon'];
+			}
+
+		unset($attendant);
+		return $attendants;
 		}
 
 	/**

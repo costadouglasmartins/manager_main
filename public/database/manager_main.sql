@@ -5896,7 +5896,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=543 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=545 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.logs: ~360 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
@@ -6353,7 +6353,9 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(539, 'fa333467-a5a2-4f73-958b-a8c374ed913d', 1, 'manager_0001', 'Tenant 0001', 'bank_slip', 'list', 'bank_slips', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'bank_slip', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:25:11', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"url": "bank_slip"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:25:11', '2026-07-17 21:25:11'),
 	(540, '506a82ab-b509-466f-bec3-4d09eb0d40db', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:25:56', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:25:56', '2026-07-17 21:25:56'),
 	(541, 'f16d1d43-dc8d-4be4-a088-d018fce373b2', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:31:29', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:31:29', '2026-07-17 21:31:29'),
-	(542, '45dcaa2c-6fa1-45e8-9b0b-9c5ccc19011b', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:53:02', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:53:02', '2026-07-17 21:53:02');
+	(542, '45dcaa2c-6fa1-45e8-9b0b-9c5ccc19011b', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:53:02', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:53:02', '2026-07-17 21:53:02'),
+	(543, '658e66b8-2110-4642-ae81-41ed9bd3ea45', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 23:13:41', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 23:13:41', '2026-07-17 23:13:41'),
+	(544, '2dc288d0-42e3-4c23-a239-60e043cf425b', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-18 00:32:47', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-18 00:32:47', '2026-07-18 00:32:47');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -25018,6 +25020,44 @@ INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`,
 	(25, 9, 2, 'customer', 'Emma Watson', 'teste', '2026-06-29 18:54:44'),
 	(26, 9, 2, 'customer', 'Emma Watson', 'teste', '2026-06-29 18:55:22');
 
+-- Dumping structure for table manager_main.system_setting_definitions
+CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `module_id` int NOT NULL,
+  `key_name` varchar(120) NOT NULL,
+  `label` varchar(160) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `value_type` enum('string','integer','decimal','boolean','json') NOT NULL DEFAULT 'string',
+  `default_value` text,
+  `validation_rules` json DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_system_setting_definitions_key` (`key_name`),
+  KEY `idx_system_setting_definitions_module_id` (`module_id`),
+  CONSTRAINT `fk_system_setting_definitions_module` FOREIGN KEY (`module_id`) REFERENCES `system_setting_modules` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.system_setting_definitions: ~0 rows (approximately)
+
+-- Dumping structure for table manager_main.system_setting_modules
+CREATE TABLE IF NOT EXISTS `system_setting_modules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `slug` varchar(80) NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_system_setting_modules_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.system_setting_modules: ~0 rows (approximately)
+
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -25034,6 +25074,23 @@ CREATE TABLE IF NOT EXISTS `tenants` (
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
 	(2, '0002', 'active', '', '2026-07-15 23:39:28', '2026-07-15 23:39:28');
+
+-- Dumping structure for table manager_main.tenant_setting_values
+CREATE TABLE IF NOT EXISTS `tenant_setting_values` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tenant_id` int NOT NULL,
+  `setting_definition_id` int NOT NULL,
+  `value` text,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_tenant_setting_values_tenant_setting` (`tenant_id`,`setting_definition_id`),
+  KEY `idx_tenant_setting_values_setting_definition_id` (`setting_definition_id`),
+  CONSTRAINT `fk_tenant_setting_values_definition` FOREIGN KEY (`setting_definition_id`) REFERENCES `system_setting_definitions` (`id`),
+  CONSTRAINT `fk_tenant_setting_values_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.tenant_setting_values: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
@@ -25678,6 +25735,29 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(3, 12499, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
 	(3, 12500, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
+-- Dumping structure for table manager_main.user_presences
+CREATE TABLE IF NOT EXISTS `user_presences` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `status` enum('online','away','busy','offline') NOT NULL DEFAULT 'offline',
+  `last_seen_at` datetime DEFAULT NULL,
+  `status_changed_at` datetime DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_presences_user_id` (`user_id`),
+  KEY `idx_user_presences_tenant_status` (`tenant_id`,`status`),
+  KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
+  CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
+  CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+
+-- Dumping data for table manager_main.user_presences: ~0 rows (approximately)
+INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
+	(1, 1, NULL, 'busy', '2026-07-18 00:32:14', '2026-07-18 00:32:14', '2026-07-18 00:31:59', '2026-07-18 00:32:14'),
+	(6, 2, 1, 'busy', '2026-07-18 00:33:19', '2026-07-18 00:33:19', '2026-07-18 00:32:47', '2026-07-18 00:33:19');
+
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -25701,7 +25781,7 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(4, 1, '1ab58a491af7c8c2160a37e11a6a11b5', 'a6507617840e8aa70992966684af3bd48fa73fe2be9b96ab88a7e7e99431de63', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-19 11:06:13', '2026-06-16 23:05:33', '2026-06-19 11:06:13'),
 	(8, 1, '5a2397e38fd116df2976165421440be8', 'd18ef4703a0c4c0f838c2e6cc0705a0660e9fe0518d7f441380ae0343c0cd1d3', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-07-29 21:02:25', '2026-06-29 21:02:25', NULL),
 	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
-	(12, 1, '455fc7dd2c3475d2e8d6087da268314a', '1a82895e1a8640842e1159f5d9a2e1fd0878c12838486eff2f8ff9b3a933b8dc', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 21:22:18', '2026-07-14 20:10:23', '2026-07-17 21:22:18'),
+	(12, 1, '2bec255eead1a6ccdbe8cb8bd119434d', '7f0748c14a281d4543b6ad037c0e655e0db6a71ea0763262828d3e3c44ce9f84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 23:54:29', '2026-07-14 20:10:23', '2026-07-17 23:54:29'),
 	(13, 1, '8904d98b2f7d616ce8210f1bba873b64', '54f856ed4cf9aa23e848341ba2d8267db47e6d91c5b6a6f13220376ca2dac52f', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-15 22:48:27', '2026-07-14 21:48:14', '2026-07-16 22:48:27');
 
 -- Dumping structure for table manager_main.webcrawler_ip_ranges
