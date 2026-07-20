@@ -24,6 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
     assignButton: document.getElementById("supportAdminAssignButton"),
     attendantSelect: document.getElementById("supportAdminAttendantSelect"),
     connection: document.getElementById("supportAdminConnectionStatus"),
+    deleteModal: document.getElementById("supportAdminDeleteModal"),
+    deleteForm: document.getElementById("supportAdminDeleteForm"),
+    deleteRecordId: document.getElementById("supportAdminDeleteRecordId"),
+    deleteRecordName: document.getElementById("supportAdminDeleteRecordName"),
   };
 
   const state = {
@@ -156,22 +160,38 @@ document.addEventListener("DOMContentLoaded", () => {
       const activeClass = Number(chat.id) === Number(state.selectedChatId) ? " is-active" : "";
       const attendantName = chat.attendant_name || "Sem atendente";
       const tenantName = chat.tenant_name || ("Tenant " + (chat.tenant_database_number || ""));
+      const customerName = chat.customer_name || chat.customer_username || ("Usuário #" + chat.customer_user_id);
+      const chatLabel = `Chat #${Number(chat.id)} - ${customerName}`;
 
       return `
-        <button type="button" class="support-admin-chat-item${activeClass}" data-chat-id="${Number(chat.id)}">
-          <div class="support-admin-chat-item-top">
-            <strong>${escapeHtml(chat.customer_name || chat.customer_username || ("Usuário #" + chat.customer_user_id))}</strong>
-            <span class="support-admin-status status-${escapeHtml(chat.status)}">${escapeHtml(statusLabel(chat.status))}</span>
-          </div>
-          <div class="support-admin-chat-item-bottom">
-            <span class="support-admin-chat-item-tenant">${escapeHtml(tenantName)}</span>
-            <span>${escapeHtml(attendantName)}</span>
-          </div>
-          <div class="support-admin-chat-item-bottom">
-            <span>Chat #${Number(chat.id)}</span>
-            <span>${escapeHtml(formatDate(chat.last_message_at || chat.created))}</span>
-          </div>
-        </button>
+        <div class="support-admin-chat-row">
+          <button type="button" class="support-admin-chat-item${activeClass}" data-chat-id="${Number(chat.id)}">
+            <div class="support-admin-chat-item-top">
+              <strong>${escapeHtml(customerName)}</strong>
+              <span class="support-admin-status status-${escapeHtml(chat.status)}">${escapeHtml(statusLabel(chat.status))}</span>
+            </div>
+            <div class="support-admin-chat-item-bottom">
+              <span class="support-admin-chat-item-tenant">${escapeHtml(tenantName)}</span>
+              <span>${escapeHtml(attendantName)}</span>
+            </div>
+            <div class="support-admin-chat-item-bottom">
+              <span>Chat #${Number(chat.id)}</span>
+              <span>${escapeHtml(formatDate(chat.last_message_at || chat.created))}</span>
+            </div>
+          </button>
+          <button
+            type="button"
+            class="support-admin-chat-delete"
+            aria-label="Excluir ${escapeHtml(chatLabel)}"
+            title="Excluir chat"
+            data-bs-toggle="modal"
+            data-bs-target="#supportAdminDeleteModal"
+            data-id="${Number(chat.id)}"
+            data-name="${escapeHtml(chatLabel)}"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </button>
+        </div>
       `;
     }).join("");
 
@@ -182,6 +202,27 @@ document.addEventListener("DOMContentLoaded", () => {
           loadChat(chatId);
         }
       });
+    });
+  }
+
+  function setupDeleteModal() {
+    if (!elements.deleteModal || !elements.deleteForm || !elements.deleteRecordId || !elements.deleteRecordName) {
+      return;
+    }
+
+    elements.deleteModal.addEventListener("show.bs.modal", (event) => {
+      const trigger = event.relatedTarget;
+
+      if (!trigger) {
+        return;
+      }
+
+      const chatId = trigger.dataset.id || "";
+      const baseUrl = (elements.deleteForm.dataset.actionBaseUrl || "").replace(/\/$/, "");
+
+      elements.deleteRecordId.value = chatId;
+      elements.deleteRecordName.textContent = trigger.dataset.name || `Chat #${chatId}`;
+      elements.deleteForm.action = `${baseUrl}/${encodeURIComponent(chatId)}`;
     });
   }
 
@@ -469,6 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
       chat_id: Number(state.currentChat.chat.id),
     });
   });
+
+  setupDeleteModal();
 
   refreshBootstrap(true).catch(() => {
     setConnectionStatus("Falha ao carregar chats", false);

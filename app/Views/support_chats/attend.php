@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= url('assets/css/support_chats/attend.css?v=1'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/support_chats/attend.css?v=2'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -62,4 +62,27 @@
   </div>
 </section>
 
-<script src="<?= url('assets/js/support_chats/attend.js?v=3'); ?>"></script>
+<div class="modal fade" id="supportAdminDeleteModal" tabindex="-1" aria-labelledby="supportAdminDeleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="supportAdminDeleteModalTitle">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir o <strong id="supportAdminDeleteRecordName"></strong>?
+        <p class="text-muted mb-0 mt-2">Os registros da conversa também serão removidos.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="#" id="supportAdminDeleteForm" data-action-base-url="<?= url('support_chat/delete'); ?>" class="d-inline">
+          <input type="hidden" name="id" id="supportAdminDeleteRecordId">
+          <input type="hidden" name="redirect_to" value="support_chat/attend">
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="<?= url('assets/js/support_chats/attend.js?v=4'); ?>"></script>

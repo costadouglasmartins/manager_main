@@ -37,6 +37,13 @@
   overflow-y: auto;
 }
 
+.support-admin-chat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .support-admin-chat-item {
   width: 100%;
   padding: 0.9rem;
@@ -56,6 +63,26 @@
 
 .support-admin-chat-item.is-active {
   transform: translateY(-1px);
+}
+
+.support-admin-chat-delete {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bs-danger, #dc3545);
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.support-admin-chat-delete:hover,
+.support-admin-chat-delete:focus-visible {
+  border-color: var(--bs-danger, #dc3545);
+  background: var(--bs-danger, #dc3545);
+  color: #fff;
 }
 
 .support-admin-chat-item-top,
