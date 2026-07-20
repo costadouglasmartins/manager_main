@@ -5896,9 +5896,9 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=545 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.logs: ~360 rows (approximately)
+-- Dumping data for table manager_main.logs: ~354 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
 	(4, '9f44f17d-f453-4bfd-b416-0181bae55efa', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '10', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/10', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:12:07', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tal", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-24 00:45:29", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tals", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-25 20:12:07", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "from": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}]}, "person": {"name": {"to": "Fulano de Tals", "from": "Fulano de Tal"}, "modified": {"to": "2026-06-25 20:12:07", "from": "2026-06-24 00:45:29"}}, "addresses": {"to": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/10"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:12:07', '2026-06-25 20:12:07'),
 	(5, '6b0c687a-87cf-43f8-9b83-ab970b2aeef4', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '4', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:17:03', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-01 22:34:47", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-25 20:17:03", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "from": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}]}, "person": {"modified": {"to": "2026-06-25 20:17:03", "from": "2026-06-01 22:34:47"}}, "phones": {"to": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "from": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}]}, "addresses": {"to": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/4"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:17:03', '2026-06-25 20:17:03'),
@@ -6355,7 +6355,10 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(541, 'f16d1d43-dc8d-4be4-a088-d018fce373b2', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:31:29', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:31:29', '2026-07-17 21:31:29'),
 	(542, '45dcaa2c-6fa1-45e8-9b0b-9c5ccc19011b', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 21:53:02', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 21:53:02', '2026-07-17 21:53:02'),
 	(543, '658e66b8-2110-4642-ae81-41ed9bd3ea45', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-17 23:13:41', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-17 23:13:41', '2026-07-17 23:13:41'),
-	(544, '2dc288d0-42e3-4c23-a239-60e043cf425b', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-18 00:32:47', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-18 00:32:47', '2026-07-18 00:32:47');
+	(544, '2dc288d0-42e3-4c23-a239-60e043cf425b', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-18 00:32:47', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-18 00:32:47', '2026-07-18 00:32:47'),
+	(545, '9437ccb4-dcf8-4d22-ba3c-0bfd35ce226c', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:30:31', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-20 17:30:31', '2026-07-20 17:30:31'),
+	(546, '03ebb72a-ed42-43bc-bdaf-de5b2e64beb4', 1, 'manager_0001', 'Tenant 0001', 'permission', 'list', 'permissions', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:30:55', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": null, "request_query": {"url": "permission"}, "filters_applied": false, "response_format": "html"}', '2026-07-20 17:30:55', '2026-07-20 17:30:55'),
+	(547, 'f1b7ac75-6a4e-4201-9f70-22ebbe28b61c', 1, 'manager_0001', 'Tenant 0001', 'auth', 'logout', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:31:00', '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-20 17:31:00', '2026-07-20 17:31:00');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6367,9 +6370,9 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18090 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18122 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~18 237 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~18 264 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -24457,7 +24460,39 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18086, 'Centro', 4624, '2026-07-17 21:53:33', '2026-07-17 21:53:33'),
 	(18087, 'Centro', 4461, '2026-07-17 22:19:00', '2026-07-17 22:19:00'),
 	(18088, 'Aterrado Torto', 4620, '2026-07-17 22:40:25', '2026-07-17 22:40:25'),
-	(18089, 'Área Rural de Rio do Sul', 4634, '2026-07-17 22:58:02', '2026-07-17 22:58:02');
+	(18089, 'Área Rural de Rio do Sul', 4634, '2026-07-17 22:58:02', '2026-07-17 22:58:02'),
+	(18090, 'Centro', 4704, '2026-07-20 16:19:56', '2026-07-20 16:19:56'),
+	(18091, 'Mirador', 4623, '2026-07-20 16:36:05', '2026-07-20 16:36:05'),
+	(18092, 'Barra da Prata', 4703, '2026-07-20 16:56:34', '2026-07-20 16:56:34'),
+	(18093, 'Lagoas', 4703, '2026-07-20 16:56:39', '2026-07-20 16:56:39'),
+	(18094, 'Centro', 4553, '2026-07-20 17:09:41', '2026-07-20 17:09:41'),
+	(18095, 'Centro', 4429, '2026-07-20 17:56:23', '2026-07-20 17:56:23'),
+	(18096, 'Área Rural', 4565, '2026-07-20 18:09:12', '2026-07-20 18:09:12'),
+	(18097, 'Baixo Canoas', 4565, '2026-07-20 18:09:23', '2026-07-20 18:09:23'),
+	(18098, 'Vila Nova', 4565, '2026-07-20 18:10:11', '2026-07-20 18:10:11'),
+	(18099, 'Rio do Peixe', 4565, '2026-07-20 18:10:54', '2026-07-20 18:10:54'),
+	(18100, 'Boa Vista', 4565, '2026-07-20 18:12:22', '2026-07-20 18:12:22'),
+	(18101, 'Ribeirão do Padre', 4565, '2026-07-20 18:14:03', '2026-07-20 18:14:03'),
+	(18102, 'Braço Belga', 4565, '2026-07-20 18:15:35', '2026-07-20 18:15:35'),
+	(18103, 'Baixo Máximo', 4565, '2026-07-20 18:15:54', '2026-07-20 18:15:54'),
+	(18104, 'Nações', 4528, '2026-07-20 18:17:07', '2026-07-20 18:17:07'),
+	(18105, 'Braço da Onça', 4565, '2026-07-20 18:18:40', '2026-07-20 18:18:40'),
+	(18106, 'Serafim', 4565, '2026-07-20 18:19:24', '2026-07-20 18:19:24'),
+	(18107, 'Ribeirão do Bugre', 4565, '2026-07-20 18:20:30', '2026-07-20 18:20:30'),
+	(18108, 'Centro', 4565, '2026-07-20 18:23:12', '2026-07-20 18:23:12'),
+	(18109, 'Dom Bosco', 4565, '2026-07-20 18:26:09', '2026-07-20 18:26:09'),
+	(18110, 'Vila do Salto', 4565, '2026-07-20 18:26:37', '2026-07-20 18:26:37'),
+	(18111, 'Braço Elza', 4565, '2026-07-20 18:27:46', '2026-07-20 18:27:46'),
+	(18112, 'Santa Maria', 4450, '2026-07-20 18:39:45', '2026-07-20 18:39:45'),
+	(18113, 'Barra São João', 4450, '2026-07-20 18:44:08', '2026-07-20 18:44:08'),
+	(18114, 'Centro', 4450, '2026-07-20 18:44:08', '2026-07-20 18:44:08'),
+	(18115, 'Centro (Rio Rosinha)', 4635, '2026-07-20 18:48:13', '2026-07-20 18:48:13'),
+	(18116, 'Cedro Alto', 4635, '2026-07-20 18:52:29', '2026-07-20 18:52:29'),
+	(18117, 'Fritz Lorenz', 4684, '2026-07-20 19:00:17', '2026-07-20 19:00:17'),
+	(18118, 'Centro', 4684, '2026-07-20 19:00:17', '2026-07-20 19:00:17'),
+	(18119, 'Área Rural de Gaspar', 4511, '2026-07-20 19:05:03', '2026-07-20 19:05:03'),
+	(18120, 'Arraial D\'Ouro', 4511, '2026-07-20 19:16:18', '2026-07-20 19:16:18'),
+	(18121, 'Gaspar Alto', 4511, '2026-07-20 19:37:41', '2026-07-20 19:37:41');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -25751,12 +25786,12 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.user_presences: ~0 rows (approximately)
+-- Dumping data for table manager_main.user_presences: ~2 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
 	(1, 1, NULL, 'busy', '2026-07-18 00:32:14', '2026-07-18 00:32:14', '2026-07-18 00:31:59', '2026-07-18 00:32:14'),
-	(6, 2, 1, 'busy', '2026-07-18 00:33:19', '2026-07-18 00:33:19', '2026-07-18 00:32:47', '2026-07-18 00:33:19');
+	(6, 2, NULL, 'offline', '2026-07-20 17:31:00', '2026-07-20 17:31:00', '2026-07-18 00:32:47', '2026-07-20 17:31:00');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
@@ -25776,13 +25811,12 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.user_remember_tokens: ~5 rows (approximately)
+-- Dumping data for table manager_main.user_remember_tokens: ~4 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(4, 1, '1ab58a491af7c8c2160a37e11a6a11b5', 'a6507617840e8aa70992966684af3bd48fa73fe2be9b96ab88a7e7e99431de63', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-07-19 11:06:13', '2026-06-16 23:05:33', '2026-06-19 11:06:13'),
 	(8, 1, '5a2397e38fd116df2976165421440be8', 'd18ef4703a0c4c0f838c2e6cc0705a0660e9fe0518d7f441380ae0343c0cd1d3', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-07-29 21:02:25', '2026-06-29 21:02:25', NULL),
 	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
 	(12, 1, '2bec255eead1a6ccdbe8cb8bd119434d', '7f0748c14a281d4543b6ad037c0e655e0db6a71ea0763262828d3e3c44ce9f84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 23:54:29', '2026-07-14 20:10:23', '2026-07-17 23:54:29'),
-	(13, 1, '8904d98b2f7d616ce8210f1bba873b64', '54f856ed4cf9aa23e848341ba2d8267db47e6d91c5b6a6f13220376ca2dac52f', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-15 22:48:27', '2026-07-14 21:48:14', '2026-07-16 22:48:27');
+	(13, 1, '463a0f49f49511fa6762b0dbffed6144', '907e8d6186063878509879f9d65238d1b6e6bb2498cbea633552d41df44b97ec', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 18:25:05', '2026-07-14 21:48:14', '2026-07-20 18:25:05');
 
 -- Dumping structure for table manager_main.webcrawler_ip_ranges
 CREATE TABLE IF NOT EXISTS `webcrawler_ip_ranges` (
