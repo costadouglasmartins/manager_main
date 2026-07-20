@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= url('assets/css/support_chats/attend.css?v=2'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/support_chats/attend.css?v=5'); ?>">
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -7,7 +7,7 @@
   </ol>
 </nav>
 
-<section class="support-admin-page" data-bootstrap-url="<?= url('support_chat/bootstrap'); ?>" data-chat-url-base="<?= url('support_chat/show'); ?>" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-initial-chat-id="<?= (int) ($initialChatId ?? 0); ?>">
+<section class="support-admin-page" data-bootstrap-url="<?= url('support_chat/bootstrap'); ?>" data-chat-url-base="<?= url('support_chat/show'); ?>" data-open-conversation-url="<?= url('support_chat/openConversation'); ?>" data-reopen-url-base="<?= url('support_chat/reopen'); ?>" data-ws-auth-url="<?= url('support_chat/wsAuth'); ?>" data-initial-chat-id="<?= (int) ($initialChatId ?? 0); ?>">
   <div class="support-admin-sidebar">
     <div class="support-admin-panel support-admin-panel-header">
       <div>
@@ -17,6 +17,22 @@
       <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary btn-sm" href="<?= url('support_chat'); ?>">Listagem</a>
         <button class="btn btn-outline-primary btn-sm" id="supportAdminRefreshButton" type="button">Atualizar</button>
+      </div>
+    </div>
+
+    <div class="support-admin-panel support-admin-panel-search">
+      <label class="form-label small fw-semibold" for="supportAdminTenantSearch">Tenant ou pessoa</label>
+      <div class="support-admin-search-control">
+        <input id="supportAdminTenantSearch" type="search" class="form-control form-control-sm js-autocomplete" autocomplete="off" placeholder="Tenant, pessoa, e-mail ou usuário" data-endpoint="<?= url('support_chat/tenantUserAutocomplete'); ?>" data-results="#supportAdminTenantResults" data-hidden="#supportAdminCustomerUserId" data-minlen="1" data-param="term" data-autocomplete-portal="body" aria-controls="supportAdminTenantResults">
+        <input id="supportAdminCustomerUserId" type="hidden" value="">
+        <input id="supportAdminTenantId" type="hidden" value="">
+        <button id="supportAdminSearchClearButton" class="btn btn-outline-secondary btn-sm support-admin-search-clear" type="button" aria-label="Limpar pesquisa" title="Limpar pesquisa" hidden>
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <ul id="supportAdminTenantResults" class="list-group support-admin-tenant-results" aria-label="Tenants e pessoas encontrados"></ul>
+      <div id="supportAdminSearchSelection" class="support-admin-search-selection" hidden>
+        <button id="supportAdminOpenConversationButton" class="btn btn-primary btn-sm" type="button"><i class="bi bi-chat-left-text me-1" aria-hidden="true"></i>Abrir conversa</button>
       </div>
     </div>
 
@@ -37,6 +53,10 @@
             <option value="">Selecionar atendente</option>
           </select>
           <button class="btn btn-outline-secondary btn-sm" id="supportAdminAssignButton" type="button" disabled>Atribuir</button>
+          <button class="btn btn-success btn-sm" id="supportAdminReopenButton" type="button" hidden>
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+            Reabrir
+          </button>
           <button class="btn btn-danger btn-sm" id="supportAdminCloseButton" type="button" disabled>Finalizar</button>
         </div>
       </header>
@@ -85,4 +105,5 @@
   </div>
 </div>
 
-<script src="<?= url('assets/js/support_chats/attend.js?v=4'); ?>"></script>
+<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
+<script src="<?= url('assets/js/support_chats/attend.js?v=6'); ?>"></script>

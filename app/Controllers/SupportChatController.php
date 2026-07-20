@@ -193,9 +193,18 @@ class SupportChatController extends Controller
 		{
 		$this->requireRoot();
 		$redirectPath = $this->supportChatRedirectPath();
+		$wantsJson = $this->wantsJson();
 
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
 			{
+			if ($wantsJson)
+				{
+				$this->json([
+					'error' => 'method_not_allowed',
+					'message' => 'A reabertura deve ser enviada por POST.',
+				], 405, ['Allow' => 'POST']);
+				}
+
 			$this->redirect($redirectPath);
 			}
 
@@ -205,8 +214,24 @@ class SupportChatController extends Controller
 			$chat = $model->reopenChat((int) $chatId);
 			if (!$chat)
 				{
+				if ($wantsJson)
+					{
+					$this->json([
+						'error' => 'chat_not_found',
+						'message' => 'Chat não encontrado.',
+					], 404);
+					}
+
 				setFlashMessage('warning', 'Chat não encontrado.');
 				$this->redirect($redirectPath);
+				}
+
+			if ($wantsJson)
+				{
+				$this->json([
+					'message' => 'Chat reaberto com sucesso.',
+					'chat' => $chat,
+				]);
 				}
 
 			setFlashMessage('success', 'Chat reaberto com sucesso.');
@@ -214,6 +239,14 @@ class SupportChatController extends Controller
 			}
 		catch (\Exception $exception)
 			{
+			if ($wantsJson)
+				{
+				$this->json([
+					'error' => 'chat_reopen_failed',
+					'message' => 'Não foi possível reabrir o chat.',
+				], 500);
+				}
+
 			setFlashMessage('danger', 'Não foi possível reabrir o chat.');
 			$this->redirect($redirectPath);
 			}
@@ -262,6 +295,18 @@ class SupportChatController extends Controller
 
 		$model = new SupportChat();
 		$currentUser = $_SESSION['manager_main']['user'] ?? [];
+		$filters = [];
+		$tenantId = isset($_GET['tenant_id']) ? (int) $_GET['tenant_id'] : 0;
+		$customerUserId = isset($_GET['customer_user_id']) ? (int) $_GET['customer_user_id'] : 0;
+
+		if ($tenantId > 0)
+			{
+			$filters['tenant_id'] = $tenantId;
+			}
+		if ($customerUserId > 0)
+			{
+			$filters['customer_user_id'] = $customerUserId;
+			}
 
 		$this->json([
 			'currentUser' => [
@@ -270,8 +315,114 @@ class SupportChatController extends Controller
 				'username' => (string) ($currentUser['username'] ?? ''),
 			],
 			'attendants' => $model->getAttendants(),
-			'chats' => $model->listChats(),
+			'chats' => $model->listChats($filters),
 		]);
+		}
+
+	/**
+	 * Returns tenant/user associations matching tenant, person, e-mail or username.
+	 */
+	public function tenantUserAutocomplete(): void
+		{
+		$this->requireRoot();
+
+		$term = isset($_GET['term']) ? trim((string) $_GET['term']) : '';
+		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
+		$rows = (new SupportChat())->autocompleteTenantUsers($term, $limit);
+
+		$items = array_map(function (array $row): array
+			{
+			$databaseNumber = trim((string) ($row['database_number'] ?? ''));
+			$tenantName = trim((string) ($row['tenant_name'] ?? ''));
+			if ($tenantName === '')
+				{
+				$tenantName = $databaseNumber !== '' ? 'Tenant ' . $databaseNumber : 'Tenant #' . (int) ($row['tenant_id'] ?? 0);
+				}
+			$tenantLabel = $tenantName;
+			if ($databaseNumber !== '' && strpos($tenantName, $databaseNumber) === false)
+				{
+				$tenantLabel .= ' (' . $databaseNumber . ')';
+				}
+
+			$personName = trim((string) ($row['person_name'] ?? ''));
+			if ($personName === '')
+				{
+				$personName = 'Pessoa #' . (int) ($row['person_id'] ?? 0);
+				}
+
+			$username = trim((string) ($row['username'] ?? ''));
+			if ($username === '')
+				{
+				$username = 'Usuário #' . (int) ($row['user_id'] ?? 0);
+				}
+
+			$label = 'Tenant: ' . $tenantLabel . ' | Pessoa: ' . $personName . ' | Usuário: ' . $username;
+
+			return [
+				'id' => (int) ($row['user_id'] ?? 0),
+				'name' => $label,
+				'label' => $label,
+				'tenant_id' => (int) ($row['tenant_id'] ?? 0),
+				'tenant_name' => $tenantName,
+				'database_number' => $databaseNumber,
+				'user_id' => (int) ($row['user_id'] ?? 0),
+				'username' => $username,
+				'person_id' => (int) ($row['person_id'] ?? 0),
+				'person_name' => $personName,
+				'email' => (string) ($row['email'] ?? ''),
+			];
+			}, $rows);
+
+		$this->json(['items' => $items]);
+		}
+
+	/**
+	 * Opens an existing active conversation or creates one for a tenant user.
+	 */
+	public function openConversation(): void
+		{
+		$this->requireRoot();
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+			{
+			$this->json([
+				'error' => 'method_not_allowed',
+				'message' => 'A conversa deve ser aberta por POST.',
+			], 405, ['Allow' => 'POST']);
+			}
+
+		$tenantId = isset($_POST['tenant_id']) ? (int) $_POST['tenant_id'] : 0;
+		$customerUserId = isset($_POST['customer_user_id']) ? (int) $_POST['customer_user_id'] : 0;
+		$currentUser = $_SESSION['manager_main']['user'] ?? [];
+
+		try
+			{
+			$result = (new SupportChat())->openConversation(
+				$customerUserId,
+				$tenantId,
+				(int) ($currentUser['id'] ?? 0)
+			);
+
+			$this->json([
+				'message' => $result['created'] ? 'Conversa criada com sucesso.' : 'Conversa ativa carregada.',
+				'created' => (bool) $result['created'],
+				'chat' => $result['chat'],
+			], $result['created'] ? 201 : 200);
+			}
+		catch (\InvalidArgumentException $exception)
+			{
+			$this->json([
+				'error' => 'invalid_tenant_user',
+				'message' => $exception->getMessage(),
+			], 422);
+			}
+		catch (\Throwable $exception)
+			{
+			$this->json([
+				'error' => 'conversation_open_failed',
+				'message' => 'Não foi possível abrir a conversa.',
+			], 500);
+			}
 		}
 
 	/**

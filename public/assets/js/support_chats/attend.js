@@ -7,11 +7,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const bootstrapUrl = root.dataset.bootstrapUrl || "";
   const chatUrlBase = (root.dataset.chatUrlBase || "").replace(/\/$/, "");
+  const openConversationUrl = root.dataset.openConversationUrl || "";
+  const reopenUrlBase = (root.dataset.reopenUrlBase || "").replace(/\/$/, "");
   const wsAuthUrl = root.dataset.wsAuthUrl || "";
   const initialChatId = Number(root.dataset.initialChatId || 0);
 
   const elements = {
     refreshButton: document.getElementById("supportAdminRefreshButton"),
+    searchInput: document.getElementById("supportAdminTenantSearch"),
+    searchClearButton: document.getElementById("supportAdminSearchClearButton"),
+    searchSelection: document.getElementById("supportAdminSearchSelection"),
+    openConversationButton: document.getElementById("supportAdminOpenConversationButton"),
+    customerUserId: document.getElementById("supportAdminCustomerUserId"),
+    tenantId: document.getElementById("supportAdminTenantId"),
     chatList: document.getElementById("supportAdminChatList"),
     title: document.getElementById("supportAdminChatTitle"),
     meta: document.getElementById("supportAdminChatMeta"),
@@ -21,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input: document.getElementById("supportAdminMessageInput"),
     sendButton: document.getElementById("supportAdminSendButton"),
     closeButton: document.getElementById("supportAdminCloseButton"),
+    reopenButton: document.getElementById("supportAdminReopenButton"),
     assignButton: document.getElementById("supportAdminAssignButton"),
     attendantSelect: document.getElementById("supportAdminAttendantSelect"),
     connection: document.getElementById("supportAdminConnectionStatus"),
@@ -40,6 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
     typingTimer: null,
     lastTypingState: false,
     selectedChatId: initialChatId > 0 ? initialChatId : null,
+    filterTenantId: null,
+    filterCustomerUserId: null,
+    openingConversation: false,
+    reopening: false,
   };
 
   function escapeHtml(value) {
@@ -126,6 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const isClosed = !hasChat || state.currentChat.chat.status === "closed";
 
     elements.closeButton.disabled = !hasChat || isClosed || !state.socketAuthenticated;
+    elements.reopenButton.hidden = !hasChat || !isClosed;
+    elements.reopenButton.disabled = !hasChat || !isClosed || state.reopening;
     elements.assignButton.disabled = !hasChat || isClosed || !state.socketAuthenticated;
     elements.attendantSelect.disabled = !hasChat || isClosed;
     setComposerState(hasChat && !isClosed && state.socketAuthenticated);
@@ -288,7 +303,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function refreshBootstrap(keepSelection = true) {
-    state.bootstrap = await fetchJson(bootstrapUrl);
+    const url = new URL(bootstrapUrl, window.location.href);
+    if (state.filterTenantId) {
+      url.searchParams.set("tenant_id", String(state.filterTenantId));
+    }
+    if (state.filterCustomerUserId) {
+      url.searchParams.set("customer_user_id", String(state.filterCustomerUserId));
+    }
+
+    state.bootstrap = await fetchJson(url.toString());
     renderChatList();
 
     if (!keepSelection) {
@@ -444,6 +467,90 @@ document.addEventListener("DOMContentLoaded", () => {
     await refreshBootstrap(true);
   });
 
+  elements.searchInput.addEventListener("input", () => {
+    if (!state.filterTenantId && !state.filterCustomerUserId) {
+      return;
+    }
+
+    state.filterTenantId = null;
+    state.filterCustomerUserId = null;
+    elements.customerUserId.value = "";
+    elements.tenantId.value = "";
+    elements.searchClearButton.hidden = true;
+    elements.searchSelection.hidden = true;
+    refreshBootstrap(true).catch(() => {
+      setConnectionStatus("Falha ao carregar chats", false);
+    });
+  });
+
+  elements.searchInput.addEventListener("autocomplete:selected", (event) => {
+    const item = event.detail || {};
+    const tenantId = Number(item.tenant_id || 0);
+    const customerUserId = Number(item.user_id || item.id || 0);
+
+    if (tenantId <= 0 || customerUserId <= 0) {
+      return;
+    }
+
+    state.filterTenantId = tenantId;
+    state.filterCustomerUserId = customerUserId;
+    elements.tenantId.value = String(tenantId);
+    elements.customerUserId.value = String(customerUserId);
+    elements.searchClearButton.hidden = false;
+    elements.searchSelection.hidden = false;
+
+    refreshBootstrap(true).catch(() => {
+      setConnectionStatus("Falha ao filtrar chats", false);
+    });
+  });
+
+  elements.searchClearButton.addEventListener("click", () => {
+    state.filterTenantId = null;
+    state.filterCustomerUserId = null;
+    elements.searchInput.value = "";
+    elements.customerUserId.value = "";
+    elements.tenantId.value = "";
+    elements.searchClearButton.hidden = true;
+    elements.searchSelection.hidden = true;
+
+    refreshBootstrap(true).catch(() => {
+      setConnectionStatus("Falha ao carregar chats", false);
+    });
+  });
+
+  elements.openConversationButton.addEventListener("click", async () => {
+    if (!state.filterTenantId || !state.filterCustomerUserId || state.openingConversation) {
+      return;
+    }
+
+    state.openingConversation = true;
+    elements.openConversationButton.disabled = true;
+
+    try {
+      const body = new URLSearchParams({
+        tenant_id: String(state.filterTenantId),
+        customer_user_id: String(state.filterCustomerUserId),
+      });
+      const payload = await fetchJson(openConversationUrl, {
+        method: "POST",
+        body,
+      });
+      const chatId = Number(payload.chat && payload.chat.id || 0);
+      if (chatId <= 0) {
+        throw new Error("Conversa não encontrada após a abertura");
+      }
+
+      state.selectedChatId = chatId;
+      await refreshBootstrap(true);
+      elements.input.focus();
+    } catch (error) {
+      setConnectionStatus(error.message || "Não foi possível abrir a conversa", false);
+    } finally {
+      state.openingConversation = false;
+      elements.openConversationButton.disabled = false;
+    }
+  });
+
   elements.form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -509,6 +616,28 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "close_chat",
       chat_id: Number(state.currentChat.chat.id),
     });
+  });
+
+  elements.reopenButton.addEventListener("click", async () => {
+    const chat = state.currentChat && state.currentChat.chat;
+    if (!chat || chat.status !== "closed" || state.reopening) {
+      return;
+    }
+
+    state.reopening = true;
+    updateActionStates();
+
+    try {
+      await fetchJson(`${reopenUrlBase}/${encodeURIComponent(chat.id)}`, {
+        method: "POST",
+      });
+      await refreshBootstrap(true);
+    } catch (error) {
+      setConnectionStatus(error.message || "Não foi possível reabrir o chat", false);
+    } finally {
+      state.reopening = false;
+      updateActionStates();
+    }
   });
 
   setupDeleteModal();

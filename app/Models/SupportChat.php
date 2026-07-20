@@ -48,9 +48,203 @@ class SupportChat extends Model
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function listChats(int $limit = 80): array
+	public function listChats(array $filters = [], int $limit = 80): array
 		{
-		return $this->searchChats([], $limit, 0);
+		return $this->searchChats($filters, $limit, 0);
+		}
+
+	/**
+	 * Searches tenant users for the support attendance autocomplete.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function autocompleteTenantUsers(string $term, int $limit = 50): array
+		{
+		$term = trim($term);
+		if ($term === '')
+			{
+			return [];
+			}
+
+		$limit = max(1, min(50, $limit));
+		$like = '%' . $term . '%';
+		$sql = "SELECT Tenant.id AS tenant_id,
+		               Tenant.database_number,
+		               Tenant.observations AS tenant_name,
+		               User.id AS user_id,
+		               User.username,
+		               Person.id AS person_id,
+		               Person.name AS person_name,
+		               (SELECT Email.email
+		                  FROM emails AS Email
+		                  WHERE Email.person_id = Person.id
+		                  ORDER BY Email.is_login = 1 DESC, Email.id ASC
+		                  LIMIT 1) AS email
+		        FROM tenant_users AS TenantUser
+		        INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id
+		        INNER JOIN users AS User ON User.id = TenantUser.user_id
+		        INNER JOIN people AS Person ON Person.id = User.person_id
+		        WHERE Tenant.observations LIKE :tenant_name
+		           OR Tenant.database_number LIKE :tenant_database
+		           OR Person.name LIKE :person_name
+		           OR User.username LIKE :username
+		           OR EXISTS (
+		             SELECT 1
+		             FROM emails AS SearchEmail
+		             WHERE SearchEmail.person_id = Person.id
+		               AND SearchEmail.email LIKE :email
+		           )
+		        ORDER BY Tenant.observations ASC,
+		                 Tenant.database_number ASC,
+		                 Person.name ASC,
+		                 User.username ASC
+		        LIMIT :limit";
+
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(':tenant_name', $like, PDO::PARAM_STR);
+		$stmt->bindValue(':tenant_database', $like, PDO::PARAM_STR);
+		$stmt->bindValue(':person_name', $like, PDO::PARAM_STR);
+		$stmt->bindValue(':username', $like, PDO::PARAM_STR);
+		$stmt->bindValue(':email', $like, PDO::PARAM_STR);
+		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+		$stmt->execute();
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		}
+
+	/**
+	 * Returns an active conversation or creates one for a tenant user.
+	 *
+	 * @return array{chat: array<string, mixed>, created: bool}
+	 */
+	public function openConversation(int $customerUserId, int $tenantId, int $attendantUserId): array
+		{
+		if ($customerUserId <= 0 || $tenantId <= 0 || $attendantUserId <= 0)
+			{
+			throw new \InvalidArgumentException('Tenant, usuário e atendente são obrigatórios.');
+			}
+
+		$startedTransaction = !$this->db->inTransaction();
+		try
+			{
+			if ($startedTransaction)
+				{
+				$this->db->beginTransaction();
+				}
+
+			$associationStmt = $this->db->prepare("SELECT Tenant.database_number
+			                                             FROM tenant_users AS TenantUser
+			                                             INNER JOIN tenants AS Tenant ON Tenant.id = TenantUser.tenant_id
+			                                             INNER JOIN users AS User ON User.id = TenantUser.user_id
+			                                             WHERE TenantUser.tenant_id = :tenant_id
+			                                               AND TenantUser.user_id = :user_id
+			                                               AND User.active = 1
+			                                             LIMIT 1
+			                                             FOR UPDATE");
+			$associationStmt->execute([
+				'tenant_id' => $tenantId,
+				'user_id' => $customerUserId,
+			]);
+			$association = $associationStmt->fetch(PDO::FETCH_ASSOC);
+
+			if (!$association)
+				{
+				throw new \InvalidArgumentException('Usuário ativo não associado ao tenant selecionado.');
+				}
+
+			$attendantStmt = $this->db->prepare("SELECT 1
+			                                           FROM users
+			                                           WHERE id = :user_id
+			                                             AND type = 'root'
+			                                             AND active = 1
+			                                           LIMIT 1");
+			$attendantStmt->execute(['user_id' => $attendantUserId]);
+			if (!$attendantStmt->fetchColumn())
+				{
+				throw new \RuntimeException('Atendente root não encontrado.');
+				}
+
+			$activeStmt = $this->db->prepare("SELECT id
+			                                        FROM support_chats
+			                                        WHERE customer_user_id = :customer_user_id
+			                                          AND tenant_id = :tenant_id
+			                                          AND status IN ('pending', 'open')
+			                                        ORDER BY COALESCE(last_message_at, created) DESC, id DESC
+			                                        LIMIT 1");
+			$activeStmt->execute([
+				'customer_user_id' => $customerUserId,
+				'tenant_id' => $tenantId,
+			]);
+			$activeChatId = (int) ($activeStmt->fetchColumn() ?: 0);
+
+			if ($activeChatId > 0)
+				{
+				$chat = $this->findChatById($activeChatId);
+				if (!$chat)
+					{
+					throw new \RuntimeException('Conversa ativa não encontrada.');
+					}
+
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return ['chat' => $chat, 'created' => false];
+				}
+
+			$now = $this->now();
+			$insertStmt = $this->db->prepare("INSERT INTO support_chats (
+			                                           customer_user_id,
+			                                           attendant_user_id,
+			                                           tenant_id,
+			                                           tenant_database_number,
+			                                           status,
+			                                           attendant_last_seen_at,
+			                                           created,
+			                                           modified
+			                                         ) VALUES (
+			                                           :customer_user_id,
+			                                           :attendant_user_id,
+			                                           :tenant_id,
+			                                           :tenant_database_number,
+			                                           'open',
+			                                           :attendant_last_seen_at,
+			                                           :created,
+			                                           :modified
+			                                         )");
+			$insertStmt->execute([
+				'customer_user_id' => $customerUserId,
+				'attendant_user_id' => $attendantUserId,
+				'tenant_id' => $tenantId,
+				'tenant_database_number' => (string) $association['database_number'],
+				'attendant_last_seen_at' => $now,
+				'created' => $now,
+				'modified' => $now,
+			]);
+
+			$chat = $this->findChatById((int) $this->db->lastInsertId());
+			if (!$chat)
+				{
+				throw new \RuntimeException('Não foi possível carregar a conversa criada.');
+				}
+
+			if ($startedTransaction)
+				{
+				$this->db->commit();
+				}
+
+			return ['chat' => $chat, 'created' => true];
+			}
+		catch (\Throwable $exception)
+			{
+			if ($startedTransaction && $this->db->inTransaction())
+				{
+				$this->db->rollBack();
+				}
+
+			throw $exception;
+			}
 		}
 
 	/**
@@ -143,6 +337,18 @@ class SupportChat extends Model
 	private function buildSearchWhere(array $filters, array &$params): string
 		{
 		$where = ["1=1"];
+
+		if (!empty($filters['tenant_id']))
+			{
+			$where[] = "Chat.tenant_id = :tenant_id";
+			$params['tenant_id'] = (int) $filters['tenant_id'];
+			}
+
+		if (!empty($filters['customer_user_id']))
+			{
+			$where[] = "Chat.customer_user_id = :customer_user_id";
+			$params['customer_user_id'] = (int) $filters['customer_user_id'];
+			}
 
 		if (!empty($filters['date_from']))
 			{

@@ -5896,7 +5896,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=549 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=551 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.logs: ~354 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
@@ -6359,7 +6359,9 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(545, '9437ccb4-dcf8-4d22-ba3c-0bfd35ce226c', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:30:31', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-20 17:30:31', '2026-07-20 17:30:31'),
 	(546, '03ebb72a-ed42-43bc-bdaf-de5b2e64beb4', 1, 'manager_0001', 'Tenant 0001', 'permission', 'list', 'permissions', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:30:55', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": null, "request_query": {"url": "permission"}, "filters_applied": false, "response_format": "html"}', '2026-07-20 17:30:55', '2026-07-20 17:30:55'),
 	(547, 'f1b7ac75-6a4e-4201-9f70-22ebbe28b61c', 1, 'manager_0001', 'Tenant 0001', 'auth', 'logout', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 17:31:00', '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-20 17:31:00', '2026-07-20 17:31:00'),
-	(548, '3922c4a7-09cb-47a7-93fd-2419b4dd713b', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 20:56:11', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-20 20:56:11', '2026-07-20 20:56:11');
+	(548, '3922c4a7-09cb-47a7-93fd-2419b4dd713b', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 20:56:11', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-20 20:56:11', '2026-07-20 20:56:11'),
+	(549, 'c6206d20-cc94-4a54-a446-ab1ed11c51f8', 1, 'manager_0001', 'Tenant 0001', 'auth', 'logout', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 21:56:32', '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-20 21:56:32', '2026-07-20 21:56:32'),
+	(550, 'adc639e6-184a-41c6-83e3-fbe294f1a379', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '3', 3, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-20 21:56:37', NULL, '{"id": 3, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}', '{"to": {"id": 3, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-20 21:56:37', '2026-07-20 21:56:37');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6371,7 +6373,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18122 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18136 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~18 264 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -24493,7 +24495,21 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18118, 'Centro', 4684, '2026-07-20 19:00:17', '2026-07-20 19:00:17'),
 	(18119, 'Área Rural de Gaspar', 4511, '2026-07-20 19:05:03', '2026-07-20 19:05:03'),
 	(18120, 'Arraial D\'Ouro', 4511, '2026-07-20 19:16:18', '2026-07-20 19:16:18'),
-	(18121, 'Gaspar Alto', 4511, '2026-07-20 19:37:41', '2026-07-20 19:37:41');
+	(18121, 'Gaspar Alto', 4511, '2026-07-20 19:37:41', '2026-07-20 19:37:41'),
+	(18122, 'Area Rural de Timbo', 4684, '2026-07-20 21:48:11', '2026-07-20 21:48:11'),
+	(18123, 'Tiroleses', 4684, '2026-07-20 22:09:43', '2026-07-20 22:09:43'),
+	(18124, 'Capitais', 4684, '2026-07-20 22:10:46', '2026-07-20 22:10:46'),
+	(18125, 'Dona Clara', 4684, '2026-07-20 22:11:43', '2026-07-20 22:11:43'),
+	(18126, 'Padre Martinho Stein', 4684, '2026-07-20 22:16:03', '2026-07-20 22:16:03'),
+	(18127, 'Estados', 4684, '2026-07-20 22:18:15', '2026-07-20 22:18:15'),
+	(18128, 'Araponguinhas', 4684, '2026-07-20 22:20:06', '2026-07-20 22:20:06'),
+	(18129, 'Vila Germer', 4684, '2026-07-20 22:24:36', '2026-07-20 22:24:36'),
+	(18130, 'Quintino', 4684, '2026-07-20 22:25:41', '2026-07-20 22:25:41'),
+	(18131, 'Pomeranos', 4684, '2026-07-20 22:32:18', '2026-07-20 22:32:18'),
+	(18132, 'São Roque', 4684, '2026-07-20 22:32:54', '2026-07-20 22:32:54'),
+	(18133, 'Das Nações', 4684, '2026-07-20 22:33:14', '2026-07-20 22:33:14'),
+	(18134, 'Imigrantes', 4684, '2026-07-20 22:34:24', '2026-07-20 22:34:24'),
+	(18135, 'Área Rural de Indaial', 4528, '2026-07-20 22:35:15', '2026-07-20 22:35:15');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -25007,16 +25023,9 @@ CREATE TABLE IF NOT EXISTS `support_chats` (
   CONSTRAINT `fk_support_chats_closed_by_user` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_customer_user` FOREIGN KEY (`customer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.support_chats: ~6 rows (approximately)
-INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `tenant_id`, `tenant_database_number`, `status`, `last_message_at`, `customer_last_seen_at`, `attendant_last_seen_at`, `closed_at`, `closed_by_user_id`, `created`, `modified`) VALUES
-	(1, 2, 1, 1, '0001', 'closed', '2026-06-07 09:48:54', '2026-06-07 09:48:54', '2026-06-07 09:48:41', '2026-06-07 09:49:24', 1, '2026-06-07 09:45:32', '2026-06-07 09:49:24'),
-	(2, 2, 1, 1, '0001', 'closed', '2026-06-07 07:10:06', '2026-06-07 10:04:13', '2026-06-07 07:10:06', '2026-06-07 07:10:14', 1, '2026-06-07 10:03:48', '2026-06-07 07:10:14'),
-	(3, 2, 1, 1, '0001', 'closed', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:19:05', '2026-06-07 17:23:08', 1, '2026-06-07 17:07:03', '2026-06-19 08:31:10'),
-	(6, 2, 1, 1, '0001', 'closed', '2026-06-18 18:55:02', '2026-06-18 18:54:50', '2026-06-18 18:55:02', '2026-06-18 18:55:20', 1, '2026-06-18 18:54:50', '2026-06-29 18:22:00'),
-	(8, 2, 1, 1, '0001', 'closed', '2026-06-29 18:50:54', '2026-06-29 18:50:54', '2026-06-29 18:50:54', '2026-06-29 18:51:17', 1, '2026-06-29 18:50:54', '2026-06-29 18:54:45'),
-	(9, 2, 1, 1, '0001', 'closed', '2026-06-29 18:55:22', '2026-06-29 18:55:22', '2026-06-29 18:55:22', '2026-06-29 18:55:52', 1, '2026-06-29 18:54:44', '2026-07-20 18:26:38');
 
 -- Dumping structure for table manager_main.support_chats_messages
 CREATE TABLE IF NOT EXISTS `support_chats_messages` (
@@ -25032,29 +25041,9 @@ CREATE TABLE IF NOT EXISTS `support_chats_messages` (
   KEY `idx_support_chat_messages_sender` (`sender_user_id`),
   CONSTRAINT `fk_support_chat_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.support_chats_messages: ~19 rows (approximately)
-INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
-	(1, 1, 2, 'customer', 'Emma Watson', 'bom dia', '2026-06-07 09:45:32'),
-	(2, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:46:29'),
-	(3, 1, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 09:48:41'),
-	(4, 1, 2, 'customer', 'Emma Watson', 'Bom dia novamente', '2026-06-07 09:48:54'),
-	(5, 2, 2, 'customer', 'Emma Watson', 'eu te amo', '2026-06-07 10:03:48'),
-	(6, 2, 2, 'customer', 'Emma Watson', 'teste', '2026-06-07 10:03:57'),
-	(7, 2, 2, 'customer', 'Emma Watson', 'outro teste', '2026-06-07 10:04:13'),
-	(8, 2, 1, 'attendant', 'Douglas M. Costa', 'teste recebido', '2026-06-07 10:04:39'),
-	(9, 2, 1, 'attendant', 'Douglas M. Costa', 'teste', '2026-06-07 07:10:06'),
-	(10, 3, 2, 'customer', 'Emma Watson', 'Hello', '2026-06-07 17:07:03'),
-	(11, 3, 2, 'customer', 'Emma Watson', 'aaa', '2026-06-07 17:07:22'),
-	(12, 3, 2, 'customer', 'Emma Watson', 'asdasd', '2026-06-07 17:07:41'),
-	(13, 3, 1, 'attendant', 'Douglas M. Costa', 'yrdyrfsfgdf', '2026-06-07 17:15:22'),
-	(14, 3, 2, 'customer', 'Emma Watson', 'asdasd', '2026-06-07 17:19:05'),
-	(20, 6, 2, 'customer', 'Emma Watson', 'Teste', '2026-06-18 18:54:50'),
-	(21, 6, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-06-18 18:55:02'),
-	(24, 8, 2, 'customer', 'Emma Watson', 'Teste', '2026-06-29 18:50:54'),
-	(25, 9, 2, 'customer', 'Emma Watson', 'teste', '2026-06-29 18:54:44'),
-	(26, 9, 2, 'customer', 'Emma Watson', 'teste', '2026-06-29 18:55:22');
 
 -- Dumping structure for table manager_main.system_setting_definitions
 CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
@@ -25787,12 +25776,13 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.user_presences: ~2 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
 	(1, 1, NULL, 'busy', '2026-07-18 00:32:14', '2026-07-18 00:32:14', '2026-07-18 00:31:59', '2026-07-18 00:32:14'),
-	(6, 2, 1, 'busy', '2026-07-20 21:10:38', '2026-07-20 21:10:38', '2026-07-18 00:32:47', '2026-07-20 21:10:38');
+	(6, 2, NULL, 'offline', '2026-07-20 21:56:32', '2026-07-20 21:56:32', '2026-07-18 00:32:47', '2026-07-20 21:56:32'),
+	(16, 3, 2, 'online', '2026-07-20 21:56:37', '2026-07-20 21:56:37', '2026-07-20 21:56:37', '2026-07-20 21:56:37');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
@@ -25817,7 +25807,7 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(8, 1, '5a2397e38fd116df2976165421440be8', 'd18ef4703a0c4c0f838c2e6cc0705a0660e9fe0518d7f441380ae0343c0cd1d3', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-07-29 21:02:25', '2026-06-29 21:02:25', NULL),
 	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
 	(12, 1, '2bec255eead1a6ccdbe8cb8bd119434d', '7f0748c14a281d4543b6ad037c0e655e0db6a71ea0763262828d3e3c44ce9f84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 23:54:29', '2026-07-14 20:10:23', '2026-07-17 23:54:29'),
-	(13, 1, '534221cd0ec8a91c3fda338183771a14', '1b9c87e0e1a24c367cc6e45bfc1fb40174edd26a1145273e7f4b31f33778b6b0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 20:55:17', '2026-07-14 21:48:14', '2026-07-20 20:55:17');
+	(13, 1, '6a53c7db6820a19baf72ec04c8249880', '8e2ca85e5a0c8efdd06e1cfe262db13208feb97a1af192958274aede5ae9194b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 21:56:52', '2026-07-14 21:48:14', '2026-07-20 21:56:52');
 
 -- Dumping structure for table manager_main.webcrawler_ip_ranges
 CREATE TABLE IF NOT EXISTS `webcrawler_ip_ranges` (
