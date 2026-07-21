@@ -61,3 +61,166 @@
 .btn-theme:focus {
   color: var(--bs-navbar-hover-color);
 }
+
+/* Menu do usuário */
+.app-user-menu {
+  min-width: 21rem;
+  padding: 0.5rem;
+}
+
+.app-user-menu .dropdown-divider {
+  margin-inline: -0.5rem;
+}
+
+.app-presence-menu {
+  padding: 0.35rem;
+}
+
+.app-presence-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.55rem 0.75rem;
+}
+
+.app-presence-summary strong {
+  display: block;
+  color: var(--bs-emphasis-color);
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.app-presence-eyebrow {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-presence-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 50%;
+  font-size: 0.92rem;
+}
+
+.app-presence-options {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.app-presence-option {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) 1.35rem;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 3.2rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--bs-body-color);
+  background: transparent;
+  text-align: left;
+}
+
+.app-presence-option:hover,
+.app-presence-option:focus-visible {
+  border-color: var(--app-border);
+  background: var(--bs-tertiary-bg);
+}
+
+.app-presence-option:focus-visible {
+  outline: 2px solid rgba(var(--bs-primary-rgb), 0.42);
+  outline-offset: 2px;
+}
+
+.app-presence-option:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.app-presence-option.is-active {
+  border-color: rgba(var(--bs-primary-rgb), 0.28);
+  background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.app-presence-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  font-size: 0.92rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.app-presence-option-icon--online {
+  color: var(--bs-success);
+  background: rgba(var(--bs-success-rgb), 0.12);
+}
+
+.app-presence-option-icon--away {
+  color: var(--bs-warning);
+  background: rgba(var(--bs-warning-rgb), 0.15);
+}
+
+.app-presence-option-icon--busy {
+  color: var(--bs-danger);
+  background: rgba(var(--bs-danger-rgb), 0.12);
+}
+
+.app-presence-option-icon--offline {
+  color: var(--bs-secondary-color);
+  background: rgba(var(--bs-secondary-rgb), 0.12);
+}
+
+.app-presence-option-text {
+  min-width: 0;
+}
+
+.app-presence-option-text span,
+.app-presence-option-text small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-presence-option-text span {
+  color: var(--bs-emphasis-color);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.app-presence-option-text small {
+  margin-top: 0.08rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.76rem;
+}
+
+.app-presence-option-check {
+  justify-self: end;
+  color: var(--bs-primary);
+  font-size: 1.05rem;
+  opacity: 0;
+}
+
+.app-presence-option.is-active .app-presence-option-check {
+  opacity: 1;
+}
+
+@media (max-width: 575.98px) {
+  .app-user-menu {
+    min-width: min(21rem, calc(100vw - 1rem));
+  }
+}

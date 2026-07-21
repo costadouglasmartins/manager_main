@@ -8,6 +8,29 @@ if (!empty($managerMainUser) && class_exists('App\\Services\\UserPresenceService
   $userPresence = (new \App\Services\UserPresenceService())->current((int) ($managerMainUser['id'] ?? 0));
   }
 $userPresence = is_array($userPresence) ? $userPresence : \App\Services\UserPresenceService::statusMeta('offline') + ['status' => 'offline'];
+$presenceOptions = [
+  'online' => [
+    'label' => 'Disponível',
+    'description' => 'Pronto para atender',
+    'icon' => 'bi-circle-fill',
+  ],
+  'away' => [
+    'label' => 'Ausente',
+    'description' => 'Volto em breve',
+    'icon' => 'bi-clock-fill',
+  ],
+  'busy' => [
+    'label' => 'Ocupado',
+    'description' => 'Evitar novas interrupções',
+    'icon' => 'bi-dash-circle-fill',
+  ],
+  'offline' => [
+    'label' => 'Offline',
+    'description' => 'Fora de atendimento',
+    'icon' => 'bi-circle',
+  ],
+];
+$currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" id="htmlRoot" data-bs-theme="light">
@@ -21,7 +44,7 @@ $userPresence = is_array($userPresence) ? $userPresence : \App\Services\UserPres
   <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?= url('assets/css/main.css?v=9'); ?>">
-  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=5'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=6'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
   <?php endif; ?>
@@ -311,29 +334,43 @@ $userPresence = is_array($userPresence) ? $userPresence : \App\Services\UserPres
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle me-2"></i> 
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <ul class="dropdown-menu dropdown-menu-end app-user-menu" aria-labelledby="userMenu">
               <!--
               <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Perfil</a></li>
               <li><hr class="dropdown-divider" /></li>
               <li><a class="dropdown-item text-danger" href="<?= ('permission'); ?>"><i class="bi bi-box-arrow-right me-2"></i>Permissões</a></li>
               -->
               <?php if (!empty($_SESSION['manager_main']['user'])): ?>
-                <li class="px-3 py-2" data-user-presence data-status-url="<?= url('user_presence/status'); ?>">
-                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                    <span class="small text-body-secondary">Presence</span>
-                    <span class="badge <?= htmlspecialchars((string) ($userPresence['class'] ?? 'text-bg-secondary'), ENT_QUOTES, 'UTF-8'); ?>" data-user-presence-badge><i class="bi <?= htmlspecialchars((string) ($userPresence['icon'] ?? 'bi-circle'), ENT_QUOTES, 'UTF-8'); ?> me-1" data-user-presence-icon aria-hidden="true"></i><span data-user-presence-label><?= htmlspecialchars((string) ($userPresence['label'] ?? 'Offline'), ENT_QUOTES, 'UTF-8'); ?></span></span>
+                <li class="app-presence-menu" data-user-presence data-status-url="<?= url('user_presence/status'); ?>">
+                  <div class="app-presence-summary">
+                    <div>
+                      <span class="app-presence-eyebrow">Presença</span>
+                      <strong data-user-presence-label><?= htmlspecialchars((string) ($userPresence['label'] ?? 'Offline'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                    </div>
+                    <span class="badge app-presence-badge <?= htmlspecialchars((string) ($userPresence['class'] ?? 'text-bg-secondary'), ENT_QUOTES, 'UTF-8'); ?>" data-user-presence-badge>
+                      <i class="bi <?= htmlspecialchars((string) ($userPresence['icon'] ?? 'bi-circle'), ENT_QUOTES, 'UTF-8'); ?>" data-user-presence-icon aria-hidden="true"></i>
+                    </span>
                   </div>
-                  <div class="btn-group btn-group-sm w-100" role="group" aria-label="Presence status">
-                    <button class="btn btn-outline-success" type="button" data-user-presence-status="online" title="Online"><i class="bi bi-circle-fill" aria-hidden="true"></i><span class="visually-hidden">Online</span></button>
-                    <button class="btn btn-outline-warning" type="button" data-user-presence-status="away" title="Away"><i class="bi bi-clock-fill" aria-hidden="true"></i><span class="visually-hidden">Away</span></button>
-                    <button class="btn btn-outline-danger" type="button" data-user-presence-status="busy" title="Busy"><i class="bi bi-dash-circle-fill" aria-hidden="true"></i><span class="visually-hidden">Busy</span></button>
-                    <button class="btn btn-outline-secondary" type="button" data-user-presence-status="offline" title="Offline"><i class="bi bi-circle" aria-hidden="true"></i><span class="visually-hidden">Offline</span></button>
+                  <div class="app-presence-options" role="group" aria-label="Alterar situação da presença">
+                    <?php foreach ($presenceOptions as $status => $option): ?>
+                      <?php $isActivePresence = $currentPresenceStatus === $status; ?>
+                      <button class="app-presence-option<?= $isActivePresence ? ' is-active' : ''; ?>" type="button" data-user-presence-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>" aria-pressed="<?= $isActivePresence ? 'true' : 'false'; ?>">
+                        <span class="app-presence-option-icon app-presence-option-icon--<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
+                          <i class="bi <?= htmlspecialchars($option['icon'], ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                        </span>
+                        <span class="app-presence-option-text">
+                          <span><?= htmlspecialchars($option['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                          <small><?= htmlspecialchars($option['description'], ENT_QUOTES, 'UTF-8'); ?></small>
+                        </span>
+                        <i class="bi bi-check2 app-presence-option-check" aria-hidden="true"></i>
+                      </button>
+                    <?php endforeach; ?>
                   </div>
                 </li>
                 <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="<?= url('user/edit/' . $_SESSION['manager_main']['user']['id']); ?>"><i class="bi bi-person-lines-fill"></i> Meus dados</a></li>
+                <li><a class="dropdown-item" href="<?= url('user/edit/' . $_SESSION['manager_main']['user']['id']); ?>"><i class="bi bi-person-lines-fill me-2"></i>Meus dados</a></li>
                 <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="<?= url('user/logout'); ?>" onclick="return confirm('Tem certeza que deseja sair?');"><i class="bi bi-box-arrow-right me-2"></i>Olá, <?= htmlspecialchars($_SESSION['manager_main']['user']['name']) ?>, encerrar sessão?</a></li>
+                <li><a class="dropdown-item" href="<?= url('user/logout'); ?>" onclick="return confirm('Tem certeza que deseja sair?');" title="Encerrar sessão de <?= htmlspecialchars($_SESSION['manager_main']['user']['name'], ENT_QUOTES, 'UTF-8'); ?>"><i class="bi bi-box-arrow-right me-2"></i>Sair da conta</a></li>
               <?php else: ?>
                 <li><a class="dropdown-item" href="<?= url('user/login'); ?>">Entrar</a></li>
               <?php endif; ?>
@@ -392,7 +429,7 @@ $userPresence = is_array($userPresence) ? $userPresence : \App\Services\UserPres
   <script src="<?= url('assets/js/menu.js?v=4'); ?>"></script>
   <script src="<?= url('assets/js/main.js?v=3'); ?>"></script>
   <?php if (!empty($_SESSION['manager_main']['user'])): ?>
-    <script src="<?= url('assets/js/user_presences/user_presence.js?v=1'); ?>"></script>
+    <script src="<?= url('assets/js/user_presences/user_presence.js?v=2'); ?>"></script>
   <?php endif; ?>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>

@@ -42,17 +42,17 @@ class UserPresenceService
 		{
 		return [
 			self::STATUS_ONLINE => [
-				'label' => 'Online',
+				'label' => 'Disponível',
 				'class' => 'text-bg-success',
 				'icon' => 'bi-circle-fill',
 			],
 			self::STATUS_AWAY => [
-				'label' => 'Away',
+				'label' => 'Ausente',
 				'class' => 'text-bg-warning',
 				'icon' => 'bi-clock-fill',
 			],
 			self::STATUS_BUSY => [
-				'label' => 'Busy',
+				'label' => 'Ocupado',
 				'class' => 'text-bg-danger',
 				'icon' => 'bi-dash-circle-fill',
 			],

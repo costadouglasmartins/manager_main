@@ -13,6 +13,7 @@
     const badge = root.querySelector("[data-user-presence-badge]");
     const label = root.querySelector("[data-user-presence-label]");
     const icon = root.querySelector("[data-user-presence-icon]");
+    const status = presence.status || "offline";
 
     if (badge)
       {
@@ -27,8 +28,14 @@
 
     if (icon)
       {
-      icon.className = "bi " + (presence.icon || "bi-circle") + " me-2";
+      icon.className = "bi " + (presence.icon || "bi-circle");
       }
+
+    root.querySelectorAll("[data-user-presence-status]").forEach(function (button) {
+      const isActive = (button.getAttribute("data-user-presence-status") || "offline") === status;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
     }
 
   function setLoading(root, isLoading)
