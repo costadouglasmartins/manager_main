@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   CONSTRAINT `fk_financial_operations_subcategories` FOREIGN KEY (`financial_operation_subcategory_id`) REFERENCES `financial_operations_subcategories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations: ~2 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
   UNIQUE KEY `financial_operations_categories_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_categories: ~9 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_categories: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   CONSTRAINT `fk_financial_operations_payments_operations` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_payments: ~2 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_payments: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.financial_operations_subcategories
 CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.financial_operations_subcategories: ~22 rows (approximately)
+-- Dumping data for table manager_0001.financial_operations_subcategories: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0001.products
 CREATE TABLE IF NOT EXISTS `products` (
@@ -466,7 +466,7 @@ CREATE TABLE IF NOT EXISTS `product_item_images` (
   KEY `idx_product_item_images_variation` (`product_item_variation_id`),
   CONSTRAINT `fk_product_item_images_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_product_item_images_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.product_item_images: ~0 rows (approximately)
 
@@ -593,7 +593,7 @@ CREATE TABLE IF NOT EXISTS `product_stock_movements` (
   KEY `idx_product_stock_movements_variation` (`product_item_variation_id`),
   CONSTRAINT `fk_product_stock_movements_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`),
   CONSTRAINT `fk_product_stock_movements_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.product_stock_movements: ~0 rows (approximately)
 
@@ -727,9 +727,9 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `schema_versions_version_unique` (`version`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.schema_versions: ~3 rows (approximately)
+-- Dumping data for table manager_0001.schema_versions: ~5 rows (approximately)
 INSERT INTO `schema_versions` (`id`, `version`, `description`, `created`, `modified`) VALUES
 	(1, '0.0.1', 'Initial tenant schema', '2026-06-01 22:34:47', '2026-07-22 17:18:51'),
 	(2, '0.0.2', 'Store products, images and stock module', '2026-06-01 22:34:48', '2026-07-22 17:18:58'),
