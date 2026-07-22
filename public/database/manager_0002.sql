@@ -218,6 +218,37 @@ CREATE TABLE IF NOT EXISTS `products` (
 
 -- Dumping data for table manager_0002.products: ~0 rows (approximately)
 
+-- Dumping structure for table manager_0002.product_attributes
+CREATE TABLE IF NOT EXISTS `product_attributes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `data_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `measurement_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_attributes_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_attributes: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_attribute_options
+CREATE TABLE IF NOT EXISTS `product_attribute_options` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_attribute_id` int NOT NULL,
+  `value` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `label` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_attribute_options_value` (`product_attribute_id`,`value`),
+  CONSTRAINT `fk_product_attribute_options_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_attribute_options: ~0 rows (approximately)
+
 -- Dumping structure for table manager_0002.product_categories
 CREATE TABLE IF NOT EXISTS `product_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -232,6 +263,52 @@ CREATE TABLE IF NOT EXISTS `product_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_categories: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_category_attributes
+CREATE TABLE IF NOT EXISTS `product_category_attributes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_category_id` int NOT NULL,
+  `product_attribute_id` int NOT NULL,
+  `product_unit_id` int DEFAULT NULL,
+  `required` tinyint(1) NOT NULL DEFAULT '0',
+  `filterable` tinyint(1) NOT NULL DEFAULT '0',
+  `show_on_list` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_category_attributes` (`product_category_id`,`product_attribute_id`),
+  KEY `fk_product_category_attributes_attribute` (`product_attribute_id`),
+  KEY `fk_product_category_attributes_unit` (`product_unit_id`),
+  CONSTRAINT `fk_product_category_attributes_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_product_category_attributes_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_product_category_attributes_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_category_attributes: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_category_attribute_conditions
+CREATE TABLE IF NOT EXISTS `product_category_attribute_conditions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_category_id` int NOT NULL,
+  `target_product_attribute_id` int NOT NULL,
+  `source_product_attribute_id` int NOT NULL,
+  `operator` enum('EQUALS','NOT_EQUALS','FILLED','EMPTY') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'EQUALS',
+  `value_text` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_product_attribute_option_id` int DEFAULT NULL,
+  `action` enum('SHOW','REQUIRE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SHOW',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_attr_conditions_category` (`product_category_id`),
+  KEY `idx_product_attr_conditions_target` (`target_product_attribute_id`),
+  KEY `idx_product_attr_conditions_source` (`source_product_attribute_id`),
+  KEY `idx_product_attr_conditions_option` (`source_product_attribute_option_id`),
+  CONSTRAINT `fk_product_attr_conditions_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_attr_conditions_option` FOREIGN KEY (`source_product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_attr_conditions_source` FOREIGN KEY (`source_product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_attr_conditions_target` FOREIGN KEY (`target_product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_category_attribute_conditions: ~0 rows (approximately)
 
 -- Dumping structure for table manager_0002.product_images
 CREATE TABLE IF NOT EXISTS `product_images` (
@@ -258,6 +335,115 @@ CREATE TABLE IF NOT EXISTS `product_images` (
 
 -- Dumping data for table manager_0002.product_images: ~0 rows (approximately)
 
+-- Dumping structure for table manager_0002.product_items
+CREATE TABLE IF NOT EXISTS `product_items` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_category_id` int NOT NULL,
+  `sku` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `barcode` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `cost_price` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `sale_price` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `sale_unit_id` int NOT NULL,
+  `sale_quantity_step` decimal(18,6) NOT NULL DEFAULT '1.000000',
+  `track_stock` tinyint(1) NOT NULL DEFAULT '1',
+  `stock_quantity` decimal(18,6) NOT NULL DEFAULT '0.000000',
+  `minimum_stock` decimal(18,6) NOT NULL DEFAULT '0.000000',
+  `length_value` decimal(18,6) DEFAULT NULL,
+  `width_value` decimal(18,6) DEFAULT NULL,
+  `height_value` decimal(18,6) DEFAULT NULL,
+  `dimension_unit_id` int DEFAULT NULL,
+  `weight_value` decimal(18,6) DEFAULT NULL,
+  `weight_unit_id` int DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_items_sku` (`sku`),
+  UNIQUE KEY `uq_product_items_barcode` (`barcode`),
+  KEY `idx_product_items_category` (`product_category_id`),
+  KEY `fk_product_items_sale_unit` (`sale_unit_id`),
+  KEY `fk_product_items_dimension_unit` (`dimension_unit_id`),
+  KEY `fk_product_items_weight_unit` (`weight_unit_id`),
+  CONSTRAINT `fk_product_items_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`),
+  CONSTRAINT `fk_product_items_dimension_unit` FOREIGN KEY (`dimension_unit_id`) REFERENCES `product_units` (`id`),
+  CONSTRAINT `fk_product_items_sale_unit` FOREIGN KEY (`sale_unit_id`) REFERENCES `product_units` (`id`),
+  CONSTRAINT `fk_product_items_weight_unit` FOREIGN KEY (`weight_unit_id`) REFERENCES `product_units` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_items: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_item_attribute_values
+CREATE TABLE IF NOT EXISTS `product_item_attribute_values` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_item_id` int NOT NULL,
+  `product_attribute_id` int NOT NULL,
+  `product_attribute_option_id` int DEFAULT NULL,
+  `product_unit_id` int DEFAULT NULL,
+  `value_text` text COLLATE utf8mb4_unicode_ci,
+  `value_integer` int DEFAULT NULL,
+  `value_decimal` decimal(18,6) DEFAULT NULL,
+  `value_boolean` tinyint(1) DEFAULT NULL,
+  `value_date` date DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_item_attribute_values` (`product_item_id`,`product_attribute_id`),
+  KEY `fk_product_item_values_attribute` (`product_attribute_id`),
+  KEY `fk_product_item_values_option` (`product_attribute_option_id`),
+  KEY `fk_product_item_values_unit` (`product_unit_id`),
+  CONSTRAINT `fk_product_item_values_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`),
+  CONSTRAINT `fk_product_item_values_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_product_item_values_option` FOREIGN KEY (`product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`),
+  CONSTRAINT `fk_product_item_values_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_item_attribute_values: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_item_images
+CREATE TABLE IF NOT EXISTS `product_item_images` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_item_id` int NOT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `original_name` varchar(180) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mime_type` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_size` int DEFAULT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `is_main` tinyint(1) NOT NULL DEFAULT '0',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_product_item_images_item` (`product_item_id`),
+  CONSTRAINT `fk_product_item_images_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_item_images: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_item_variations
+CREATE TABLE IF NOT EXISTS `product_item_variations` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_item_id` int NOT NULL,
+  `sku` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `barcode` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cost_price` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `sale_price` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `track_stock` tinyint(1) NOT NULL DEFAULT '0',
+  `stock_quantity` decimal(14,6) NOT NULL DEFAULT '0.000000',
+  `minimum_stock` decimal(14,6) NOT NULL DEFAULT '0.000000',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_item_variations_sku` (`sku`),
+  UNIQUE KEY `uq_product_item_variations_barcode` (`barcode`),
+  KEY `idx_product_item_variations_product` (`product_item_id`),
+  KEY `idx_product_item_variations_name` (`name`),
+  KEY `idx_product_item_variations_active` (`active`),
+  KEY `idx_product_item_variations_stock` (`track_stock`,`stock_quantity`),
+  CONSTRAINT `fk_product_item_variations_product` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_item_variations: ~0 rows (approximately)
+
 -- Dumping structure for table manager_0002.product_stocks_movements
 CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -281,6 +467,51 @@ CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_stocks_movements: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_stock_movements
+CREATE TABLE IF NOT EXISTS `product_stock_movements` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_item_id` int NOT NULL,
+  `movement_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` decimal(18,6) NOT NULL,
+  `previous_quantity` decimal(18,6) NOT NULL,
+  `new_quantity` decimal(18,6) NOT NULL,
+  `reference` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `movement_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_stock_movements_item` (`product_item_id`),
+  CONSTRAINT `fk_product_stock_movements_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_stock_movements: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.product_units
+CREATE TABLE IF NOT EXISTS `product_units` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `symbol` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `measurement_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `factor_to_base` decimal(20,10) NOT NULL DEFAULT '1.0000000000',
+  `decimal_places` tinyint NOT NULL DEFAULT '3',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_product_units_code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.product_units: ~7 rows (approximately)
+INSERT INTO `product_units` (`id`, `code`, `name`, `symbol`, `measurement_type`, `factor_to_base`, `decimal_places`, `active`, `created`, `modified`) VALUES
+	(1, 'un', 'Unidade', 'un', 'UNIT', 1.0000000000, 0, 1, '2026-07-21 23:07:35', NULL),
+	(2, 'mm', 'Milímetro', 'mm', 'LENGTH', 0.0010000000, 3, 1, '2026-07-21 23:07:35', NULL),
+	(3, 'cm', 'Centímetro', 'cm', 'LENGTH', 0.0100000000, 2, 1, '2026-07-21 23:07:35', NULL),
+	(4, 'm', 'Metro', 'm', 'LENGTH', 1.0000000000, 3, 1, '2026-07-21 23:07:35', NULL),
+	(5, 'km', 'Quilômetro', 'km', 'LENGTH', 1000.0000000000, 3, 1, '2026-07-21 23:07:35', NULL),
+	(6, 'g', 'Grama', 'g', 'WEIGHT', 1.0000000000, 0, 1, '2026-07-21 23:07:35', NULL),
+	(7, 'kg', 'Quilograma', 'kg', 'WEIGHT', 1000.0000000000, 3, 1, '2026-07-21 23:07:35', NULL);
 
 -- Dumping structure for table manager_0002.schedule_categories
 CREATE TABLE IF NOT EXISTS `schedule_categories` (
@@ -386,14 +617,15 @@ CREATE TABLE IF NOT EXISTS `schema_versions` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_schema_versions_version` (`version`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.schema_versions: ~4 rows (approximately)
 INSERT INTO `schema_versions` (`id`, `version`, `description`, `created`, `modified`) VALUES
 	(1, '1.0.0', 'Initial tenant schema', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
 	(2, 'store-001', 'Store products, images and stock module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
 	(3, 'tasks-001', 'Tasks, assignees, comments and executions module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(4, 'schedule-001', 'Schedule categories, events, recurrences and participants module', '2026-07-15 23:39:28', '2026-07-15 23:39:28');
+	(4, 'schedule-001', 'Schedule categories, events, recurrences and participants module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
+	(5, 'x', 'Product variations and conditional product attributes', '2026-07-22 17:02:29', '2026-07-22 17:02:29');
 
 -- Dumping structure for table manager_0002.tasks
 CREATE TABLE IF NOT EXISTS `tasks` (

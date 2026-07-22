@@ -4,34 +4,16 @@
 
 CREATE TABLE IF NOT EXISTS `schema_versions` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `version` VARCHAR(20) NOT NULL COMMENT 'Version number (e.g.: 1.5.0)',
+  `version` VARCHAR(20) NOT NULL COMMENT 'Version number 0.0.5',
   `description` VARCHAR(255) DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
-
   UNIQUE KEY `uq_schema_versions_version` (`version`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
-
-
-INSERT INTO `schema_versions` (
-  `version`,
-  `description`,
-  `created`,
-  `modified`
-)
-VALUES (
-  '1.0.0',
-  'Initial tenant schema',
-  NOW(),
-  NOW()
-)
-ON DUPLICATE KEY UPDATE
-  `description` = 'Initial tenant schema',
-  `modified` = NOW();
 
 
 -- =====================================================
@@ -86,16 +68,137 @@ WHERE DATABASE() REGEXP '^manager_[0-9]{4}$'
 
 
 -- =====================================================
--- BANK ACCOUNTS
+-- MÓDULO FINANCEIRO
 -- =====================================================
+
+-- -----------------------------------------------------
+-- Categorias financeiras
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_financial_operations_categories_name` (`name`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Subcategorias financeiras
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` INT NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_financial_operations_subcategories_category_name` (
+    `financial_operation_category_id`,
+    `name`
+  ),
+
+  KEY `idx_financial_operations_subcategories_category` (
+    `financial_operation_category_id`
+  ),
+
+  CONSTRAINT `fk_financial_operations_subcategories_categories`
+    FOREIGN KEY (`financial_operation_category_id`)
+    REFERENCES `financial_operations_categories` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Operações financeiras
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `financial_operations` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` INT NOT NULL,
+  `financial_operation_subcategory_id` INT DEFAULT NULL,
+  `total_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_financial_operations_category` (
+    `financial_operation_category_id`
+  ),
+
+  KEY `idx_financial_operations_subcategory` (
+    `financial_operation_subcategory_id`
+  ),
+
+  CONSTRAINT `fk_financial_operations_categories`
+    FOREIGN KEY (`financial_operation_category_id`)
+    REFERENCES `financial_operations_categories` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_financial_operations_subcategories`
+    FOREIGN KEY (`financial_operation_subcategory_id`)
+    REFERENCES `financial_operations_subcategories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Pagamentos das operações financeiras
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `financial_operation_id` INT NOT NULL,
+  `value` DECIMAL(12,2) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_financial_operations_payments_operation` (
+    `financial_operation_id`
+  ),
+
+  CONSTRAINT `fk_financial_operations_payments_operations`
+    FOREIGN KEY (`financial_operation_id`)
+    REFERENCES `financial_operations` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- =====================================================
+-- MÓDULO BANCÁRIO
+-- =====================================================
+
+-- -----------------------------------------------------
+-- Contas bancárias
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `bank_id` INT NOT NULL,
   `name` VARCHAR(50) NOT NULL,
-  `agency` VARCHAR(6) NOT NULL,
+  `agency` VARCHAR(20) NOT NULL,
   `account` VARCHAR(50) NOT NULL,
-
   `pix_key_type` ENUM(
     'CPF',
     'CNPJ',
@@ -103,32 +206,25 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
     'PHONE',
     'RANDOM'
   ) DEFAULT NULL,
-
   `pix_key` VARCHAR(255) DEFAULT NULL,
-
   `bank_slip_instructions_line_1` VARCHAR(255) DEFAULT NULL,
   `bank_slip_instructions_line_2` VARCHAR(255) DEFAULT NULL,
   `bank_slip_instructions_line_3` VARCHAR(255) DEFAULT NULL,
   `bank_slip_instructions_line_4` VARCHAR(255) DEFAULT NULL,
-
   `bank_slip_protest` TINYINT(1) DEFAULT NULL,
   `bank_slip_protest_number_of_days` TINYINT UNSIGNED DEFAULT NULL,
   `bank_slip_wallet` VARCHAR(50) DEFAULT NULL,
   `bank_slip_species_title` VARCHAR(50) DEFAULT NULL,
-
   `bank_slip_interest_type` ENUM(
     'DAILY',
     'MONTHLY'
   ) DEFAULT NULL,
-
   `bank_slip_interest_amount_type` ENUM(
     'PERCENTAGE',
     'FIXED_AMOUNT'
   ) DEFAULT NULL,
-
-  `bank_slip_interest` DECIMAL(10,2) DEFAULT NULL,
-  `bank_slip_late_fee_amount` DECIMAL(10,2) DEFAULT NULL,
-
+  `bank_slip_interest` DECIMAL(12,2) DEFAULT NULL,
+  `bank_slip_late_fee_amount` DECIMAL(12,2) DEFAULT NULL,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -148,146 +244,17 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- FINANCIAL OPERATION CATEGORIES
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(255) NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  UNIQUE KEY `uq_financial_operations_categories_name` (`name`)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-
--- =====================================================
--- FINANCIAL OPERATION SUBCATEGORIES
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `financial_operation_category_id` INT NOT NULL,
-  `name` VARCHAR(255) NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  UNIQUE KEY `uq_financial_operations_subcategories_category_name` (
-    `financial_operation_category_id`,
-    `name`
-  ),
-
-  UNIQUE KEY `uq_financial_operations_subcategories_id_category` (
-    `id`,
-    `financial_operation_category_id`
-  ),
-
-  KEY `idx_financial_operations_subcategories_category_id` (
-    `financial_operation_category_id`
-  ),
-
-  CONSTRAINT `fk_financial_operations_subcategories_categories`
-    FOREIGN KEY (`financial_operation_category_id`)
-    REFERENCES `financial_operations_categories` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-
--- =====================================================
--- FINANCIAL OPERATIONS
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `financial_operations` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `financial_operation_category_id` INT NOT NULL,
-  `financial_operation_subcategory_id` INT DEFAULT NULL,
-  `total_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  KEY `idx_financial_operations_category_id` (
-    `financial_operation_category_id`
-  ),
-
-  KEY `idx_financial_operations_subcategory_category` (
-    `financial_operation_subcategory_id`,
-    `financial_operation_category_id`
-  ),
-
-  CONSTRAINT `fk_financial_operations_categories`
-    FOREIGN KEY (`financial_operation_category_id`)
-    REFERENCES `financial_operations_categories` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_financial_operations_subcategory_category`
-    FOREIGN KEY (
-      `financial_operation_subcategory_id`,
-      `financial_operation_category_id`
-    )
-    REFERENCES `financial_operations_subcategories` (
-      `id`,
-      `financial_operation_category_id`
-    )
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-
--- =====================================================
--- FINANCIAL OPERATION PAYMENTS
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `financial_operation_id` INT NOT NULL,
-  `value` DECIMAL(12,2) NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  KEY `idx_financial_operations_payments_operation_id` (
-    `financial_operation_id`
-  ),
-
-  CONSTRAINT `fk_financial_operations_payments_operations`
-    FOREIGN KEY (`financial_operation_id`)
-    REFERENCES `financial_operations` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-
--- =====================================================
--- BANK FILES
--- =====================================================
+-- -----------------------------------------------------
+-- Arquivos bancários
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `bank_files` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `bank_account_id` INT DEFAULT NULL,
-
   `file_type` ENUM(
     'REMITTANCE',
     'RETURN_FILE'
   ) NOT NULL,
-
   `file_name` VARCHAR(150) NOT NULL,
   `file_path` VARCHAR(255) NOT NULL,
   `file_hash` CHAR(64) DEFAULT NULL,
@@ -300,7 +267,6 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
 
   KEY `idx_bank_files_bank_account_id` (`bank_account_id`),
   KEY `idx_bank_files_file_type` (`file_type`),
-  KEY `idx_bank_files_file_hash` (`file_hash`),
 
   CONSTRAINT `fk_bank_files_bank_accounts`
     FOREIGN KEY (`bank_account_id`)
@@ -312,16 +278,15 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- BANK SLIPS
--- =====================================================
+-- -----------------------------------------------------
+-- Boletos bancários
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `bank_slips` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `financial_operation_payment_id` INT DEFAULT NULL,
   `bank_account_id` INT NOT NULL,
   `bank_file_id` INT DEFAULT NULL,
-
   `status` ENUM(
     'DRAFT',
     'READY',
@@ -333,17 +298,14 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
     'CANCELED',
     'WRITTEN_OFF'
   ) NOT NULL DEFAULT 'DRAFT',
-
   `document_number` VARCHAR(20) NOT NULL,
   `our_number` VARCHAR(20) DEFAULT NULL,
   `our_number_digit` VARCHAR(2) DEFAULT NULL,
   `portfolio` VARCHAR(10) NOT NULL,
-
   `payer_document_type` ENUM(
     'CPF',
     'CNPJ'
   ) NOT NULL,
-
   `payer_document` VARCHAR(14) NOT NULL,
   `payer_name` VARCHAR(100) NOT NULL,
   `payer_street` VARCHAR(120) NOT NULL,
@@ -351,34 +313,25 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   `payer_city` VARCHAR(60) NOT NULL,
   `payer_state` CHAR(2) NOT NULL,
   `payer_zip_code` VARCHAR(8) NOT NULL,
-
   `amount` DECIMAL(12,2) NOT NULL,
   `due_date` DATE NOT NULL,
   `issue_date` DATE NOT NULL,
-
   `payment_date` DATE DEFAULT NULL,
   `paid_amount` DECIMAL(12,2) DEFAULT NULL,
   `credited_amount` DECIMAL(12,2) DEFAULT NULL,
   `credit_date` DATE DEFAULT NULL,
-
   `interest_date` DATE DEFAULT NULL,
   `interest_amount_per_day` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-
   `discount_date` DATE DEFAULT NULL,
   `discount_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-
   `fine_date` DATE DEFAULT NULL,
   `fine_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-
   `protest_code` VARCHAR(2) DEFAULT NULL,
   `protest_days` TINYINT UNSIGNED DEFAULT NULL,
-
   `write_off_code` VARCHAR(2) DEFAULT NULL,
   `write_off_days` TINYINT UNSIGNED DEFAULT NULL,
-
   `last_occurrence_code` VARCHAR(2) DEFAULT NULL,
   `last_occurrence_message` VARCHAR(255) DEFAULT NULL,
-
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
@@ -393,7 +346,6 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
     `our_number`
   ),
 
-  KEY `idx_bank_slips_bank_account_id` (`bank_account_id`),
   KEY `idx_bank_slips_bank_file_id` (`bank_file_id`),
   KEY `idx_bank_slips_status` (`status`),
   KEY `idx_bank_slips_due_date` (`due_date`),
@@ -415,7 +367,7 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   CONSTRAINT `fk_bank_slips_financial_operations_payments`
     FOREIGN KEY (`financial_operation_payment_id`)
     REFERENCES `financial_operations_payments` (`id`)
-    ON DELETE SET NULL
+    ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
@@ -423,8 +375,204 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
 
 
 -- =====================================================
--- PRODUCT CATEGORIES
+-- MÓDULO DE PRODUTOS
 -- =====================================================
+
+-- -----------------------------------------------------
+-- Unidades
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_units` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(20) NOT NULL,
+  `name` VARCHAR(80) NOT NULL,
+  `symbol` VARCHAR(20) NOT NULL,
+  `measurement_type` VARCHAR(20) NOT NULL,
+  `factor_to_base` DECIMAL(20,10) NOT NULL DEFAULT 1.0000000000,
+  `decimal_places` TINYINT UNSIGNED NOT NULL DEFAULT 3,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_units_code` (`code`),
+
+  KEY `idx_product_units_measurement_type` (`measurement_type`),
+  KEY `idx_product_units_active` (`active`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO `product_units` (
+  `id`,
+  `code`,
+  `name`,
+  `symbol`,
+  `measurement_type`,
+  `factor_to_base`,
+  `decimal_places`,
+  `active`,
+  `created`,
+  `modified`
+)
+VALUES
+  (
+    1,
+    'un',
+    'Unidade',
+    'un',
+    'UNIT',
+    1.0000000000,
+    0,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    2,
+    'mm',
+    'Milímetro',
+    'mm',
+    'LENGTH',
+    0.0010000000,
+    3,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    3,
+    'cm',
+    'Centímetro',
+    'cm',
+    'LENGTH',
+    0.0100000000,
+    2,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    4,
+    'm',
+    'Metro',
+    'm',
+    'LENGTH',
+    1.0000000000,
+    3,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    5,
+    'km',
+    'Quilômetro',
+    'km',
+    'LENGTH',
+    1000.0000000000,
+    3,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    6,
+    'g',
+    'Grama',
+    'g',
+    'WEIGHT',
+    1.0000000000,
+    0,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  ),
+  (
+    7,
+    'kg',
+    'Quilograma',
+    'kg',
+    'WEIGHT',
+    1000.0000000000,
+    3,
+    1,
+    '2026-07-21 23:07:35',
+    NULL
+  )
+ON DUPLICATE KEY UPDATE
+  `code` = VALUES(`code`),
+  `name` = VALUES(`name`),
+  `symbol` = VALUES(`symbol`),
+  `measurement_type` = VALUES(`measurement_type`),
+  `factor_to_base` = VALUES(`factor_to_base`),
+  `decimal_places` = VALUES(`decimal_places`),
+  `active` = VALUES(`active`),
+  `modified` = VALUES(`modified`);
+
+
+-- -----------------------------------------------------
+-- Atributos
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_attributes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(80) NOT NULL,
+  `name` VARCHAR(120) NOT NULL,
+  `data_type` VARCHAR(20) NOT NULL,
+  `measurement_type` VARCHAR(20) DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_attributes_code` (`code`),
+
+  KEY `idx_product_attributes_active` (`active`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Opções dos atributos
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_attribute_options` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_attribute_id` INT NOT NULL,
+  `value` VARCHAR(120) NOT NULL,
+  `label` VARCHAR(120) NOT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_attribute_options_value` (
+    `product_attribute_id`,
+    `value`
+  ),
+
+  KEY `idx_product_attribute_options_attribute` (
+    `product_attribute_id`
+  ),
+
+  CONSTRAINT `fk_product_attribute_options_attribute`
+    FOREIGN KEY (`product_attribute_id`)
+    REFERENCES `product_attributes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Categorias
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `product_categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -444,10 +592,130 @@ CREATE TABLE IF NOT EXISTS `product_categories` (
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- PRODUCTS
--- manager_main.users has many products
--- =====================================================
+-- -----------------------------------------------------
+-- Atributos das categorias
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_category_attributes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_category_id` INT NOT NULL,
+  `product_attribute_id` INT NOT NULL,
+  `product_unit_id` INT DEFAULT NULL,
+  `required` TINYINT(1) NOT NULL DEFAULT 0,
+  `filterable` TINYINT(1) NOT NULL DEFAULT 0,
+  `show_on_list` TINYINT(1) NOT NULL DEFAULT 0,
+  `sort_order` INT NOT NULL DEFAULT 0,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_category_attributes` (
+    `product_category_id`,
+    `product_attribute_id`
+  ),
+
+  KEY `idx_product_category_attributes_attribute` (
+    `product_attribute_id`
+  ),
+
+  KEY `idx_product_category_attributes_unit` (
+    `product_unit_id`
+  ),
+
+  CONSTRAINT `fk_product_category_attributes_category`
+    FOREIGN KEY (`product_category_id`)
+    REFERENCES `product_categories` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_category_attributes_attribute`
+    FOREIGN KEY (`product_attribute_id`)
+    REFERENCES `product_attributes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_category_attributes_unit`
+    FOREIGN KEY (`product_unit_id`)
+    REFERENCES `product_units` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Condições dos atributos
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_category_attribute_conditions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_category_id` INT NOT NULL,
+  `target_product_attribute_id` INT NOT NULL,
+  `source_product_attribute_id` INT NOT NULL,
+  `operator` ENUM(
+    'EQUALS',
+    'NOT_EQUALS',
+    'FILLED',
+    'EMPTY'
+  ) NOT NULL DEFAULT 'EQUALS',
+  `value_text` VARCHAR(190) DEFAULT NULL,
+  `source_product_attribute_option_id` INT DEFAULT NULL,
+  `action` ENUM(
+    'SHOW',
+    'REQUIRE'
+  ) NOT NULL DEFAULT 'SHOW',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_product_attr_conditions_category` (
+    `product_category_id`
+  ),
+
+  KEY `idx_product_attr_conditions_target` (
+    `target_product_attribute_id`
+  ),
+
+  KEY `idx_product_attr_conditions_source` (
+    `source_product_attribute_id`
+  ),
+
+  KEY `idx_product_attr_conditions_option` (
+    `source_product_attribute_option_id`
+  ),
+
+  CONSTRAINT `fk_product_attr_conditions_category`
+    FOREIGN KEY (`product_category_id`)
+    REFERENCES `product_categories` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_attr_conditions_target`
+    FOREIGN KEY (`target_product_attribute_id`)
+    REFERENCES `product_attributes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_attr_conditions_source`
+    FOREIGN KEY (`source_product_attribute_id`)
+    REFERENCES `product_attributes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_attr_conditions_option`
+    FOREIGN KEY (`source_product_attribute_option_id`)
+    REFERENCES `product_attribute_options` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Produtos - estrutura original
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `products` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -472,30 +740,30 @@ CREATE TABLE IF NOT EXISTS `products` (
   UNIQUE KEY `uq_products_barcode` (`barcode`),
 
   KEY `idx_products_user_id` (`user_id`),
-  KEY `idx_products_product_category` (`product_category_id`),
+  KEY `idx_products_category` (`product_category_id`),
   KEY `idx_products_name` (`name`),
   KEY `idx_products_active` (`active`),
   KEY `idx_products_stock_quantity` (`stock_quantity`),
+
+  CONSTRAINT `fk_products_categories`
+    FOREIGN KEY (`product_category_id`)
+    REFERENCES `product_categories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
 
   CONSTRAINT `fk_products_manager_main_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `manager_main`.`users` (`id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_products_product_categories`
-    FOREIGN KEY (`product_category_id`)
-    REFERENCES `product_categories` (`id`)
-    ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- PRODUCT IMAGES
--- =====================================================
+-- -----------------------------------------------------
+-- Imagens dos produtos originais
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `product_images` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -518,7 +786,6 @@ CREATE TABLE IF NOT EXISTS `product_images` (
 
   KEY `idx_product_images_product` (`product_id`),
   KEY `idx_product_images_main` (`product_id`, `is_main`),
-  KEY `idx_product_images_position` (`product_id`, `position`),
 
   CONSTRAINT `fk_product_images_products`
     FOREIGN KEY (`product_id`)
@@ -530,20 +797,18 @@ CREATE TABLE IF NOT EXISTS `product_images` (
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- PRODUCT STOCK MOVEMENTS
--- =====================================================
+-- -----------------------------------------------------
+-- Movimentações de estoque da estrutura original
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `product_id` INT NOT NULL,
-
   `movement_type` ENUM(
     'IN',
     'OUT',
     'ADJUSTMENT'
   ) NOT NULL,
-
   `quantity` DECIMAL(12,3) NOT NULL,
   `previous_quantity` DECIMAL(12,3) NOT NULL,
   `new_quantity` DECIMAL(12,3) NOT NULL,
@@ -571,167 +836,239 @@ CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
   COLLATE=utf8mb4_unicode_ci;
 
 
-INSERT INTO `schema_versions` (
-  `version`,
-  `description`,
-  `created`,
-  `modified`
-)
-VALUES (
-  'store-001',
-  'Store products, images and stock module',
-  NOW(),
-  NOW()
-)
-ON DUPLICATE KEY UPDATE
-  `description` = 'Store products, images and stock module',
-  `modified` = NOW();
+-- -----------------------------------------------------
+-- Itens de produto - nova estrutura
+-- -----------------------------------------------------
 
-
--- =====================================================
--- TASK CATEGORIES
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `task_categories` (
+CREATE TABLE IF NOT EXISTS `product_items` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(120) NOT NULL,
-  `description` VARCHAR(255) DEFAULT NULL,
+  `product_category_id` INT NOT NULL,
+  `sku` VARCHAR(60) DEFAULT NULL,
+  `barcode` VARCHAR(80) DEFAULT NULL,
+  `name` VARCHAR(160) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `cost_price` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  `sale_price` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  `sale_unit_id` INT NOT NULL,
+  `sale_quantity_step` DECIMAL(18,6) NOT NULL DEFAULT 1.000000,
+  `track_stock` TINYINT(1) NOT NULL DEFAULT 1,
+  `stock_quantity` DECIMAL(18,6) NOT NULL DEFAULT 0.000000,
+  `minimum_stock` DECIMAL(18,6) NOT NULL DEFAULT 0.000000,
+  `length_value` DECIMAL(18,6) DEFAULT NULL,
+  `width_value` DECIMAL(18,6) DEFAULT NULL,
+  `height_value` DECIMAL(18,6) DEFAULT NULL,
+  `dimension_unit_id` INT DEFAULT NULL,
+  `weight_value` DECIMAL(18,6) DEFAULT NULL,
+  `weight_unit_id` INT DEFAULT NULL,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `uq_task_categories_name` (`name`),
+  UNIQUE KEY `uq_product_items_sku` (`sku`),
+  UNIQUE KEY `uq_product_items_barcode` (`barcode`),
 
-  KEY `idx_task_categories_active` (`active`)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_product_items_category` (`product_category_id`),
+  KEY `idx_product_items_sale_unit` (`sale_unit_id`),
+  KEY `idx_product_items_dimension_unit` (`dimension_unit_id`),
+  KEY `idx_product_items_weight_unit` (`weight_unit_id`),
+  KEY `idx_product_items_name` (`name`),
+  KEY `idx_product_items_active` (`active`),
 
-
--- =====================================================
--- TASKS
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS `tasks` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `task_category_id` INT DEFAULT NULL,
-  `title` VARCHAR(160) NOT NULL,
-
-  `status` ENUM(
-    'open',
-    'in_progress',
-    'paused',
-    'completed',
-    'canceled'
-  ) NOT NULL DEFAULT 'open',
-
-  `third_party_person_id` INT DEFAULT NULL,
-  `third_party_name` VARCHAR(160) DEFAULT NULL,
-  `description` MEDIUMTEXT NOT NULL,
-  `created_by_user_id` INT NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  KEY `idx_tasks_category` (`task_category_id`),
-  KEY `idx_tasks_status` (`status`),
-  KEY `idx_tasks_third_party_person` (`third_party_person_id`),
-  KEY `idx_tasks_created_by_user` (`created_by_user_id`),
-  KEY `idx_tasks_created` (`created`),
-
-  CONSTRAINT `fk_tasks_task_categories`
-    FOREIGN KEY (`task_category_id`)
-    REFERENCES `task_categories` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_tasks_manager_main_people_third_party`
-    FOREIGN KEY (`third_party_person_id`)
-    REFERENCES `manager_main`.`people` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_tasks_manager_main_users_created_by`
-    FOREIGN KEY (`created_by_user_id`)
-    REFERENCES `manager_main`.`users` (`id`)
+  CONSTRAINT `fk_product_items_category`
+    FOREIGN KEY (`product_category_id`)
+    REFERENCES `product_categories` (`id`)
     ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_items_sale_unit`
+    FOREIGN KEY (`sale_unit_id`)
+    REFERENCES `product_units` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_items_dimension_unit`
+    FOREIGN KEY (`dimension_unit_id`)
+    REFERENCES `product_units` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_items_weight_unit`
+    FOREIGN KEY (`weight_unit_id`)
+    REFERENCES `product_units` (`id`)
+    ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- TASK ASSIGNEES
--- =====================================================
+-- -----------------------------------------------------
+-- Valores dos atributos dos itens
+-- -----------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `task_assignees` (
+CREATE TABLE IF NOT EXISTS `product_item_attribute_values` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `task_id` INT NOT NULL,
-  `person_id` INT NOT NULL,
+  `product_item_id` INT NOT NULL,
+  `product_attribute_id` INT NOT NULL,
+  `product_attribute_option_id` INT DEFAULT NULL,
+  `product_unit_id` INT DEFAULT NULL,
+  `value_text` TEXT DEFAULT NULL,
+  `value_integer` INT DEFAULT NULL,
+  `value_decimal` DECIMAL(18,6) DEFAULT NULL,
+  `value_boolean` TINYINT(1) DEFAULT NULL,
+  `value_date` DATE DEFAULT NULL,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_item_attribute_values` (
+    `product_item_id`,
+    `product_attribute_id`
+  ),
+
+  KEY `idx_product_item_values_attribute` (
+    `product_attribute_id`
+  ),
+
+  KEY `idx_product_item_values_option` (
+    `product_attribute_option_id`
+  ),
+
+  KEY `idx_product_item_values_unit` (`product_unit_id`),
+
+  CONSTRAINT `fk_product_item_values_item`
+    FOREIGN KEY (`product_item_id`)
+    REFERENCES `product_items` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_item_values_attribute`
+    FOREIGN KEY (`product_attribute_id`)
+    REFERENCES `product_attributes` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_item_values_option`
+    FOREIGN KEY (`product_attribute_option_id`)
+    REFERENCES `product_attribute_options` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_product_item_values_unit`
+    FOREIGN KEY (`product_unit_id`)
+    REFERENCES `product_units` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Imagens dos itens
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_item_images` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_item_id` INT NOT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `original_name` VARCHAR(180) DEFAULT NULL,
+  `mime_type` VARCHAR(80) DEFAULT NULL,
+  `file_size` INT UNSIGNED DEFAULT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `is_main` TINYINT(1) NOT NULL DEFAULT 0,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_product_item_images_file_path` (`file_path`),
+
+  KEY `idx_product_item_images_item` (`product_item_id`),
+  KEY `idx_product_item_images_main` (`product_item_id`, `is_main`),
+
+  CONSTRAINT `fk_product_item_images_item`
+    FOREIGN KEY (`product_item_id`)
+    REFERENCES `product_items` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Variações dos itens
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `product_item_variations` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_item_id` INT NOT NULL,
+  `sku` VARCHAR(60) DEFAULT NULL,
+  `barcode` VARCHAR(80) DEFAULT NULL,
+  `name` VARCHAR(160) NOT NULL,
+  `cost_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `sale_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `track_stock` TINYINT(1) NOT NULL DEFAULT 0,
+  `stock_quantity` DECIMAL(14,6) NOT NULL DEFAULT 0.000000,
+  `minimum_stock` DECIMAL(14,6) NOT NULL DEFAULT 0.000000,
   `active` TINYINT(1) NOT NULL DEFAULT 1,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `uq_task_assignees_task_person` (
-    `task_id`,
-    `person_id`
+  UNIQUE KEY `uq_product_item_variations_sku` (`sku`),
+  UNIQUE KEY `uq_product_item_variations_barcode` (`barcode`),
+
+  KEY `idx_product_item_variations_product` (`product_item_id`),
+  KEY `idx_product_item_variations_name` (`name`),
+  KEY `idx_product_item_variations_active` (`active`),
+
+  KEY `idx_product_item_variations_stock` (
+    `track_stock`,
+    `stock_quantity`
   ),
 
-  KEY `idx_task_assignees_task_active` (
-    `task_id`,
-    `active`
-  ),
-
-  KEY `idx_task_assignees_person` (`person_id`),
-
-  CONSTRAINT `fk_task_assignees_tasks`
-    FOREIGN KEY (`task_id`)
-    REFERENCES `tasks` (`id`)
+  CONSTRAINT `fk_product_item_variations_product`
+    FOREIGN KEY (`product_item_id`)
+    REFERENCES `product_items` (`id`)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_task_assignees_manager_main_people`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `manager_main`.`people` (`id`)
-    ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- TASK COMMENTS
--- =====================================================
+-- -----------------------------------------------------
+-- Movimentações de estoque dos itens
+-- -----------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `task_comments` (
+CREATE TABLE IF NOT EXISTS `product_stock_movements` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `task_id` INT NOT NULL,
-  `user_id` INT NOT NULL,
-  `comment` TEXT NOT NULL,
+  `product_item_id` INT NOT NULL,
+  `movement_type` ENUM(
+    'IN',
+    'OUT',
+    'ADJUSTMENT'
+  ) NOT NULL,
+  `quantity` DECIMAL(18,6) NOT NULL,
+  `previous_quantity` DECIMAL(18,6) NOT NULL,
+  `new_quantity` DECIMAL(18,6) NOT NULL,
+  `reference` VARCHAR(120) DEFAULT NULL,
+  `notes` TEXT DEFAULT NULL,
+  `movement_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
 
-  KEY `idx_task_comments_task_created` (`task_id`, `created`),
-  KEY `idx_task_comments_user` (`user_id`),
+  KEY `idx_product_stock_movements_item` (`product_item_id`),
+  KEY `idx_product_stock_movements_type` (`movement_type`),
+  KEY `idx_product_stock_movements_date` (`movement_date`),
 
-  CONSTRAINT `fk_task_comments_tasks`
-    FOREIGN KEY (`task_id`)
-    REFERENCES `tasks` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_task_comments_manager_main_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `manager_main`.`users` (`id`)
+  CONSTRAINT `fk_product_stock_movements_item`
+    FOREIGN KEY (`product_item_id`)
+    REFERENCES `product_items` (`id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB
@@ -740,73 +1077,12 @@ CREATE TABLE IF NOT EXISTS `task_comments` (
 
 
 -- =====================================================
--- TASK EXECUTIONS
+-- MÓDULO DE AGENDA
 -- =====================================================
 
-CREATE TABLE IF NOT EXISTS `task_executions` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `task_assignee_id` INT NOT NULL,
-  `started_by_user_id` INT NOT NULL,
-  `paused_by_user_id` INT DEFAULT NULL,
-  `started_at` DATETIME NOT NULL,
-  `paused_at` DATETIME DEFAULT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (`id`),
-
-  KEY `idx_task_executions_assignee` (`task_assignee_id`),
-
-  KEY `idx_task_executions_open` (
-    `task_assignee_id`,
-    `paused_at`
-  ),
-
-  KEY `idx_task_executions_started_by_user` (`started_by_user_id`),
-  KEY `idx_task_executions_paused_by_user` (`paused_by_user_id`),
-
-  CONSTRAINT `fk_task_executions_task_assignees`
-    FOREIGN KEY (`task_assignee_id`)
-    REFERENCES `task_assignees` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_task_executions_manager_main_users_started_by`
-    FOREIGN KEY (`started_by_user_id`)
-    REFERENCES `manager_main`.`users` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-
-  CONSTRAINT `fk_task_executions_manager_main_users_paused_by`
-    FOREIGN KEY (`paused_by_user_id`)
-    REFERENCES `manager_main`.`users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-
-INSERT INTO `schema_versions` (
-  `version`,
-  `description`,
-  `created`,
-  `modified`
-)
-VALUES (
-  'tasks-001',
-  'Tasks, assignees, comments and executions module',
-  NOW(),
-  NOW()
-)
-ON DUPLICATE KEY UPDATE
-  `description` = 'Tasks, assignees, comments and executions module',
-  `modified` = NOW();
-
-
--- =====================================================
--- SCHEDULE CATEGORIES
--- =====================================================
+-- -----------------------------------------------------
+-- Categorias da agenda
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `schedule_categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -828,9 +1104,10 @@ CREATE TABLE IF NOT EXISTS `schedule_categories` (
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- SCHEDULE EVENT RECURRENCES
--- =====================================================
+-- -----------------------------------------------------
+-- Recorrências
+-- Precisa ser criada antes de schedule_events
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -841,13 +1118,11 @@ CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
   `all_day` TINYINT(1) NOT NULL DEFAULT 0,
   `start_time` TIME DEFAULT NULL,
   `end_time` TIME DEFAULT NULL,
-
   `frequency` ENUM(
     'daily',
     'weekly',
     'monthly'
   ) NOT NULL,
-
   `interval_value` INT UNSIGNED NOT NULL DEFAULT 1,
   `period_start` DATE NOT NULL,
   `period_end` DATE NOT NULL,
@@ -884,15 +1159,21 @@ CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
     FOREIGN KEY (`created_by_user_id`)
     REFERENCES `manager_main`.`users` (`id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `chk_schedule_events_recurrences_period`
+    CHECK (`period_end` >= `period_start`),
+
+  CONSTRAINT `chk_schedule_events_recurrences_interval`
+    CHECK (`interval_value` > 0)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- SCHEDULE EVENTS
--- =====================================================
+-- -----------------------------------------------------
+-- Eventos
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `schedule_events` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -905,13 +1186,11 @@ CREATE TABLE IF NOT EXISTS `schedule_events` (
   `all_day` TINYINT(1) NOT NULL DEFAULT 0,
   `starts_at` DATETIME NOT NULL,
   `ends_at` DATETIME DEFAULT NULL,
-
   `status` ENUM(
     'scheduled',
     'completed',
     'canceled'
   ) NOT NULL DEFAULT 'scheduled',
-
   `created_by_user_id` INT NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -945,15 +1224,18 @@ CREATE TABLE IF NOT EXISTS `schedule_events` (
     FOREIGN KEY (`created_by_user_id`)
     REFERENCES `manager_main`.`users` (`id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `chk_schedule_events_period`
+    CHECK (`ends_at` IS NULL OR `ends_at` >= `starts_at`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- SCHEDULE EVENT PARTICIPANTS
--- =====================================================
+-- -----------------------------------------------------
+-- Participantes dos eventos
+-- -----------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `schedule_events_participants` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -993,18 +1275,230 @@ CREATE TABLE IF NOT EXISTS `schedule_events_participants` (
   COLLATE=utf8mb4_unicode_ci;
 
 
+-- =====================================================
+-- MÓDULO DE TAREFAS
+-- =====================================================
+
+-- -----------------------------------------------------
+-- Categorias das tarefas
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `task_categories` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(120) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_task_categories_name` (`name`),
+
+  KEY `idx_task_categories_active` (`active`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Tarefas
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `tasks` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_category_id` INT DEFAULT NULL,
+  `title` VARCHAR(160) NOT NULL,
+  `status` VARCHAR(40) NOT NULL DEFAULT 'open',
+  `third_party_person_id` INT DEFAULT NULL,
+  `third_party_name` VARCHAR(160) DEFAULT NULL,
+  `description` MEDIUMTEXT NOT NULL,
+  `created_by_user_id` INT NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_tasks_category` (`task_category_id`),
+  KEY `idx_tasks_status` (`status`),
+  KEY `idx_tasks_third_party_person` (`third_party_person_id`),
+  KEY `idx_tasks_created_by_user` (`created_by_user_id`),
+  KEY `idx_tasks_created` (`created`),
+
+  CONSTRAINT `fk_tasks_task_categories`
+    FOREIGN KEY (`task_category_id`)
+    REFERENCES `task_categories` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_tasks_manager_main_people_third_party`
+    FOREIGN KEY (`third_party_person_id`)
+    REFERENCES `manager_main`.`people` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_tasks_manager_main_users_created_by`
+    FOREIGN KEY (`created_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Responsáveis pelas tarefas
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `task_assignees` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_id` INT NOT NULL,
+  `person_id` INT NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  UNIQUE KEY `uq_task_assignees_task_person` (
+    `task_id`,
+    `person_id`
+  ),
+
+  KEY `idx_task_assignees_task_active` (`task_id`, `active`),
+  KEY `idx_task_assignees_person` (`person_id`),
+
+  CONSTRAINT `fk_task_assignees_tasks`
+    FOREIGN KEY (`task_id`)
+    REFERENCES `tasks` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_assignees_manager_main_people`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `manager_main`.`people` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Comentários das tarefas
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `task_comments` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `comment` TEXT NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_task_comments_task_created` (`task_id`, `created`),
+  KEY `idx_task_comments_user` (`user_id`),
+
+  CONSTRAINT `fk_task_comments_tasks`
+    FOREIGN KEY (`task_id`)
+    REFERENCES `tasks` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_comments_manager_main_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Execuções das tarefas
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `task_executions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `task_assignee_id` INT NOT NULL,
+  `started_by_user_id` INT NOT NULL,
+  `paused_by_user_id` INT DEFAULT NULL,
+  `started_at` DATETIME NOT NULL,
+  `paused_at` DATETIME DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_task_executions_assignee` (`task_assignee_id`),
+  KEY `idx_task_executions_open` (`task_assignee_id`, `paused_at`),
+  KEY `idx_task_executions_started_by_user` (`started_by_user_id`),
+  KEY `idx_task_executions_paused_by_user` (`paused_by_user_id`),
+
+  CONSTRAINT `fk_task_executions_task_assignees`
+    FOREIGN KEY (`task_assignee_id`)
+    REFERENCES `task_assignees` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_executions_manager_main_users_started_by`
+    FOREIGN KEY (`started_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_task_executions_manager_main_users_paused_by`
+    FOREIGN KEY (`paused_by_user_id`)
+    REFERENCES `manager_main`.`users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT `chk_task_executions_period`
+    CHECK (`paused_at` IS NULL OR `paused_at` >= `started_at`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- =====================================================
+-- REGISTRO DAS VERSÕES
+-- =====================================================
+
 INSERT INTO `schema_versions` (
   `version`,
   `description`,
   `created`,
   `modified`
 )
-VALUES (
-  'schedule-001',
-  'Schedule categories, events, recurrences and participants module',
-  NOW(),
-  NOW()
-)
+VALUES
+  (
+    '0.0.1',
+    'Initial tenant schema',
+    NOW(),
+    NOW()
+  ),
+  (
+    '0.0.2',
+    'Store products, images and stock module',
+    NOW(),
+    NOW()
+  ),
+  (
+    '0.0.3',
+    'Tasks categories, assignments, executions and comments module',
+    NOW(),
+    NOW()
+  ),
+  (
+    '0.0.4',
+    'Product variations and conditional product attributes',
+    NOW(),
+    NOW()
+  )
 ON DUPLICATE KEY UPDATE
-  `description` = 'Schedule categories, events, recurrences and participants module',
+  `description` = VALUES(`description`),
   `modified` = NOW();
