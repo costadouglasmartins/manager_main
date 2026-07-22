@@ -41,9 +41,7 @@ CREATE TABLE IF NOT EXISTS `addresses` (
 -- Dumping data for table manager_main.addresses: ~4 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(1, '88137-335', 'Rua do Amor-perfeito', '266', 'Apt 203', 4, 17792, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
-	(7, '88132-241', 'Rua Bréscia', '94', 'Casa', 5, 11, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(8, '88132-241', 'Rua Bréscia', '04', 'Casa', 6, 11, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(9, '88130-743', 'Rua Maria Soares', '141', 'Prédio', 7, 4, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(7, '88132-241', 'Rua Bréscia', '94', 'Casa', 5, 11, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.banks
 CREATE TABLE IF NOT EXISTS `banks` (
@@ -5756,9 +5754,7 @@ CREATE TABLE IF NOT EXISTS `emails` (
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'admin@admin.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'Login', 4, 1, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
-	(3, 'kristen@stewart.com', 'Login', 5, 1, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(4, 'charlize@theron.com', 'login', 6, 1, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(5, 'banco@brasil.com', 'login', 7, 1, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(3, 'kristen@stewart.com', 'Login', 5, 1, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -5900,7 +5896,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=642 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=646 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.logs: ~372 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
@@ -6269,8 +6265,6 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(449, '3240765a-efe0-4abe-96a8-823a2eda5e34', 1, 'manager_0001', 'Tenant 0001', 'product_category', 'list', 'product_categories', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'product_category', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 21:33:33', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"url": "product_category"}, "filters_applied": false, "response_format": "html"}', '2026-07-15 21:33:33', '2026-07-15 21:33:33'),
 	(450, 'bc8ef1da-7e86-4ec5-b956-40ac81fe743a', NULL, 'manager_0006', NULL, 'tenant', 'delete', 'tenants', '6', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/6', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:22:17', '{"users": [{"name": "Maika Monroe", "role": "owner", "email": "maika@monroe.com", "created": "2026-07-12 22:22:30", "fantasy": "Maika Monroe", "user_id": 13, "document": "ZRRYGEWK000100", "modified": "2026-07-12 22:22:30", "username": "maika.monroe", "person_id": 16, "tenant_id": 6, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 6, "status": "active", "created": "2026-07-12 22:22:30", "modified": "2026-07-12 22:22:30", "observations": "Banco da Maika Monroe", "database_number": "0006", "associated_person_id": 16, "associated_person_name": "Maika Monroe", "associated_person_fantasy": "Maika Monroe", "associated_person_document": "ZRRYGEWK000100"}}', NULL, '{"to": null, "from": {"users": [{"name": "Maika Monroe", "role": "owner", "email": "maika@monroe.com", "created": "2026-07-12 22:22:30", "fantasy": "Maika Monroe", "user_id": 13, "document": "ZRRYGEWK000100", "modified": "2026-07-12 22:22:30", "username": "maika.monroe", "person_id": 16, "tenant_id": 6, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 6, "status": "active", "created": "2026-07-12 22:22:30", "modified": "2026-07-12 22:22:30", "observations": "Banco da Maika Monroe", "database_number": "0006", "associated_person_id": 16, "associated_person_name": "Maika Monroe", "associated_person_fantasy": "Maika Monroe", "associated_person_document": "ZRRYGEWK000100"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/6"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-15 22:22:17', '2026-07-15 22:22:17'),
 	(451, 'ea00d996-6b49-4322-8db7-c58433660d89', NULL, 'manager_0005', NULL, 'tenant', 'delete', 'tenants', '5', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/5', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:25:26', '{"users": [{"name": "Lorem Ipsum", "role": "owner", "email": "lorem2@ipsum.com", "created": "2026-07-09 00:19:33", "fantasy": "Lorem Ipsum", "user_id": 12, "document": "LM1ZT2WD000102", "modified": "2026-07-09 00:19:33", "username": "lorem.ipsum", "person_id": 15, "tenant_id": 5, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 5, "status": "active", "created": "2026-07-09 00:19:33", "modified": "2026-07-09 00:19:33", "observations": "Banco do Lorem Ipsum", "database_number": "0005", "associated_person_id": 15, "associated_person_name": "Lorem Ipsum", "associated_person_fantasy": "Lorem Ipsum", "associated_person_document": "LM1ZT2WD000102"}}', NULL, '{"to": null, "from": {"users": [{"name": "Lorem Ipsum", "role": "owner", "email": "lorem2@ipsum.com", "created": "2026-07-09 00:19:33", "fantasy": "Lorem Ipsum", "user_id": 12, "document": "LM1ZT2WD000102", "modified": "2026-07-09 00:19:33", "username": "lorem.ipsum", "person_id": 15, "tenant_id": 5, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 5, "status": "active", "created": "2026-07-09 00:19:33", "modified": "2026-07-09 00:19:33", "observations": "Banco do Lorem Ipsum", "database_number": "0005", "associated_person_id": 15, "associated_person_name": "Lorem Ipsum", "associated_person_fantasy": "Lorem Ipsum", "associated_person_document": "LM1ZT2WD000102"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/5"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-15 22:25:26', '2026-07-15 22:25:26'),
-	(452, 'aff30e00-0f42-45c0-a929-f053588aa6fc', NULL, 'manager_0004', NULL, 'tenant', 'delete', 'tenants', '4', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:25:34', '{"users": [{"name": "Penelope Cruz", "role": "owner", "email": "penelope@cruz.com", "created": "2026-07-06 22:56:15", "fantasy": "Penelope Cruz", "user_id": 11, "document": "Z1NXXE6C000182", "modified": "2026-07-06 22:56:15", "username": "penelope.cruz", "person_id": 14, "tenant_id": 4, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 4, "status": "active", "created": "2026-07-06 22:56:15", "modified": "2026-07-06 22:56:16", "observations": "Banco da Penélope Cruz", "database_number": "0004", "associated_person_id": 14, "associated_person_name": "Penelope Cruz", "associated_person_fantasy": "Penelope Cruz", "associated_person_document": "Z1NXXE6C000182"}}', NULL, '{"to": null, "from": {"users": [{"name": "Penelope Cruz", "role": "owner", "email": "penelope@cruz.com", "created": "2026-07-06 22:56:15", "fantasy": "Penelope Cruz", "user_id": 11, "document": "Z1NXXE6C000182", "modified": "2026-07-06 22:56:15", "username": "penelope.cruz", "person_id": 14, "tenant_id": 4, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 4, "status": "active", "created": "2026-07-06 22:56:15", "modified": "2026-07-06 22:56:16", "observations": "Banco da Penélope Cruz", "database_number": "0004", "associated_person_id": 14, "associated_person_name": "Penelope Cruz", "associated_person_fantasy": "Penelope Cruz", "associated_person_document": "Z1NXXE6C000182"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/4"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-15 22:25:34', '2026-07-15 22:25:34'),
-	(453, 'cce353fe-9dcf-4651-b7ab-7e86657fe1e7', NULL, 'manager_0003', NULL, 'tenant', 'delete', 'tenants', '3', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/3', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:25:49', '{"users": [{"name": "Charlize Theron", "role": "owner", "email": "charlize@theron.com", "created": "2026-07-03 12:56:19", "fantasy": "Charlize Theron", "user_id": 10, "document": "41663251592", "modified": "2026-07-03 13:10:31", "username": "charlize.theron", "person_id": 13, "tenant_id": 3, "user_type": "admin", "person_type": "individual", "user_active": 1}], "tenant": {"id": 3, "status": "active", "created": "2026-07-03 12:56:19", "modified": "2026-07-03 13:10:31", "observations": "Banco da Charlize Theron", "database_number": "0003", "associated_person_id": 13, "associated_person_name": "Charlize Theron", "associated_person_fantasy": "Charlize Theron", "associated_person_document": "41663251592"}}', NULL, '{"to": null, "from": {"users": [{"name": "Charlize Theron", "role": "owner", "email": "charlize@theron.com", "created": "2026-07-03 12:56:19", "fantasy": "Charlize Theron", "user_id": 10, "document": "41663251592", "modified": "2026-07-03 13:10:31", "username": "charlize.theron", "person_id": 13, "tenant_id": 3, "user_type": "admin", "person_type": "individual", "user_active": 1}], "tenant": {"id": 3, "status": "active", "created": "2026-07-03 12:56:19", "modified": "2026-07-03 13:10:31", "observations": "Banco da Charlize Theron", "database_number": "0003", "associated_person_id": 13, "associated_person_name": "Charlize Theron", "associated_person_fantasy": "Charlize Theron", "associated_person_document": "41663251592"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/3"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-15 22:25:49', '2026-07-15 22:25:49'),
 	(454, 'a48f454f-198c-4afe-840f-a8dcc34ccdb5', NULL, 'manager_0002', NULL, 'tenant', 'delete', 'tenants', '2', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/2', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:25:59', '{"users": [{"name": "Kristen Stewart", "role": "owner", "email": "kristen@stewart.com", "created": "2026-06-23 00:14:54", "fantasy": "Kristen Stewart", "user_id": 7, "document": "HBVPPV76000179", "modified": "2026-06-23 00:14:54", "username": "kristen.stewart", "person_id": 9, "tenant_id": 2, "user_type": "admin", "person_type": "company", "user_active": 1}, {"name": "Google do Brasil", "role": "user", "email": "google@google.com", "created": "2026-06-29 18:31:25", "fantasy": "Google do Brasil", "user_id": 9, "document": "05G6A0XM000150", "modified": "2026-06-29 18:31:25", "username": "google.brasil", "person_id": 12, "tenant_id": 2, "user_type": "user", "person_type": "company", "user_active": 1}], "tenant": {"id": 2, "status": "active", "created": "2026-06-23 00:14:54", "modified": "2026-06-23 00:14:54", "observations": "Banco da Kristen Stewart", "database_number": "0002", "associated_person_id": 9, "associated_person_name": "Kristen Stewart", "associated_person_fantasy": "Kristen Stewart", "associated_person_document": "HBVPPV76000179"}}', NULL, '{"to": null, "from": {"users": [{"name": "Kristen Stewart", "role": "owner", "email": "kristen@stewart.com", "created": "2026-06-23 00:14:54", "fantasy": "Kristen Stewart", "user_id": 7, "document": "HBVPPV76000179", "modified": "2026-06-23 00:14:54", "username": "kristen.stewart", "person_id": 9, "tenant_id": 2, "user_type": "admin", "person_type": "company", "user_active": 1}, {"name": "Google do Brasil", "role": "user", "email": "google@google.com", "created": "2026-06-29 18:31:25", "fantasy": "Google do Brasil", "user_id": 9, "document": "05G6A0XM000150", "modified": "2026-06-29 18:31:25", "username": "google.brasil", "person_id": 12, "tenant_id": 2, "user_type": "user", "person_type": "company", "user_active": 1}], "tenant": {"id": 2, "status": "active", "created": "2026-06-23 00:14:54", "modified": "2026-06-23 00:14:54", "observations": "Banco da Kristen Stewart", "database_number": "0002", "associated_person_id": 9, "associated_person_name": "Kristen Stewart", "associated_person_fantasy": "Kristen Stewart", "associated_person_document": "HBVPPV76000179"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/2"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-15 22:25:59', '2026-07-15 22:25:59'),
 	(456, '12308191-3adf-4b5e-81bf-ff23916dadee', 1, NULL, NULL, 'user', 'delete', 'users', '6', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'user/delete/6', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 22:57:59', '{"id": 6, "name": "Lucy Watson", "type": "admin", "email": "lucy@watson.com", "active": 1, "document": "27259897600", "username": "lucy.watson", "person_id": 8, "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 6, "name": "Lucy Watson", "type": "admin", "email": "lucy@watson.com", "active": 1, "document": "27259897600", "username": "lucy.watson", "person_id": 8, "tenant_id": 1}}', '{"source": "user_full_deletion", "request_query": {"url": "user/delete/6"}, "affected_tables": ["manager_main.internal_chat_messages", "manager_main.internal_chat_participants", "manager_main.internal_chats", "manager_main.tenant_users", "manager_main.logs", "manager_main.users"], "databases_preserved": true, "preserved_person_id": 8}', '2026-07-15 22:57:59', '2026-07-15 22:57:59'),
 	(458, 'cf40c04a-ba53-4fbe-9f38-60bfb47960df', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-07-15 23:36:18', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 2, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-15 23:36:18', '2026-07-15 23:36:18'),
@@ -6420,20 +6414,8 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(601, '6032c904-0b30-4b64-a0af-827cc7c77883', 1, 'manager_0001', 'Tenant 0001', 'permission', 'list', 'permissions', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:24:59', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": null, "request_query": {"url": "permission"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 17:24:59', '2026-07-22 17:24:59'),
 	(602, '9dc47bcb-3257-4e65-b150-a55cb0ebee99', 1, 'manager_0001', 'Tenant 0001', 'permission', 'list', 'permissions', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:25:01', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": {"user_id": "2"}, "per_page": null, "result_total": null, "request_query": {"url": "permission", "user_id": "2"}, "filters_applied": true, "response_format": "html"}', '2026-07-22 17:25:01', '2026-07-22 17:25:01'),
 	(603, 'e0368120-1e0d-4d6b-a604-6a7529c3cd10', 1, 'manager_0001', 'Tenant 0001', 'auth', 'logout', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:33:14', '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', NULL, '{"to": null, "from": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-22 17:33:14', '2026-07-22 17:33:14'),
-	(604, '8fdf58ca-9a43-4ab2-a7af-e473a64a5e6c', 3, 'manager_0003', 'Tenant 0003', 'auth', 'login', 'users', '4', 4, 'charlize.theron', 'Charlize Theron', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:33:24', NULL, '{"id": 4, "name": "Charlize Theron", "type": "admin", "email": "charlize@theron.com", "username": "charlize.theron", "tenant_id": 3}', '{"to": {"id": 4, "name": "Charlize Theron", "type": "admin", "email": "charlize@theron.com", "username": "charlize.theron", "tenant_id": 3}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-22 17:33:24', '2026-07-22 17:33:24'),
-	(605, '6d1a1e0a-4349-40bb-b6e1-dbd402f619f5', 3, 'manager_0003', 'Tenant 0003', 'product', 'list', 'products', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:33:39', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 17:33:39', '2026-07-22 17:33:39'),
-	(606, '05e61d94-397b-49f8-98c1-637963ea5048', 3, 'manager_0003', 'Tenant 0003', 'bank', 'list', 'banks', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'bank', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 17:38:23', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 3, "request_query": {"url": "bank"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 17:38:23', '2026-07-22 17:38:23'),
-	(607, '5e6c9129-60ef-489b-9e64-48a78117fad9', 3, 'manager_0003', 'Tenant 0003', 'person', 'list', 'people', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'person', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:00:36', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"url": "person"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:00:36', '2026-07-22 18:00:36'),
-	(632, 'b276c3ca-0865-4ac5-b728-849d4bb5b369', 3, 'manager_0003', 'Tenant 0003', 'person', 'list', 'people', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'person', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:25:55', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"id": "", "url": "person", "name": "", "type": "", "active": "", "document": "", "birthdate": ""}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:25:55', '2026-07-22 18:25:55'),
-	(633, '584b5650-95f5-427c-be46-f4c9fdd08af3', 3, 'manager_0003', 'Tenant 0003', 'product', 'list', 'products', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:25:59', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:25:59', '2026-07-22 18:25:59'),
-	(634, '20794d7a-2da6-4213-8edb-82641207818b', 3, 'manager_0003', 'Tenant 0003', 'product', 'list', 'products', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:26:02', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:26:02', '2026-07-22 18:26:02'),
-	(635, '645af2f4-0f70-458c-a82f-eaad99ad0969', 3, 'manager_0003', 'Tenant 0003', 'product_category', 'list', 'product_categories', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product_category', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:26:12', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product_category"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:26:12', '2026-07-22 18:26:12'),
-	(636, '739ee062-ffb8-4b97-882f-9b3cc1d4d82a', 3, 'manager_0003', 'Tenant 0003', 'product_stock_movement', 'list', 'product_stocks_movements', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product_stock_movement', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:32:54', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product_stock_movement"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:32:54', '2026-07-22 18:32:54'),
-	(637, '2529d47f-6dcd-42ed-a8ef-48fe9a75aa7f', 3, 'manager_0003', 'Tenant 0003', 'product', 'list', 'products', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:33:02', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:33:02', '2026-07-22 18:33:02'),
-	(638, 'cc857371-b91b-417f-b749-0745dcd38b85', 3, 'manager_0003', 'Tenant 0003', 'product_category', 'list', 'product_categories', NULL, 4, 'charlize.theron', 'Charlize Theron', 'GET', 'product_category', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:33:40', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product_category"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:33:40', '2026-07-22 18:33:40'),
-	(639, 'c6ea98da-fe69-436e-98db-e5fb6d24de17', 3, 'manager_0003', 'Tenant 0003', 'auth', 'logout', 'users', '4', 4, 'charlize.theron', 'Charlize Theron', 'GET', 'user/logout', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:43:55', '{"id": 4, "name": "Charlize Theron", "type": "admin", "email": "charlize@theron.com", "username": "charlize.theron", "tenant_id": 3}', NULL, '{"to": null, "from": {"id": 4, "name": "Charlize Theron", "type": "admin", "email": "charlize@theron.com", "username": "charlize.theron", "tenant_id": 3}}', '{"source": "authentication", "request_query": {"url": "user/logout"}, "tenant_selection": "selected"}', '2026-07-22 18:43:55', '2026-07-22 18:43:55'),
-	(640, 'db184cf7-941d-4761-aeb8-ccee75f772f0', 4, 'manager_0004', 'Tenant 0004', 'auth', 'login', 'users', '5', 5, 'banco.brasil', 'Banco do Brasil', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:44:04', NULL, '{"id": 5, "name": "Banco do Brasil", "type": "admin", "email": "banco@brasil.com", "username": "banco.brasil", "tenant_id": 4}', '{"to": {"id": 5, "name": "Banco do Brasil", "type": "admin", "email": "banco@brasil.com", "username": "banco.brasil", "tenant_id": 4}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-22 18:44:04', '2026-07-22 18:44:04'),
-	(641, 'dd218c05-bb26-4118-ba8c-cd96d539b950', 4, 'manager_0004', 'Tenant 0004', 'product', 'list', 'products', NULL, 5, 'banco.brasil', 'Banco do Brasil', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:44:16', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-22 18:44:16', '2026-07-22 18:44:16');
+	(642, '13672b33-d769-4a52-a2d2-6e2cda9bf998', NULL, 'manager_0004', NULL, 'tenant', 'delete', 'tenants', '4', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:50:33', '{"users": [{"name": "Banco do Brasil", "role": "owner", "email": "banco@brasil.com", "created": "2026-07-22 18:43:20", "fantasy": "Banco do Brasil", "user_id": 5, "document": "8E0AW8B7000151", "modified": "2026-07-22 18:43:20", "username": "banco.brasil", "person_id": 7, "tenant_id": 4, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 4, "status": "active", "created": "2026-07-22 18:43:20", "modified": "2026-07-22 18:43:21", "observations": "Banco do Banco do Brasil", "database_number": "0004", "associated_person_id": 7, "associated_person_name": "Banco do Brasil", "associated_person_fantasy": "Banco do Brasil", "associated_person_document": "8E0AW8B7000151"}}', NULL, '{"to": null, "from": {"users": [{"name": "Banco do Brasil", "role": "owner", "email": "banco@brasil.com", "created": "2026-07-22 18:43:20", "fantasy": "Banco do Brasil", "user_id": 5, "document": "8E0AW8B7000151", "modified": "2026-07-22 18:43:20", "username": "banco.brasil", "person_id": 7, "tenant_id": 4, "user_type": "admin", "person_type": "company", "user_active": 1}], "tenant": {"id": 4, "status": "active", "created": "2026-07-22 18:43:20", "modified": "2026-07-22 18:43:21", "observations": "Banco do Banco do Brasil", "database_number": "0004", "associated_person_id": 7, "associated_person_name": "Banco do Brasil", "associated_person_fantasy": "Banco do Brasil", "associated_person_document": "8E0AW8B7000151"}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/4"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results", "tenant_setting_values", "user_presences"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-22 18:50:33', '2026-07-22 18:50:33'),
+	(645, '2212124c-22ec-40cf-9450-e5821e515fef', NULL, 'manager_0003', NULL, 'tenant', 'delete', 'tenants', '3', 1, 'douglas.costa', 'Douglas M. Costa', 'POST', 'tenant/delete/3', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-22 18:55:10', '{"users": [], "tenant": {"id": 3, "status": "active", "created": "2026-07-22 17:32:35", "modified": "2026-07-22 17:32:35", "observations": "Banco da Charlize Theron", "database_number": "0003", "associated_person_id": null, "associated_person_name": null, "associated_person_fantasy": null, "associated_person_document": null}}', NULL, '{"to": null, "from": {"users": [], "tenant": {"id": 3, "status": "active", "created": "2026-07-22 17:32:35", "modified": "2026-07-22 17:32:35", "observations": "Banco da Charlize Theron", "database_number": "0003", "associated_person_id": null, "associated_person_name": null, "associated_person_fantasy": null, "associated_person_document": null}}}', '{"source": "tenant_full_deletion", "request_query": {"url": "tenant/delete/3"}, "affected_tables": ["tenants", "tenant_users", "users", "user_permissions", "user_remember_tokens", "people", "addresses", "emails", "phone_numbers", "financial_operations", "financial_operations_payments", "internal_chats", "internal_chat_messages", "internal_chat_participants", "support_chats", "support_chats_messages", "logs", "webcrawler_ip_range_executions", "webcrawler_ip_range_results", "tenant_setting_values", "user_presences"], "preserved_tables": ["cities", "neighborhoods", "banks", "states", "countries"]}', '2026-07-22 18:55:10', '2026-07-22 18:55:10');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -24603,13 +24585,11 @@ CREATE TABLE IF NOT EXISTS `people` (
   UNIQUE KEY `document_UNIQUE` (`document`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.people: ~2 rows (approximately)
+-- Dumping data for table manager_main.people: ~3 rows (approximately)
 INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
 	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
 	(4, 'Emma Watson', 'Emma Watson', 'company', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
-	(5, 'Kristen Stewart', 'Kristen Stewart', 'company', '75611873000130', 1, NULL, '2026-07-15 23:39:27', '2026-07-15 23:39:27'),
-	(6, 'Charlize Theron', 'Charlize Theron', 'company', 'JH7071RM000150', 1, NULL, '2026-07-22 17:32:34', '2026-07-22 17:32:34'),
-	(7, 'Banco do Brasil', 'Banco do Brasil', 'company', '8E0AW8B7000151', 1, NULL, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(5, 'Kristen Stewart', 'Kristen Stewart', 'company', '75611873000130', 1, NULL, '2026-07-15 23:39:27', '2026-07-15 23:39:27');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -24985,9 +24965,7 @@ CREATE TABLE IF NOT EXISTS `phone_numbers` (
 
 -- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
-	(1, '5548991908908', 'Celular', 5, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(2, '5548991908909', 'Celular', 6, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(3, '554830331033', 'comercial', 7, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(1, '5548991908908', 'Celular', 5, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
@@ -25177,14 +25155,12 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.tenants: ~2 rows (approximately)
+-- Dumping data for table manager_main.tenants: ~3 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
-	(2, '0002', 'active', '', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(3, '0003', 'active', 'Banco da Charlize Theron', '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, '0004', 'active', 'Banco do Banco do Brasil', '2026-07-22 18:43:20', '2026-07-22 18:43:21');
+	(2, '0002', 'active', '', '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.tenant_setting_values
 CREATE TABLE IF NOT EXISTS `tenant_setting_values` (
@@ -25216,12 +25192,10 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.tenant_users: ~3 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~2 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
-	(2, 3, 'owner', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(3, 4, 'owner', '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 5, 'owner', '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(2, 3, 'owner', '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -25240,15 +25214,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.users: ~4 rows (approximately)
+-- Dumping data for table manager_main.users: ~3 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'douglas.costa', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
 	(2, 4, 1, 'emma.watson', '$2y$12$Khyya83myBcKkftWu4AMIu6.uGdt5BoBcBIq/tRK8wn3aGPPWM2pe', 'admin', 1, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
-	(3, 5, 2, 'kristen.stewart', '$2y$12$rEbbiT2daNwozGzDQS3e9OqdIlR8fkGjHZGQaIYmHBPI3OLeYKe42', 'admin', 1, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(4, 6, 3, 'charlize.theron', '$2y$12$elXVvACaoT9kCuaUmciLPefOGOM7eCy.ZmcZreZv7H6iPBsrFCnW6', 'admin', 1, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(5, 7, 4, 'banco.brasil', '$2y$12$FOIZtP.qLb3q0TsxkVl2nuYnIeO4jeo4byffWHh1MJrd0xjyvdFaO', 'admin', 1, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(3, 5, 2, 'kristen.stewart', '$2y$12$rEbbiT2daNwozGzDQS3e9OqdIlR8fkGjHZGQaIYmHBPI3OLeYKe42', 'admin', 1, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
@@ -25851,387 +25823,7 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(3, 12497, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
 	(3, 12498, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
 	(3, 12499, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(3, 12500, '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(4, 1223, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 1225, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3193, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3194, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3195, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3196, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3197, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3198, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3199, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3202, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3203, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3206, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3207, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3209, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3210, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3211, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3213, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3214, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3215, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3216, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3217, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3218, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3219, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3220, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3221, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3223, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3224, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3227, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3228, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3229, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3230, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3231, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3232, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3233, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3234, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3235, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3236, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3237, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3238, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3239, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3240, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3241, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3242, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3243, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3246, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3247, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3251, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3253, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3254, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3255, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3256, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3257, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3258, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 3701, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 5209, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6121, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6122, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6124, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6125, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6126, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6127, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6130, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6131, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6699, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6700, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6701, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6702, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6703, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6704, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6705, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6706, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6707, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6708, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6709, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6710, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6711, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6712, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6713, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6714, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6715, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6716, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6717, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6718, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6719, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6720, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6721, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6722, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6930, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6931, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6932, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6933, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 6934, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 7360, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8644, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8645, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8646, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8647, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8648, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8649, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8650, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8651, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8652, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8653, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8654, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8655, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8656, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8657, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8658, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8659, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8809, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8810, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8811, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8813, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8814, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8815, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8821, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8822, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8883, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8896, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8897, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8901, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8915, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8916, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 8917, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 9918, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 9919, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 9920, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 10100, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 10103, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 11562, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12082, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12083, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12084, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12085, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12086, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12087, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12088, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12433, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12434, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12435, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12436, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12437, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12438, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12439, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12440, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12441, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12442, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12443, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12444, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12445, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12446, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12447, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12448, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12449, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12450, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12451, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12452, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12463, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12464, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12465, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12466, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12467, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12468, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12475, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12476, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12477, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12480, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12481, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12482, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12483, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12484, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12485, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12486, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12487, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12488, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12489, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12490, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12491, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12492, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12493, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12494, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12495, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12496, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12497, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12498, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12499, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12500, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12501, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12502, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(4, 12503, '2026-07-22 17:32:35', '2026-07-22 17:32:35'),
-	(5, 1223, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 1225, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3193, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3194, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3195, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3196, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3197, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3198, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3199, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3202, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3203, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3206, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3207, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3209, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3210, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3211, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3213, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3214, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3215, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3216, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3217, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3218, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3219, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3220, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3221, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3223, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3224, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3227, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3228, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3229, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3230, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3231, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3232, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3233, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3234, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3235, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3236, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3237, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3238, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3239, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3240, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3241, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3242, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3243, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3246, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3247, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3251, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3253, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3254, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3255, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3256, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3257, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3258, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 3701, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 5209, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6121, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6122, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6124, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6125, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6126, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6127, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6130, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6131, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6699, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6700, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6701, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6702, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6703, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6704, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6705, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6706, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6707, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6708, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6709, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6710, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6711, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6712, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6713, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6714, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6715, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6716, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6717, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6718, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6719, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6720, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6721, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6722, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6930, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6931, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6932, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6933, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 6934, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 7360, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8644, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8645, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8646, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8647, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8648, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8649, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8650, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8651, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8652, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8653, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8654, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8655, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8656, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8657, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8658, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8659, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8809, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8810, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8811, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8813, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8814, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8815, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8821, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8822, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8883, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8896, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8897, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8901, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8915, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8916, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 8917, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 9918, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 9919, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 9920, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 10100, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 10103, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 11562, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12082, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12083, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12084, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12085, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12086, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12087, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12088, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12433, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12434, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12435, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12436, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12437, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12438, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12439, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12440, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12441, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12442, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12443, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12444, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12445, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12446, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12447, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12448, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12449, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12450, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12451, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12452, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12463, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12464, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12465, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12466, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12467, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12468, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12475, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12476, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12477, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12480, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12481, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12482, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12483, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12484, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12485, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12486, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12487, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12488, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12489, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12490, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12491, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12492, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12493, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12494, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12495, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12496, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12497, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12498, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12499, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12500, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12501, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12502, '2026-07-22 18:43:20', '2026-07-22 18:43:20'),
-	(5, 12503, '2026-07-22 18:43:20', '2026-07-22 18:43:20');
+	(3, 12500, '2026-07-15 23:39:28', '2026-07-15 23:39:28');
 
 -- Dumping structure for table manager_main.user_presences
 CREATE TABLE IF NOT EXISTS `user_presences` (
@@ -26249,15 +25841,13 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.user_presences: ~4 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
 	(1, 1, NULL, 'offline', '2026-07-21 00:15:11', '2026-07-21 00:15:11', '2026-07-18 00:31:59', '2026-07-21 00:15:11'),
 	(6, 2, NULL, 'offline', '2026-07-22 17:33:14', '2026-07-22 17:33:14', '2026-07-18 00:32:47', '2026-07-22 17:33:14'),
-	(16, 3, NULL, 'offline', '2026-07-21 00:33:03', '2026-07-21 00:33:03', '2026-07-20 21:56:37', '2026-07-21 00:33:03'),
-	(41, 4, NULL, 'offline', '2026-07-22 18:43:55', '2026-07-22 18:43:55', '2026-07-22 17:33:24', '2026-07-22 18:43:55'),
-	(43, 5, 4, 'online', '2026-07-22 18:44:04', '2026-07-22 18:44:04', '2026-07-22 18:44:04', '2026-07-22 18:44:04');
+	(16, 3, NULL, 'offline', '2026-07-21 00:33:03', '2026-07-21 00:33:03', '2026-07-20 21:56:37', '2026-07-21 00:33:03');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
@@ -26283,7 +25873,7 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
 	(12, 1, '2bec255eead1a6ccdbe8cb8bd119434d', '7f0748c14a281d4543b6ad037c0e655e0db6a71ea0763262828d3e3c44ce9f84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 23:54:29', '2026-07-14 20:10:23', '2026-07-17 23:54:29'),
 	(13, 1, '6a53c7db6820a19baf72ec04c8249880', '8e2ca85e5a0c8efdd06e1cfe262db13208feb97a1af192958274aede5ae9194b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 21:56:52', '2026-07-14 21:48:14', '2026-07-20 21:56:52'),
-	(14, 1, 'a0272c0d4f1fbe35ff4d2a9b589004f2', '438573c7cf87ec7248ae73b68898d1d0984e4f48ce0d8db63f0c2ea3138379df', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-08-21 17:34:10', '2026-07-20 22:55:38', '2026-07-22 17:34:10');
+	(14, 1, '6fb95fe11af093dc86d34c354be8942c', '9b0902ff0a9499e283affd528be1fa8c107420aa8bd605cabe5048df0ef506e6', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-08-21 18:48:16', '2026-07-20 22:55:38', '2026-07-22 18:48:16');
 
 -- Dumping structure for table manager_main.webcrawler_ip_ranges
 CREATE TABLE IF NOT EXISTS `webcrawler_ip_ranges` (
