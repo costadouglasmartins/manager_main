@@ -159,7 +159,7 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
     <span class="badge rounded-pill text-bg-primary"><?= (int) $total; ?> registro(s)</span>
   </div>
 
-  <div class="table-responsive">
+  <div class="table-responsive app-index-results-table">
     <table class="table table-hover align-middle mb-0">
       <caption class="visually-hidden">Lista de bairros encontrados</caption>
       <thead>
@@ -180,33 +180,18 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
               <td class="fw-semibold"><?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?></td>
               <td><?= htmlspecialchars((string) ($row['city_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
               <td><?= htmlspecialchars((string) ($row['state_name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-              <td class="text-nowrap text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Ações do bairro <?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>">
-                  <?php if (authCan('neighborhood.edit')): ?>
-                    <a class="btn btn-outline-primary" href="<?= url('neighborhood/edit/' . (int) $row['id']); ?>" aria-label="Editar <?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>" title="Editar">
-                      <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                    </a>
-                  <?php endif; ?>
-                  <?php if (authCan('neighborhood.informations')): ?>
-                    <a class="btn btn-outline-secondary" href="<?= url('neighborhood/informations/' . (int) $row['id']); ?>" aria-label="Ver detalhes de <?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>" title="Ver detalhes">
-                      <i class="bi bi-eye" aria-hidden="true"></i>
-                    </a>
-                  <?php endif; ?>
-                  <?php if (authCan('neighborhood.delete')): ?>
-                    <button
-                      aria-label="Excluir <?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>"
-                      class="btn btn-outline-danger"
-                      data-bs-target="#deleteModal"
-                      data-bs-toggle="modal"
-                      data-id="<?= (int) $row['id']; ?>"
-                      data-name="<?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>"
-                      title="Excluir"
-                      type="button"
-                    >
-                      <i class="bi bi-trash" aria-hidden="true"></i>
-                    </button>
-                  <?php endif; ?>
-                </div>
+              <td style="width:1%;" class="text-nowrap text-end">
+                <?php if (authCan('neighborhood.edit')): ?>
+                  <a href="<?= url('neighborhood/edit/' . (int) $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Editar"><i class="bi bi-pencil-square"></i></a>
+                <?php endif; ?>
+                <?php if (authCan('neighborhood.informations')): ?>
+                  <a href="<?= url('neighborhood/informations/' . (int) $row['id']); ?>" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Ver detalhes"><i class="bi bi-eye"></i></a>
+                <?php endif; ?>
+                <?php if (authCan('neighborhood.delete')): ?>
+                  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?= (int) $row['id']; ?>" data-name="<?= htmlspecialchars($neighborhoodName, ENT_QUOTES, 'UTF-8'); ?>">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
