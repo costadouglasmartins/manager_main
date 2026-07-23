@@ -43,7 +43,7 @@ $currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
   </script>
   <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=9'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=12'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=6'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
@@ -284,8 +284,14 @@ $currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
                   <li><hr class="dropdown-divider" /></li>
                   <li><a class="dropdown-item" href="<?= url('tenant'); ?>"><i class="bi bi-database me-2"></i>Tenants</a></li>
                   <li><hr class="dropdown-divider" /></li>
+                  <?php if (authCan('system_setting_module.index') || authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('system_setting_module'); ?>"><i class="bi bi-collection me-2"></i>Módulos de configurações</a></li>
+                  <?php endif; ?>
+                  <?php if (authCan('system_setting_definition.index') || authIsRoot()): ?>
+                    <li><a class="dropdown-item" href="<?= url('system_setting_definition'); ?>"><i class="bi bi-sliders2 me-2"></i>Definições de configurações</a></li>
+                  <?php endif; ?>
                   <?php if (authCan('system_setting.index') || authIsRoot()): ?>
-                    <li><a class="dropdown-item" href="<?= url('system_setting'); ?>"><i class="bi bi-sliders2 me-2"></i>System settings</a></li>
+                    <li><a class="dropdown-item" href="<?= url('system_setting'); ?>"><i class="bi bi-toggles2 me-2"></i>Valores por tenant</a></li>
                   <?php endif; ?>
                 </ul>
               </li>

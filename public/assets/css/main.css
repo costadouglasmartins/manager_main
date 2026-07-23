@@ -376,6 +376,70 @@ body.app-shell {
   box-shadow: var(--app-shadow-sm);
 }
 
+/* Catálogo de system settings */
+.system-setting-catalog-card {
+  border-color: var(--app-border);
+  background-color: var(--app-surface);
+}
+
+.system-setting-catalog-icon {
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.22);
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.system-setting-catalog-code,
+.system-setting-catalog-pre {
+  border: 1px solid var(--app-border);
+  border-radius: 0.55rem;
+  color: var(--bs-emphasis-color);
+  background: color-mix(in srgb, var(--app-surface-muted) 72%, transparent);
+}
+
+.system-setting-catalog-code {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.18rem 0.42rem;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.system-setting-catalog-pre {
+  padding: 0.75rem;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.system-setting-catalog-pre code {
+  color: inherit;
+}
+
+.system-setting-catalog-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  vertical-align: middle;
+}
+
+.system-setting-catalog-actions > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.05rem;
+  height: 2.05rem;
+  padding: 0;
+  border-radius: 0.55rem;
+  line-height: 1;
+}
+
+.system-setting-catalog-actions > .btn > .bi {
+  display: block;
+  font-size: 1rem;
+  line-height: 1;
+}
+
 /* Formulários e filtros */
 .app-view .form-label {
   margin-bottom: 0.42rem;
