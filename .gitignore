@@ -1,3 +1,4 @@
 .vscode
 .mcp
 /vendor/
+.DS_Store
