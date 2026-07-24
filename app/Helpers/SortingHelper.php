@@ -91,7 +91,16 @@ if (!function_exists('sortOrderBy'))
 			$expression = (string) ($allowedColumns[$firstAllowed] ?? $defaultSort);
 			}
 
-		return $expression . ' ' . strtoupper($state['direction']);
+		$orderBy = $expression . ' ' . strtoupper($state['direction']);
+		$tiebreakerKey = array_key_exists('id', $allowedColumns) ? 'id' : $defaultSort;
+		$tiebreakerExpression = (string) ($allowedColumns[$tiebreakerKey] ?? '');
+
+		if ($tiebreakerExpression !== '' && $tiebreakerExpression !== $expression)
+			{
+			$orderBy .= ', ' . $tiebreakerExpression . ' ' . strtoupper($state['direction']);
+			}
+
+		return $orderBy;
 		}
 	}
 

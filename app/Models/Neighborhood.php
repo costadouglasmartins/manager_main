@@ -163,31 +163,31 @@ class Neighborhood extends Model
 		$sql = "SELECT COUNT(Neighborhood.id) AS total FROM neighborhoods AS Neighborhood LEFT JOIN cities AS City ON City.id = Neighborhood.city_id LEFT JOIN states AS State ON State.id = City.state_id LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
-		if (!empty($filters['id']))
+		if (isset($filters['id']) && $filters['id'] !== '')
 			{
 			$sql .= " AND Neighborhood.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
-		if (!empty($filters['name']))
+		if (isset($filters['name']) && $filters['name'] !== '')
 			{
 			$sql .= " AND Neighborhood.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
-		if (!empty($filters['country_id']))
+		if (isset($filters['country_id']) && $filters['country_id'] !== '')
 			{
 			$sql .= " AND Country.id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
 
-		if (!empty($filters['state_id']))
+		if (isset($filters['state_id']) && $filters['state_id'] !== '')
 			{
 			$sql .= " AND State.id = :state_id";
 			$params['state_id'] = (int) $filters['state_id'];
 			}
 
-		if (!empty($filters['city_id']))
+		if (isset($filters['city_id']) && $filters['city_id'] !== '')
 			{
 			$sql .= " AND Neighborhood.city_id = :city_id";
 			$params['city_id'] = (int) $filters['city_id'];

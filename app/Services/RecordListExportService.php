@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Core\Database;
 use App\Models\Address;
 use App\Models\Bank;
 use App\Models\City;
@@ -25,6 +26,11 @@ use App\Models\User;
 class RecordListExportService
 	{
 	/**
+	 * Number of records fetched from the database at once.
+	 */
+	private const EXPORT_CHUNK_SIZE = 500;
+
+	/**
 	 * Checks whether a resource has a configured list export.
 	 *
 	 * @param string $resource Resource key derived from the controller route.
@@ -36,13 +42,13 @@ class RecordListExportService
 		}
 
 	/**
-	 * Builds the shared export payload used by concrete export formats.
+	 * Prepares the shared export context without loading all records into memory.
 	 *
 	 * @param string $resource Resource key derived from the controller route.
 	 * @param array<string, mixed> $query Query string values.
-	 * @return array{definition: array<string, mixed>, filters: array<string, string>, sort: array<string, string>|null, total: int, rows: array<int, array<string, mixed>>}
+	 * @return array{definition: array<string, mixed>, filters: array<string, string>, sort: array<string, string>|null, total: int, model: object, ownsTransaction: bool}
 	 */
-	protected function buildExportPayload(string $resource, array $query = []): array
+	protected function prepareExportPayload(string $resource, array $query = []): array
 		{
 		$definition = $this->definition($resource);
 		$filters = $this->extractFilters($query, $definition['filters'] ?? []);
@@ -52,29 +58,108 @@ class RecordListExportService
 		$model = new $modelClass();
 		$countMethod = $definition['countMethod'] ?? 'count';
 		$searchMethod = $definition['searchMethod'] ?? 'search';
+		$database = Database::getInstance();
+		$ownsTransaction = !$database->inTransaction();
 
 		if (!method_exists($model, $countMethod) || !method_exists($model, $searchMethod))
 			{
 			throw new \RuntimeException('Export model contract is invalid.');
 			}
 
-		$total = (int) $model->{$countMethod}($filters);
-		$rows = [];
-		if ($total > 0)
+		if ($ownsTransaction)
 			{
-			$limit = max(1, $total);
-			$rows = !empty($definition['sortableColumns'])
-				? $model->{$searchMethod}($filters, $limit, 0, $sort)
-				: $model->{$searchMethod}($filters, $limit, 0);
+			$database->beginTransaction();
 			}
 
-		return [
-			'definition' => $definition,
-			'filters' => $filters,
-			'sort' => $sort,
-			'total' => $total,
-			'rows' => $rows,
-		];
+		try
+			{
+			$total = (int) $model->{$countMethod}($filters);
+
+			return [
+				'definition' => $definition,
+				'filters' => $filters,
+				'sort' => $sort,
+				'total' => $total,
+				'model' => $model,
+				'ownsTransaction' => $ownsTransaction,
+			];
+			}
+		catch (\Throwable $exception)
+			{
+			if ($ownsTransaction && $database->inTransaction())
+				{
+				$database->rollBack();
+				}
+
+			throw $exception;
+			}
+		}
+
+	/**
+	 * Yields formatted source records in bounded database chunks.
+	 *
+	 * @param array{definition: array<string, mixed>, filters: array<string, string>, sort: array<string, string>|null, total: int, model: object, ownsTransaction: bool} $payload Prepared export context.
+	 * @return \Generator<int, array<string, mixed>>
+	 */
+	protected function exportRows(array $payload): \Generator
+		{
+		$definition = $payload['definition'];
+		$filters = $payload['filters'];
+		$sort = $payload['sort'];
+		$total = max(0, (int) $payload['total']);
+		$model = $payload['model'];
+		$searchMethod = $definition['searchMethod'] ?? 'search';
+		$offset = 0;
+
+		while ($offset < $total)
+			{
+			$limit = min(self::EXPORT_CHUNK_SIZE, $total - $offset);
+			$rows = !empty($definition['sortableColumns'])
+				? $model->{$searchMethod}($filters, $limit, $offset, $sort)
+				: $model->{$searchMethod}($filters, $limit, $offset);
+
+			if (empty($rows))
+				{
+				break;
+				}
+
+			foreach ($rows as $row)
+				{
+				yield $row;
+				}
+
+			$offset += count($rows);
+			unset($rows);
+			}
+		}
+
+	/**
+	 * Closes the consistent-read transaction created for an export.
+	 *
+	 * @param array<string, mixed> $payload Prepared export context.
+	 * @param bool $successful Whether file generation completed successfully.
+	 * @return void
+	 */
+	protected function finishExportPayload(array $payload, bool $successful): void
+		{
+		if (empty($payload['ownsTransaction']))
+			{
+			return;
+			}
+
+		$database = Database::getInstance();
+		if (!$database->inTransaction())
+			{
+			return;
+			}
+
+		if ($successful)
+			{
+			$database->commit();
+			return;
+			}
+
+		$database->rollBack();
 		}
 
 	/**
@@ -391,6 +476,28 @@ class RecordListExportService
 		];
 
 		return $labels[$key] ?? ucwords(str_replace('_', ' ', $key));
+		}
+
+	/**
+	 * Builds a readable summary of the active export filters.
+	 *
+	 * @param array<string, string> $filters Active filters.
+	 * @return string
+	 */
+	protected function filtersSummary(array $filters): string
+		{
+		$parts = [];
+		foreach ($filters as $key => $value)
+			{
+			if ($value === '')
+				{
+				continue;
+				}
+
+			$parts[] = $this->humanLabel($key) . ': ' . $value;
+			}
+
+		return empty($parts) ? 'Nenhum filtro aplicado.' : implode(' | ', $parts);
 		}
 
 	/**
