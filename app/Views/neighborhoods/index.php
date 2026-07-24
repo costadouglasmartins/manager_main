@@ -76,27 +76,14 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
 
       <div class="col-12 col-md-4">
         <label class="form-label small fw-semibold" for="country_id">País</label>
-        <select
-          class="form-select"
-          data-countries-endpoint="<?= url('neighborhood/getAllCountries'); ?>"
-          data-current-value="<?= htmlspecialchars((string) $filters['country_id'], ENT_QUOTES, 'UTF-8'); ?>"
-          id="country_id"
-          name="country_id"
-        >
+        <select class="form-select" data-countries-endpoint="<?= url('neighborhood/getAllCountries'); ?>" data-current-value="<?= htmlspecialchars((string) $filters['country_id'], ENT_QUOTES, 'UTF-8'); ?>" id="country_id" name="country_id">
           <option value="">País</option>
         </select>
       </div>
 
       <div class="col-12 col-md-4">
         <label class="form-label small fw-semibold" for="state_id">Estado</label>
-        <select
-          class="form-select"
-          data-current-value="<?= htmlspecialchars((string) $filters['state_id'], ENT_QUOTES, 'UTF-8'); ?>"
-          data-states-endpoint="<?= url('neighborhood/getStatesByCountry'); ?>"
-          disabled
-          id="state_id"
-          name="state_id"
-        >
+        <select class="form-select" data-current-value="<?= htmlspecialchars((string) $filters['state_id'], ENT_QUOTES, 'UTF-8'); ?>" data-states-endpoint="<?= url('neighborhood/getStatesByCountry'); ?>" disabled id="state_id" name="state_id">
           <option value="">Estado</option>
         </select>
       </div>
@@ -104,24 +91,7 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
       <div class="col-12 col-md-4 position-relative">
         <label class="form-label small fw-semibold" for="cityName">Cidade</label>
         <input id="city_id" name="city_id" type="hidden" value="<?= htmlspecialchars((string) $filters['city_id'], ENT_QUOTES, 'UTF-8'); ?>">
-        <input
-          aria-describedby="cityHelp cityFeedback"
-          autocomplete="off"
-          class="form-control js-autocomplete"
-          data-autocomplete-portal="body"
-          data-cities-endpoint="<?= url('neighborhood/getCitiesByState'); ?>"
-          data-current-id="<?= htmlspecialchars((string) $filters['city_id'], ENT_QUOTES, 'UTF-8'); ?>"
-          data-endpoint="<?= url('city/autocomplete'); ?>"
-          data-extra='{"state_id":"#state_id"}'
-          data-hidden="#city_id"
-          data-minlen="1"
-          data-param="term"
-          data-results="#cityResults"
-          disabled
-          id="cityName"
-          placeholder="Selecione um estado primeiro"
-          type="text"
-        >
+        <input aria-describedby="cityHelp cityFeedback" autocomplete="off" class="form-control js-autocomplete" data-autocomplete-portal="body" data-cities-endpoint="<?= url('neighborhood/getCitiesByState'); ?>" data-current-id="<?= htmlspecialchars((string) $filters['city_id'], ENT_QUOTES, 'UTF-8'); ?>" data-endpoint="<?= url('city/autocomplete'); ?>" data-extra='{"state_id":"#state_id"}' data-hidden="#city_id" data-minlen="1" data-param="term" data-results="#cityResults" disabled id="cityName" placeholder="Selecione um estado primeiro" type="text">
         <ul class="list-group mt-1 w-100" id="cityResults" aria-label="Sugestões de cidades"></ul>
         <div class="form-text" id="cityHelp">A busca será limitada às cidades do estado selecionado.</div>
         <div class="invalid-feedback" id="cityFeedback">Selecione uma cidade na lista de sugestões.</div>

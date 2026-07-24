@@ -110,6 +110,173 @@ class State extends Model
 		}
 
 	/**
+	 * Keeps dependent list filters consistent across the screen and exports.
+	 *
+	 * @param array<string, string> $filters
+	 * @return array<string, string>
+	 */
+	public function normalizeListFilters(array $filters): array
+		{
+		$hasCountryName = array_key_exists('country_name', $filters);
+		$hasCityName = array_key_exists('city_name', $filters);
+		$locationInvalid = (string) ($filters['_location_invalid'] ?? '') === '1';
+		$filters = array_merge([
+			'country_id' => '',
+			'country_name' => '',
+			'state_id' => '',
+			'city_id' => '',
+			'city_name' => '',
+		], $filters);
+
+		$country = new Country();
+		$city = new City();
+
+		foreach (['country_id', 'state_id', 'city_id'] as $key)
+			{
+			$value = trim((string) ($filters[$key] ?? ''));
+			if ($value === '')
+				{
+				$filters[$key] = '';
+				continue;
+				}
+
+			if (ctype_digit($value) && (int) $value > 0)
+				{
+				$filters[$key] = (string) (int) $value;
+				continue;
+				}
+
+			$filters[$key] = '';
+			$locationInvalid = true;
+			}
+
+		$legacyCountryName = trim((string) $filters['country_name']);
+		if ($filters['country_id'] === '' && $legacyCountryName !== '')
+			{
+			$normalizeName = static function (string $value): string
+				{
+				$value = trim($value);
+				return function_exists('mb_strtolower')
+					? mb_strtolower($value, 'UTF-8')
+					: strtolower($value);
+				};
+			$expectedName = $normalizeName($legacyCountryName);
+			$countryMatched = false;
+
+			foreach ($country->autocomplete($legacyCountryName, 50) as $candidate)
+				{
+				if ($normalizeName((string) ($candidate['name'] ?? '')) === $expectedName)
+					{
+					$filters['country_id'] = (string) (int) ($candidate['id'] ?? 0);
+					$countryMatched = true;
+					break;
+					}
+				}
+
+			if (!$countryMatched)
+				{
+				$locationInvalid = true;
+				}
+			}
+
+		// The country select is ID based; never preserve an invisible legacy filter.
+		$filters['country_name'] = '';
+
+		if ($filters['country_id'] !== '' && !$country->find((int) $filters['country_id']))
+			{
+			$filters['country_id'] = '';
+			$locationInvalid = true;
+			}
+
+		if ($filters['city_id'] !== '')
+			{
+			$selectedCity = $city->find((int) $filters['city_id']);
+			if (!$selectedCity)
+				{
+				$filters['city_id'] = '';
+				$filters['city_name'] = '';
+				$locationInvalid = true;
+				}
+			else
+				{
+				$cityStateId = (string) (int) ($selectedCity['state_id'] ?? 0);
+				$filters['city_name'] = trim((string) ($selectedCity['name'] ?? ''));
+
+				if ($filters['state_id'] === '')
+					{
+					$filters['state_id'] = $cityStateId;
+					}
+				elseif ($filters['state_id'] !== $cityStateId)
+					{
+					$filters['city_id'] = '';
+					$filters['city_name'] = '';
+					$locationInvalid = true;
+					}
+				}
+			}
+		else
+			{
+			// Free text alone is not a valid autocomplete selection.
+			if (trim((string) $filters['city_name']) !== '')
+				{
+				$locationInvalid = true;
+				}
+			$filters['city_name'] = '';
+			}
+
+		if ($filters['state_id'] !== '')
+			{
+			$selectedState = $this->find((int) $filters['state_id']);
+			if (!$selectedState)
+				{
+				$filters['state_id'] = '';
+				$filters['city_id'] = '';
+				$filters['city_name'] = '';
+				$locationInvalid = true;
+				}
+			else
+				{
+				$stateCountryId = (string) (int) ($selectedState['country_id'] ?? 0);
+
+				if ($filters['country_id'] === '')
+					{
+					if ($stateCountryId !== '0' && $country->find((int) $stateCountryId))
+						{
+						$filters['country_id'] = $stateCountryId;
+						}
+					else
+						{
+						$filters['state_id'] = '';
+						$filters['city_id'] = '';
+						$filters['city_name'] = '';
+						$locationInvalid = true;
+						}
+					}
+				elseif ($filters['country_id'] !== $stateCountryId)
+					{
+					$filters['state_id'] = '';
+					$filters['city_id'] = '';
+					$filters['city_name'] = '';
+					$locationInvalid = true;
+					}
+				}
+			}
+
+		$filters['_location_invalid'] = $locationInvalid ? '1' : '';
+
+		if (!$hasCountryName)
+			{
+			unset($filters['country_name']);
+			}
+		if (!$hasCityName)
+			{
+			unset($filters['city_name']);
+			}
+
+		return $filters;
+		}
+
+	/**
 	 * Search method
 	 */
 	public function search(array $filters = [], int $limit = 10, int $offset = 0, ?array $sort = null): array
@@ -117,10 +284,21 @@ class State extends Model
 		$sql = "SELECT State.id, State.name, State.acronym, State.country_id, State.created, State.modified, Country.name AS country_name FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
+		if ((string) ($filters['_location_invalid'] ?? '') === '1')
+			{
+			$sql .= " AND 1 = 0";
+			}
+
 		if (isset($filters['id']) && $filters['id'] !== '')
 			{
 			$sql .= " AND State.id = :id";
 			$params['id'] = (int) $filters['id'];
+			}
+
+		if (isset($filters['state_id']) && $filters['state_id'] !== '')
+			{
+			$sql .= " AND State.id = :state_id";
+			$params['state_id'] = (int) $filters['state_id'];
 			}
 
 		if (isset($filters['name']) && $filters['name'] !== '')
@@ -144,6 +322,17 @@ class State extends Model
 			{
 			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
+			}
+
+		if (isset($filters['city_id']) && $filters['city_id'] !== '')
+			{
+			$sql .= " AND EXISTS (
+				SELECT 1
+				FROM cities AS CityFilter
+				WHERE CityFilter.id = :city_id
+				  AND CityFilter.state_id = State.id
+			)";
+			$params['city_id'] = (int) $filters['city_id'];
 			}
 
 		$orderBy = sortOrderBy($sort, self::sortableColumns(), 'id', 'desc');
@@ -173,33 +362,55 @@ class State extends Model
 		$sql = "SELECT COUNT(State.id) AS total FROM states AS State LEFT JOIN countries AS Country ON Country.id = State.country_id WHERE 1 = 1";
 		$params = [];
 
-		if (!empty($filters['id']))
+		if ((string) ($filters['_location_invalid'] ?? '') === '1')
+			{
+			$sql .= " AND 1 = 0";
+			}
+
+		if (isset($filters['id']) && $filters['id'] !== '')
 			{
 			$sql .= " AND State.id = :id";
 			$params['id'] = (int) $filters['id'];
 			}
 
-		if (!empty($filters['name']))
+		if (isset($filters['state_id']) && $filters['state_id'] !== '')
+			{
+			$sql .= " AND State.id = :state_id";
+			$params['state_id'] = (int) $filters['state_id'];
+			}
+
+		if (isset($filters['name']) && $filters['name'] !== '')
 			{
 			$sql .= " AND State.`name` LIKE :name";
 			$params['name'] = '%' . $filters['name'] . '%';
 			}
 
-		if (!empty($filters['acronym']))
+		if (isset($filters['acronym']) && $filters['acronym'] !== '')
 			{
 			$sql .= " AND State.`acronym` = :acronym";
 			$params['acronym'] = $filters['acronym'];
 			}
 
-		if (!empty($filters['country_id']))
+		if (isset($filters['country_id']) && $filters['country_id'] !== '')
 			{
 			$sql .= " AND State.country_id = :country_id";
 			$params['country_id'] = (int) $filters['country_id'];
 			}
-		elseif (!empty($filters['country_name']))
+		elseif (isset($filters['country_name']) && $filters['country_name'] !== '')
 			{
 			$sql .= " AND Country.`name` LIKE :country_name";
 			$params['country_name'] = '%' . $filters['country_name'] . '%';
+			}
+
+		if (isset($filters['city_id']) && $filters['city_id'] !== '')
+			{
+			$sql .= " AND EXISTS (
+				SELECT 1
+				FROM cities AS CityFilter
+				WHERE CityFilter.id = :city_id
+				  AND CityFilter.state_id = State.id
+			)";
+			$params['city_id'] = (int) $filters['city_id'];
 			}
 
 		$stmt = $this->db->prepare($sql);

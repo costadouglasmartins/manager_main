@@ -43,7 +43,7 @@ $currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
   </script>
   <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/bootstrap/images/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=12'); ?>">
+  <link rel="stylesheet" href="<?= url('assets/css/main.css?v=13'); ?>">
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=6'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">

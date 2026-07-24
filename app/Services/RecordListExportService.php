@@ -73,6 +73,11 @@ class RecordListExportService
 
 		try
 			{
+			if (is_callable([$model, 'normalizeListFilters']))
+				{
+				$filters = $model->normalizeListFilters($filters);
+				}
+
 			$total = (int) $model->{$countMethod}($filters);
 
 			return [
@@ -262,7 +267,7 @@ class RecordListExportService
 				['label' => 'Pessoa', 'field' => 'person_name'],
 				['label' => 'Observações', 'field' => 'observations'],
 			]),
-			'state' => $this->standardDefinition(State::class, 'Lista de estados', 'estados', ['id', 'name', 'acronym', 'country_id', 'country_name'], [State::class, 'sortableColumns'], [
+			'state' => $this->standardDefinition(State::class, 'Lista de estados', 'estados', ['id', 'name', 'acronym', 'country_id', 'country_name', 'state_id', 'city_id', 'city_name', '_location_invalid'], [State::class, 'sortableColumns'], [
 				['label' => '#', 'field' => 'id', 'align' => 'right'],
 				['label' => 'Nome', 'field' => 'name'],
 				['label' => 'Sigla', 'field' => 'acronym'],
@@ -448,6 +453,7 @@ class RecordListExportService
 			'state_id' => 'Estado',
 			'state_name' => 'Estado',
 			'city_id' => 'Cidade',
+			'city_name' => 'Cidade',
 			'database_number' => 'Banco',
 			'username' => 'Usuário',
 			'email' => 'E-mail',
@@ -489,6 +495,15 @@ class RecordListExportService
 		$parts = [];
 		foreach ($filters as $key => $value)
 			{
+			if ($key === '_location_invalid')
+				{
+				if ($value === '1')
+					{
+					$parts[] = 'Filtro de localização inválido.';
+					}
+				continue;
+				}
+
 			if ($value === '')
 				{
 				continue;

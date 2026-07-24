@@ -1,5 +1,14 @@
 <?php
-$filters = array_merge(['id' => '', 'name' => '', 'acronym' => '', 'country_id' => '', 'country_name' => ''], $filters ?? []);
+$filters = array_merge([
+  'id'           => '',
+  'name'         => '',
+  'acronym'      => '',
+  'country_id'   => '',
+  'state_id'     => '',
+  'city_id'      => '',
+  'city_name'    => '',
+  '_location_invalid' => '',
+], $filters ?? []);
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? (is_array($states) ? count($states) : 0);
@@ -10,10 +19,21 @@ $queryFilters = http_build_query([
   'name'         => $filters['name'],
   'acronym'      => $filters['acronym'],
   'country_id'   => $filters['country_id'],
-  'country_name' => $filters['country_name'],
+  'state_id'     => $filters['state_id'],
+  'city_id'      => $filters['city_id'],
+  'city_name'    => $filters['city_name'],
+  '_location_invalid' => $filters['_location_invalid'],
 ]);
 $paginationQuery = sortQueryString($queryFilters, $sort);
-$activeFilterCount = count(array_filter($filters, static fn ($value): bool => (string) $value !== ''));
+$activeFilterCount = count(array_filter([
+  $filters['id'],
+  $filters['name'],
+  $filters['acronym'],
+  $filters['country_id'],
+  $filters['state_id'],
+  $filters['city_id'],
+  $filters['_location_invalid'],
+], static fn ($value): bool => (string) $value !== ''));
 ?>
 
 <nav aria-label="breadcrumb">
@@ -31,7 +51,7 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
   <?php if (authCan('state.create')): ?><a href="<?= url('state/create'); ?>" class="btn btn-success d-inline-flex align-items-center justify-content-center gap-2"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>Novo estado</span></a><?php endif; ?>
 </header>
 
-<form action="<?= url('state'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters" method="get">
+<form action="<?= url('state'); ?>" class="card border-0 shadow-sm mb-4 p-3 p-lg-4 app-index-filters" id="stateFilters" method="get" novalidate>
   <?= sortHiddenInputs($sort) ?>
 
   <div class="app-index-filter-heading d-flex flex-wrap align-items-start justify-content-between gap-2">
@@ -39,31 +59,57 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
     <?php if ($activeFilterCount > 0): ?><span class="badge rounded-pill text-bg-primary"><?= $activeFilterCount; ?> filtro(s) ativo(s)</span><?php endif; ?>
   </div>
 
+  <?php if ((string) $filters['_location_invalid'] === '1'): ?>
+    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i><span>Um filtro de localização é inválido ou não corresponde à hierarquia selecionada. Selecione novamente os campos e pesquise.</span></div>
+  <?php endif; ?>
+
   <div class="row g-3 align-items-end">
 
   <div class="col-12">
     <div class="row g-3">
 
-      <div class="col-12 col-md-6 col-lg-6">
+      <div class="col-12 col-md-3">
         <label class="form-label small fw-semibold" for="id">Código</label>
         <input class="form-control" id="id" name="id" type="text" placeholder="Código" value="<?= htmlspecialchars($filters['id'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-6">
+      <div class="col-12 col-md-6">
         <label class="form-label small fw-semibold" for="name">Nome</label>
-        <input class="form-control" id="name" name="name" type="text" placeholder="Nome" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
+        <input class="form-control" id="name" name="name" placeholder="Nome" type="text" value="<?= htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-6">
+      <div class="col-12 col-md-3">
         <label class="form-label small fw-semibold" for="acronym">Sigla</label>
         <input class="form-control" id="acronym" name="acronym" type="text" placeholder="Sigla" value="<?= htmlspecialchars($filters['acronym'], ENT_QUOTES, 'UTF-8') ?>">
       </div>
 
-      <div class="col-12 col-md-6 col-lg-6 position-relative">
-        <label class="form-label small fw-semibold" for="countryName">País</label>
-        <input type="hidden" id="country_id" name="country_id" value="<?= htmlspecialchars($filters['country_id'], ENT_QUOTES, 'UTF-8') ?>">
-        <input id="countryName" type="text" class="form-control js-autocomplete" autocomplete="off" placeholder="País" name="country_name" data-endpoint="<?= url('country/autocomplete'); ?>" data-results="#countryResults" data-hidden="#country_id" data-minlen="1" data-param="term" value="<?= htmlspecialchars($filters['country_name'], ENT_QUOTES, 'UTF-8') ?>">
-        <ul id="countryResults" class="list-group mt-1 w-100"></ul>
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="country_id">País</label>
+        <select aria-label="País" class="form-select" data-states-endpoint="<?= url('state/getStatesByCountry'); ?>" id="country_id" name="country_id" <?= empty($countries) ? 'disabled' : ''; ?>>
+          <option value=""><?= empty($countries) ? 'Nenhum país encontrado' : 'Selecione um país'; ?></option>
+          <?php foreach ($countries ?? [] as $country): ?>
+            <option value="<?= (int) ($country['id'] ?? 0); ?>" <?= (string) $filters['country_id'] === (string) ($country['id'] ?? '') ? 'selected' : ''; ?>><?= htmlspecialchars((string) ($country['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold" for="state_id">Estado</label>
+        <select aria-label="Estado" class="form-select" id="state_id" name="state_id" <?= empty($countryStates) ? 'disabled' : ''; ?>>
+          <option value=""><?= $filters['country_id'] === '' ? 'Selecione um país primeiro' : (empty($countryStates) ? 'Nenhum estado encontrado' : 'Selecione um estado'); ?></option>
+          <?php foreach ($countryStates ?? [] as $countryState): ?>
+            <option value="<?= (int) ($countryState['id'] ?? 0); ?>" <?= (string) $filters['state_id'] === (string) ($countryState['id'] ?? '') ? 'selected' : ''; ?>><?= htmlspecialchars((string) ($countryState['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4 position-relative">
+        <label class="form-label small fw-semibold" for="cityName">Cidade</label>
+        <input id="city_id" name="city_id" type="hidden" value="<?= htmlspecialchars((string) $filters['city_id'], ENT_QUOTES, 'UTF-8'); ?>">
+        <input aria-controls="cityResults" aria-describedby="cityHelp cityFeedback" aria-invalid="false" autocomplete="off" class="form-control js-autocomplete" data-autocomplete-portal="body" data-endpoint="<?= url('state/cityAutocomplete'); ?>" data-extra='{"state_id":"#state_id","country_id":"#country_id"}' data-hidden="#city_id" data-minlen="1" data-param="term" data-results="#cityResults" id="cityName" name="city_name" placeholder="<?= $filters['state_id'] !== '' ? 'Digite o nome da cidade' : 'Selecione um estado primeiro'; ?>" type="text" value="<?= htmlspecialchars((string) $filters['city_name'], ENT_QUOTES, 'UTF-8'); ?>" <?= $filters['state_id'] === '' ? 'disabled' : ''; ?>>
+        <ul aria-label="Sugestões de cidades" class="list-group mt-1 w-100" id="cityResults"></ul>
+        <div aria-live="polite" class="form-text" id="cityHelp"><?= $filters['state_id'] !== '' ? 'Digite para buscar somente entre as cidades deste estado.' : 'A busca será habilitada após selecionar um estado.'; ?></div>
+        <div class="invalid-feedback" id="cityFeedback">Selecione uma cidade na lista de sugestões.</div>
       </div>
 
     </div>
@@ -163,4 +209,4 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
 </div>
 
 <script src="/assets/autocomplete/autocomplete.js?v=4"></script>
-<script src="<?= url('assets/js/states/index.js?v=1'); ?>"></script>
+<script src="<?= url('assets/js/states/index.js?v=2'); ?>"></script>

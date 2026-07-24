@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\State;
 
 class StateController extends Controller
@@ -16,6 +18,7 @@ class StateController extends Controller
 		$this->requirePermission('state.index');
 
 		$state = new State();
+		$country = new Country();
 
 		$filters = [
 			'id'           => isset($_GET['id'])           ? trim($_GET['id'])           : '',
@@ -23,7 +26,12 @@ class StateController extends Controller
 			'acronym'      => isset($_GET['acronym'])      ? trim($_GET['acronym'])      : '',
 			'country_id'   => isset($_GET['country_id'])   ? trim($_GET['country_id'])   : '',
 			'country_name' => isset($_GET['country_name']) ? trim($_GET['country_name']) : '',
+			'state_id'     => isset($_GET['state_id'])     ? trim($_GET['state_id'])     : '',
+			'city_id'      => isset($_GET['city_id'])      ? trim($_GET['city_id'])      : '',
+			'city_name'    => isset($_GET['city_name'])    ? trim($_GET['city_name'])    : '',
+			'_location_invalid' => isset($_GET['_location_invalid']) ? trim($_GET['_location_invalid']) : '',
 		];
+		$filters = $state->normalizeListFilters($filters);
 
 		$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 		if ($page < 1)
@@ -56,14 +64,28 @@ class StateController extends Controller
 			]);
 			}
 
+		$countries = $country->getAll();
+		usort($countries, static function (array $left, array $right): int
+			{
+			return strnatcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+			});
+
+		$countryStates = [];
+		if ($filters['country_id'] !== '')
+			{
+			$countryStates = $state->getAllByCountryId((int) $filters['country_id']);
+			}
+
 		$this->view('states/index', [
-			'states'     => $states,
-			'title'      => 'Lista de estados',
-			'filters'    => $filters,
-			'page'       => $page,
-			'totalPages' => $totalPages,
-			'total'      => $total,
-			'sort'       => $sort,
+			'states'        => $states,
+			'countries'     => $countries,
+			'countryStates' => $countryStates,
+			'title'         => 'Lista de estados',
+			'filters'       => $filters,
+			'page'          => $page,
+			'totalPages'    => $totalPages,
+			'total'         => $total,
+			'sort'          => $sort,
 		]);
 		}
 
@@ -172,6 +194,71 @@ class StateController extends Controller
 				'acronym' => $r['acronym'] ?? null,
 				'country_id' => isset($r['country_id']) ? (int) $r['country_id'] : null,
 				'country_name' => $r['country_name'] ?? null,
+			];
+			}, $rows);
+
+		$this->json(['items' => $items]);
+		}
+
+	/**
+	 * Returns states that belong to the selected country.
+	 */
+	public function getStatesByCountry(): void
+		{
+		$this->requirePermission('state.index');
+
+		$countryId = isset($_GET['country_id']) ? (int) $_GET['country_id'] : 0;
+		if ($countryId <= 0)
+			{
+			$this->json(['states' => []]);
+			return;
+			}
+
+		$states = (new State())->getAllByCountryId($countryId);
+		$this->json(['states' => $states]);
+		}
+
+	/**
+	 * Returns city autocomplete items scoped to the selected state.
+	 */
+	public function cityAutocomplete(): void
+		{
+		$this->requirePermission('state.index');
+
+		$term = isset($_GET['term']) ? trim((string) $_GET['term']) : '';
+		$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 100;
+		$stateId = isset($_GET['state_id']) ? (int) $_GET['state_id'] : 0;
+		$countryId = isset($_GET['country_id']) ? (int) $_GET['country_id'] : 0;
+
+		if ($stateId <= 0 || $term === '')
+			{
+			$this->json(['items' => []]);
+			return;
+			}
+
+		$rows = (new City())->autocomplete(
+			$term,
+			$limit,
+			$stateId,
+			$countryId > 0 ? $countryId : null
+		);
+
+		$items = array_map(static function (array $row): array
+			{
+			$label = trim((string) ($row['name'] ?? ''));
+			if ($label === '')
+				{
+				$label = (string) ($row['id'] ?? '');
+				}
+
+			return [
+				'id' => isset($row['id']) ? (int) $row['id'] : null,
+				'label' => $label,
+				'name' => $row['name'] ?? null,
+				'state_id' => isset($row['state_id']) ? (int) $row['state_id'] : null,
+				'state_name' => $row['state_name'] ?? null,
+				'country_id' => isset($row['country_id']) ? (int) $row['country_id'] : null,
+				'country_name' => $row['country_name'] ?? null,
 			];
 			}, $rows);
 

@@ -567,6 +567,10 @@ body.app-shell {
   box-shadow: var(--app-shadow-md);
 }
 
+.app-view .list-group[id$="Results"]:empty {
+  display: none;
+}
+
 /* Botões e estados */
 .app-view .btn {
   --bs-btn-border-radius: 0.7rem;
