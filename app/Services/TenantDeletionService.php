@@ -131,7 +131,6 @@ class TenantDeletionService
 					'people', 'addresses', 'emails', 'phone_numbers', 'financial_operations',
 					'financial_operations_payments', 'internal_chats', 'internal_chat_messages',
 					'internal_chat_participants', 'support_chats', 'support_chats_messages', 'logs',
-					'webcrawler_ip_range_executions', 'webcrawler_ip_range_results',
 					'tenant_setting_values', 'user_presences',
 				],
 				'preserved_tables' => ['cities', 'neighborhoods', 'banks', 'states', 'countries'],
@@ -159,16 +158,6 @@ class TenantDeletionService
 
 				$this->deleteWhereIn('financial_operations', 'user_id', $exclusiveUserIds);
 
-				$stmt = $this->db->prepare(
-					"DELETE ResultRow
-					 FROM webcrawler_ip_range_results AS ResultRow
-					 LEFT JOIN webcrawler_ip_range_executions AS ExecutionRow
-					        ON ExecutionRow.id = ResultRow.execution_id
-					 WHERE ResultRow.user_id IN ({$placeholders})
-					    OR ExecutionRow.user_id IN ({$placeholders})"
-				);
-				$stmt->execute(array_merge($exclusiveUserIds, $exclusiveUserIds));
-				$this->deleteWhereIn('webcrawler_ip_range_executions', 'user_id', $exclusiveUserIds);
 				}
 
 			// Remove the target link before selecting a possible remaining primary tenant.
@@ -521,50 +510,6 @@ class TenantDeletionService
 				}
 			}
 		$this->appendModule($modules, 'manager_main', 'Financeiro central de usuários exclusivos', $financialRecords);
-
-		$webcrawlerRecords = [];
-		if ($exclusiveIds !== [])
-			{
-			$placeholders = $this->placeholders($exclusiveIds);
-			$stmt = $this->db->prepare("SELECT DISTINCT ResultRow.id,
-			                                  ResultRow.execution_id,
-			                                  ResultRow.ip_address,
-			                                  ResultRow.protocol,
-			                                  ResultRow.port,
-			                                  ResultRow.scan_status
-			                           FROM webcrawler_ip_range_results AS ResultRow
-			                           LEFT JOIN webcrawler_ip_range_executions AS ExecutionRow
-			                                  ON ExecutionRow.id = ResultRow.execution_id
-			                           WHERE ResultRow.user_id IN ({$placeholders})
-			                              OR ExecutionRow.user_id IN ({$placeholders})
-			                           ORDER BY ResultRow.id");
-			$stmt->execute(array_merge($exclusiveIds, $exclusiveIds));
-			foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
-				{
-				$webcrawlerRecords[] = $this->record(
-					'webcrawler_ip_range_results',
-					$row['id'],
-					'Resultado do webcrawler #' . $row['id'] . ' — execução #' . ($row['execution_id'] ?? '-')
-					. ' | ' . $row['protocol'] . '://' . $row['ip_address'] . ':' . $row['port']
-					. ' | status: ' . $row['scan_status']
-				);
-				}
-
-			$stmt = $this->db->prepare("SELECT id, start_ip, end_ip, status, processed_total
-			                           FROM webcrawler_ip_range_executions
-			                           WHERE user_id IN ({$placeholders}) ORDER BY id");
-			$stmt->execute($exclusiveIds);
-			foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
-				{
-				$webcrawlerRecords[] = $this->record(
-					'webcrawler_ip_range_executions',
-					$row['id'],
-					'Execução do webcrawler #' . $row['id'] . ' — ' . $row['start_ip'] . ' até ' . $row['end_ip']
-					. ' | status: ' . $row['status'] . ' | processados: ' . $row['processed_total']
-				);
-				}
-			}
-		$this->appendModule($modules, 'manager_main', 'Webcrawler de IPs de usuários exclusivos', $webcrawlerRecords);
 
 		$userRecords = [];
 		foreach ($plan['users'] as $user)

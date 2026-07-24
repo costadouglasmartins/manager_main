@@ -101,8 +101,6 @@ class UserDeletionService
 			$this->deleteIds('manager_main', 'financial_operations_payments', $central['financial_payment_ids']);
 			$this->deleteIds('manager_main', 'financial_operations', $central['financial_operation_ids']);
 
-			$this->deleteIds('manager_main', 'webcrawler_ip_range_results', $central['webcrawler_result_ids']);
-			$this->deleteIds('manager_main', 'webcrawler_ip_range_executions', $central['webcrawler_execution_ids']);
 			$this->deleteIds('manager_main', 'logs', $central['log_ids']);
 
 			$this->deleteWhereUserId('user_remember_tokens', $userId);
@@ -329,25 +327,6 @@ class UserDeletionService
 			}
 		$this->appendModule($modules, 'manager_main', 'Financeiro central', $financialRecords);
 
-		$executions = $this->queryRows('SELECT * FROM webcrawler_ip_range_executions WHERE user_id = ? ORDER BY id', [$userId]);
-		$executionIds = $this->ids($executions);
-		$results = $this->queryRows(
-			'SELECT * FROM webcrawler_ip_range_results WHERE user_id = ?'
-			. ($executionIds !== [] ? ' OR execution_id IN (' . $this->placeholders($executionIds) . ')' : '')
-			. ' ORDER BY id',
-			array_merge([$userId], $executionIds)
-		);
-		$webcrawlerRecords = [];
-		foreach ($results as $row)
-			{
-			$webcrawlerRecords[] = $this->record('webcrawler_ip_range_results', $row['id'], 'Resultado #' . $row['id'] . ' — ' . $row['protocol'] . '://' . $row['ip_address'] . ':' . $row['port'] . ' | status: ' . $row['scan_status']);
-			}
-		foreach ($executions as $row)
-			{
-			$webcrawlerRecords[] = $this->record('webcrawler_ip_range_executions', $row['id'], 'Execução #' . $row['id'] . ' — ' . $row['start_ip'] . ' até ' . $row['end_ip'] . ' | status: ' . $row['status']);
-			}
-		$this->appendModule($modules, 'manager_main', 'Webcrawler de IPs', $webcrawlerRecords);
-
 		$permissions = $this->queryRows("SELECT UserPermission.user_id, UserPermission.permission_id, PermissionCatalog.system, PermissionCatalog.ability
 		                                      FROM user_permissions AS UserPermission
 		                                      INNER JOIN permissions AS PermissionCatalog ON PermissionCatalog.id = UserPermission.permission_id
@@ -424,8 +403,6 @@ class UserDeletionService
 			))),
 			'financial_operation_ids' => $operationIds,
 			'financial_payment_ids' => $this->ids($payments),
-			'webcrawler_execution_ids' => $executionIds,
-			'webcrawler_result_ids' => $this->ids($results),
 			'log_ids' => $this->ids($logs),
 			'address_ids' => $this->ids($addresses),
 			'email_ids' => $this->ids($emails),
