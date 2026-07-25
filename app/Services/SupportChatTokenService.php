@@ -9,8 +9,7 @@ class SupportChatTokenService
 	 */
 	private static function secret(): string
 		{
-		$secret = getenv('SUPPORT_CHAT_SECRET') ?: '9323d5e71fe951602b452cc683ff7c49f8d5cec8';
-		return (string) $secret;
+		return SUPPORT_CHAT_SECRET;
 		}
 
 	/**
@@ -50,7 +49,7 @@ class SupportChatTokenService
 		$host = (string) ($_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost'));
 		$host = preg_replace('/:\d+$/', '', $host) ?: 'localhost';
 
-		return $scheme . '://' . $host . ':8081';
+		return $scheme . '://' . $host . ':' . SUPPORT_CHAT_WS_PORT;
 		}
 
 	/**

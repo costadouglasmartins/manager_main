@@ -2,16 +2,13 @@
 
 namespace App\Services;
 
+use App\Core\Database;
 use PDO;
 use PDOException;
 
 class DatabaseManagerService
 	{
 
-	private string $dbHost = 'mysql';
-	private string $dbUser = 'root';
-	private string $dbPassword = 'rootpassword';
-	private string $dbCharset = 'utf8';
 	private string $dbPrefix = 'manager_';
 	private int $maxResultRows = 200;
 
@@ -23,24 +20,25 @@ class DatabaseManagerService
 		{
 		$pdo = $this->getAdminConnection();
 		$prefixStart = strlen($this->dbPrefix) + 1;
+		$managerDatabase = $this->quoteIdentifier(Database::getManagerDatabaseName());
 
 		$sql = "SELECT s.SCHEMA_NAME AS database_name,
 		               SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS database_number,
 		               CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS UNSIGNED) AS database_order,
 		               t.id AS tenant_id,
 		               (SELECT p.name
-		                  FROM manager_main.tenant_users AS tu
-		                  INNER JOIN manager_main.users AS u ON u.id = tu.user_id
-		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
+		                  FROM {$managerDatabase}.tenant_users AS tu
+		                  INNER JOIN {$managerDatabase}.users AS u ON u.id = tu.user_id
+		                  INNER JOIN {$managerDatabase}.people AS p ON p.id = u.person_id
 		                  WHERE tu.tenant_id = t.id
 		                  ORDER BY tu.role = 'owner' DESC,
 		                           tu.created ASC,
 		                           tu.user_id ASC
 		                  LIMIT 1) AS tenant_name,
 		               (SELECT p.fantasy
-		                  FROM manager_main.tenant_users AS tu
-		                  INNER JOIN manager_main.users AS u ON u.id = tu.user_id
-		                  INNER JOIN manager_main.people AS p ON p.id = u.person_id
+		                  FROM {$managerDatabase}.tenant_users AS tu
+		                  INNER JOIN {$managerDatabase}.users AS u ON u.id = tu.user_id
+		                  INNER JOIN {$managerDatabase}.people AS p ON p.id = u.person_id
 		                  WHERE tu.tenant_id = t.id
 		                  ORDER BY tu.role = 'owner' DESC,
 		                           tu.created ASC,
@@ -48,7 +46,7 @@ class DatabaseManagerService
 		                  LIMIT 1) AS tenant_fantasy,
 		               t.status AS tenant_status
 		        FROM information_schema.SCHEMATA AS s
-		        LEFT JOIN manager_main.tenants AS t
+		        LEFT JOIN {$managerDatabase}.tenants AS t
 		          ON t.database_number = SUBSTRING(s.SCHEMA_NAME, {$prefixStart})
 		        WHERE s.SCHEMA_NAME REGEXP '^manager_[0-9]+$'
 		        ORDER BY CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS UNSIGNED) ASC";
@@ -392,18 +390,7 @@ class DatabaseManagerService
 	 **/
 	private function getAdminConnection(): PDO
 		{
-		$dsn = sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset);
-		$options = [
-			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-		];
-
-		if (defined('PDO::MYSQL_ATTR_MULTI_STATEMENTS'))
-			{
-			$options[PDO::MYSQL_ATTR_MULTI_STATEMENTS] = true;
-			}
-
-		return new PDO($dsn, $this->dbUser, $this->dbPassword, $options);
+		return Database::getServerConnection();
 		}
 
 	/**
@@ -413,24 +400,17 @@ class DatabaseManagerService
 	 **/
 	private function getDatabaseConnection(string $databaseName): PDO
 		{
-		$dsn = sprintf(
-			'mysql:host=%s;dbname=%s;charset=%s',
-			$this->dbHost,
-			$databaseName,
-			$this->dbCharset
-		);
+		return Database::getTenantConnection($databaseName, true);
+		}
 
-		$options = [
-			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-		];
-
-		if (defined('PDO::MYSQL_ATTR_MULTI_STATEMENTS'))
-			{
-			$options[PDO::MYSQL_ATTR_MULTI_STATEMENTS] = true;
-			}
-
-		return new PDO($dsn, $this->dbUser, $this->dbPassword, $options);
+	/**
+	 * Quote a MySQL identifier used in administrative queries.
+	 * @param string $identifier Identifier to quote.
+	 * @return string Quoted identifier.
+	 **/
+	private function quoteIdentifier(string $identifier): string
+		{
+		return '`' . str_replace('`', '``', $identifier) . '`';
 		}
 	}
 

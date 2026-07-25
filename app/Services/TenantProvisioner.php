@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Core\Database;
 use PDO;
 
 /**
@@ -57,10 +58,6 @@ class TenantProvisioner
 		],
 	];
 
-	private $dbHost     = 'mysql';
-	private $dbUser     = 'root';
-	private $dbPassword = 'rootpassword';
-	private $dbCharset  = 'utf8';
 	private $dbPrefix   = 'manager_';
 
 	/**
@@ -71,14 +68,12 @@ class TenantProvisioner
 	public function provision(string $databaseNumber): bool
 		{
 		$dbName = $this->databaseName($databaseNumber);
-		$dsn = sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset);
 
 		try
 			{
-			$pdo = $this->createConnection($dsn);
-
-			$pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` DEFAULT CHARACTER SET utf8mb3");
-			$pdo->exec("USE `{$dbName}`");
+			$serverConnection = Database::getServerConnection();
+			$serverConnection->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` DEFAULT CHARACTER SET utf8mb3");
+			$pdo = Database::getTenantConnection($dbName, true);
 
 			$templateFile = ROOT_PATH . '/public/database/tenant_template.sql';
 			if (!file_exists($templateFile))
@@ -116,11 +111,10 @@ class TenantProvisioner
 	public function databaseExists(string $databaseNumber): bool
 		{
 		$dbName = $this->databaseName($databaseNumber);
-		$dsn = sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset);
 
 		try
 			{
-			$pdo = $this->createConnection($dsn);
+			$pdo = Database::getServerConnection();
 
 			$stmt = $pdo->prepare("SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = :dbname");
 			$stmt->execute(['dbname' => $dbName]);
@@ -153,7 +147,7 @@ class TenantProvisioner
 
 		try
 			{
-			$pdo = $this->createConnection(sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset));
+			$pdo = Database::getServerConnection();
 			$stmt = $pdo->prepare("SELECT TABLE_NAME
 			                       FROM information_schema.TABLES
 			                       WHERE TABLE_SCHEMA = :database
@@ -232,7 +226,7 @@ class TenantProvisioner
 
 		try
 			{
-			$pdo = $this->createConnection(sprintf('mysql:host=%s;charset=%s', $this->dbHost, $this->dbCharset));
+			$pdo = Database::getServerConnection();
 			$pdo->exec('DROP DATABASE IF EXISTS ' . $this->quoteIdentifier($dbName));
 			}
 		catch (\Throwable $e)
@@ -292,24 +286,6 @@ class TenantProvisioner
 		return '`' . str_replace('`', '``', $identifier) . '`';
 		}
 
-	/**
-	 * Create a PDO connection using the informed DSN.
-	 * @param string $dsn Data source name used to create the connection.
-	 * @return PDO Configured PDO connection instance.
-	 **/
-	private function createConnection(string $dsn): PDO
-		{
-		$options = [
-			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-		];
-
-		if (defined('PDO::MYSQL_ATTR_MULTI_STATEMENTS'))
-			{
-			$options[PDO::MYSQL_ATTR_MULTI_STATEMENTS] = true;
-			}
-
-		return new PDO($dsn, $this->dbUser, $this->dbPassword, $options);
-		}
 	}
 
 ?>

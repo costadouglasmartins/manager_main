@@ -14,6 +14,16 @@ composer install --no-dev --optimize-autoloader
 
 O caminho pode ser substituído pela variável de ambiente `SHARED_ASSETS_PATH`. O `composer.json`, o `composer.lock` e o diretório `vendor` não são mantidos dentro deste projeto.
 
+## Configuração do banco de dados e do chat
+
+As credenciais do banco de dados e a chave compartilhada do chat ficam centralizadas em:
+
+```text
+app/Core/Config.php
+```
+
+Edite nesse arquivo as constantes `DB_HOST`, `DB_PORT`, `DB_DATABASE_MANAGER`, `DB_USERNAME`, `DB_PASSWORD`, `DB_CHARSET`, `SUPPORT_CHAT_SECRET`, `SUPPORT_CHAT_WS_HOST` e `SUPPORT_CHAT_WS_PORT`. Mantenha os mesmos dados no arquivo correspondente do `manager`.
+
 # Regras de programação do projeto
 
 Este documento registra as convenções de desenvolvimento que devem ser seguidas neste projeto.
