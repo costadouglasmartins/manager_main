@@ -5896,7 +5896,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=733 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=734 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.logs: ~528 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
@@ -6502,7 +6502,8 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(729, 'f896ba66-7e99-455d-94e2-eb8d19033b81', 1, 'manager_0001', 'Tenant 0001', 'product', 'list', 'products', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'product', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', '2026-07-24 23:08:14', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 3, "request_query": {"url": "product"}, "filters_applied": false, "response_format": "html"}', '2026-07-24 23:08:14', '2026-07-24 23:08:14'),
 	(730, '8e99c336-fc64-4c56-8f9a-3a457a557894', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '192.168.65.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', '2026-07-25 00:06:58', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-25 00:06:58', '2026-07-25 00:06:58'),
 	(731, '6b1c0370-47c2-428a-be7d-49882864a91e', 1, 'manager_0001', 'Tenant 0001', 'task', 'list', 'tasks', NULL, 2, 'emma.watson', 'Emma Watson', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', '2026-07-25 00:25:16', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-07-25 00:25:16', '2026-07-25 00:25:16'),
-	(732, 'ae7c7f79-e576-485c-9782-8295d10e5dc8', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-27 16:21:45', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-27 16:21:45', '2026-07-27 16:21:45');
+	(732, 'ae7c7f79-e576-485c-9782-8295d10e5dc8', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-27 16:21:45', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-27 16:21:45', '2026-07-27 16:21:45'),
+	(733, '0479d7f8-ff53-4b7b-8e24-3edcba8263c0', 1, 'manager_0001', 'Tenant 0001', 'auth', 'login', 'users', '2', 2, 'emma.watson', 'Emma Watson', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-07-27 21:51:25', NULL, '{"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}', '{"to": {"id": 2, "name": "Emma Watson", "type": "admin", "email": "emma@watson.com", "username": "emma.watson", "tenant_id": 1}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-07-27 21:51:25', '2026-07-27 21:51:25');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6514,7 +6515,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18151 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18152 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~18 236 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -24665,7 +24666,8 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18147, 'Centro', 4672, '2026-07-27 16:28:05', '2026-07-27 16:28:05'),
 	(18148, 'Vila São Cristovão', 4646, '2026-07-27 16:53:08', '2026-07-27 16:53:08'),
 	(18149, 'Centro', 4646, '2026-07-27 16:53:08', '2026-07-27 16:53:08'),
-	(18150, 'Nova Guarita', 4656, '2026-07-27 16:58:15', '2026-07-27 16:58:15');
+	(18150, 'Nova Guarita', 4656, '2026-07-27 16:58:15', '2026-07-27 16:58:15'),
+	(18151, 'Centro', 4442, '2026-07-27 21:51:59', '2026-07-27 21:51:59');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -25934,12 +25936,12 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.user_presences: ~3 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
 	(1, 1, NULL, 'online', '2026-07-24 23:06:37', '2026-07-24 23:06:37', '2026-07-18 00:31:59', '2026-07-24 23:06:37'),
-	(6, 2, 1, 'online', '2026-07-27 16:21:45', '2026-07-27 16:21:45', '2026-07-18 00:32:47', '2026-07-27 16:21:45'),
+	(6, 2, 1, 'online', '2026-07-27 21:51:25', '2026-07-27 21:51:25', '2026-07-18 00:32:47', '2026-07-27 21:51:25'),
 	(16, 3, 2, 'online', '2026-07-22 22:04:06', '2026-07-22 22:04:06', '2026-07-20 21:56:37', '2026-07-22 22:04:06');
 
 -- Dumping structure for table manager_main.user_remember_tokens
@@ -25966,7 +25968,7 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(11, 1, 'be9823104dd99391cca9079d7ddaf71f', '46f53902ea257476b96347ce1e602bffdb1d94a565f11f92ce8179b52c605a5b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-11 22:24:03', '2026-07-03 09:20:05', '2026-07-12 22:24:03'),
 	(12, 1, '2bec255eead1a6ccdbe8cb8bd119434d', '7f0748c14a281d4543b6ad037c0e655e0db6a71ea0763262828d3e3c44ce9f84', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '172.18.0.1', '2026-08-16 23:54:29', '2026-07-14 20:10:23', '2026-07-17 23:54:29'),
 	(13, 1, '6a53c7db6820a19baf72ec04c8249880', '8e2ca85e5a0c8efdd06e1cfe262db13208feb97a1af192958274aede5ae9194b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 21:56:52', '2026-07-14 21:48:14', '2026-07-20 21:56:52'),
-	(14, 1, '5b206cb72473b0f3877fd1d895b497a9', '5b5a4d48581b5281b079f19c49594b1fe225b08fa60ad53c7c9dbe17437f587e', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-08-26 16:20:10', '2026-07-20 22:55:38', '2026-07-27 16:20:10'),
+	(14, 1, '399032486aabb89681831335e158a8cd', 'a852d6a2145e5f1d90eac1836c3604d6d1bf885e0c845546dba6347b8cdb1eaa', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-08-26 21:50:48', '2026-07-20 22:55:38', '2026-07-27 21:50:48'),
 	(15, 1, 'ae8cc31589df4ae22ecde4279b4ed209', 'e029ce9c8f9c323829246f5bb18fb9a87f144aa1462e12ef6b7e7311999b83a1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', '192.168.65.1', '2026-08-23 23:26:10', '2026-07-24 23:06:37', '2026-07-24 23:26:10');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
