@@ -126,6 +126,105 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
 
 -- Dumping data for table manager_0001.bank_slips: ~0 rows (approximately)
 
+-- Dumping structure for table manager_0001.crm_activity_statuses
+CREATE TABLE IF NOT EXISTS `crm_activity_statuses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `is_final` tinyint(1) NOT NULL DEFAULT '0',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_activity_statuses_slug` (`slug`),
+  KEY `idx_crm_activity_statuses_active` (`active`,`sort_order`),
+  KEY `idx_crm_activity_statuses_final` (`is_final`),
+  KEY `idx_crm_activity_statuses_created_by` (`created_by_user_id`),
+  KEY `idx_crm_activity_statuses_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_activity_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activity_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_activity_statuses: ~5 rows (approximately)
+INSERT INTO `crm_activity_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `is_final`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Pendente', 'pending', 'Atividade criada e ainda não executada.', 'text-bg-warning', 10, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(2, 'Em andamento', 'in_progress', 'Atividade iniciada e ainda em execução.', 'text-bg-primary', 20, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(3, 'Concluída', 'completed', 'Atividade finalizada com sucesso.', 'text-bg-success', 30, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(4, 'Reagendada', 'rescheduled', 'Atividade adiada para nova data.', 'text-bg-info', 40, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(5, 'Cancelada', 'canceled', 'Atividade encerrada sem execução.', 'text-bg-secondary', 50, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39');
+
+-- Dumping structure for table manager_0001.crm_activity_types
+CREATE TABLE IF NOT EXISTS `crm_activity_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `icon` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bi-sticky',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_activity_types_slug` (`slug`),
+  KEY `idx_crm_activity_types_active` (`active`,`sort_order`),
+  KEY `idx_crm_activity_types_created_by` (`created_by_user_id`),
+  KEY `idx_crm_activity_types_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_activity_types_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activity_types_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_activity_types: ~8 rows (approximately)
+INSERT INTO `crm_activity_types` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `icon`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Ligação', 'phone_call', 'Contato por telefone com o lead, prospect ou cliente.', 'text-bg-primary', 'bi-telephone', 10, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(2, 'WhatsApp', 'whatsapp', 'Contato realizado por WhatsApp.', 'text-bg-success', 'bi-whatsapp', 20, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(3, 'E-mail', 'email', 'Envio ou resposta por e-mail.', 'text-bg-info', 'bi-envelope', 30, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(4, 'Reunião', 'meeting', 'Reunião presencial ou por videoconferência.', 'text-bg-primary', 'bi-people', 40, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(5, 'Anotação', 'note', 'Registro interno de informação comercial.', 'text-bg-secondary', 'bi-journal-text', 50, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(6, 'Tarefa', 'task', 'Ação operacional vinculada ao contato CRM.', 'text-bg-warning', 'bi-list-check', 60, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(7, 'Visita', 'visit', 'Visita presencial ao cliente ou prospect.', 'text-bg-dark', 'bi-geo-alt', 70, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
+	(8, 'Follow-up', 'follow_up', 'Retorno programado para continuidade da negociação.', 'text-bg-danger', 'bi-arrow-repeat', 80, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39');
+
+-- Dumping structure for table manager_0001.crm_statuses
+CREATE TABLE IF NOT EXISTS `crm_statuses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_statuses_slug` (`slug`),
+  KEY `idx_crm_statuses_active` (`active`,`sort_order`),
+  KEY `idx_crm_statuses_created_by` (`created_by_user_id`),
+  KEY `idx_crm_statuses_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_statuses: ~8 rows (approximately)
+INSERT INTO `crm_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Lead', 'lead', 'Contato inicial recebido, ainda sem qualificacao comercial.', 'text-bg-primary', 10, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(2, 'Prospect', 'prospect', 'Contato com potencial comercial identificado.', 'text-bg-info', 20, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(3, 'Cliente', 'customer', 'Pessoa ou empresa que ja possui relacionamento comercial ativo.', 'text-bg-success', 60, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(4, 'Inativo', 'inactive', 'Contato sem relacionamento comercial ativo no momento.', 'text-bg-secondary', 80, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(5, 'Qualificado', 'qualified', 'Contato validado e pronto para abordagem comercial estruturada.', 'text-bg-info', 30, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(6, 'Proposta enviada', 'proposal_sent', 'Proposta comercial enviada e aguardando retorno.', 'text-bg-warning', 40, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(7, 'Negociacao', 'negotiation', 'Contato em negociacao ativa de condicoes comerciais.', 'text-bg-dark', 50, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16'),
+	(8, 'Perdido', 'lost', 'Oportunidade encerrada sem conversao em cliente.', 'text-bg-danger', 70, 1, 2, 2, '2026-07-28 18:02:16', '2026-07-28 18:02:16');
+
 -- Dumping structure for table manager_0001.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -227,9 +326,30 @@ CREATE TABLE IF NOT EXISTS `product_attributes` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_attributes_code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_attributes: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_attributes: ~20 rows (approximately)
+INSERT INTO `product_attributes` (`id`, `code`, `name`, `data_type`, `measurement_type`, `active`, `created`, `modified`) VALUES
+	(1, 'category_1_tonalidade', 'Tonalidade', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(2, 'category_1_acabamento', 'Acabamento', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(3, 'category_1_composicao', 'Composicao', 'TEXT', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(4, 'category_1_largura_util', 'Largura util', 'DECIMAL', 'LENGTH', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(5, 'category_1_gramatura', 'Gramatura', 'DECIMAL', 'WEIGHT', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(6, 'category_1_impermeavel', 'Impermeavel', 'BOOLEAN', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(7, 'category_1_observacao_de_resinagem', 'Observacao de resinagem', 'TEXT', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(8, 'category_2_ambiente_indicado', 'Ambiente indicado', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(9, 'category_2_metodo_de_aplicacao', 'Metodo de aplicacao', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(10, 'category_2_lavavel', 'Lavavel', 'BOOLEAN', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(11, 'category_2_repeticao_da_estampa', 'Repeticao da estampa', 'DECIMAL', 'LENGTH', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(12, 'category_2_comprimento_do_rolo', 'Comprimento do rolo', 'DECIMAL', 'LENGTH', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(13, 'category_2_instrucao_de_limpeza', 'Instrucao de limpeza', 'TEXT', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(14, 'category_3_grau_de_uso', 'Grau de uso', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(15, 'category_3_granulometria', 'Granulometria', 'DECIMAL', 'LENGTH', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(16, 'category_3_pureza', 'Pureza', 'DECIMAL', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(17, 'category_3_requer_laudo', 'Requer laudo', 'BOOLEAN', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(18, 'category_3_codigo_do_laudo', 'Codigo do laudo', 'TEXT', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(19, 'category_3_validade', 'Validade', 'DATE', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(20, 'category_3_embalagem', 'Embalagem', 'OPTION', NULL, 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39');
 
 -- Dumping structure for table manager_0001.product_attribute_options
 CREATE TABLE IF NOT EXISTS `product_attribute_options` (
@@ -242,9 +362,24 @@ CREATE TABLE IF NOT EXISTS `product_attribute_options` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_attribute_options_value` (`product_attribute_id`,`value`),
   CONSTRAINT `fk_product_attribute_options_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_attribute_options: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_attribute_options: ~14 rows (approximately)
+INSERT INTO `product_attribute_options` (`id`, `product_attribute_id`, `value`, `label`, `sort_order`, `active`) VALUES
+	(1, 1, 'preto_grafite', 'Preto grafite', 0, 1),
+	(2, 1, 'chumbo', 'Chumbo', 1, 1),
+	(3, 2, 'natural', 'Natural', 0, 1),
+	(4, 2, 'resinado', 'Resinado', 1, 1),
+	(5, 8, 'sala', 'Sala', 0, 1),
+	(6, 8, 'quarto', 'Quarto', 1, 1),
+	(7, 8, 'escritorio', 'Escritorio', 2, 1),
+	(8, 9, 'autoadesivo', 'Autoadesivo', 0, 1),
+	(9, 9, 'cola_branca', 'Cola branca', 1, 1),
+	(10, 14, 'cosmetico', 'Cosmetico', 0, 1),
+	(11, 14, 'industrial', 'Industrial', 1, 1),
+	(12, 14, 'artesanal', 'Artesanal', 2, 1),
+	(13, 20, 'saco_kraft', 'Saco kraft', 0, 1),
+	(14, 20, 'balde_lacrado', 'Balde lacrado', 1, 1);
 
 -- Dumping structure for table manager_0001.product_categories
 CREATE TABLE IF NOT EXISTS `product_categories` (
@@ -257,9 +392,13 @@ CREATE TABLE IF NOT EXISTS `product_categories` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_products_categories_name` (`name`),
   KEY `idx_products_categories_active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_categories: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_categories: ~3 rows (approximately)
+INSERT INTO `product_categories` (`id`, `name`, `description`, `active`, `created`, `modified`) VALUES
+	(1, 'Tecidos por metro - imagem escura', '<p>Categoria de exemplo para a primeira imagem: amostra escura com lettering discreto, vendida por metro linear.</p>', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(2, 'Papeis de parede - imagem media', '<p>Categoria de exemplo para a segunda imagem: padrao textual cinza, vendido como rolo/unidade.</p>', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(3, 'Insumos por peso - imagem clara', '<p>Categoria de exemplo para a terceira imagem: amostra clara, cadastrada como insumo vendido por peso.</p>', 1, '2026-07-22 23:52:39', '2026-07-22 23:52:39');
 
 -- Dumping structure for table manager_0001.product_category_attributes
 CREATE TABLE IF NOT EXISTS `product_category_attributes` (
@@ -280,9 +419,30 @@ CREATE TABLE IF NOT EXISTS `product_category_attributes` (
   CONSTRAINT `fk_product_category_attributes_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_product_category_attributes_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_product_category_attributes_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_category_attributes: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_category_attributes: ~20 rows (approximately)
+INSERT INTO `product_category_attributes` (`id`, `product_category_id`, `product_attribute_id`, `product_unit_id`, `required`, `filterable`, `show_on_list`, `variation_axis`, `variation_specific`, `sort_order`) VALUES
+	(1, 1, 1, NULL, 1, 1, 1, 1, 1, 0),
+	(2, 1, 2, NULL, 1, 1, 1, 1, 1, 1),
+	(3, 1, 3, NULL, 1, 1, 1, 0, 0, 2),
+	(4, 1, 4, 2, 1, 1, 0, 0, 0, 3),
+	(5, 1, 5, 6, 1, 1, 0, 0, 0, 4),
+	(6, 1, 6, NULL, 1, 1, 0, 0, 0, 5),
+	(7, 1, 7, NULL, 0, 0, 0, 0, 0, 6),
+	(8, 2, 8, NULL, 1, 1, 1, 0, 0, 0),
+	(9, 2, 9, NULL, 1, 1, 1, 0, 0, 1),
+	(10, 2, 10, NULL, 1, 1, 0, 0, 0, 2),
+	(11, 2, 11, 2, 1, 1, 0, 0, 0, 3),
+	(12, 2, 12, 2, 1, 0, 0, 0, 0, 4),
+	(13, 2, 13, NULL, 0, 0, 0, 0, 0, 5),
+	(14, 3, 14, NULL, 1, 1, 1, 0, 0, 0),
+	(15, 3, 15, 2, 1, 1, 1, 0, 0, 1),
+	(16, 3, 16, NULL, 1, 1, 0, 0, 0, 2),
+	(17, 3, 17, NULL, 1, 1, 0, 0, 0, 3),
+	(18, 3, 18, NULL, 0, 0, 0, 0, 0, 4),
+	(19, 3, 19, NULL, 1, 0, 0, 0, 0, 5),
+	(20, 3, 20, NULL, 1, 1, 0, 0, 0, 6);
 
 -- Dumping structure for table manager_0001.product_category_attribute_conditions
 CREATE TABLE IF NOT EXISTS `product_category_attribute_conditions` (
@@ -305,9 +465,16 @@ CREATE TABLE IF NOT EXISTS `product_category_attribute_conditions` (
   CONSTRAINT `fk_product_attr_conditions_option` FOREIGN KEY (`source_product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_product_attr_conditions_source` FOREIGN KEY (`source_product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_product_attr_conditions_target` FOREIGN KEY (`target_product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_category_attribute_conditions: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_category_attribute_conditions: ~6 rows (approximately)
+INSERT INTO `product_category_attribute_conditions` (`id`, `product_category_id`, `target_product_attribute_id`, `source_product_attribute_id`, `operator`, `value_text`, `source_product_attribute_option_id`, `action`, `created`, `modified`) VALUES
+	(1, 1, 7, 6, 'EQUALS', 'Sim', NULL, 'SHOW', '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(2, 1, 7, 6, 'EQUALS', 'Sim', NULL, 'REQUIRE', '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(3, 2, 13, 10, 'EQUALS', 'Sim', NULL, 'SHOW', '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(4, 2, 13, 10, 'EQUALS', 'Sim', NULL, 'REQUIRE', '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(5, 3, 18, 17, 'EQUALS', 'Sim', NULL, 'SHOW', '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(6, 3, 18, 17, 'EQUALS', 'Sim', NULL, 'REQUIRE', '2026-07-22 23:52:39', '2026-07-22 23:52:39');
 
 -- Dumping structure for table manager_0001.product_category_templates
 CREATE TABLE IF NOT EXISTS `product_category_templates` (
@@ -420,9 +587,13 @@ CREATE TABLE IF NOT EXISTS `product_items` (
   CONSTRAINT `fk_product_items_dimension_unit` FOREIGN KEY (`dimension_unit_id`) REFERENCES `product_units` (`id`),
   CONSTRAINT `fk_product_items_sale_unit` FOREIGN KEY (`sale_unit_id`) REFERENCES `product_units` (`id`),
   CONSTRAINT `fk_product_items_weight_unit` FOREIGN KEY (`weight_unit_id`) REFERENCES `product_units` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_items: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_items: ~3 rows (approximately)
+INSERT INTO `product_items` (`id`, `product_category_id`, `sku`, `barcode`, `name`, `description`, `cost_price`, `sale_price`, `sale_unit_id`, `sale_quantity_step`, `track_stock`, `stock_quantity`, `minimum_stock`, `length_value`, `width_value`, `height_value`, `dimension_unit_id`, `weight_value`, `weight_unit_id`, `active`, `created`, `modified`) VALUES
+	(1, 1, 'IMG1-TECIDO-SCRIPT-ESC', '7890000010010', 'Tecido Black Script Premium - imagem 1', '<p>Produto de exemplo baseado na primeira imagem anexada: fundo escuro com escrita textual. Vendido por metro, com estoque controlado nas variacoes.</p>', 38.50, 64.90, 4, 0.500000, 0, 0.000000, 0.000000, 100.000000, 140.000000, 0.800000, 3, 280.000000, 6, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:22'),
+	(2, 2, 'IMG2-PAPEL-SCRIPT-CIN', '7890000010027', 'Papel de parede Script Cinza - imagem 2', '<p>Produto de exemplo baseado na segunda imagem anexada: textura textual cinza, vendido por rolo fechado.</p>', 92.00, 179.90, 1, 1.000000, 1, 18.000000, 4.000000, 1000.000000, 53.000000, 0.200000, 3, 1.200000, 7, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:05'),
+	(3, 3, 'IMG3-INSUMO-SCRIPT-CLA', '7890000010034', 'Pigmento mineral Script Claro - imagem 3', '<p>Produto de exemplo baseado na terceira imagem anexada: visual claro, vendido por kg, com controle de lote/laudo.</p>', 18.40, 36.90, 7, 0.100000, 1, 35.000000, 5.000000, 30.000000, 20.000000, 12.000000, 3, 1.000000, 7, 1, '2026-07-22 23:52:39', '2026-07-22 23:54:53');
 
 -- Dumping structure for table manager_0001.product_item_attribute_values
 CREATE TABLE IF NOT EXISTS `product_item_attribute_values` (
@@ -445,9 +616,28 @@ CREATE TABLE IF NOT EXISTS `product_item_attribute_values` (
   CONSTRAINT `fk_product_item_values_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_product_item_values_option` FOREIGN KEY (`product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`),
   CONSTRAINT `fk_product_item_values_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_item_attribute_values: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_item_attribute_values: ~18 rows (approximately)
+INSERT INTO `product_item_attribute_values` (`id`, `product_item_id`, `product_attribute_id`, `product_attribute_option_id`, `product_unit_id`, `value_text`, `value_integer`, `value_decimal`, `value_boolean`, `value_date`) VALUES
+	(19, 3, 14, 10, NULL, NULL, NULL, NULL, NULL, NULL),
+	(20, 3, 15, NULL, 2, NULL, NULL, 0.800000, NULL, NULL),
+	(21, 3, 16, NULL, NULL, NULL, NULL, 98.500000, NULL, NULL),
+	(22, 3, 17, NULL, NULL, NULL, NULL, NULL, 1, NULL),
+	(23, 3, 18, NULL, NULL, 'LAU-CLARO-2026-001', NULL, NULL, NULL, NULL),
+	(24, 3, 19, NULL, NULL, NULL, NULL, NULL, NULL, '2027-12-31'),
+	(25, 3, 20, 13, NULL, NULL, NULL, NULL, NULL, NULL),
+	(26, 2, 8, 7, NULL, NULL, NULL, NULL, NULL, NULL),
+	(27, 2, 9, 8, NULL, NULL, NULL, NULL, NULL, NULL),
+	(28, 2, 10, NULL, NULL, NULL, NULL, NULL, 1, NULL),
+	(29, 2, 11, NULL, 3, NULL, NULL, 64.000000, NULL, NULL),
+	(30, 2, 12, NULL, 4, NULL, NULL, 10.000000, NULL, NULL),
+	(31, 2, 13, NULL, NULL, 'Limpar com pano macio levemente umido, sem solventes.', NULL, NULL, NULL, NULL),
+	(32, 1, 3, NULL, NULL, '70% poliester / 30% algodao', NULL, NULL, NULL, NULL),
+	(33, 1, 4, NULL, 3, NULL, NULL, 140.000000, NULL, NULL),
+	(34, 1, 5, NULL, 6, NULL, NULL, 280.000000, NULL, NULL),
+	(35, 1, 6, NULL, NULL, NULL, NULL, NULL, 1, NULL),
+	(36, 1, 7, NULL, NULL, 'Resina leve para uso decorativo interno.', NULL, NULL, NULL, NULL);
 
 -- Dumping structure for table manager_0001.product_item_images
 CREATE TABLE IF NOT EXISTS `product_item_images` (
@@ -466,9 +656,13 @@ CREATE TABLE IF NOT EXISTS `product_item_images` (
   KEY `idx_product_item_images_variation` (`product_item_variation_id`),
   CONSTRAINT `fk_product_item_images_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_product_item_images_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_item_images: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_item_images: ~2 rows (approximately)
+INSERT INTO `product_item_images` (`id`, `product_item_id`, `product_item_variation_id`, `file_path`, `original_name`, `mime_type`, `file_size`, `sort_order`, `is_main`, `created`) VALUES
+	(1, 3, NULL, 'tenant_files/manager_0001/products/3/product_3_ee93138b12913802.png', 'white_240x400.png', 'image/png', 15955, 0, 1, '2026-07-22 23:54:53'),
+	(2, 2, NULL, 'tenant_files/manager_0001/products/2/product_2_b755696bbb2c3e32.png', 'grey_240x400.png', 'image/png', 15577, 0, 1, '2026-07-22 23:55:05'),
+	(3, 1, NULL, 'tenant_files/manager_0001/products/1/product_1_1cedbbfee94e987e.png', 'black_240x400.png', 'image/png', 15361, 0, 1, '2026-07-22 23:55:22');
 
 -- Dumping structure for table manager_0001.product_item_price_rules
 CREATE TABLE IF NOT EXISTS `product_item_price_rules` (
@@ -493,9 +687,16 @@ CREATE TABLE IF NOT EXISTS `product_item_price_rules` (
   CONSTRAINT `fk_product_item_price_rules_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_product_item_price_rules_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_product_item_price_rules_range` CHECK (((`maximum_quantity` is null) or (`maximum_quantity` >= `minimum_quantity`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_item_price_rules: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_item_price_rules: ~6 rows (approximately)
+INSERT INTO `product_item_price_rules` (`id`, `product_item_id`, `product_item_variation_id`, `product_unit_id`, `minimum_quantity`, `maximum_quantity`, `sale_price`, `available`, `active`, `created`, `modified`) VALUES
+	(7, 3, NULL, 7, 5.000000, 19.990000, 31.90, 1, 1, '2026-07-22 23:54:53', '2026-07-22 23:54:53'),
+	(8, 3, NULL, 7, 20.000000, NULL, 28.90, 1, 1, '2026-07-22 23:54:53', '2026-07-22 23:54:53'),
+	(9, 2, NULL, 1, 6.000000, 11.000000, 164.90, 1, 1, '2026-07-22 23:55:05', '2026-07-22 23:55:05'),
+	(10, 2, NULL, 1, 12.000000, NULL, 149.90, 1, 1, '2026-07-22 23:55:05', '2026-07-22 23:55:05'),
+	(11, 1, NULL, 4, 10.000000, 49.990000, 59.90, 1, 1, '2026-07-22 23:55:22', '2026-07-22 23:55:22'),
+	(12, 1, NULL, 4, 50.000000, NULL, 54.90, 1, 1, '2026-07-22 23:55:22', '2026-07-22 23:55:22');
 
 -- Dumping structure for table manager_0001.product_item_variations
 CREATE TABLE IF NOT EXISTS `product_item_variations` (
@@ -522,9 +723,14 @@ CREATE TABLE IF NOT EXISTS `product_item_variations` (
   KEY `idx_product_item_variations_active` (`active`),
   KEY `idx_product_item_variations_stock` (`track_stock`,`stock_quantity`),
   CONSTRAINT `fk_product_item_variations_product` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_item_variations: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_item_variations: ~4 rows (approximately)
+INSERT INTO `product_item_variations` (`id`, `product_item_id`, `sku`, `barcode`, `name`, `combination_key`, `cost_price`, `sale_price`, `track_stock`, `stock_quantity`, `minimum_stock`, `active`, `created`, `modified`) VALUES
+	(1, 1, 'IMG1-TEC-PRE-NAT', NULL, 'Preto grafite / Natural', 'fa20770d6572ed40c862affc90e5fc1709e2c781118961833249e6b4139e66d0', 38.50, 64.90, 1, 32.000000, 6.000000, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:22'),
+	(2, 1, 'IMG1-TEC-PRE-RES', NULL, 'Preto grafite / Resinado', 'c06880e29b3dc1a3b3c8f959764c224ae7246c38e82d1ea11cc791a4e8427d3f', 38.50, 69.90, 1, 18.000000, 4.000000, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:22'),
+	(3, 1, 'IMG1-TEC-CHU-NAT', NULL, 'Chumbo / Natural', 'a72e7d22234c44c8719c8f1418f043dd0c7b8c131ab3d77494365221ca2cf7ad', 38.50, 62.90, 1, 24.000000, 5.000000, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:22'),
+	(4, 1, 'IMG1-TEC-CHU-RES', NULL, 'Chumbo / Resinado', 'c4b57c6638d874267aa886c4760ea4dd815cb3304e58694042ce50dec032dc37', 38.50, 67.90, 1, 16.000000, 4.000000, 1, '2026-07-22 23:52:39', '2026-07-22 23:55:22');
 
 -- Dumping structure for table manager_0001.product_item_variation_attribute_values
 CREATE TABLE IF NOT EXISTS `product_item_variation_attribute_values` (
@@ -547,9 +753,18 @@ CREATE TABLE IF NOT EXISTS `product_item_variation_attribute_values` (
   CONSTRAINT `fk_product_variation_values_option` FOREIGN KEY (`product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_product_variation_values_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_product_variation_values_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_item_variation_attribute_values: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_item_variation_attribute_values: ~8 rows (approximately)
+INSERT INTO `product_item_variation_attribute_values` (`id`, `product_item_variation_id`, `product_attribute_id`, `product_attribute_option_id`, `product_unit_id`, `value_text`, `value_integer`, `value_decimal`, `value_boolean`, `value_date`) VALUES
+	(9, 1, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL),
+	(10, 1, 2, 3, NULL, NULL, NULL, NULL, NULL, NULL),
+	(11, 2, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL),
+	(12, 2, 2, 4, NULL, NULL, NULL, NULL, NULL, NULL),
+	(13, 3, 1, 2, NULL, NULL, NULL, NULL, NULL, NULL),
+	(14, 3, 2, 3, NULL, NULL, NULL, NULL, NULL, NULL),
+	(15, 4, 1, 2, NULL, NULL, NULL, NULL, NULL, NULL),
+	(16, 4, 2, 4, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- Dumping structure for table manager_0001.product_stocks_movements
 CREATE TABLE IF NOT EXISTS `product_stocks_movements` (
@@ -593,9 +808,16 @@ CREATE TABLE IF NOT EXISTS `product_stock_movements` (
   KEY `idx_product_stock_movements_variation` (`product_item_variation_id`),
   CONSTRAINT `fk_product_stock_movements_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`),
   CONSTRAINT `fk_product_stock_movements_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0001.product_stock_movements: ~0 rows (approximately)
+-- Dumping data for table manager_0001.product_stock_movements: ~6 rows (approximately)
+INSERT INTO `product_stock_movements` (`id`, `product_item_id`, `product_item_variation_id`, `movement_type`, `quantity`, `previous_quantity`, `new_quantity`, `reference`, `notes`, `movement_date`, `created`) VALUES
+	(3, 1, 1, 'IN', 32.000000, 0.000000, 32.000000, 'Estoque inicial da variação', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(4, 1, 2, 'IN', 18.000000, 0.000000, 18.000000, 'Estoque inicial da variação', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(5, 1, 3, 'IN', 24.000000, 0.000000, 24.000000, 'Estoque inicial da variação', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(6, 1, 4, 'IN', 16.000000, 0.000000, 16.000000, 'Estoque inicial da variação', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(7, 2, NULL, 'IN', 18.000000, 0.000000, 18.000000, 'Estoque inicial', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39'),
+	(8, 3, NULL, 'IN', 35.000000, 0.000000, 35.000000, 'Estoque inicial', NULL, '2026-07-22 23:52:39', '2026-07-22 23:52:39');
 
 -- Dumping structure for table manager_0001.product_units
 CREATE TABLE IF NOT EXISTS `product_units` (

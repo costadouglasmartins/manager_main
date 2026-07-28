@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `id` int NOT NULL AUTO_INCREMENT,
   `bank_id` int NOT NULL,
   `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `agency` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `agency` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `account` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `pix_key_type` enum('CPF','CNPJ','EMAIL','PHONE','RANDOM') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pix_key` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `bank_slip_species_title` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bank_slip_interest_type` enum('DAILY','MONTHLY') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bank_slip_interest_amount_type` enum('PERCENTAGE','FIXED_AMOUNT') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_slip_interest` decimal(10,2) DEFAULT NULL,
-  `bank_slip_late_fee_amount` decimal(10,2) DEFAULT NULL,
+  `bank_slip_interest` decimal(12,2) DEFAULT NULL,
+  `bank_slip_late_fee_amount` decimal(12,2) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -66,7 +66,6 @@ CREATE TABLE IF NOT EXISTS `bank_files` (
   UNIQUE KEY `uq_bank_files_path` (`file_path`),
   KEY `idx_bank_files_bank_account_id` (`bank_account_id`),
   KEY `idx_bank_files_file_type` (`file_type`),
-  KEY `idx_bank_files_file_hash` (`file_hash`),
   CONSTRAINT `fk_bank_files_bank_accounts` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -115,7 +114,6 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_bank_slips_financial_operation_payment` (`financial_operation_payment_id`),
   UNIQUE KEY `uq_bank_slips_account_our_number` (`bank_account_id`,`our_number`),
-  KEY `idx_bank_slips_bank_account_id` (`bank_account_id`),
   KEY `idx_bank_slips_bank_file_id` (`bank_file_id`),
   KEY `idx_bank_slips_status` (`status`),
   KEY `idx_bank_slips_due_date` (`due_date`),
@@ -123,10 +121,109 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
   KEY `idx_bank_slips_payer_document` (`payer_document`),
   CONSTRAINT `fk_bank_slips_bank_accounts` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_bank_slips_bank_files` FOREIGN KEY (`bank_file_id`) REFERENCES `bank_files` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_bank_slips_financial_operations_payments` FOREIGN KEY (`financial_operation_payment_id`) REFERENCES `financial_operations_payments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_bank_slips_financial_operations_payments` FOREIGN KEY (`financial_operation_payment_id`) REFERENCES `financial_operations_payments` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.bank_slips: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0002.crm_activity_statuses
+CREATE TABLE IF NOT EXISTS `crm_activity_statuses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `is_final` tinyint(1) NOT NULL DEFAULT '0',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_activity_statuses_slug` (`slug`),
+  KEY `idx_crm_activity_statuses_active` (`active`,`sort_order`),
+  KEY `idx_crm_activity_statuses_final` (`is_final`),
+  KEY `idx_crm_activity_statuses_created_by` (`created_by_user_id`),
+  KEY `idx_crm_activity_statuses_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_activity_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activity_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.crm_activity_statuses: ~5 rows (approximately)
+INSERT INTO `crm_activity_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `is_final`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Pendente', 'pending', 'Atividade criada e ainda não executada.', 'text-bg-warning', 10, 1, 0, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(2, 'Em andamento', 'in_progress', 'Atividade iniciada e ainda em execução.', 'text-bg-primary', 20, 1, 0, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(3, 'Concluída', 'completed', 'Atividade finalizada com sucesso.', 'text-bg-success', 30, 1, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(4, 'Reagendada', 'rescheduled', 'Atividade adiada para nova data.', 'text-bg-info', 40, 1, 0, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(5, 'Cancelada', 'canceled', 'Atividade encerrada sem execução.', 'text-bg-secondary', 50, 1, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35');
+
+-- Dumping structure for table manager_0002.crm_activity_types
+CREATE TABLE IF NOT EXISTS `crm_activity_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `icon` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bi-sticky',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_activity_types_slug` (`slug`),
+  KEY `idx_crm_activity_types_active` (`active`,`sort_order`),
+  KEY `idx_crm_activity_types_created_by` (`created_by_user_id`),
+  KEY `idx_crm_activity_types_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_activity_types_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activity_types_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.crm_activity_types: ~9 rows (approximately)
+INSERT INTO `crm_activity_types` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `icon`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Ligação', 'phone_call', 'Contato por telefone com o lead, prospect ou cliente.', 'text-bg-primary', 'bi-telephone', 10, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(2, 'WhatsApp', 'whatsapp', 'Contato realizado por WhatsApp.', 'text-bg-success', 'bi-whatsapp', 20, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(3, 'E-mail', 'email', 'Envio ou resposta por e-mail.', 'text-bg-info', 'bi-envelope', 30, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(4, 'Reunião', 'meeting', 'Reunião presencial ou por videoconferência.', 'text-bg-primary', 'bi-people', 40, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(5, 'Anotação', 'note', 'Registro interno de informação comercial.', 'text-bg-secondary', 'bi-journal-text', 50, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(6, 'Tarefa', 'task', 'Ação operacional vinculada ao contato CRM.', 'text-bg-warning', 'bi-list-check', 60, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(7, 'Visita', 'visit', 'Visita presencial ao cliente ou prospect.', 'text-bg-dark', 'bi-geo-alt', 70, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35'),
+	(8, 'Follow-up', 'follow_up', 'Retorno programado para continuidade da negociação.', 'text-bg-danger', 'bi-arrow-repeat', 80, 1, 4, 4, '2026-07-28 18:27:35', '2026-07-28 18:27:35');
+
+-- Dumping structure for table manager_0002.crm_statuses
+CREATE TABLE IF NOT EXISTS `crm_statuses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_statuses_slug` (`slug`),
+  KEY `idx_crm_statuses_active` (`active`,`sort_order`),
+  KEY `idx_crm_statuses_created_by` (`created_by_user_id`),
+  KEY `idx_crm_statuses_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0002.crm_statuses: ~8 rows (approximately)
+INSERT INTO `crm_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Lead', 'lead', 'Contato inicial recebido, ainda sem qualificacao comercial.', 'text-bg-primary', 10, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(2, 'Prospect', 'prospect', 'Contato com potencial comercial identificado.', 'text-bg-info', 20, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(3, 'Cliente', 'customer', 'Pessoa ou empresa que ja possui relacionamento comercial ativo.', 'text-bg-success', 60, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(4, 'Inativo', 'inactive', 'Contato sem relacionamento comercial ativo no momento.', 'text-bg-secondary', 80, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(5, 'Qualificado', 'qualified', 'Contato validado e pronto para abordagem comercial estruturada.', 'text-bg-info', 30, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(6, 'Proposta enviada', 'proposal_sent', 'Proposta comercial enviada e aguardando retorno.', 'text-bg-warning', 40, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(7, 'Negociacao', 'negotiation', 'Contato em negociacao ativa de condicoes comerciais.', 'text-bg-dark', 50, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20'),
+	(8, 'Perdido', 'lost', 'Oportunidade encerrada sem conversao em cliente.', 'text-bg-danger', 70, 1, 4, 4, '2026-07-28 18:02:20', '2026-07-28 18:02:20');
 
 -- Dumping structure for table manager_0002.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
@@ -137,10 +234,10 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_financial_operations_category_id` (`financial_operation_category_id`),
-  KEY `idx_financial_operations_subcategory_category` (`financial_operation_subcategory_id`,`financial_operation_category_id`),
+  KEY `idx_financial_operations_category` (`financial_operation_category_id`),
+  KEY `idx_financial_operations_subcategory` (`financial_operation_subcategory_id`),
   CONSTRAINT `fk_financial_operations_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_financial_operations_subcategory_category` FOREIGN KEY (`financial_operation_subcategory_id`, `financial_operation_category_id`) REFERENCES `financial_operations_subcategories` (`id`, `financial_operation_category_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT `fk_financial_operations_subcategories` FOREIGN KEY (`financial_operation_subcategory_id`) REFERENCES `financial_operations_subcategories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.financial_operations: ~0 rows (approximately)
@@ -165,7 +262,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_financial_operations_payments_operation_id` (`financial_operation_id`),
+  KEY `idx_financial_operations_payments_operation` (`financial_operation_id`),
   CONSTRAINT `fk_financial_operations_payments_operations` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -180,8 +277,7 @@ CREATE TABLE IF NOT EXISTS `financial_operations_subcategories` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_financial_operations_subcategories_category_name` (`financial_operation_category_id`,`name`),
-  UNIQUE KEY `uq_financial_operations_subcategories_id_category` (`id`,`financial_operation_category_id`),
-  KEY `idx_financial_operations_subcategories_category_id` (`financial_operation_category_id`),
+  KEY `idx_financial_operations_subcategories_category` (`financial_operation_category_id`),
   CONSTRAINT `fk_financial_operations_subcategories_categories` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -208,12 +304,12 @@ CREATE TABLE IF NOT EXISTS `products` (
   UNIQUE KEY `uq_products_sku` (`sku`),
   UNIQUE KEY `uq_products_barcode` (`barcode`),
   KEY `idx_products_user_id` (`user_id`),
-  KEY `idx_products_product_category` (`product_category_id`),
+  KEY `idx_products_category` (`product_category_id`),
   KEY `idx_products_name` (`name`),
   KEY `idx_products_active` (`active`),
   KEY `idx_products_stock_quantity` (`stock_quantity`),
-  CONSTRAINT `fk_products_manager_main_users` FOREIGN KEY (`user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_products_product_categories` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_products_categories` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_products_manager_main_users` FOREIGN KEY (`user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.products: ~0 rows (approximately)
@@ -229,7 +325,8 @@ CREATE TABLE IF NOT EXISTS `product_attributes` (
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_product_attributes_code` (`code`)
+  UNIQUE KEY `uq_product_attributes_code` (`code`),
+  KEY `idx_product_attributes_active` (`active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_attributes: ~0 rows (approximately)
@@ -244,7 +341,8 @@ CREATE TABLE IF NOT EXISTS `product_attribute_options` (
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_attribute_options_value` (`product_attribute_id`,`value`),
-  CONSTRAINT `fk_product_attribute_options_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE
+  KEY `idx_product_attribute_options_attribute` (`product_attribute_id`),
+  CONSTRAINT `fk_product_attribute_options_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_attribute_options: ~0 rows (approximately)
@@ -278,11 +376,12 @@ CREATE TABLE IF NOT EXISTS `product_category_attributes` (
   `sort_order` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_category_attributes` (`product_category_id`,`product_attribute_id`),
-  KEY `fk_product_category_attributes_attribute` (`product_attribute_id`),
-  KEY `fk_product_category_attributes_unit` (`product_unit_id`),
-  CONSTRAINT `fk_product_category_attributes_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_product_category_attributes_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_product_category_attributes_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL
+  KEY `idx_product_category_attributes_attribute` (`product_attribute_id`),
+  KEY `idx_product_category_attributes_unit` (`product_unit_id`),
+  KEY `idx_product_category_attributes_variation_axis` (`product_category_id`,`variation_axis`),
+  CONSTRAINT `fk_product_category_attributes_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_category_attributes_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_category_attributes_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_category_attributes: ~0 rows (approximately)
@@ -324,7 +423,9 @@ CREATE TABLE IF NOT EXISTS `product_category_templates` (
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_category_templates_name` (`name`),
-  KEY `idx_product_category_templates_active` (`active`)
+  KEY `idx_product_category_templates_active` (`active`),
+  KEY `idx_product_category_templates_created_by_user` (`created_by_user_id`),
+  CONSTRAINT `fk_product_category_templates_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_category_templates: ~0 rows (approximately)
@@ -348,7 +449,6 @@ CREATE TABLE IF NOT EXISTS `product_images` (
   UNIQUE KEY `uq_product_images_file_path` (`file_path`),
   KEY `idx_product_images_product` (`product_id`),
   KEY `idx_product_images_main` (`product_id`,`is_main`),
-  KEY `idx_product_images_position` (`product_id`,`position`),
   CONSTRAINT `fk_product_images_products` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -369,7 +469,9 @@ CREATE TABLE IF NOT EXISTS `product_import_batches` (
   PRIMARY KEY (`id`),
   KEY `idx_product_import_batches_category` (`product_category_id`),
   KEY `idx_product_import_batches_status` (`status`),
-  CONSTRAINT `fk_product_import_batches_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `idx_product_import_batches_created_by_user` (`created_by_user_id`),
+  CONSTRAINT `fk_product_import_batches_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_import_batches_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_import_batches: ~0 rows (approximately)
@@ -384,6 +486,7 @@ CREATE TABLE IF NOT EXISTS `product_import_errors` (
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_product_import_errors_batch` (`product_import_batch_id`),
+  KEY `idx_product_import_errors_row` (`product_import_batch_id`,`row_number`),
   CONSTRAINT `fk_product_import_errors_batch` FOREIGN KEY (`product_import_batch_id`) REFERENCES `product_import_batches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -417,13 +520,16 @@ CREATE TABLE IF NOT EXISTS `product_items` (
   UNIQUE KEY `uq_product_items_sku` (`sku`),
   UNIQUE KEY `uq_product_items_barcode` (`barcode`),
   KEY `idx_product_items_category` (`product_category_id`),
-  KEY `fk_product_items_sale_unit` (`sale_unit_id`),
-  KEY `fk_product_items_dimension_unit` (`dimension_unit_id`),
-  KEY `fk_product_items_weight_unit` (`weight_unit_id`),
-  CONSTRAINT `fk_product_items_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`),
-  CONSTRAINT `fk_product_items_dimension_unit` FOREIGN KEY (`dimension_unit_id`) REFERENCES `product_units` (`id`),
-  CONSTRAINT `fk_product_items_sale_unit` FOREIGN KEY (`sale_unit_id`) REFERENCES `product_units` (`id`),
-  CONSTRAINT `fk_product_items_weight_unit` FOREIGN KEY (`weight_unit_id`) REFERENCES `product_units` (`id`)
+  KEY `idx_product_items_sale_unit` (`sale_unit_id`),
+  KEY `idx_product_items_dimension_unit` (`dimension_unit_id`),
+  KEY `idx_product_items_weight_unit` (`weight_unit_id`),
+  KEY `idx_product_items_name` (`name`),
+  KEY `idx_product_items_active` (`active`),
+  CONSTRAINT `fk_product_items_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_items_dimension_unit` FOREIGN KEY (`dimension_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_items_sale_unit` FOREIGN KEY (`sale_unit_id`) REFERENCES `product_units` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_items_weight_unit` FOREIGN KEY (`weight_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `chk_product_items_sale_quantity_step` CHECK ((`sale_quantity_step` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_items: ~0 rows (approximately)
@@ -442,13 +548,13 @@ CREATE TABLE IF NOT EXISTS `product_item_attribute_values` (
   `value_date` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_item_attribute_values` (`product_item_id`,`product_attribute_id`),
-  KEY `fk_product_item_values_attribute` (`product_attribute_id`),
-  KEY `fk_product_item_values_option` (`product_attribute_option_id`),
-  KEY `fk_product_item_values_unit` (`product_unit_id`),
-  CONSTRAINT `fk_product_item_values_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`),
-  CONSTRAINT `fk_product_item_values_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_product_item_values_option` FOREIGN KEY (`product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`),
-  CONSTRAINT `fk_product_item_values_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`)
+  KEY `idx_product_item_values_attribute` (`product_attribute_id`),
+  KEY `idx_product_item_values_option` (`product_attribute_option_id`),
+  KEY `idx_product_item_values_unit` (`product_unit_id`),
+  CONSTRAINT `fk_product_item_values_attribute` FOREIGN KEY (`product_attribute_id`) REFERENCES `product_attributes` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_item_values_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_item_values_option` FOREIGN KEY (`product_attribute_option_id`) REFERENCES `product_attribute_options` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_item_values_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_item_attribute_values: ~0 rows (approximately)
@@ -461,14 +567,16 @@ CREATE TABLE IF NOT EXISTS `product_item_images` (
   `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `original_name` varchar(180) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `mime_type` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `file_size` int DEFAULT NULL,
+  `file_size` int unsigned DEFAULT NULL,
   `sort_order` int NOT NULL DEFAULT '0',
   `is_main` tinyint(1) NOT NULL DEFAULT '0',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `fk_product_item_images_item` (`product_item_id`),
+  UNIQUE KEY `uq_product_item_images_file_path` (`file_path`),
+  KEY `idx_product_item_images_item` (`product_item_id`),
   KEY `idx_product_item_images_variation` (`product_item_variation_id`),
-  CONSTRAINT `fk_product_item_images_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE,
+  KEY `idx_product_item_images_main` (`product_item_id`,`product_item_variation_id`,`is_main`),
+  CONSTRAINT `fk_product_item_images_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_product_item_images_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -496,7 +604,9 @@ CREATE TABLE IF NOT EXISTS `product_item_price_rules` (
   CONSTRAINT `fk_product_item_price_rules_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_product_item_price_rules_unit` FOREIGN KEY (`product_unit_id`) REFERENCES `product_units` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_product_item_price_rules_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chk_product_item_price_rules_range` CHECK (((`maximum_quantity` is null) or (`maximum_quantity` >= `minimum_quantity`)))
+  CONSTRAINT `chk_product_item_price_rules_minimum` CHECK ((`minimum_quantity` > 0)),
+  CONSTRAINT `chk_product_item_price_rules_range` CHECK (((`maximum_quantity` is null) or (`maximum_quantity` >= `minimum_quantity`))),
+  CONSTRAINT `chk_product_item_price_rules_sale_price` CHECK ((`sale_price` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_item_price_rules: ~0 rows (approximately)
@@ -584,7 +694,7 @@ CREATE TABLE IF NOT EXISTS `product_stock_movements` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product_item_id` int NOT NULL,
   `product_item_variation_id` int DEFAULT NULL,
-  `movement_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `movement_type` enum('IN','OUT','ADJUSTMENT') COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(18,6) NOT NULL,
   `previous_quantity` decimal(18,6) NOT NULL,
   `new_quantity` decimal(18,6) NOT NULL,
@@ -595,7 +705,9 @@ CREATE TABLE IF NOT EXISTS `product_stock_movements` (
   PRIMARY KEY (`id`),
   KEY `idx_product_stock_movements_item` (`product_item_id`),
   KEY `idx_product_stock_movements_variation` (`product_item_variation_id`),
-  CONSTRAINT `fk_product_stock_movements_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`),
+  KEY `idx_product_stock_movements_type` (`movement_type`),
+  KEY `idx_product_stock_movements_date` (`movement_date`),
+  CONSTRAINT `fk_product_stock_movements_item` FOREIGN KEY (`product_item_id`) REFERENCES `product_items` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_product_stock_movements_variation` FOREIGN KEY (`product_item_variation_id`) REFERENCES `product_item_variations` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -609,12 +721,14 @@ CREATE TABLE IF NOT EXISTS `product_units` (
   `symbol` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `measurement_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `factor_to_base` decimal(20,10) NOT NULL DEFAULT '1.0000000000',
-  `decimal_places` tinyint NOT NULL DEFAULT '3',
+  `decimal_places` tinyint unsigned NOT NULL DEFAULT '3',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_product_units_code` (`code`)
+  UNIQUE KEY `uq_product_units_code` (`code`),
+  KEY `idx_product_units_measurement_type` (`measurement_type`),
+  KEY `idx_product_units_active` (`active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.product_units: ~7 rows (approximately)
@@ -669,7 +783,8 @@ CREATE TABLE IF NOT EXISTS `schedule_events` (
   KEY `idx_schedule_events_created_by_user` (`created_by_user_id`),
   CONSTRAINT `fk_schedule_events_categories` FOREIGN KEY (`schedule_category_id`) REFERENCES `schedule_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_schedule_events_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_schedule_events_recurrences` FOREIGN KEY (`schedule_events_recurrence_id`) REFERENCES `schedule_events_recurrences` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_schedule_events_recurrences` FOREIGN KEY (`schedule_events_recurrence_id`) REFERENCES `schedule_events_recurrences` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `chk_schedule_events_period` CHECK (((`ends_at` is null) or (`ends_at` >= `starts_at`)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.schedule_events: ~0 rows (approximately)
@@ -717,7 +832,9 @@ CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
   KEY `idx_schedule_events_recurrences_created_by_user` (`created_by_user_id`),
   KEY `idx_schedule_events_recurrences_active` (`active`),
   CONSTRAINT `fk_schedule_events_recurrences_categories` FOREIGN KEY (`schedule_category_id`) REFERENCES `schedule_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_schedule_events_recurrences_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT `fk_schedule_events_recurrences_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `chk_schedule_events_recurrences_interval` CHECK ((`interval_value` > 0)),
+  CONSTRAINT `chk_schedule_events_recurrences_period` CHECK ((`period_end` >= `period_start`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.schedule_events_recurrences: ~0 rows (approximately)
@@ -725,29 +842,28 @@ CREATE TABLE IF NOT EXISTS `schedule_events_recurrences` (
 -- Dumping structure for table manager_0002.schema_versions
 CREATE TABLE IF NOT EXISTS `schema_versions` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `version` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Version number (e.g.: 1.5.0)',
+  `version` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_schema_versions_version` (`version`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0002.schema_versions: ~4 rows (approximately)
+-- Dumping data for table manager_0002.schema_versions: ~5 rows (approximately)
 INSERT INTO `schema_versions` (`id`, `version`, `description`, `created`, `modified`) VALUES
-	(1, '1.0.0', 'Initial tenant schema', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(2, 'store-001', 'Store products, images and stock module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(3, 'tasks-001', 'Tasks, assignees, comments and executions module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(4, 'schedule-001', 'Schedule categories, events, recurrences and participants module', '2026-07-15 23:39:28', '2026-07-15 23:39:28'),
-	(5, 'x', 'Product variations and conditional product attributes', '2026-07-22 17:02:29', '2026-07-22 17:02:29'),
-	(6, '0.0.5', 'Advanced product catalog, generated variations, pricing, imports and variation inventory', '2026-07-22 18:13:01', '2026-07-22 18:32:24');
+	(1, '0.0.1', 'Initial tenant schema', '2026-07-28 17:31:30', '2026-07-28 17:31:30'),
+	(2, '0.0.2', 'Store products, images and stock module', '2026-07-28 17:31:30', '2026-07-28 17:31:30'),
+	(3, '0.0.3', 'Tasks categories, assignments, executions and comments module', '2026-07-28 17:31:30', '2026-07-28 17:31:30'),
+	(4, '0.0.4', 'Product variations and conditional product attributes', '2026-07-28 17:31:30', '2026-07-28 17:31:30'),
+	(5, '0.0.5', 'Advanced product catalog, generated variations, pricing, imports and variation inventory', '2026-07-28 17:31:30', '2026-07-28 17:31:30');
 
 -- Dumping structure for table manager_0002.tasks
 CREATE TABLE IF NOT EXISTS `tasks` (
   `id` int NOT NULL AUTO_INCREMENT,
   `task_category_id` int DEFAULT NULL,
   `title` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` enum('open','in_progress','paused','completed','canceled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
+  `status` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
   `third_party_person_id` int DEFAULT NULL,
   `third_party_name` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -834,7 +950,8 @@ CREATE TABLE IF NOT EXISTS `task_executions` (
   KEY `idx_task_executions_paused_by_user` (`paused_by_user_id`),
   CONSTRAINT `fk_task_executions_manager_main_users_paused_by` FOREIGN KEY (`paused_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_task_executions_manager_main_users_started_by` FOREIGN KEY (`started_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_task_executions_task_assignees` FOREIGN KEY (`task_assignee_id`) REFERENCES `task_assignees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_task_executions_task_assignees` FOREIGN KEY (`task_assignee_id`) REFERENCES `task_assignees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_task_executions_period` CHECK (((`paused_at` is null) or (`paused_at` >= `started_at`)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.task_executions: ~0 rows (approximately)
