@@ -214,9 +214,39 @@ class Tenant extends Model
 	 */
 	public function nextDatabaseNumber(): string
 		{
-		$stmt = $this->db->query("SELECT MAX(CAST(Tenant.database_number AS UNSIGNED)) AS max_num FROM tenants AS Tenant");
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		$next = ((int) ($row['max_num'] ?? 0)) + 1;
+		$stmt = $this->db->query(
+			"SELECT DISTINCT NumberPool.database_number
+			 FROM (
+			   SELECT CAST(Tenant.database_number AS UNSIGNED) AS database_number
+			   FROM tenants AS Tenant
+			   WHERE Tenant.database_number REGEXP '^[0-9]{4}$'
+
+			   UNION
+
+			   SELECT CAST(SUBSTRING(SchemaMeta.SCHEMA_NAME, 9) AS UNSIGNED) AS database_number
+			   FROM information_schema.SCHEMATA AS SchemaMeta
+			   WHERE SchemaMeta.SCHEMA_NAME REGEXP '^manager_[0-9]{4}$'
+			 ) AS NumberPool
+			 WHERE NumberPool.database_number BETWEEN 1 AND 9999
+			 ORDER BY NumberPool.database_number ASC"
+		);
+		$usedNumbers = array_map(
+			static fn ($value): int => (int) $value,
+			$stmt->fetchAll(PDO::FETCH_COLUMN) ?: []
+		);
+		$usedLookup = array_fill_keys($usedNumbers, true);
+
+		$next = 1;
+		while (isset($usedLookup[$next]) && $next <= 9999)
+			{
+			$next++;
+			}
+
+		if ($next > 9999)
+			{
+			throw new \RuntimeException('Não há outro número de base de tenant disponível no formato de quatro dígitos.');
+			}
+
 		return str_pad($next, 4, '0', STR_PAD_LEFT);
 		}
 

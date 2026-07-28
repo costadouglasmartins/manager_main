@@ -93,6 +93,39 @@ class SupportChatTypingService
 		}
 
 	/**
+	 * Clears every typing state associated with the provided support chats.
+	 *
+	 * @param array<int, mixed> $chatIds
+	 */
+	public static function clearChats(array $chatIds): void
+		{
+		$chatKeys = [];
+		foreach ($chatIds as $chatId)
+			{
+			$chatId = (int) $chatId;
+			if ($chatId > 0)
+				{
+				$chatKeys[(string) $chatId] = true;
+				}
+			}
+
+		if (empty($chatKeys))
+			{
+			return;
+			}
+
+		self::mutate(static function (array $data) use ($chatKeys): array {
+			$data = self::cleanupExpired($data);
+			foreach (array_keys($chatKeys) as $chatKey)
+				{
+				unset($data[$chatKey]);
+				}
+
+			return $data;
+		});
+		}
+
+	/**
 	 * Mutates the typing state file using an exclusive lock.
 	 */
 	private static function mutate(callable $callback): void

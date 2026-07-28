@@ -65,6 +65,9 @@ class UserDeletionService
 
 				// Children first: this also works in older tenant schemas whose
 				// foreign-key cascade rules are incomplete.
+				$this->deleteIds($schema, 'crm_activities', $databasePlan['crm_activity_ids']);
+				$this->deleteIds($schema, 'crm_opportunities', $databasePlan['crm_opportunity_ids']);
+
 				$this->deleteIds($schema, 'task_executions', $databasePlan['task_execution_ids']);
 				$this->deleteIds($schema, 'task_comments', $databasePlan['task_comment_ids']);
 				$this->deleteIds($schema, 'task_assignees', $databasePlan['task_assignee_ids']);
@@ -87,6 +90,7 @@ class UserDeletionService
 				}
 
 			$central = $plan['central'];
+			$this->deleteIds('manager_main', 'tenant_people', $central['tenant_person_ids']);
 
 			$this->deleteIds('manager_main', 'internal_chat_messages', $central['internal_message_ids']);
 			$this->deleteInternalParticipants($userId, $central['internal_chat_ids']);
@@ -215,7 +219,12 @@ class UserDeletionService
 		$tenantDatabases = [];
 		foreach ($this->tenantSchemas() as $schema)
 			{
-			$databasePlan = $this->tenantDatabasePlan($schema, $userId, $personId);
+			$databasePlan = $this->tenantDatabasePlan(
+				$schema,
+				$userId,
+				$personId,
+				$central['tenant_person_ids']
+			);
 			$tenantDatabases[] = $databasePlan;
 			$modules = array_merge($modules, $databasePlan['modules']);
 
@@ -369,6 +378,31 @@ class UserDeletionService
 		$addresses = $this->queryRows('SELECT * FROM addresses WHERE person_id = ? ORDER BY id', [(int) $user['person_id']]);
 		$emails = $this->queryRows('SELECT * FROM emails WHERE person_id = ? ORDER BY id', [(int) $user['person_id']]);
 		$phoneNumbers = $this->queryRows('SELECT * FROM phone_numbers WHERE person_id = ? ORDER BY id', [(int) $user['person_id']]);
+		$tenantPeople = $this->queryRows(
+			"SELECT TenantPerson.id,
+			        TenantPerson.tenant_id,
+			        TenantPerson.person_id,
+			        TenantPerson.crm_status_id,
+			        TenantPerson.active
+			 FROM tenant_people AS TenantPerson
+			 WHERE TenantPerson.person_id = ?
+			 ORDER BY TenantPerson.tenant_id, TenantPerson.id",
+			[(int) $user['person_id']]
+		);
+		$tenantPersonRecords = [];
+		foreach ($tenantPeople as $row)
+			{
+			$tenantPersonRecords[] = $this->record(
+				'tenant_people',
+				$row['id'],
+				'Vínculo CRM #' . $row['id']
+					. ' — tenant #' . $row['tenant_id']
+					. ' | status #' . $row['crm_status_id']
+					. ' | ' . ((int) $row['active'] === 1 ? 'ativo' : 'inativo')
+			);
+			}
+		$this->appendModule($modules, 'manager_main', 'Vínculos CRM da pessoa', $tenantPersonRecords);
+
 		$personRecords = [];
 		foreach ($addresses as $row)
 			{
@@ -407,14 +441,57 @@ class UserDeletionService
 			'address_ids' => $this->ids($addresses),
 			'email_ids' => $this->ids($emails),
 			'phone_number_ids' => $this->ids($phoneNumbers),
+			'tenant_person_ids' => $this->ids($tenantPeople),
 		];
 		}
 
 	/** @return array<string, mixed> */
-	private function tenantDatabasePlan(string $schema, int $userId, int $personId): array
+	private function tenantDatabasePlan(
+		string $schema,
+		int $userId,
+		int $personId,
+		array $tenantPersonIds
+	): array
 		{
 		$columns = $this->schemaColumns($schema);
 		$modules = [];
+
+		$crmActivities = $this->rowsByPersonOrTenantPeople(
+			$schema,
+			$columns,
+			'crm_activities',
+			$personId,
+			$tenantPersonIds
+		);
+		$crmOpportunities = $this->rowsByPersonOrTenantPeople(
+			$schema,
+			$columns,
+			'crm_opportunities',
+			$personId,
+			$tenantPersonIds
+		);
+		$crmRecords = [];
+		foreach ($crmActivities as $row)
+			{
+			$crmRecords[] = $this->record(
+				'crm_activities',
+				$row['id'],
+				'Atividade CRM #' . $row['id']
+					. ' — ' . ($row['title'] ?? '')
+					. ' | pessoa #' . ($row['person_id'] ?? $personId)
+			);
+			}
+		foreach ($crmOpportunities as $row)
+			{
+			$crmRecords[] = $this->record(
+				'crm_opportunities',
+				$row['id'],
+				'Oportunidade CRM #' . $row['id']
+					. ' — ' . ($row['title'] ?? '')
+					. ' | pessoa #' . ($row['person_id'] ?? $personId)
+			);
+			}
+		$this->appendModule($modules, $schema, 'CRM', $crmRecords);
 
 		$products = $this->rowsWhenAvailable($schema, $columns, 'products', ['id', 'user_id'], 'user_id = ?', [$userId]);
 		$productIds = $this->ids($products);
@@ -507,6 +584,8 @@ class UserDeletionService
 		return [
 			'schema' => $schema,
 			'modules' => $modules,
+			'crm_activity_ids' => $this->ids($crmActivities),
+			'crm_opportunity_ids' => $this->ids($crmOpportunities),
 			'product_ids' => $productIds,
 			'product_image_ids' => $this->ids($productImages),
 			'product_movement_ids' => $this->ids($productMovements),
@@ -571,6 +650,56 @@ class UserDeletionService
 			return [];
 			}
 		return $this->schemaRows($schema, $table, $this->quoteIdentifier($column) . ' IN (' . $this->placeholders($ids) . ')', $ids);
+		}
+
+	/**
+	 * Find CRM rows owned by the person or one of the person's central tenant links.
+	 *
+	 * @param string $schema Tenant database schema.
+	 * @param array<string, array<string, bool>> $columns Available schema columns.
+	 * @param string $table CRM child table.
+	 * @param int $personId Central person ID.
+	 * @param array<int, int> $tenantPersonIds Central tenant-person IDs.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function rowsByPersonOrTenantPeople(
+		string $schema,
+		array $columns,
+		string $table,
+		int $personId,
+		array $tenantPersonIds
+	): array
+		{
+		if (!$this->hasColumns($columns, $table, ['id']))
+			{
+			return [];
+			}
+
+		$conditions = [];
+		$params = [];
+		if (!empty($columns[$table]['person_id']))
+			{
+			$conditions[] = $this->quoteIdentifier('person_id') . ' = ?';
+			$params[] = $personId;
+			}
+		if ($tenantPersonIds !== [] && !empty($columns[$table]['tenant_person_id']))
+			{
+			$conditions[] = $this->quoteIdentifier('tenant_person_id')
+				. ' IN (' . $this->placeholders($tenantPersonIds) . ')';
+			$params = array_merge($params, array_values($tenantPersonIds));
+			}
+
+		if ($conditions === [])
+			{
+			return [];
+			}
+
+		return $this->schemaRows(
+			$schema,
+			$table,
+			'(' . implode(' OR ', $conditions) . ')',
+			$params
+		);
 		}
 
 	/** @return array<int, array<string, mixed>> */

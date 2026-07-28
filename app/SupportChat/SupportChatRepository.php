@@ -331,6 +331,47 @@ class SupportChatRepository
 		}
 
 	/**
+	 * Returns whether an active customer still has access to the active tenant
+	 * represented by the token database number.
+	 */
+	public function canAccessTenant(int $userId, int $tenantId, string $databaseNumber): bool
+		{
+		$databaseNumber = trim($databaseNumber);
+		if ($userId <= 0 || $tenantId <= 0 || $databaseNumber === '')
+			{
+			return false;
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT 1
+			FROM users AS User
+			INNER JOIN tenants AS Tenant
+			        ON Tenant.id = :tenant_id
+			       AND Tenant.database_number = :database_number
+			       AND Tenant.status = 'active'
+			WHERE User.id = :user_id
+			  AND User.active = 1
+			  AND (
+			    User.tenant_id = Tenant.id
+			    OR EXISTS (
+			      SELECT 1
+			      FROM tenant_users AS TenantUser
+			      WHERE TenantUser.tenant_id = Tenant.id
+			        AND TenantUser.user_id = User.id
+			    )
+			  )
+			LIMIT 1
+		");
+		$stmt->execute([
+			'user_id' => $userId,
+			'tenant_id' => $tenantId,
+			'database_number' => $databaseNumber,
+		]);
+
+		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
 	 * Returns a lightweight attendant row for automatic assignment.
 	 *
 	 * @return array<string, mixed>|null

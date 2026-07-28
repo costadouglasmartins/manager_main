@@ -174,6 +174,11 @@ class SupportChatServer
 		{
 		while (true)
 			{
+			if (!isset($this->clients[$clientId]))
+				{
+				return;
+				}
+
 			$frame = $this->decodeFrame($this->clients[$clientId]['buffer']);
 			if ($frame === null)
 				{
@@ -239,23 +244,42 @@ class SupportChatServer
 			return;
 			}
 
-		switch ($type)
+		if (!$this->clientStillAuthorized($clientId))
 			{
-			case 'send_message':
-				$this->handleSendMessage($clientId, $message);
-				return;
+			return;
+			}
 
-			case 'typing':
-				$this->handleTyping($clientId, $message);
-				return;
+		if ((string) (($this->clients[$clientId]['claims'] ?? [])['role'] ?? '') === 'internal')
+			{
+			$this->sendError($clientId, 'Unsupported message type.');
+			return;
+			}
 
-			case 'assign_chat':
-				$this->handleAssignChat($clientId, $message);
-				return;
+		try
+			{
+			switch ($type)
+				{
+				case 'send_message':
+					$this->handleSendMessage($clientId, $message);
+					return;
 
-			case 'close_chat':
-				$this->handleCloseChat($clientId, $message);
-				return;
+				case 'typing':
+					$this->handleTyping($clientId, $message);
+					return;
+
+				case 'assign_chat':
+					$this->handleAssignChat($clientId, $message);
+					return;
+
+				case 'close_chat':
+					$this->handleCloseChat($clientId, $message);
+					return;
+				}
+			}
+		catch (\Throwable $exception)
+			{
+			$this->handleOperationFailure($clientId, $exception);
+			return;
 			}
 
 		$this->sendError($clientId, 'Unsupported message type.');
@@ -276,15 +300,18 @@ class SupportChatServer
 		$role = (string) ($claims['role'] ?? '');
 		$userId = (int) ($claims['user_id'] ?? 0);
 
-		if ($role === 'root' && !$this->repository()->isRootUser($userId))
+		try
 			{
-			$this->sendError($clientId, 'User is not a root attendant.');
-			return;
+			if (!$this->claimsStillAuthorized($claims))
+				{
+				$this->sendError($clientId, 'Access is no longer available.');
+				$this->disconnectClient($clientId);
+				return;
+				}
 			}
-
-		if ($role === 'customer' && ((int) ($claims['tenant_id'] ?? 0) <= 0))
+		catch (\Throwable $exception)
 			{
-			$this->sendError($clientId, 'Tenant context is required.');
+			$this->handleAuthorizationFailure($clientId, $exception);
 			return;
 			}
 
@@ -357,9 +384,9 @@ class SupportChatServer
 
 			$this->broadcastMessageCreated($chatId, $messageRow, $chat);
 			}
-		catch (\RuntimeException $exception)
+		catch (\Throwable $exception)
 			{
-			$this->sendError($clientId, $exception->getMessage());
+			$this->handleOperationFailure($clientId, $exception);
 			}
 		}
 
@@ -448,9 +475,9 @@ class SupportChatServer
 
 			$this->broadcastChatAssigned($chatId, $chat);
 			}
-		catch (\RuntimeException $exception)
+		catch (\Throwable $exception)
 			{
-			$this->sendError($clientId, $exception->getMessage());
+			$this->handleOperationFailure($clientId, $exception);
 			}
 		}
 
@@ -486,10 +513,98 @@ class SupportChatServer
 
 			$this->broadcastChatClosed($chatId, $chat);
 			}
-		catch (\RuntimeException $exception)
+		catch (\Throwable $exception)
 			{
-			$this->sendError($clientId, $exception->getMessage());
+			$this->handleOperationFailure($clientId, $exception);
 			}
+		}
+
+	/**
+	 * Revalidates the persisted account and tenant association behind a client.
+	 */
+	private function clientStillAuthorized(int $clientId): bool
+		{
+		if (!isset($this->clients[$clientId]))
+			{
+			return false;
+			}
+
+		try
+			{
+			if ($this->claimsStillAuthorized((array) ($this->clients[$clientId]['claims'] ?? [])))
+				{
+				return true;
+				}
+
+			$this->sendError($clientId, 'Access is no longer available.');
+			$this->disconnectClient($clientId);
+			return false;
+			}
+		catch (\Throwable $exception)
+			{
+			$this->handleAuthorizationFailure($clientId, $exception);
+			return false;
+			}
+		}
+
+	/**
+	 * Validates live authorization for root attendants and tenant customers.
+	 *
+	 * @param array<string, mixed> $claims
+	 */
+	private function claimsStillAuthorized(array $claims): bool
+		{
+		if ((int) ($claims['exp'] ?? 0) < time())
+			{
+			return false;
+			}
+
+		$role = (string) ($claims['role'] ?? '');
+		$userId = (int) ($claims['user_id'] ?? 0);
+		if ($role === 'root')
+			{
+			return $userId > 0 && $this->repository()->isRootUser($userId);
+			}
+
+		if ($role !== 'customer' && $role !== 'internal')
+			{
+			return false;
+			}
+
+		return $this->repository()->canAccessTenant(
+			$userId,
+			(int) ($claims['tenant_id'] ?? 0),
+			(string) ($claims['tenant_database_number'] ?? '')
+		);
+		}
+
+	/**
+	 * Logs an authorization lookup failure and closes the affected client safely.
+	 */
+	private function handleAuthorizationFailure(int $clientId, \Throwable $exception): void
+		{
+		$this->writeLog(sprintf(
+			"[%s] Support chat authorization failure for client %d: %s\n",
+			date('Y-m-d H:i:s'),
+			$clientId,
+			$exception->getMessage()
+		));
+		$this->sendError($clientId, 'Unable to validate access right now.');
+		$this->disconnectClient($clientId);
+		}
+
+	/**
+	 * Converts unexpected database/race failures into a safe client response.
+	 */
+	private function handleOperationFailure(int $clientId, \Throwable $exception): void
+		{
+		$this->writeLog(sprintf(
+			"[%s] Support chat operation failure for client %d: %s\n",
+			date('Y-m-d H:i:s'),
+			$clientId,
+			$exception->getMessage()
+		));
+		$this->sendError($clientId, 'Unable to process the support chat operation.');
 		}
 
 	/**
@@ -505,6 +620,16 @@ class SupportChatServer
 
 		foreach (array_keys($this->clients) as $clientId)
 			{
+			if (!isset($this->clients[$clientId]))
+				{
+				continue;
+				}
+
+			if ($this->clients[$clientId]['authenticated'] && !$this->clientStillAuthorized($clientId))
+				{
+				continue;
+				}
+
 			if ($this->clients[$clientId]['handshake_complete'])
 				{
 				$this->sendFrame($clientId, 'keepalive', 0x9);
@@ -610,6 +735,11 @@ class SupportChatServer
 				continue;
 				}
 
+			if (!$this->clientStillAuthorized($clientId))
+				{
+				continue;
+				}
+
 			$claims = $client['claims'];
 			$role = (string) ($claims['role'] ?? '');
 
@@ -648,6 +778,11 @@ class SupportChatServer
 		foreach ($this->clients as $clientId => $client)
 			{
 			if (!$client['authenticated'])
+				{
+				continue;
+				}
+
+			if (!$this->clientStillAuthorized($clientId))
 				{
 				continue;
 				}

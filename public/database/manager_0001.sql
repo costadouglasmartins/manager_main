@@ -126,6 +126,44 @@ CREATE TABLE IF NOT EXISTS `bank_slips` (
 
 -- Dumping data for table manager_0001.bank_slips: ~0 rows (approximately)
 
+-- Dumping structure for table manager_0001.crm_activities
+CREATE TABLE IF NOT EXISTS `crm_activities` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tenant_person_id` int NOT NULL,
+  `person_id` int NOT NULL,
+  `activity_type_id` int NOT NULL,
+  `activity_status_id` int NOT NULL,
+  `title` varchar(180) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `scheduled_at` datetime DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  `responsible_user_id` int DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_crm_activities_tenant_person` (`tenant_person_id`),
+  KEY `idx_crm_activities_person` (`person_id`),
+  KEY `idx_crm_activities_type` (`activity_type_id`),
+  KEY `idx_crm_activities_status` (`activity_status_id`),
+  KEY `idx_crm_activities_responsible` (`responsible_user_id`),
+  KEY `idx_crm_activities_schedule` (`active`,`scheduled_at`),
+  KEY `idx_crm_activities_completed` (`completed_at`),
+  KEY `idx_crm_activities_created_by` (`created_by_user_id`),
+  KEY `idx_crm_activities_updated_by` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_activities_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_person` FOREIGN KEY (`person_id`) REFERENCES `manager_main`.`people` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_responsible_user` FOREIGN KEY (`responsible_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_status` FOREIGN KEY (`activity_status_id`) REFERENCES `crm_activity_statuses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_tenant_person` FOREIGN KEY (`tenant_person_id`) REFERENCES `manager_main`.`tenant_people` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_activities_type` FOREIGN KEY (`activity_type_id`) REFERENCES `crm_activity_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_activities: ~0 rows (approximately)
+
 -- Dumping structure for table manager_0001.crm_activity_statuses
 CREATE TABLE IF NOT EXISTS `crm_activity_statuses` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -148,15 +186,15 @@ CREATE TABLE IF NOT EXISTS `crm_activity_statuses` (
   KEY `idx_crm_activity_statuses_updated_by` (`updated_by_user_id`),
   CONSTRAINT `fk_crm_activity_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_crm_activity_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.crm_activity_statuses: ~5 rows (approximately)
 INSERT INTO `crm_activity_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `is_final`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
-	(1, 'Pendente', 'pending', 'Atividade criada e ainda não executada.', 'text-bg-warning', 10, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(2, 'Em andamento', 'in_progress', 'Atividade iniciada e ainda em execução.', 'text-bg-primary', 20, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(3, 'Concluída', 'completed', 'Atividade finalizada com sucesso.', 'text-bg-success', 30, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(4, 'Reagendada', 'rescheduled', 'Atividade adiada para nova data.', 'text-bg-info', 40, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(5, 'Cancelada', 'canceled', 'Atividade encerrada sem execução.', 'text-bg-secondary', 50, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39');
+	(1, 'Pendente', 'pending', 'Atividade criada e ainda não executada.', 'text-bg-warning', 10, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(2, 'Em andamento', 'in_progress', 'Atividade iniciada e ainda em execução.', 'text-bg-primary', 20, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(3, 'Concluída', 'completed', 'Atividade finalizada com sucesso.', 'text-bg-success', 30, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(4, 'Reagendada', 'rescheduled', 'Atividade adiada para nova data.', 'text-bg-info', 40, 1, 0, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(5, 'Cancelada', 'canceled', 'Atividade encerrada sem execução.', 'text-bg-secondary', 50, 1, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13');
 
 -- Dumping structure for table manager_0001.crm_activity_types
 CREATE TABLE IF NOT EXISTS `crm_activity_types` (
@@ -179,18 +217,218 @@ CREATE TABLE IF NOT EXISTS `crm_activity_types` (
   KEY `idx_crm_activity_types_updated_by` (`updated_by_user_id`),
   CONSTRAINT `fk_crm_activity_types_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_crm_activity_types_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.crm_activity_types: ~8 rows (approximately)
 INSERT INTO `crm_activity_types` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `icon`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
-	(1, 'Ligação', 'phone_call', 'Contato por telefone com o lead, prospect ou cliente.', 'text-bg-primary', 'bi-telephone', 10, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(2, 'WhatsApp', 'whatsapp', 'Contato realizado por WhatsApp.', 'text-bg-success', 'bi-whatsapp', 20, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(3, 'E-mail', 'email', 'Envio ou resposta por e-mail.', 'text-bg-info', 'bi-envelope', 30, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(4, 'Reunião', 'meeting', 'Reunião presencial ou por videoconferência.', 'text-bg-primary', 'bi-people', 40, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(5, 'Anotação', 'note', 'Registro interno de informação comercial.', 'text-bg-secondary', 'bi-journal-text', 50, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(6, 'Tarefa', 'task', 'Ação operacional vinculada ao contato CRM.', 'text-bg-warning', 'bi-list-check', 60, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(7, 'Visita', 'visit', 'Visita presencial ao cliente ou prospect.', 'text-bg-dark', 'bi-geo-alt', 70, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39'),
-	(8, 'Follow-up', 'follow_up', 'Retorno programado para continuidade da negociação.', 'text-bg-danger', 'bi-arrow-repeat', 80, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:27:39');
+	(1, 'Ligação', 'phone_call', 'Contato por telefone com o lead, prospect ou cliente.', 'text-bg-primary', 'bi-telephone', 10, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(2, 'WhatsApp', 'whatsapp', 'Contato realizado por WhatsApp.', 'text-bg-success', 'bi-whatsapp', 20, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(3, 'E-mail', 'email', 'Envio ou resposta por e-mail.', 'text-bg-info', 'bi-envelope', 30, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(4, 'Reunião', 'meeting', 'Reunião presencial ou por videoconferência.', 'text-bg-primary', 'bi-people', 40, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(5, 'Anotação', 'note', 'Registro interno de informação comercial.', 'text-bg-secondary', 'bi-journal-text', 50, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(6, 'Tarefa', 'task', 'Ação operacional vinculada ao contato CRM.', 'text-bg-warning', 'bi-list-check', 60, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(7, 'Visita', 'visit', 'Visita presencial ao cliente ou prospect.', 'text-bg-dark', 'bi-geo-alt', 70, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13'),
+	(8, 'Follow-up', 'follow_up', 'Retorno programado para continuidade da negociação.', 'text-bg-danger', 'bi-arrow-repeat', 80, 1, 2, 2, '2026-07-28 18:27:39', '2026-07-28 18:52:13');
+
+-- Dumping structure for table manager_0001.crm_inactivity_reasons
+CREATE TABLE IF NOT EXISTS `crm_inactivity_reasons` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_inactivity_reasons_slug` (`slug`),
+  KEY `idx_crm_inactivity_reasons_active` (`active`,`sort_order`),
+  KEY `fk_crm_inactivity_reasons_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_inactivity_reasons_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_inactivity_reasons_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_inactivity_reasons_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_inactivity_reasons: ~3 rows (approximately)
+INSERT INTO `crm_inactivity_reasons` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Sem relacionamento ativo', 'sem_relacionamento_ativo', 'Contato sem relação comercial ativa no momento.', 'text-bg-secondary', 10, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(2, 'Contato inválido', 'contato_invalido', 'Telefone, e-mail ou dados de contato não permitem continuidade.', 'text-bg-danger', 20, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(3, 'Projeto pausado', 'projeto_pausado', 'Cliente pausou a iniciativa ou projeto.', 'text-bg-warning', 30, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30');
+
+-- Dumping structure for table manager_0001.crm_loss_reasons
+CREATE TABLE IF NOT EXISTS `crm_loss_reasons` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_loss_reasons_slug` (`slug`),
+  KEY `idx_crm_loss_reasons_active` (`active`,`sort_order`),
+  KEY `fk_crm_loss_reasons_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_loss_reasons_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_loss_reasons_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_loss_reasons_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_loss_reasons: ~5 rows (approximately)
+INSERT INTO `crm_loss_reasons` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Preço', 'preco', 'Cliente considerou o preço incompatível.', 'text-bg-warning', 10, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(2, 'Sem orçamento', 'sem_orcamento', 'Cliente não possui orçamento no momento.', 'text-bg-secondary', 20, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(3, 'Prazo incompatível', 'prazo_incompativel', 'Prazo desejado não pôde ser atendido.', 'text-bg-info', 30, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(4, 'Concorrente', 'concorrente', 'Cliente escolheu uma solução concorrente.', 'text-bg-danger', 40, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(5, 'Sem retorno', 'sem_retorno', 'Cliente não retornou após tentativas de contato.', 'text-bg-dark', 50, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30');
+
+-- Dumping structure for table manager_0001.crm_opportunities
+CREATE TABLE IF NOT EXISTS `crm_opportunities` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tenant_person_id` int NOT NULL,
+  `person_id` int NOT NULL,
+  `crm_source_id` int DEFAULT NULL,
+  `opportunity_type_id` int DEFAULT NULL,
+  `pipeline_stage_id` int NOT NULL,
+  `loss_reason_id` int DEFAULT NULL,
+  `title` varchar(180) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `estimated_value` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `probability` int NOT NULL DEFAULT '0',
+  `expected_close_date` date DEFAULT NULL,
+  `closed_at` datetime DEFAULT NULL,
+  `responsible_user_id` int DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_crm_opportunities_tenant_person` (`tenant_person_id`),
+  KEY `idx_crm_opportunities_person` (`person_id`),
+  KEY `idx_crm_opportunities_source` (`crm_source_id`),
+  KEY `idx_crm_opportunities_type` (`opportunity_type_id`),
+  KEY `idx_crm_opportunities_stage` (`pipeline_stage_id`),
+  KEY `idx_crm_opportunities_loss_reason` (`loss_reason_id`),
+  KEY `idx_crm_opportunities_expected` (`active`,`expected_close_date`),
+  KEY `fk_crm_opportunities_responsible_user` (`responsible_user_id`),
+  KEY `fk_crm_opportunities_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_opportunities_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_opportunities_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_loss_reason` FOREIGN KEY (`loss_reason_id`) REFERENCES `crm_loss_reasons` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_person` FOREIGN KEY (`person_id`) REFERENCES `manager_main`.`people` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_responsible_user` FOREIGN KEY (`responsible_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_source` FOREIGN KEY (`crm_source_id`) REFERENCES `crm_sources` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_stage` FOREIGN KEY (`pipeline_stage_id`) REFERENCES `crm_pipeline_stages` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_tenant_person` FOREIGN KEY (`tenant_person_id`) REFERENCES `manager_main`.`tenant_people` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_type` FOREIGN KEY (`opportunity_type_id`) REFERENCES `crm_opportunity_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunities_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_opportunities: ~0 rows (approximately)
+
+-- Dumping structure for table manager_0001.crm_opportunity_types
+CREATE TABLE IF NOT EXISTS `crm_opportunity_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_opportunity_types_slug` (`slug`),
+  KEY `idx_crm_opportunity_types_active` (`active`,`sort_order`),
+  KEY `fk_crm_opportunity_types_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_opportunity_types_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_opportunity_types_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_opportunity_types_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_opportunity_types: ~4 rows (approximately)
+INSERT INTO `crm_opportunity_types` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Venda nova', 'venda_nova', 'Primeira venda para o contato.', 'text-bg-primary', 10, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(2, 'Renovação', 'renovacao', 'Renovação de contrato ou compra recorrente.', 'text-bg-success', 20, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(3, 'Upsell', 'upsell', 'Ampliação de escopo, plano ou valor contratado.', 'text-bg-info', 30, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(4, 'Reativação', 'reativacao', 'Retomada de contato ou cliente inativo.', 'text-bg-warning', 40, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30');
+
+-- Dumping structure for table manager_0001.crm_pipeline_stages
+CREATE TABLE IF NOT EXISTS `crm_pipeline_stages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `default_probability` int NOT NULL DEFAULT '0',
+  `is_won` tinyint(1) NOT NULL DEFAULT '0',
+  `is_lost` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_pipeline_stages_slug` (`slug`),
+  KEY `idx_crm_pipeline_stages_active` (`active`,`sort_order`),
+  KEY `idx_crm_pipeline_stages_result` (`is_won`,`is_lost`),
+  KEY `fk_crm_pipeline_stages_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_pipeline_stages_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_pipeline_stages_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_pipeline_stages_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_pipeline_stages: ~6 rows (approximately)
+INSERT INTO `crm_pipeline_stages` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `default_probability`, `is_won`, `is_lost`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Novo', 'novo', 'Oportunidade recém-criada.', 'text-bg-primary', 10, 0, 0, 10, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(2, 'Qualificação', 'qualificacao', 'Necessidade, orçamento e prazo em validação.', 'text-bg-info', 25, 0, 0, 20, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(3, 'Proposta', 'proposta', 'Proposta comercial enviada.', 'text-bg-warning', 50, 0, 0, 30, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(4, 'Negociação', 'negociacao', 'Condições comerciais em negociação.', 'text-bg-dark', 75, 0, 0, 40, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(5, 'Ganha', 'ganha', 'Oportunidade convertida com sucesso.', 'text-bg-success', 100, 1, 0, 50, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(6, 'Perdida', 'perdida', 'Oportunidade encerrada sem conversão.', 'text-bg-danger', 0, 0, 1, 60, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30');
+
+-- Dumping structure for table manager_0001.crm_sources
+CREATE TABLE IF NOT EXISTS `crm_sources` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `bootstrap_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text-bg-secondary',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by_user_id` int DEFAULT NULL,
+  `updated_by_user_id` int DEFAULT NULL,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_crm_sources_slug` (`slug`),
+  KEY `idx_crm_sources_active` (`active`,`sort_order`),
+  KEY `fk_crm_sources_created_by_user` (`created_by_user_id`),
+  KEY `fk_crm_sources_updated_by_user` (`updated_by_user_id`),
+  CONSTRAINT `fk_crm_sources_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_crm_sources_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table manager_0001.crm_sources: ~8 rows (approximately)
+INSERT INTO `crm_sources` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
+	(1, 'Indicação', 'indicacao', 'Contato indicado por cliente, parceiro ou relacionamento.', 'text-bg-success', 10, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(2, 'Site', 'site', 'Contato originado pelo site institucional ou landing page.', 'text-bg-primary', 20, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(3, 'WhatsApp', 'whatsapp', 'Contato iniciado por WhatsApp.', 'text-bg-success', 30, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(4, 'Instagram', 'instagram', 'Contato vindo de rede social Instagram.', 'text-bg-danger', 40, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(5, 'Google Ads', 'google_ads', 'Contato gerado por campanha paga no Google.', 'text-bg-warning', 50, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(6, 'Prospecção ativa', 'prospeccao_ativa', 'Contato gerado por abordagem comercial ativa.', 'text-bg-info', 60, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(7, 'Cliente antigo', 'cliente_antigo', 'Reativação ou nova demanda de cliente antigo.', 'text-bg-secondary', 70, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30'),
+	(8, 'Evento', 'evento', 'Contato captado em evento, feira ou encontro comercial.', 'text-bg-dark', 80, 1, 2, 2, '2026-07-28 19:18:40', '2026-07-28 19:19:30');
 
 -- Dumping structure for table manager_0001.crm_statuses
 CREATE TABLE IF NOT EXISTS `crm_statuses` (
@@ -212,7 +450,7 @@ CREATE TABLE IF NOT EXISTS `crm_statuses` (
   KEY `idx_crm_statuses_updated_by` (`updated_by_user_id`),
   CONSTRAINT `fk_crm_statuses_manager_main_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_crm_statuses_manager_main_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0001.crm_statuses: ~8 rows (approximately)
 INSERT INTO `crm_statuses` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES

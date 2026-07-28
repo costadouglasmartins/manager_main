@@ -128,13 +128,17 @@ $addressesStmt->execute(['id' => $id]);
 
 ## Módulos Tenant Aware e rotinas de exclusão
 
-- Todo novo módulo Tenant Aware deve ser registrado nas rotinas de impacto e exclusão de `app/Services/TenantDeletionService.php` e `app/Services/UserDeletionService.php` antes de ser considerado concluído.
-- Quando o módulo criar tabelas na base dedicada do tenant, atualize também o agrupamento de módulos em `app/Services/TenantProvisioner.php`, para que todos os registros apareçam no manifesto de confirmação da exclusão do tenant.
+- Antes de concluir qualquer CRUD ou armazenamento persistente, classifique os dados como globais ou Tenant Aware.
+- Todo CRUD Tenant Aware deve incluir, na mesma mudança, cada associação direta ou indireta ao tenant no manifesto e na execução de `app/Services/TenantDeletionService.php`. Inclua registros no banco central, tabelas nas bases `manager_NNNN`, arquivos persistentes, temporários e caches.
+- Quando o módulo criar tabelas na base dedicada do tenant, registre-as explicitamente em `TenantProvisioner::DATABASE_MODULES`, em `app/Services/TenantProvisioner.php`, para que todos os registros apareçam no manifesto de confirmação da exclusão. O fallback de descoberta é somente uma rede de segurança e não substitui esse catálogo.
+- Quando o CRUD referenciar `users` ou `people`, revise e atualize também `app/Services/UserDeletionService.php`, preservando os bloqueios de pessoas, usuários e referências compartilhadas ou protegidas.
 - O manifesto deve informar a base, o módulo, a tabela, o identificador e a descrição de cada registro que será removido. A exclusão deve usar exatamente o mesmo plano apresentado ao usuário, recalculado no servidor no momento da confirmação.
 - Registre tabelas filhas antes das tabelas pai e mantenha a ordem de exclusão compatível com as chaves estrangeiras, incluindo dependências em `manager_main` e nas bases `manager_NNNN`.
-- Ao adicionar uma referência a `tenants`, `users` ou `people`, revise as duas rotinas de exclusão, mesmo quando a chave estrangeira usar `CASCADE`, `SET NULL` ou quando bancos antigos ainda não possuírem a constraint.
+- Ao adicionar uma referência a `tenants`, revise `TenantDeletionService`; ao referenciar `users` ou `people`, revise também `UserDeletionService`, mesmo quando a chave estrangeira usar `CASCADE`, `SET NULL` ou quando bancos antigos ainda não possuírem a constraint.
+- Nunca burle o gate de metadados em runtime para aceitar uma associação ainda não registrada; catalogue a associação detectada.
 - A exclusão de um tenant pode remover sua base dedicada somente após a confirmação integral. A exclusão de um usuário nunca deve excluir uma base de dados; deve remover o usuário, sua pessoa associada, seus contatos e apenas os demais registros listados no manifesto. Pessoas protegidas ou compartilhadas com outro usuário devem bloquear esse fluxo.
 - Preserve as proteções de registros especiais e os catálogos globais definidos pelos services. Inclua testes de manifesto, proteção e rollback para cada novo módulo Tenant Aware.
+- Um CRUD Tenant Aware não está concluído sem testes aplicáveis de manifesto, remoção e rollback, incluindo os armazenamentos não relacionais que ele criar.
 
 ## Comportamento frontend
 
