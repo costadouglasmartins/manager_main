@@ -12,7 +12,7 @@ class ZipCodeCrawlerService
 	{
 	private const NOT_FOUND_FILE_NAME = 'zip_code_crawler_not_found.txt';
 	private const NOT_FOUND_JOURNAL_FILE_NAME = 'zip_code_crawler_not_found_pending.txt';
-	private const NOT_FOUND_FLUSH_THRESHOLD = 5;
+	private const NOT_FOUND_FLUSH_THRESHOLD = 5000;
 	private const NOT_FOUND_RESUME_WINDOW = 5;
 	private const DEFAULT_CONCURRENCY = 3;
 	private const MAX_CONCURRENCY = 500;
@@ -178,10 +178,11 @@ class ZipCodeCrawlerService
 	private ?array $notFoundZipCodes = null;
 	private bool $notFoundZipCodesDirty = false;
 	private int $pendingNotFoundZipCodeWrites = 0;
+	// Zip codes retained in memory until an atomic cache flush succeeds.
+	private array $pendingNotFoundZipCodes = [];
 	private ?PDO $db = null;
 	private ?ZipCodeNeighborhoodService $zipCodeNeighborhoodService = null;
 	private array $stateDatabaseCaches = [];
-	private array $activeNotFoundZipCodes = [];
 	private int $viaCepTransientFailures = 0;
 	private float $viaCepDisabledUntil = 0.0;
 	private array $viaCepDisabledDiagnostics = [];
@@ -466,7 +467,7 @@ class ZipCodeCrawlerService
 
 		if (strlen($startDigits) !== 8 || strlen($endDigits) !== 8)
 			{
-			yield $this->event('error', [
+			yield $this->event('crawler_error', [
 				'message' => 'Informe CEPs válidos com 8 dígitos.',
 			]);
 			return;
@@ -521,7 +522,7 @@ class ZipCodeCrawlerService
 
 		if (empty($ranges))
 			{
-			yield $this->event('error', [
+			yield $this->event('crawler_error', [
 				'message' => 'Selecione um estado brasileiro com faixa de CEP configurada.',
 			]);
 			return;
@@ -552,10 +553,12 @@ class ZipCodeCrawlerService
 		$concurrency = $this->normalizeConcurrency($concurrency);
 
 		$notFoundZipCodes = yield from $this->loadNotFoundZipCodesWithProgress();
-		$this->activeNotFoundZipCodes = $notFoundZipCodes;
+		// Number of cache entries reported before the local reference is released.
+		$notFoundCacheCount = count($notFoundZipCodes);
 
 		$this->prepareViaCepAvailability($providerMode);
 		$resumeStartDigits = $this->resolveNotFoundResumeStart($notFoundZipCodes, $ranges);
+		unset($notFoundZipCodes);
 		$crawlRanges = $resumeStartDigits === null
 			? $this->descendingZipCodeRanges($ranges)
 			: $this->rotateZipCodeRangesFrom($ranges, $resumeStartDigits);
@@ -573,7 +576,7 @@ class ZipCodeCrawlerService
 			'total_available' => $totalAvailable,
 			'not_found_file' => self::NOT_FOUND_FILE_NAME,
 			'not_found_journal_file' => self::NOT_FOUND_JOURNAL_FILE_NAME,
-			'not_found_cache_count' => count($notFoundZipCodes),
+			'not_found_cache_count' => $notFoundCacheCount,
 			'not_found_resume_window' => self::NOT_FOUND_RESUME_WINDOW,
 			'resume_start_zip_code' => $resumeStartDigits === null ? '' : self::formatZipCodeDigits($resumeStartDigits),
 			'delay_mode' => $delayMode,
@@ -615,7 +618,7 @@ class ZipCodeCrawlerService
 					break;
 					}
 
-				if ($this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
+				if ($this->isZipCodeInNotFoundCache($zipCode))
 					{
 					$stats['skipped']++;
 					$stats['handled']++;
@@ -625,7 +628,7 @@ class ZipCodeCrawlerService
 				$lookupBatch[] = $zipCode;
 				if (count($lookupBatch) >= $concurrency)
 					{
-					yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+					yield from $this->processLookupBatch($lookupBatch, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
 					$lookupBatch = [];
 
 					if ($this->shouldStopCrawler())
@@ -637,7 +640,7 @@ class ZipCodeCrawlerService
 
 			if (!empty($lookupBatch) && !$this->shouldStopCrawler())
 				{
-				yield from $this->processLookupBatch($lookupBatch, $notFoundZipCodes, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+				yield from $this->processLookupBatch($lookupBatch, $providerMode, $delayMs, $delayMode, $stats, $totalToProcess, $stateAcronym, $autoSaveCity, $autoSaveNeighborhood, $createCity);
 				}
 			}
 		finally
@@ -674,7 +677,7 @@ class ZipCodeCrawlerService
 	 */
 	private function lookupByMode(string $zipCode, string $providerMode): array
 		{
-		if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+		if ($this->isZipCodeInNotFoundCache($zipCode))
 			{
 			return $this->buildSkippedNotFoundResult($zipCode);
 			}
@@ -697,7 +700,6 @@ class ZipCodeCrawlerService
 	/**
 	 * Lookup a batch of zip codes and yield progress payloads in input order.
 	 * @param array<int, string> $zipCodes Zip codes to search.
-	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @param string $providerMode Provider selection mode.
 	 * @param int $delayMs Delay between lookup batches in milliseconds.
 	 * @param string $delayMode Delay mode.
@@ -709,7 +711,7 @@ class ZipCodeCrawlerService
 	 * @param bool $createCity Whether missing cities may be created.
 	 * @return \Generator<int, array<string, mixed>, mixed, void>
 	 **/
-	private function processLookupBatch(array $zipCodes, array &$notFoundZipCodes, string $providerMode, int $delayMs, string $delayMode, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
+	private function processLookupBatch(array $zipCodes, string $providerMode, int $delayMs, string $delayMode, array &$stats, int $totalToProcess, ?string $stateAcronym, bool $autoSaveCity, bool $autoSaveNeighborhood, bool $createCity): \Generator
 		{
 		if (empty($zipCodes))
 			{
@@ -721,7 +723,7 @@ class ZipCodeCrawlerService
 
 		foreach ($zipCodes as $zipCode)
 			{
-			if ($this->isZipCodeInNotFoundCache($zipCode, $notFoundZipCodes))
+			if ($this->isZipCodeInNotFoundCache($zipCode))
 				{
 				$skippedResults[$zipCode] = $this->buildSkippedNotFoundResult($zipCode);
 				continue;
@@ -777,7 +779,6 @@ class ZipCodeCrawlerService
 				if ($this->shouldRememberFailedZipCode($result, $providerMode))
 					{
 					$this->rememberNotFoundZipCode($zipCode);
-					$this->addZipCodeToNotFoundCache($zipCode, $notFoundZipCodes);
 					}
 				}
 			elseif ($this->lookupResultSavedNewRecord($result))
@@ -826,7 +827,7 @@ class ZipCodeCrawlerService
 
 		foreach ($zipCodes as $zipCode)
 			{
-			if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+			if ($this->isZipCodeInNotFoundCache($zipCode))
 				{
 				$skippedResults[$zipCode] = $this->buildSkippedNotFoundResult($zipCode);
 				continue;
@@ -2039,31 +2040,12 @@ class ZipCodeCrawlerService
 	/**
 	 * Check whether a zip code exists in an already loaded not found cache.
 	 * @param string $zipCode Zip code to check.
-	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
 	 * @return bool
 	 **/
-	private function isZipCodeInNotFoundCache(string $zipCode, array $notFoundZipCodes): bool
+	private function isZipCodeInNotFoundCache(string $zipCode): bool
 		{
 		$digits = $this->normalizeZipCode($zipCode);
-		return strlen($digits) === 8 && isset($notFoundZipCodes[$digits]);
-		}
-
-	/**
-	 * Add a zip code to the already loaded not found cache.
-	 * @param string $zipCode Zip code to add.
-	 * @param array<string, bool> $notFoundZipCodes Preloaded not found zip code cache.
-	 * @return void
-	 **/
-	private function addZipCodeToNotFoundCache(string $zipCode, array &$notFoundZipCodes): void
-		{
-		$digits = $this->normalizeZipCode($zipCode);
-		if (strlen($digits) !== 8)
-			{
-			return;
-			}
-
-		$notFoundZipCodes[$digits] = true;
-		$this->activeNotFoundZipCodes[$digits] = true;
+		return strlen($digits) === 8 && isset($this->notFoundZipCodes[$digits]);
 		}
 
 	/**
@@ -2079,16 +2061,25 @@ class ZipCodeCrawlerService
 			return;
 			}
 
-		$notFoundZipCodes = $this->loadNotFoundZipCodes();
-		if (isset($notFoundZipCodes[$digits]))
+		if ($this->notFoundZipCodes === null)
+			{
+			$this->loadNotFoundZipCodes();
+			}
+
+		if (isset($this->notFoundZipCodes[$digits]))
 			{
 			return;
 			}
 
 		$this->notFoundZipCodes[$digits] = true;
 		$this->notFoundZipCodesDirty = true;
-		$this->pendingNotFoundZipCodeWrites++;
-		$this->appendNotFoundZipCodeJournal($digits);
+		$this->pendingNotFoundZipCodes[$digits] = true;
+		$this->pendingNotFoundZipCodeWrites = count($this->pendingNotFoundZipCodes);
+
+		if (!$this->appendNotFoundZipCodeJournal($digits))
+			{
+			error_log('Unable to append zip code ' . $digits . ' to the not found cache journal.');
+			}
 
 		if ($this->pendingNotFoundZipCodeWrites >= self::NOT_FOUND_FLUSH_THRESHOLD)
 			{
@@ -2125,17 +2116,36 @@ class ZipCodeCrawlerService
 			return;
 			}
 
-		$handle = @fopen($this->notFoundFilePath, 'c+');
-		if (!is_resource($handle))
+		// Locked handle for the current canonical cache file.
+		$mainHandle = @fopen($this->notFoundFilePath, 'c+');
+		if (!is_resource($mainHandle))
 			{
 			flock($journalHandle, LOCK_UN);
 			fclose($journalHandle);
 			return;
 			}
 
-		if (!flock($handle, LOCK_EX))
+		if (!flock($mainHandle, LOCK_EX))
 			{
-			fclose($handle);
+			fclose($mainHandle);
+			flock($journalHandle, LOCK_UN);
+			fclose($journalHandle);
+			return;
+			}
+
+		// Temporary path in the same filesystem for an atomic replacement.
+		$temporaryPath = @tempnam($directory, 'zip_code_crawler_');
+		// Writable handle used to build the replacement cache.
+		$temporaryHandle = is_string($temporaryPath) ? @fopen($temporaryPath, 'wb') : false;
+		if (!is_resource($temporaryHandle))
+			{
+			if (is_string($temporaryPath) && is_file($temporaryPath))
+				{
+				@unlink($temporaryPath);
+				}
+
+			flock($mainHandle, LOCK_UN);
+			fclose($mainHandle);
 			flock($journalHandle, LOCK_UN);
 			fclose($journalHandle);
 			return;
@@ -2143,53 +2153,228 @@ class ZipCodeCrawlerService
 
 		try
 			{
-			$contents = stream_get_contents($handle);
-			$contents = is_string($contents) ? $contents : '';
-			rewind($journalHandle);
+			if (!rewind($journalHandle))
+				{
+				return;
+				}
+
 			$journalContents = stream_get_contents($journalHandle);
-			$journalContents = is_string($journalContents) ? $journalContents : '';
-			$notFoundZipCodes = $this->parseNotFoundZipCodeContents($contents);
+			if (!is_string($journalContents))
+				{
+				return;
+				}
+
 			$journalZipCodes = $this->parseNotFoundZipCodeContents($journalContents);
+
+			foreach ($this->pendingNotFoundZipCodes as $digits => $exists)
+				{
+				if ($exists)
+					{
+					$journalZipCodes[$digits] = true;
+					}
+				}
+
+			if (empty($journalZipCodes))
+				{
+				$this->notFoundZipCodesDirty = false;
+				$this->pendingNotFoundZipCodeWrites = 0;
+				$this->pendingNotFoundZipCodes = [];
+				return;
+				}
 
 			foreach ($journalZipCodes as $digits => $exists)
 				{
 				if ($exists)
 					{
-					$notFoundZipCodes[$digits] = true;
+					$this->notFoundZipCodes[$digits] = true;
 					}
 				}
 
-			$memoryNotFoundZipCodes = is_array($this->notFoundZipCodes) ? $this->notFoundZipCodes : [];
-			foreach ($memoryNotFoundZipCodes as $digits => $exists)
+			// Sorted journal entries merged into the canonical cache.
+			$pendingZipCodes = array_keys($journalZipCodes);
+			rsort($pendingZipCodes, SORT_STRING);
+			// Current position in the sorted journal entries.
+			$pendingIndex = 0;
+			// Total number of unique journal entries.
+			$pendingCount = count($pendingZipCodes);
+			// Most recent line written to the temporary cache.
+			$lastWrittenZipCode = '';
+			// Previous main-cache entry used to validate descending order.
+			$previousMainZipCode = '';
+			// Whether the canonical cache needs a full in-memory normalization pass.
+			$mainNeedsNormalization = false;
+			// Whether all writes to the replacement cache have succeeded.
+			$writeSucceeded = true;
+
+			if (!rewind($mainHandle))
 				{
-				if ($exists)
+				return;
+				}
+
+			// Raw lines streamed from the canonical cache without loading another copy.
+			while (($line = fgets($mainHandle)) !== false)
+				{
+				// Normalized entry read from the canonical cache.
+				$mainZipCode = $this->normalizeNotFoundZipCodeLine((string) $line);
+				if ($mainZipCode === '')
 					{
-					$notFoundZipCodes[$digits] = true;
+					$mainNeedsNormalization = true;
+					continue;
+					}
+
+				$this->notFoundZipCodes[$mainZipCode] = true;
+				if ($previousMainZipCode !== '' && strcmp($previousMainZipCode, $mainZipCode) <= 0)
+					{
+					$mainNeedsNormalization = true;
+					}
+				$previousMainZipCode = $mainZipCode;
+
+				while ($pendingIndex < $pendingCount && strcmp($pendingZipCodes[$pendingIndex], $mainZipCode) > 0)
+					{
+					$writeSucceeded = $this->writeNotFoundZipCodeLine($temporaryHandle, $pendingZipCodes[$pendingIndex], $lastWrittenZipCode);
+					$pendingIndex++;
+					if (!$writeSucceeded)
+						{
+						break 2;
+						}
+					}
+
+				if ($pendingIndex < $pendingCount && $pendingZipCodes[$pendingIndex] === $mainZipCode)
+					{
+					$pendingIndex++;
+					}
+
+				$writeSucceeded = $this->writeNotFoundZipCodeLine($temporaryHandle, $mainZipCode, $lastWrittenZipCode);
+				if (!$writeSucceeded)
+					{
+					break;
 					}
 				}
 
-			$sortedContents = $this->serializeNotFoundZipCodes($notFoundZipCodes);
-			rewind($handle);
-			ftruncate($handle, 0);
-			$written = fwrite($handle, $sortedContents) !== false;
-
-			if ($written)
+			if (!$writeSucceeded || !feof($mainHandle))
 				{
-				$this->notFoundZipCodes = $notFoundZipCodes;
+				return;
+				}
+
+			if ($mainNeedsNormalization)
+				{
+				if (!rewind($temporaryHandle) || !ftruncate($temporaryHandle, 0))
+					{
+					return;
+					}
+
+				$writeSucceeded = $this->writeLoadedNotFoundZipCodes($temporaryHandle);
+				}
+			else
+				{
+				while ($writeSucceeded && $pendingIndex < $pendingCount)
+					{
+					$writeSucceeded = $this->writeNotFoundZipCodeLine($temporaryHandle, $pendingZipCodes[$pendingIndex], $lastWrittenZipCode);
+					$pendingIndex++;
+					}
+				}
+
+			if (!$writeSucceeded || !fflush($temporaryHandle))
+				{
+				return;
+				}
+
+			if (function_exists('fsync') && !@fsync($temporaryHandle))
+				{
+				return;
+				}
+
+			fclose($temporaryHandle);
+			$temporaryHandle = null;
+			@chmod($temporaryPath, 0644);
+
+			if (!@rename($temporaryPath, $this->notFoundFilePath))
+				{
+				return;
+				}
+
+			$temporaryPath = '';
+			rewind($journalHandle);
+			if (ftruncate($journalHandle, 0) && fflush($journalHandle))
+				{
+				if (function_exists('fsync'))
+					{
+					@fsync($journalHandle);
+					}
+
 				$this->notFoundZipCodesDirty = false;
 				$this->pendingNotFoundZipCodeWrites = 0;
-				rewind($journalHandle);
-				ftruncate($journalHandle, 0);
-				fflush($journalHandle);
+				$this->pendingNotFoundZipCodes = [];
 				}
 			}
 		finally
 			{
-			flock($handle, LOCK_UN);
-			fclose($handle);
+			if (is_resource($temporaryHandle))
+				{
+				fclose($temporaryHandle);
+				}
+
+			if (is_string($temporaryPath) && $temporaryPath !== '' && is_file($temporaryPath))
+				{
+				@unlink($temporaryPath);
+				}
+
+			flock($mainHandle, LOCK_UN);
+			fclose($mainHandle);
 			flock($journalHandle, LOCK_UN);
 			fclose($journalHandle);
 			}
+		}
+
+	/**
+	 * Write one normalized zip code line while avoiding adjacent duplicates.
+	 * @param resource $handle Writable cache file handle.
+	 * @param string $zipCode Normalized zip code digits.
+	 * @param string $lastWrittenZipCode Last zip code written to the cache.
+	 * @return bool True when the line is already present or was written completely.
+	 **/
+	private function writeNotFoundZipCodeLine($handle, string $zipCode, string &$lastWrittenZipCode): bool
+		{
+		if ($zipCode === $lastWrittenZipCode)
+			{
+			return true;
+			}
+
+		// Complete normalized line written to the cache.
+		$line = $zipCode . PHP_EOL;
+		// Number of bytes accepted by the writable stream.
+		$written = fwrite($handle, $line);
+		if ($written !== strlen($line))
+			{
+			return false;
+			}
+
+		$lastWrittenZipCode = $zipCode;
+		return true;
+		}
+
+	/**
+	 * Write the loaded not found cache in descending order.
+	 * @param resource $handle Writable cache file handle.
+	 * @return bool True when every cache line was written completely.
+	 **/
+	private function writeLoadedNotFoundZipCodes($handle): bool
+		{
+		// Loaded cache keys used only by the normalization fallback.
+		$zipCodes = array_keys($this->notFoundZipCodes ?? []);
+		rsort($zipCodes, SORT_STRING);
+		// Most recent normalized line written to the cache.
+		$lastWrittenZipCode = '';
+
+		foreach ($zipCodes as $zipCode)
+			{
+			if (!$this->writeNotFoundZipCodeLine($handle, $zipCode, $lastWrittenZipCode))
+				{
+				return false;
+				}
+			}
+
+		return true;
 		}
 
 	/**
@@ -2402,36 +2587,43 @@ class ZipCodeCrawlerService
 	/**
 	 * Append a not found zip code to the recovery journal immediately.
 	 * @param string $digits Normalized zip code digits.
-	 * @return void
+	 * @return bool True when the line was persisted durably.
 	 **/
-	private function appendNotFoundZipCodeJournal(string $digits): void
+	private function appendNotFoundZipCodeJournal(string $digits): bool
 		{
 		$directory = dirname($this->notFoundJournalFilePath);
 		if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory))
 			{
-			return;
+			return false;
 			}
 
 		$handle = @fopen($this->notFoundJournalFilePath, 'ab');
 		if (!is_resource($handle))
 			{
-			return;
+			return false;
 			}
 
 		if (!flock($handle, LOCK_EX))
 			{
 			fclose($handle);
-			return;
+			return false;
 			}
 
 		try
 			{
-			fwrite($handle, $digits . PHP_EOL);
-			fflush($handle);
-			if (function_exists('fsync'))
+			// Complete journal line that must be durably persisted.
+			$line = $digits . PHP_EOL;
+			if (fwrite($handle, $line) !== strlen($line) || !fflush($handle))
 				{
-				@fsync($handle);
+				return false;
 				}
+
+			if (function_exists('fsync') && !@fsync($handle))
+				{
+				return false;
+				}
+
+			return true;
 			}
 		finally
 			{
@@ -2654,19 +2846,6 @@ class ZipCodeCrawlerService
 		}
 
 	/**
-	 * Serialize zip codes in descending order, one per line.
-	 * @param array<string, bool> $notFoundZipCodes Parsed zip code set.
-	 * @return string
-	 **/
-	private function serializeNotFoundZipCodes(array $notFoundZipCodes): string
-		{
-		$zipCodes = array_keys($notFoundZipCodes);
-		rsort($zipCodes, SORT_STRING);
-
-		return empty($zipCodes) ? '' : implode(PHP_EOL, $zipCodes) . PHP_EOL;
-		}
-
-	/**
 	 * Resolve the default not found zip code file path.
 	 * @return string
 	 **/
@@ -2883,7 +3062,7 @@ class ZipCodeCrawlerService
 	private function buildSuccessResult(string $source, array $data, array $attempts): array
 		{
 		$zipCode = (string) ($data['zip_code'] ?? '');
-		if ($this->isZipCodeInNotFoundCache($zipCode, $this->activeNotFoundZipCodes))
+		if ($this->isZipCodeInNotFoundCache($zipCode))
 			{
 			return $this->buildSkippedNotFoundResult($zipCode);
 			}

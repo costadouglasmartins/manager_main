@@ -721,6 +721,45 @@
 				appendResultsElement(buildSystemLine(type, text));
 			}
 
+		function stopStreamWithError(text, status)
+			{
+				setMessage("danger", text);
+				statusText.textContent = status || "Interrompido";
+				clearQueuedResults();
+				appendSystemLine("ERROR", text);
+				stopRateTimer();
+				updateRemainingTime({processed: 0, handled: 0, total: 0, remaining: 0});
+				setLoading(false);
+
+				if (eventSource)
+					{
+						eventSource.close();
+						eventSource = null;
+					}
+
+				activeRunId = "";
+				crawlerStoppedByUser = false;
+			}
+
+		function crawlerErrorPayload(event)
+			{
+				if (!event || typeof event.data !== "string" || event.data === "")
+					{
+						return null;
+					}
+
+				try
+					{
+						// Parsed domain error sent through the SSE stream.
+						const payload = JSON.parse(event.data);
+						return payload && typeof payload === "object" ? payload : {};
+					}
+				catch (error)
+					{
+						return {};
+					}
+			}
+
 		function setResultsInfo(type, text)
 			{
 				if (!resultsInfo)
@@ -1094,6 +1133,20 @@
 						appendResultRow(payload);
 					});
 
+				eventSource.addEventListener("crawler_error", function (event)
+					{
+						if (crawlerStoppedByUser)
+							{
+								return;
+							}
+
+						// Domain error payload emitted by the crawler service.
+						const payload = crawlerErrorPayload(event) || {};
+						// User-facing message supplied by the backend when available.
+						const text = String(payload.message || "O crawler foi interrompido por uma falha interna. Tente novamente.");
+						stopStreamWithError(text, "Falha");
+					});
+
 				eventSource.addEventListener("done", function (event)
 					{
 						if (crawlerStoppedByUser)
@@ -1115,7 +1168,7 @@
 						crawlerStoppedByUser = false;
 					});
 
-				eventSource.addEventListener("error", function ()
+				eventSource.addEventListener("error", function (event)
 					{
 						if (!eventSource)
 							{
@@ -1127,15 +1180,22 @@
 								return;
 							}
 
-						setMessage("danger", "A conexão da pesquisa foi interrompida.");
-						statusText.textContent = "Interrompido";
-						appendSystemLine("ERROR", "Conexão interrompida - verifique a rede e tente novamente");
-						stopRateTimer();
-						updateRemainingTime({processed: 0, handled: 0, total: 0, remaining: 0});
-						setLoading(false);
-						eventSource.close();
-						eventSource = null;
-						activeRunId = "";
+						// Legacy domain payload received through the reserved error event.
+						const payload = crawlerErrorPayload(event);
+						if (payload)
+							{
+								stopStreamWithError(
+									String(payload.message || "O crawler não pôde iniciar com os parâmetros informados."),
+									"Falha"
+								);
+								return;
+							}
+
+						// Neutral transport message based on whether streaming had started.
+						const text = streamStartedAt > 0
+							? "O servidor encerrou a transmissão antes de concluir a pesquisa. Tente novamente."
+							: "Não foi possível iniciar a transmissão do crawler. Atualize a página e tente novamente.";
+						stopStreamWithError(text, "Interrompido");
 					});
 			}
 

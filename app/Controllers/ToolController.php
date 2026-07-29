@@ -178,15 +178,34 @@ class ToolController extends Controller
 			? $service->crawlState($stateAcronym, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode)
 			: $service->crawl($startZipCode, $endZipCode, $delayMs, $maxResults, $providerMode, $concurrency, $autoSaveCity, $autoSaveNeighborhood, $createCity, $delayMode);
 
-		foreach ($stream as $payload)
+		try
 			{
-			echo 'event: ' . ($payload['event'] ?? 'message') . "\n";
-			echo 'data: ' . json_encode($payload['data'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
-			flush();
-
-			if (connection_aborted())
+			foreach ($stream as $payload)
 				{
-				break;
+				$this->sendZipCodeCrawlerEvent(
+					(string) ($payload['event'] ?? 'message'),
+					is_array($payload['data'] ?? null) ? $payload['data'] : []
+				);
+
+				if (connection_aborted())
+					{
+					break;
+					}
+				}
+			}
+		catch (\Throwable $exception)
+			{
+			error_log(sprintf(
+				'Zip code crawler stream failed with %s: %s',
+				get_class($exception),
+				$exception->getMessage()
+			));
+
+			if (!connection_aborted())
+				{
+				$this->sendZipCodeCrawlerEvent('crawler_error', [
+					'message' => 'O crawler foi interrompido por uma falha interna. Tente novamente.',
+				]);
 				}
 			}
 
@@ -586,6 +605,22 @@ class ToolController extends Controller
 			}
 
 		return $options;
+		}
+
+	/**
+	 * Send one Server-Sent Event for the zip code crawler stream.
+	 * @param string $event Event name.
+	 * @param array<string, mixed> $data Event payload.
+	 * @return void
+	 **/
+	private function sendZipCodeCrawlerEvent(string $event, array $data): void
+		{
+		echo 'event: ' . $event . "\n";
+		echo 'data: ' . json_encode(
+			$data,
+			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PARTIAL_OUTPUT_ON_ERROR
+		) . "\n\n";
+		flush();
 		}
 
 	/**
