@@ -250,13 +250,14 @@ CREATE TABLE IF NOT EXISTS `crm_inactivity_reasons` (
   KEY `fk_crm_inactivity_reasons_updated_by_user` (`updated_by_user_id`),
   CONSTRAINT `fk_crm_inactivity_reasons_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_crm_inactivity_reasons_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_0002.crm_inactivity_reasons: ~3 rows (approximately)
+-- Dumping data for table manager_0002.crm_inactivity_reasons: ~4 rows (approximately)
 INSERT INTO `crm_inactivity_reasons` (`id`, `name`, `slug`, `description`, `bootstrap_class`, `sort_order`, `active`, `created_by_user_id`, `updated_by_user_id`, `created`, `modified`) VALUES
 	(1, 'Sem relacionamento ativo', 'sem_relacionamento_ativo', 'Contato sem relação comercial ativa no momento.', 'text-bg-secondary', 10, 1, 2, 2, '2026-07-28 22:17:32', '2026-07-28 22:17:32'),
 	(2, 'Contato inválido', 'contato_invalido', 'Telefone, e-mail ou dados de contato não permitem continuidade.', 'text-bg-danger', 20, 1, 2, 2, '2026-07-28 22:17:32', '2026-07-28 22:17:32'),
-	(3, 'Projeto pausado', 'projeto_pausado', 'Cliente pausou a iniciativa ou projeto.', 'text-bg-warning', 30, 1, 2, 2, '2026-07-28 22:17:32', '2026-07-28 22:17:32');
+	(3, 'Projeto pausado', 'projeto_pausado', 'Cliente pausou a iniciativa ou projeto.', 'text-bg-warning', 30, 1, 2, 2, '2026-07-28 22:17:32', '2026-07-28 22:17:32'),
+	(4, 'Teste', 'teste', 'testeeee', 'text-bg-secondary', 1, 1, 5, 5, '2026-07-29 21:20:18', '2026-07-29 21:38:50');
 
 -- Dumping structure for table manager_0002.crm_loss_reasons
 CREATE TABLE IF NOT EXISTS `crm_loss_reasons` (
@@ -968,7 +969,7 @@ CREATE TABLE IF NOT EXISTS `schedule_events` (
   CONSTRAINT `fk_schedule_events_categories` FOREIGN KEY (`schedule_category_id`) REFERENCES `schedule_categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_schedule_events_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_schedule_events_recurrences` FOREIGN KEY (`schedule_events_recurrence_id`) REFERENCES `schedule_events_recurrences` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_0002.schedule_events: ~0 rows (approximately)
 
