@@ -5896,7 +5896,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=845 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=850 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table manager_main.logs: ~546 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
@@ -6588,7 +6588,12 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(841, '5b899224-1e80-41e7-a5a7-00202a5d71d6', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-05 22:46:20', NULL, '{"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}', '{"to": {"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-08-05 22:46:20', '2026-08-05 22:46:20'),
 	(842, 'ca3b933c-5e2d-440f-bc74-ba1ed28a70ca', 2, 'manager_0002', 'Tenant 0002', 'financial_operation', 'list', 'financial_operations', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'financial_operation', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-05 22:46:31', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "financial_operation"}, "filters_applied": false, "response_format": "html"}', '2026-08-05 22:46:31', '2026-08-05 22:46:31'),
 	(843, '0bca8734-c933-4a98-850f-3b72b96c1bc9', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-05 22:46:42', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": null, "request_query": {"url": "permission"}, "filters_applied": false, "response_format": "html"}', '2026-08-05 22:46:42', '2026-08-05 22:46:42'),
-	(844, '21b17874-83aa-4103-994f-9339796db9bd', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-05 22:46:45', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": {"user_id": "5"}, "per_page": null, "result_total": null, "request_query": {"url": "permission", "user_id": "5"}, "filters_applied": true, "response_format": "html"}', '2026-08-05 22:46:45', '2026-08-05 22:46:45');
+	(844, '21b17874-83aa-4103-994f-9339796db9bd', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-05 22:46:45', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": {"user_id": "5"}, "per_page": null, "result_total": null, "request_query": {"url": "permission", "user_id": "5"}, "filters_applied": true, "response_format": "html"}', '2026-08-05 22:46:45', '2026-08-05 22:46:45'),
+	(845, '5167c57d-86f0-45e3-8bec-8d776089b7a4', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-06 22:26:21', NULL, '{"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}', '{"to": {"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-08-06 22:26:21', '2026-08-06 22:26:21'),
+	(846, '343f023b-a8d1-4985-9de6-12df26747c44', 2, 'manager_0002', 'Tenant 0002', 'bank_slip', 'list', 'bank_slips', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'bank_slip', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-06 22:29:20', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "bank_slip"}, "filters_applied": false, "response_format": "html"}', '2026-08-06 22:29:20', '2026-08-06 22:29:20'),
+	(847, '9653f943-0328-4d42-8c11-a70fc0a8a1c0', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-06 22:30:35', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": null, "request_query": {"url": "permission"}, "filters_applied": false, "response_format": "html"}', '2026-08-06 22:30:35', '2026-08-06 22:30:35'),
+	(848, '0e2cd250-1b78-4e5c-b189-125170e8d242', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-06 22:30:40', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": {"user_id": "5"}, "per_page": null, "result_total": null, "request_query": {"url": "permission", "user_id": "5"}, "filters_applied": true, "response_format": "html"}', '2026-08-06 22:30:40', '2026-08-06 22:30:40'),
+	(849, '8fad5631-9e45-4255-8ab6-ada44d2659be', 2, 'manager_0002', 'Tenant 0002', 'permission', 'list', 'permissions', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'permission', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '2026-08-06 22:31:04', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": {"user_id": "5"}, "per_page": null, "result_total": null, "request_query": {"url": "permission", "user_id": "5"}, "filters_applied": true, "response_format": "html"}', '2026-08-06 22:31:04', '2026-08-06 22:31:04');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
@@ -6600,7 +6605,7 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18166 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18170 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.neighborhoods: ~18 542 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
@@ -24766,7 +24771,11 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18162, 'Morro dos Conventos', 4432, '2026-08-03 23:20:14', '2026-08-03 23:20:14'),
 	(18163, 'Nova Divinéia', 4432, '2026-08-03 23:30:35', '2026-08-03 23:30:35'),
 	(18164, 'Jardim Cibeli', 4432, '2026-08-03 23:36:11', '2026-08-03 23:36:11'),
-	(18165, 'Guatá', 4560, '2026-08-05 22:49:21', '2026-08-05 22:49:21');
+	(18165, 'Guatá', 4560, '2026-08-05 22:49:21', '2026-08-05 22:49:21'),
+	(18166, 'Barro Branco', 4560, '2026-08-06 22:26:06', '2026-08-06 22:26:06'),
+	(18167, 'Povoado de Itanema', 4560, '2026-08-06 22:28:46', '2026-08-06 22:28:46'),
+	(18168, 'Pindotiba', 4590, '2026-08-06 22:38:28', '2026-08-06 22:38:28'),
+	(18169, 'Rio das Furnas', 4590, '2026-08-06 22:40:23', '2026-08-06 22:40:23');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -26361,13 +26370,13 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb3;
 
 -- Dumping data for table manager_main.user_presences: ~3 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
 	(1, 1, NULL, 'online', '2026-07-28 21:54:25', '2026-07-28 21:54:25', '2026-07-18 00:31:59', '2026-07-28 21:54:25'),
 	(6, 2, 1, 'away', '2026-08-03 23:13:22', '2026-08-03 23:13:22', '2026-07-18 00:32:47', '2026-08-03 23:13:22'),
-	(68, 5, 2, 'online', '2026-08-05 22:46:20', '2026-08-05 22:46:20', '2026-07-28 22:18:17', '2026-08-05 22:46:20');
+	(68, 5, 2, 'online', '2026-08-06 22:26:21', '2026-08-06 22:26:21', '2026-07-28 22:18:17', '2026-08-06 22:26:21');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
@@ -26394,7 +26403,7 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(13, 1, '6a53c7db6820a19baf72ec04c8249880', '8e2ca85e5a0c8efdd06e1cfe262db13208feb97a1af192958274aede5ae9194b', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '172.18.0.1', '2026-08-19 21:56:52', '2026-07-14 21:48:14', '2026-07-20 21:56:52'),
 	(14, 1, '399032486aabb89681831335e158a8cd', 'a852d6a2145e5f1d90eac1836c3604d6d1bf885e0c845546dba6347b8cdb1eaa', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-08-26 21:50:48', '2026-07-20 22:55:38', '2026-07-27 21:50:48'),
 	(15, 1, 'ae8cc31589df4ae22ecde4279b4ed209', 'e029ce9c8f9c323829246f5bb18fb9a87f144aa1462e12ef6b7e7311999b83a1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', '192.168.65.1', '2026-08-23 23:26:10', '2026-07-24 23:06:37', '2026-07-24 23:26:10'),
-	(16, 1, '522a2551416f04df546d585775620028', 'f2b584462083dd1dd5ae4d3288608bb5f6b3d07f26421a662fd7f4e7310c23b6', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-09-04 22:44:09', '2026-07-28 21:54:25', '2026-08-05 22:44:09');
+	(16, 1, '1f966bb9605a1e2dbca95723011074bb', 'dd90e5e38a6004de2e621063b4c02c69ad7cbfb3421ef1737cc4092ca3058f39', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0', '172.18.0.1', '2026-09-05 22:25:25', '2026-07-28 21:54:25', '2026-08-06 22:25:25');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
