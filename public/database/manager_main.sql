@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `cities` (
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5823 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
+-- Dumping data for table manager_main.cities: ~5 571 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
 	(1, 'Acrelândia', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
 	(2, 'Assis Brasil', NULL, 1, '2026-01-08 00:00:00', '2026-01-08 00:00:00'),
@@ -5900,7 +5900,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=890 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table manager_main.logs: ~741 rows (approximately)
+-- Dumping data for table manager_main.logs: ~733 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
 	(4, '9f44f17d-f453-4bfd-b416-0181bae55efa', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '10', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/10', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:12:07', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tal", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-24 00:45:29", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tals", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-25 20:12:07", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "from": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}]}, "person": {"name": {"to": "Fulano de Tals", "from": "Fulano de Tal"}, "modified": {"to": "2026-06-25 20:12:07", "from": "2026-06-24 00:45:29"}}, "addresses": {"to": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/10"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:12:07', '2026-06-25 20:12:07'),
 	(5, '6b0c687a-87cf-43f8-9b83-ab970b2aeef4', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '4', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:17:03', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-01 22:34:47", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-25 20:17:03", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "from": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}]}, "person": {"modified": {"to": "2026-06-25 20:17:03", "from": "2026-06-01 22:34:47"}}, "phones": {"to": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "from": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}]}, "addresses": {"to": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/4"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:17:03', '2026-06-25 20:17:03'),
@@ -6647,9 +6647,9 @@ CREATE TABLE IF NOT EXISTS `neighborhoods` (
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18270 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18318 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.neighborhoods: ~18 120 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~18 314 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -24917,7 +24917,55 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18266, 'Santa Izabel', 4665, '2026-09-09 12:10:11', '2026-09-09 12:10:11'),
 	(18267, 'Pericó', 4665, '2026-09-09 12:20:52', '2026-09-09 12:20:52'),
 	(18268, 'São Sebastião do Arvoredo', 4665, '2026-09-09 12:31:22', '2026-09-09 12:31:22'),
-	(18269, 'Centro', 4665, '2026-09-09 12:53:09', '2026-09-09 12:53:09');
+	(18269, 'Centro', 4665, '2026-09-09 12:53:09', '2026-09-09 12:53:09'),
+	(18270, 'Centro', 4479, '2026-09-10 10:03:09', '2026-09-10 10:03:09'),
+	(18271, 'Lagoa da Estiva', 4426, '2026-09-10 10:11:12', '2026-09-10 10:11:12'),
+	(18272, 'Centro', 4426, '2026-09-10 10:19:28', '2026-09-10 10:19:28'),
+	(18273, 'Centro', 4480, '2026-09-10 10:29:00', '2026-09-10 10:29:00'),
+	(18274, 'Centro', 4468, '2026-09-10 10:39:30', '2026-09-10 10:39:30'),
+	(18275, 'Centro', 4668, '2026-09-10 10:59:32', '2026-09-10 10:59:32'),
+	(18276, 'Centro', 4615, '2026-09-10 11:38:19', '2026-09-10 11:38:19'),
+	(18277, 'Centro', 4475, '2026-09-10 11:42:51', '2026-09-10 11:42:51'),
+	(18278, 'Centro', 4598, '2026-09-10 11:47:57', '2026-09-10 11:47:57'),
+	(18279, 'Centro', 4595, '2026-09-10 11:52:04', '2026-09-10 11:52:04'),
+	(18280, 'Pinheiros', 4591, '2026-09-10 11:57:49', '2026-09-10 11:57:49'),
+	(18281, 'Centro', 4453, '2026-09-10 12:02:15', '2026-09-10 12:02:15'),
+	(18282, 'Centro', 4488, '2026-09-10 12:07:11', '2026-09-10 12:07:11'),
+	(18283, 'Índios', 4556, '2026-09-10 12:11:47', '2026-09-10 12:11:47'),
+	(18284, 'Santa Terezinha do Salto', 4556, '2026-09-10 12:15:26', '2026-09-10 12:15:26'),
+	(18285, 'Área Rural de Lages', 4556, '2026-09-10 12:15:38', '2026-09-10 12:15:38'),
+	(18286, 'Várzea', 4556, '2026-09-10 12:26:40', '2026-09-10 12:26:40'),
+	(18287, 'Penha', 4556, '2026-09-10 12:27:37', '2026-09-10 12:27:37'),
+	(18288, 'Chapada', 4556, '2026-09-10 12:29:20', '2026-09-10 12:29:20'),
+	(18289, 'Bates', 4556, '2026-09-10 12:29:52', '2026-09-10 12:29:52'),
+	(18290, 'Tributo', 4556, '2026-09-10 12:35:57', '2026-09-10 12:35:57'),
+	(18291, 'Triângulo', 4556, '2026-09-10 13:06:04', '2026-09-10 13:06:04'),
+	(18292, 'Brusque', 4556, '2026-09-10 13:08:16', '2026-09-10 13:08:16'),
+	(18293, 'Campo D\'una', 4509, '2026-09-10 13:16:58', '2026-09-10 13:16:58'),
+	(18294, 'Centro', 4509, '2026-09-10 13:16:58', '2026-09-10 13:16:58'),
+	(18295, 'Penha', 4604, '2026-09-10 13:22:21', '2026-09-10 13:22:21'),
+	(18296, 'Centro', 4604, '2026-09-10 13:22:21', '2026-09-10 13:22:21'),
+	(18297, 'Centro', 4660, '2026-09-10 13:33:40', '2026-09-10 13:33:40'),
+	(18298, 'Centro', 4427, '2026-09-10 13:49:39', '2026-09-10 13:49:39'),
+	(18299, 'Taquaras', 4627, '2026-09-10 13:50:52', '2026-09-10 13:50:52'),
+	(18300, 'Centro', 4627, '2026-09-10 13:57:15', '2026-09-10 13:57:15'),
+	(18301, 'Barra Clara', 4425, '2026-09-10 14:07:18', '2026-09-10 14:07:18'),
+	(18302, 'Garcia', 4425, '2026-09-10 14:12:14', '2026-09-10 14:12:14'),
+	(18303, 'Betania', 4425, '2026-09-10 14:19:57', '2026-09-10 14:19:57'),
+	(18304, 'Centro', 4425, '2026-09-10 14:19:57', '2026-09-10 14:19:57'),
+	(18305, 'São Leonardo', 4422, '2026-09-10 14:31:37', '2026-09-10 14:31:37'),
+	(18306, 'Arnópolis', 4422, '2026-09-10 14:41:06', '2026-09-10 14:41:06'),
+	(18307, 'Centro', 4422, '2026-09-10 14:43:34', '2026-09-10 14:43:34'),
+	(18308, 'Centro', 4562, '2026-09-10 14:53:12', '2026-09-10 14:53:12'),
+	(18309, 'Centro', 4701, '2026-09-10 14:58:05', '2026-09-10 14:58:05'),
+	(18310, 'Centro', 4527, '2026-09-10 15:05:09', '2026-09-10 15:05:09'),
+	(18311, 'Rio Antinha', 4609, '2026-09-10 15:19:15', '2026-09-10 15:19:15'),
+	(18312, 'Centro', 4609, '2026-09-10 15:30:17', '2026-09-10 15:30:17'),
+	(18313, 'Centro', 4437, '2026-09-10 16:24:35', '2026-09-10 16:24:35'),
+	(18314, 'Centro', 4481, '2026-09-10 16:32:44', '2026-09-10 16:32:44'),
+	(18315, 'Rio Bonito', 4543, '2026-09-10 16:36:05', '2026-09-10 16:36:05'),
+	(18316, 'Rio dos Bugres', 4543, '2026-09-10 16:42:35', '2026-09-10 16:42:35'),
+	(18317, 'Centro', 4447, '2026-09-10 17:11:46', '2026-09-10 17:11:46');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
@@ -25590,7 +25638,7 @@ CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
   CONSTRAINT `fk_system_setting_definitions_module` FOREIGN KEY (`module_id`) REFERENCES `system_setting_modules` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.system_setting_definitions: ~0 rows (approximately)
+-- Dumping data for table manager_main.system_setting_definitions: ~1 rows (approximately)
 INSERT INTO `system_setting_definitions` (`id`, `module_id`, `key_name`, `label`, `description`, `value_type`, `default_value`, `validation_rules`, `active`, `sort_order`, `created`, `modified`) VALUES
 	(1, 1, 'max_online_users', '1', 'Maximum number of users allowed online at the same time.', 'integer', '1', '{"max": 1, "min": 1}', 1, 0, '2026-07-23 00:28:30', '2026-07-23 00:28:30');
 
@@ -25608,7 +25656,7 @@ CREATE TABLE IF NOT EXISTS `system_setting_modules` (
   UNIQUE KEY `uq_system_setting_modules_slug` (`slug`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
 
--- Dumping data for table manager_main.system_setting_modules: ~0 rows (approximately)
+-- Dumping data for table manager_main.system_setting_modules: ~1 rows (approximately)
 INSERT INTO `system_setting_modules` (`id`, `slug`, `name`, `description`, `active`, `sort_order`, `created`, `modified`) VALUES
 	(1, 'presence', 'Presence', 'User presence and oline limits.', 1, 0, '2026-07-23 00:25:40', '2026-07-23 00:25:40');
 
@@ -26803,7 +26851,7 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
 -- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
 	(16, 1, 'be26f8e91cb48f91a1b91c053641d7b0', '38a5a4fecba1369922e36112dc372e2c32ca37e795f71174dbf6c6ea3e5fff57', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:155.0) Gecko/20100101 Firefox/155.0', '172.18.0.1', '2026-10-08 23:29:48', '2026-07-28 21:54:25', '2026-09-08 23:29:48'),
-	(17, 1, '810a52856b0d2de570f409e5fe089900', 'bd9bb84052f31248ef1dcb124332c6853ce3791f00ab5e9958627a7def2a29fc', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', '172.18.0.1', '2026-10-09 08:23:36', '2026-08-12 22:18:17', '2026-09-09 08:23:36');
+	(17, 1, '431b27ac324b4962bc0266215b070bc0', 'd1eb7c76331463297a643bee1c00437d9b3288737783a05843fc1aa36c904222', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', '172.18.0.1', '2026-10-10 10:02:36', '2026-08-12 22:18:17', '2026-09-10 10:02:36');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
