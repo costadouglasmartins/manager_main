@@ -161,4 +161,4 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
 });
 </script>
 
-<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
+<script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>

@@ -105,5 +105,5 @@
   </div>
 </div>
 
-<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
+<script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>
 <script src="<?= url('assets/js/support_chats/attend.js?v=6'); ?>"></script>

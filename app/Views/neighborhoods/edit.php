@@ -45,4 +45,4 @@
 </form>
 <!-- /Bairro -->
 
-<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
+<script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>

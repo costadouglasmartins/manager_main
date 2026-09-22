@@ -819,4 +819,4 @@ foreach ($allTenants as $tenantOption)
   let tenantLinkCounter = <?= (int) count($tenants); ?>;
 </script>
 <script src="<?= url('assets/js/people/edit.js?v=3'); ?>"></script>
-<script src="/assets/masks/masks.js?v=4"></script>
+<script src="/manager_assets/masks/masks.js?v=4"></script>

@@ -5,10 +5,10 @@ Manager System
 
 ## Dependências compartilhadas
 
-As dependências PHP deste sistema são centralizadas no diretório `assets`, localizado no mesmo nível de `manager_main` e `manager`. Instale-as uma única vez:
+As dependências PHP deste sistema são centralizadas no diretório `manager_assets`, localizado no mesmo nível de `manager_main` e `manager`. Instale-as uma única vez:
 
 ```sh
-cd ../assets
+cd ../manager_assets
 composer install --no-dev --optimize-autoloader
 ```
 
@@ -63,8 +63,8 @@ Exemplo recomendado para comentários de métodos:
 ## Código reutilizável
 
 - Sempre que um código puder ser reutilizado por mais de uma aplicação não o mantenha duplicado ou embutido em uma view.
-- Antes de criar uma nova biblioteca, verifique se já existe uma biblioteca em `assets/` que possa ser estendida.
-- Quando for necessária uma nova biblioteca JavaScript reutilizável, crie-a no diretório compartilhado seguindo o padrão `assets/<nome_da_lib>/<nome_da_lib>.js`.
+- Antes de criar uma nova biblioteca, verifique se já existe uma biblioteca em `manager_assets/` que possa ser estendida.
+- Quando for necessária uma nova biblioteca JavaScript reutilizável, crie-a no diretório compartilhado seguindo o padrão `manager_assets/<nome_da_lib>/<nome_da_lib>.js`.
 - Mantenha a biblioteca independente dos detalhes de uma tela específica e exponha somente as opções necessárias para que cada tela configure seu comportamento.
 - Nas views de `manager` e `manager_main`, apenas carregue e inicialize a biblioteca compartilhada; mantenha nelas somente o código que for realmente exclusivo daquela tela.
 

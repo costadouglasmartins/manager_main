@@ -175,5 +175,5 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
   </div>
 </div>
 
-<script src="/assets/autocomplete/autocomplete.js?v=4"></script>
+<script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>
 <script src="<?= url('assets/js/cities/index.js?v=2'); ?>"></script>

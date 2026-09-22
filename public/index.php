@@ -41,7 +41,7 @@ if (session_status() === PHP_SESSION_NONE)
   session_start();
   }
 
-$sharedAssetsPath = getenv('SHARED_ASSETS_PATH') ?: dirname(ROOT_PATH) . '/assets';
+$sharedAssetsPath = getenv('SHARED_ASSETS_PATH') ?: dirname(ROOT_PATH) . '/manager_assets';
 $composerAutoload = rtrim($sharedAssetsPath, '/\\') . '/vendor/autoload.php';
 
 if (!is_file($composerAutoload))

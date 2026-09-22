@@ -205,5 +205,5 @@ $activeFilterCount = count(array_filter($filters, static fn ($value): bool => (s
   </div>
 </div>
 
-<script src="/assets/masks/masks.js?v=5"></script>
+<script src="/manager_assets/masks/masks.js?v=5"></script>
 <script src="<?= url('assets/js/financial_operations_payments/index.js?v=1'); ?>"></script>
