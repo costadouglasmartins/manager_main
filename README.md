@@ -3,6 +3,11 @@ Manager System
 - Apenas para usuários root;
 - Este é a administração para todos os outros sistemas.
 
+## Deploy
+
+See [docs/deployment.md](docs/deployment.md) for the GitHub Actions workflow,
+repository secrets, production prerequisites, and deployment verification.
+
 ## Dependências compartilhadas
 
 As dependências PHP deste sistema são centralizadas no diretório `manager_assets`, localizado no mesmo nível de `manager_main` e `manager`. Instale-as uma única vez:

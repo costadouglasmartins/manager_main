@@ -1,0 +1,13 @@
+/.git/
+/.github/
+/.mcp/
+/.vscode/
+.DS_Store
+/.env*
+/vendor/
+/app/Core/Config.php
+/storage/
+/public/uploads/
+/public/database/
+/public/zip_code_crawler_*
+/.deploy-excludes
