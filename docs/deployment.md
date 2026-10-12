@@ -36,7 +36,7 @@ a secret. Verify and update it if the server is rebuilt or its host key changes.
 
 After the workflow is merged into `main`, each push to `main` deploys that commit.
 You can also open **Actions > Deploy manager_main > Run workflow**, selecting
-`main`. Manual runs on other branches do not deploy.
+`main`. Manual runs on the setup branch simulate; other branches do not run.
 
 Code is staged outside the web root and checked with the VPS's PHP interpreter
 before production files are updated. All three repository deployments use the
@@ -57,3 +57,18 @@ needed backup files, and removing any newly introduced files if necessary.
 Deploying a previous commit on `main` is another option. The upload is not an
 atomic switch of the entire application, and failed health checks do not trigger
 an automatic rollback. `manager_assets` updates require a separate deployment.
+
+## Simulation from the setup branch
+
+A push to `codex/github-deploy` runs the same workflow using the repository SSH
+Secrets in dry-run mode. Files are uploaded only to a private temporary staging
+directory outside the web root; production rsync uses `--dry-run`, and no backup
+directory is created. The staged PHP/dependencies are checked with the production
+runtime, and the existing login pages are checked. Temporary staging files are
+removed at the end. This validates the Secrets and proposed synchronization
+before merging the PRs.
+
+Pushes to `main` publish code. The runner script rejects publication from other
+branches and defaults to simulation when no mode is provided. Manual runs on
+`main` publish; runs on `codex/github-deploy` simulate. Dry-run HTTP checks examine
+the currently deployed applications, not the staged application behavior.

@@ -2,7 +2,7 @@ name: Deploy manager_main
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/github-deploy]
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/github-deploy'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -23,8 +23,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Deploy and verify the application
+      - name: Validate or publish the application
         env:
+          DEPLOY_MODE: ${{ github.ref == 'refs/heads/main' && 'apply' || 'dry-run' }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT }}

@@ -16,6 +16,18 @@ if [[ "$SSH_HOST" != '179.236.252.5' || "$SSH_USER" != 'root' || "$SSH_PORT" != 
   exit 1
 fi
 
+# Default to simulation; publication is allowed only from the main branch.
+DEPLOY_MODE=${DEPLOY_MODE:-dry-run}
+if [[ "$DEPLOY_MODE" != 'dry-run' && "$DEPLOY_MODE" != 'apply' ]]; then
+  echo 'Invalid deployment mode.' >&2
+  exit 1
+fi
+if [[ "$DEPLOY_MODE" == 'apply' && "${GITHUB_REF:-}" != 'refs/heads/main' ]]; then
+  echo 'Publication is allowed only from the main branch.' >&2
+  exit 1
+fi
+echo "Deployment mode: $DEPLOY_MODE"
+
 # Keep credentials in a private temporary directory outside the checkout.
 umask 077
 ssh_directory=$(mktemp -d "$RUNNER_TEMP/manager-main-ssh.XXXXXXXXXX")
@@ -82,4 +94,4 @@ if [[ ! "$deployment_id" =~ ^[a-f0-9]{12}-[0-9]+-[0-9]+$ ]]; then
   exit 1
 fi
 ssh -F "$ssh_directory/config" manager-production \
-  "bash -s -- '$remote_stage' '$deployment_id'" < .github/scripts/apply-deploy.sh
+  "bash -s -- '$remote_stage' '$deployment_id' '$DEPLOY_MODE'" < .github/scripts/apply-deploy.sh
