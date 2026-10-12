@@ -49,7 +49,9 @@ if (!is_file($composerAutoload))
   throw new RuntimeException('Shared Composer dependencies were not installed.');
   }
 
-require_once $composerAutoload;
+// Reuse Composer's loader for application classes on case-sensitive filesystems.
+$classLoader = require_once $composerAutoload;
+$classLoader->addPsr4('App\\', ROOT_PATH . '/app');
 	
 require_once ROOT_PATH . '/app/Core/App.php';
 require_once ROOT_PATH . '/app/Core/Controller.php';
@@ -63,17 +65,6 @@ require_once ROOT_PATH . '/app/Helpers/PaginationHelper.php';
 require_once ROOT_PATH . '/app/Helpers/SortingHelper.php';
 require_once ROOT_PATH . '/app/Helpers/ExcelExportHelper.php';
 require_once ROOT_PATH . '/app/Helpers/PdfExportHelper.php';
-
-// Autoload dos namespaces
-spl_autoload_register(function ($class) 
-  {
-  $class = str_replace('\\', '/', $class);
-  $file = __DIR__ . '/../' . $class . '.php';
-  if (file_exists($file)) 
-    {
-    require_once $file;
-    }
-  });
 
 \App\Core\RememberLogin::attemptFromCookie();
 

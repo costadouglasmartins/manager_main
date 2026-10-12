@@ -3,11 +3,11 @@
 /**
  * Shared database configuration for this application.
  */
-define('DB_HOST', 'mysql');
+define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '3306');
 define('DB_DATABASE_MANAGER', 'manager_main');
 define('DB_USERNAME', 'root');
-define('DB_PASSWORD', 'rootpassword');
+define('DB_PASSWORD', 'IzzI695500.-');
 define('DB_CHARSET', 'utf8mb4');
 
 /**
