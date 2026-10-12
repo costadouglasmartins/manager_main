@@ -23,7 +23,7 @@ a secret. Verify and update it if the server is rebuilt or its host key changes.
 ## Production prerequisites
 
 - The destination directory and `app/Core/Config.php` must already exist.
-- PHP, rsync, and curl must be installed on the VPS.
+- PHP, rsync, curl, and flock must be installed on the VPS.
 - The sibling `manager_assets/vendor/autoload.php` must exist and its Composer
   dependencies must support the production PHP runtime.
 - Production database and chat settings belong in the server's
@@ -39,7 +39,8 @@ You can also open **Actions > Deploy manager_main > Run workflow**, selecting
 `main`. Manual runs on other branches do not deploy.
 
 Code is staged outside the web root and checked with the VPS's PHP interpreter
-before production files are updated. Deployments run one at a time. The workflow
+before production files are updated. All three repository deployments use the
+same server lock while applying files and checking health. The workflow
 checks the PHP login entry point after uploading and fails if it returns an HTTP
 error, even when the code transfer itself succeeded. A successful health check
 does not verify every application feature.

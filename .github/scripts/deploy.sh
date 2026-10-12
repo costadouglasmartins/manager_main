@@ -54,6 +54,7 @@ set -Eeuo pipefail
 command -v php >/dev/null
 command -v rsync >/dev/null
 command -v curl >/dev/null
+command -v flock >/dev/null
 test -d /var/www/izzidoro.com.br/public/manager_main
 test -f /var/www/izzidoro.com.br/public/manager_main/app/Core/Config.php
 test -f /var/www/izzidoro.com.br/public/manager_assets/vendor/autoload.php

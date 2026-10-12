@@ -7,6 +7,11 @@
 /vendor/
 /app/Core/Config.php
 /storage/
+/tmp/
+/uploads/
+/logs/
+/cache/
+/public/tenant_files/
 /public/uploads/
 /public/database/
 /public/zip_code_crawler_*

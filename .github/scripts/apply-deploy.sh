@@ -9,6 +9,10 @@ if [[ ! "$stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ || ! "$deployment_i
   exit 1
 fi
 
+# Serialize all three repositories while applying code and checking the application.
+exec 9>/var/lock/manager-deploy.lock
+flock -w 600 9
+
 # Verify PHP syntax with the same PHP version installed in production.
 test -f "$stage/public/index.php"
 test -f "$stage/.deploy-excludes"
