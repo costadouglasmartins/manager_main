@@ -27,7 +27,11 @@ As credenciais do banco de dados e a chave compartilhada do chat ficam centraliz
 app/Core/Config.php
 ```
 
-Edite nesse arquivo as constantes `DB_HOST`, `DB_PORT`, `DB_DATABASE_MANAGER`, `DB_USERNAME`, `DB_PASSWORD`, `DB_CHARSET`, `SUPPORT_CHAT_SECRET`, `SUPPORT_CHAT_WS_HOST` e `SUPPORT_CHAT_WS_PORT`. Mantenha os mesmos dados no arquivo correspondente do `manager`.
+O arquivo define `APP_ENV` como `development` no Docker (pela presença de `/.dockerenv`) e como `production` fora dele, sem consultar o domínio. A variável de ambiente `APP_ENV` tem prioridade sobre essa detecção e aceita `development` ou `production`, inclusive para executar produção em Docker.
+
+Em desenvolvimento, o banco usa o host `mysql` e a senha do Docker local; em produção, mantém o host `127.0.0.1` e as credenciais já configuradas. Os demais valores padrão são compartilhados. Todas as constantes `DB_HOST`, `DB_PORT`, `DB_DATABASE_MANAGER`, `DB_USERNAME`, `DB_PASSWORD`, `DB_CHARSET`, `SUPPORT_CHAT_SECRET`, `SUPPORT_CHAT_WS_HOST` e `SUPPORT_CHAT_WS_PORT` podem ser substituídas por variáveis de ambiente com os mesmos nomes. Mantenha os valores consistentes entre `manager`, `manager_main` e o processo do chat.
+
+Defina as variáveis no ambiente do PHP-FPM e dos processos CLI; este arquivo não carrega `.env` automaticamente. Se preferir editar os padrões no próprio `Config.php`, mantenha os dois arquivos sincronizados. O deploy atual preserva os `Config.php` da VPS, portanto esta atualização precisa ser copiada para eles separadamente.
 
 # Regras de programação do projeto
 
