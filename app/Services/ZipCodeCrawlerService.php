@@ -794,7 +794,7 @@ class ZipCodeCrawlerService
 				'position' => $stats['processed'],
 				'processed' => $stats['processed'],
 				'total' => $totalToProcess,
-				'found' => $stats['found'],
+				'found' => $stats['found'], 
 				'failed' => $stats['failed'],
 				'skipped' => $stats['skipped'],
 				'looked_up' => $stats['looked_up'],

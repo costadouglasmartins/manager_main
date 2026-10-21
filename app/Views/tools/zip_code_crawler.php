@@ -1,4 +1,4 @@
-<?php
+<?php 
 $zipCodeStateOptions = $zipCodeStateOptions ?? [];
 $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]', ENT_QUOTES, 'UTF-8');
 ?>
