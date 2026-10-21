@@ -768,12 +768,15 @@ class ZipCodeCrawlerService
 
 			$result = $results[$zipCode] ?? $this->buildLookupFailureResult($zipCode);
 			$result = $this->autoSaveLookupResult($result, $autoSaveCity, $autoSaveNeighborhood, $createCity);
+			$countsAsFound = false;
+			$countsAsFailed = false;
 
 			if (empty($result['success']))
 				{
 				if ($this->shouldCountAsFailureMetric($result))
 					{
 					$stats['failed']++;
+					$countsAsFailed = true;
 					}
 
 				if ($this->shouldRememberFailedZipCode($result, $providerMode))
@@ -784,13 +787,14 @@ class ZipCodeCrawlerService
 			elseif ($this->lookupResultSavedNewRecord($result))
 				{
 				$stats['found']++;
+				$countsAsFound = true;
 				}
 
 			yield $this->event('progress', [
 				'position' => $stats['processed'],
 				'processed' => $stats['processed'],
 				'total' => $totalToProcess,
-				'found' => $stats['found'],
+				'found' => $stats['found'], 
 				'failed' => $stats['failed'],
 				'skipped' => $stats['skipped'],
 				'looked_up' => $stats['looked_up'],
@@ -802,6 +806,8 @@ class ZipCodeCrawlerService
 				'round_delay_ms' => $roundDelayMs,
 				'zip_code' => $zipCode,
 				'state' => $stateAcronym,
+				'counts_as_found' => $countsAsFound,
+				'counts_as_failed' => $countsAsFailed,
 				'result' => $result,
 			]);
 			}

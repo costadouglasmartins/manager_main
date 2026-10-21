@@ -25,6 +25,12 @@
 		const resultsInfo = document.getElementById("crawlerResultsInfo");
 		const resultsTopButton = document.getElementById("crawlerResultsTopButton");
 		const resultsBottomButton = document.getElementById("crawlerResultsBottomButton");
+		const resultsLiveButton = document.getElementById("crawlerResultsLiveButton");
+		const resultsFilterBadge = document.getElementById("crawlerResultsFilterBadge");
+		const resultsFilterNotice = document.getElementById("crawlerResultsFilterNotice");
+		const resultsFilterNoticeText = document.getElementById("crawlerResultsFilterNoticeText");
+		const filteredResultsBody = document.getElementById("crawlerFilteredResultsBody");
+		const resultsFilterButtons = app.querySelectorAll(".zip-code-crawler-stat-filter");
 		const processedCount = document.getElementById("crawlerProcessedCount");
 		const foundCount = document.getElementById("crawlerFoundCount");
 		const failedCount = document.getElementById("crawlerFailedCount");
@@ -36,6 +42,24 @@
 		const stopUrl = app.dataset.stopUrl || "";
 		const stateOptions = parseStateOptions();
 		const stateOptionRegistry = buildStateOptionRegistry(stateOptions);
+		const resultsFilterOptions = {
+			processed: {
+				label: "Processados",
+				badgeClass: "text-bg-primary",
+				emptyText: "Nenhum CEP processado até o momento."
+			},
+			found: {
+				label: "Novos salvos",
+				badgeClass: "text-bg-success",
+				emptyText: "Nenhum novo registro salvo até o momento."
+			},
+			failed: {
+				label: "Falhas",
+				badgeClass: "text-bg-danger",
+				emptyText: "Nenhuma falha de consulta até o momento."
+			}
+		};
+		const liveResultsLimit = 2000;
 
 		let eventSource = null;
 		let activeRunId = "";
@@ -45,6 +69,9 @@
 		let resultsStickToBottom = true;
 		let queuedResults = [];
 		let resultsFlushScheduled = false;
+		let activeResultsFilter = "";
+		let filteredResults = {found: [], failed: []};
+		let liveResultsPruned = false;
 		let latestStats = {
 			processed: 0,
 			found: 0,
@@ -558,8 +585,11 @@
 				resultsStickToBottom = true;
 				queuedResults = [];
 				resultsFlushScheduled = false;
+				filteredResults = {found: [], failed: []};
+				liveResultsPruned = false;
 				clearResultsInfo();
 				resultsBody.innerHTML = '<div class="list-group-item text-secondary zip-code-crawler-results-empty"><div class="d-flex align-items-center gap-2"><i class="bi bi-hourglass-split"></i><span>Aguardando início - selecione um estado e execute o crawler.</span></div></div>';
+				setResultsFilter("");
 			}
 
 		function clearQueuedResults()
@@ -568,9 +598,134 @@
 				resultsFlushScheduled = false;
 			}
 
+		function getResultsFilterOption(filter)
+			{
+				return Object.prototype.hasOwnProperty.call(resultsFilterOptions, filter)
+					? resultsFilterOptions[filter]
+					: null;
+			}
+
+		function isStoredResultsFilter(filter)
+			{
+				return Object.prototype.hasOwnProperty.call(filteredResults, filter);
+			}
+
+		function activeResultsBody()
+			{
+				return isStoredResultsFilter(activeResultsFilter) ? filteredResultsBody : resultsBody;
+			}
+
+		function shouldFollowResults(body)
+			{
+				return activeResultsBody() === body && (resultsStickToBottom || isResultsScrolledToBottom());
+			}
+
+		function pruneLiveResults()
+			{
+				const overflow = resultsBody.childElementCount - liveResultsLimit;
+				for (let index = 0; index < overflow; index++)
+					{
+						resultsBody.firstElementChild.remove();
+					}
+
+				if (overflow > 0)
+					{
+						liveResultsPruned = true;
+					}
+			}
+
+		function updateResultsFilterNotice()
+			{
+				const option = getResultsFilterOption(activeResultsFilter);
+				let text = "";
+
+				if (option && isStoredResultsFilter(activeResultsFilter))
+					{
+						text = filteredResults[activeResultsFilter].length === 0 ? option.emptyText : "";
+					}
+				else if (option)
+					{
+						if (!resultsBody.querySelector(".zip-code-crawler-result-row"))
+							{
+								text = option.emptyText;
+							}
+						else if (liveResultsPruned)
+							{
+								text = "Exibindo somente os registros mais recentes (limite de " + formatInteger(liveResultsLimit) + " linhas).";
+							}
+					}
+
+				if (resultsFilterNoticeText.textContent !== text)
+					{
+						resultsFilterNoticeText.textContent = text;
+					}
+				resultsFilterNotice.classList.toggle("d-none", text === "");
+			}
+
+		function addFilteredResult(filter, element)
+			{
+				filteredResults[filter].push(element);
+				if (activeResultsFilter !== filter)
+					{
+						return;
+					}
+
+				const shouldStick = shouldFollowResults(filteredResultsBody);
+				filteredResultsBody.appendChild(element);
+				updateResultsFilterNotice();
+				if (shouldStick)
+					{
+						scrollResultsToBottom();
+					}
+			}
+
+		function setResultsFilter(filter)
+			{
+				const option = getResultsFilterOption(filter);
+				activeResultsFilter = option ? filter : "";
+				const usesStoredResults = isStoredResultsFilter(activeResultsFilter);
+				const fragment = document.createDocumentFragment();
+
+				if (option)
+					{
+						resultsBody.dataset.activeFilter = activeResultsFilter;
+						resultsFilterBadge.className = "badge rounded-pill " + option.badgeClass;
+						resultsFilterBadge.innerHTML = '<i class="bi bi-funnel-fill me-1" aria-hidden="true"></i>' + option.label;
+					}
+				else
+					{
+						delete resultsBody.dataset.activeFilter;
+						resultsFilterBadge.className = "badge rounded-pill d-none";
+					}
+
+				if (usesStoredResults)
+					{
+						filteredResults[activeResultsFilter].forEach(function (element)
+							{
+								fragment.appendChild(element);
+							});
+					}
+
+				filteredResultsBody.textContent = "";
+				filteredResultsBody.appendChild(fragment);
+				resultsBody.classList.toggle("d-none", usesStoredResults);
+				filteredResultsBody.classList.toggle("d-none", !usesStoredResults);
+				resultsLiveButton.classList.toggle("d-none", !option);
+				resultsFilterButtons.forEach(function (button)
+					{
+						const isActive = button.dataset.resultsFilter === activeResultsFilter;
+						button.classList.toggle("active", isActive);
+						button.setAttribute("aria-pressed", isActive ? "true" : "false");
+					});
+
+				updateResultsFilterNotice();
+				scrollResultsToBottom();
+			}
+
 		function isResultsScrolledToBottom()
 			{
-				return resultsBody.scrollHeight - resultsBody.scrollTop - resultsBody.clientHeight <= 12;
+				const body = activeResultsBody();
+				return body.scrollHeight - body.scrollTop - body.clientHeight <= 12;
 			}
 
 		function updateResultsStickiness()
@@ -582,7 +737,8 @@
 			{
 				window.requestAnimationFrame(function ()
 					{
-						resultsBody.scrollTop = resultsBody.scrollHeight;
+						const body = activeResultsBody();
+						body.scrollTop = body.scrollHeight;
 						resultsStickToBottom = true;
 					});
 			}
@@ -591,15 +747,17 @@
 			{
 				window.requestAnimationFrame(function ()
 					{
-						resultsBody.scrollTop = 0;
+						activeResultsBody().scrollTop = 0;
 						resultsStickToBottom = false;
 					});
 			}
 
 		function appendResultsElement(element, immediate)
 			{
-				const shouldStick = resultsStickToBottom || isResultsScrolledToBottom();
+				const shouldStick = shouldFollowResults(resultsBody);
 				resultsBody.appendChild(element);
+				pruneLiveResults();
+				updateResultsFilterNotice();
 				if (shouldStick)
 					{
 						scrollResultsToBottom();
@@ -615,7 +773,7 @@
 						return;
 					}
 
-				const shouldStick = resultsStickToBottom || isResultsScrolledToBottom();
+				const shouldStick = shouldFollowResults(resultsBody);
 				const fragment = document.createDocumentFragment();
 				const batch = queuedResults.splice(0, 120);
 
@@ -625,6 +783,8 @@
 					});
 
 				resultsBody.appendChild(fragment);
+				pruneLiveResults();
+				updateResultsFilterNotice();
 				if (shouldStick)
 					{
 						scrollResultsToBottom();
@@ -910,7 +1070,7 @@
 				return details;
 			}
 
-		function appendResultRow(payload)
+		function buildResultRow(payload, timestamp)
 			{
 				const result = payload.result || {};
 				const data = result.data || {};
@@ -949,7 +1109,7 @@
 					: (alreadyInDatabase ? "text-bg-warning" : "text-bg-danger");
 
 				const line = document.createElement("div");
-				line.className = "list-group-item " + rowClass;
+				line.className = "list-group-item zip-code-crawler-result-row " + rowClass;
 
 				const header = document.createElement("div");
 				header.className = "d-flex flex-wrap align-items-center gap-2";
@@ -968,7 +1128,7 @@
 
 				const tsSpan = document.createElement("small");
 				tsSpan.className = "text-body-secondary font-monospace ms-auto";
-				tsSpan.textContent = "[" + nowTimestamp() + "]";
+				tsSpan.textContent = "[" + timestamp + "]";
 
 				header.appendChild(statusSpan);
 				header.appendChild(zipSpan);
@@ -1017,8 +1177,21 @@
 				line.appendChild(locationSpan);
 				line.appendChild(buildAjaxReturnDetails(payload));
 
+				return line;
+			}
+
+		function appendResultRow(payload)
+			{
+				const timestamp = nowTimestamp();
+				const filter = payload.counts_as_found ? "found" : (payload.counts_as_failed ? "failed" : "");
+
 				clearIdleLine();
-				queueResultsElement(line);
+				queueResultsElement(buildResultRow(payload, timestamp));
+				if (filter !== "")
+					{
+						// Saved and failed rows get their own copy so they survive the live list limit.
+						addFilteredResult(filter, buildResultRow(payload, timestamp));
+					}
 			}
 
 		function openStream()
@@ -1139,7 +1312,7 @@
 							{
 								return;
 							}
-
+ 
 						// Domain error payload emitted by the crawler service.
 						const payload = crawlerErrorPayload(event) || {};
 						// User-facing message supplied by the backend when available.
@@ -1218,8 +1391,21 @@
 		delayInput.addEventListener("input", updateDelayLabel);
 		concurrencyInput.addEventListener("input", updateConcurrencyLabel);
 		resultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
+		filteredResultsBody.addEventListener("scroll", updateResultsStickiness, {passive: true});
 		resultsTopButton.addEventListener("click", scrollResultsToTop);
 		resultsBottomButton.addEventListener("click", scrollResultsToBottom);
+		resultsLiveButton.addEventListener("click", function ()
+			{
+				setResultsFilter("");
+			});
+		resultsFilterButtons.forEach(function (button)
+			{
+				button.addEventListener("click", function ()
+					{
+						const filter = button.dataset.resultsFilter || "";
+						setResultsFilter(filter === activeResultsFilter ? "" : filter);
+					});
+			});
 		window.addEventListener("resize", updateMonitorHeight, {passive: true});
 
 		form.addEventListener("submit", function (event)

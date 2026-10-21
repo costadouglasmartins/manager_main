@@ -15,7 +15,7 @@
   border: 1px solid var(--zip-code-crawler-border);
   border-radius: 8px;
 }
-
+ s
 .zip-code-crawler-icon {
   display: inline-flex;
   align-items: center;
@@ -57,6 +57,55 @@
   font-size: 1.05rem;
 }
 
+.zip-code-crawler-stat-filter {
+  --zip-code-crawler-filter-rgb: var(--bs-primary-rgb);
+  --zip-code-crawler-filter-text: var(--bs-primary-text-emphasis);
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.zip-code-crawler-stat-filter[data-results-filter="found"] {
+  --zip-code-crawler-filter-rgb: var(--bs-success-rgb);
+  --zip-code-crawler-filter-text: var(--bs-success-text-emphasis);
+}
+
+.zip-code-crawler-stat-filter[data-results-filter="failed"] {
+  --zip-code-crawler-filter-rgb: var(--bs-danger-rgb);
+  --zip-code-crawler-filter-text: var(--bs-danger-text-emphasis);
+}
+
+.zip-code-crawler-stat-filter small {
+  grid-column: 1 / -1;
+}
+
+.zip-code-crawler-stat-filter .bi {
+  color: var(--bs-secondary-color);
+}
+
+.zip-code-crawler-stat-filter:hover {
+  border-color: rgba(var(--zip-code-crawler-filter-rgb), 0.6);
+}
+
+.zip-code-crawler-stat-filter:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--zip-code-crawler-filter-rgb), 0.25);
+}
+
+.zip-code-crawler-stat-filter.active {
+  background: rgba(var(--zip-code-crawler-filter-rgb), 0.12);
+  border-color: rgb(var(--zip-code-crawler-filter-rgb));
+}
+
+.zip-code-crawler-stat-filter:hover .bi,
+.zip-code-crawler-stat-filter.active small,
+.zip-code-crawler-stat-filter.active .bi {
+  color: var(--zip-code-crawler-filter-text);
+}
+
 .zip-code-crawler-message {
   min-height: 3.35rem;
 }
@@ -87,6 +136,10 @@
   padding-bottom: 0.75rem;
   scrollbar-width: thin;
   scrollbar-color: var(--bs-border-color) transparent;
+}
+
+.zip-code-crawler-results-body[data-active-filter="processed"] > :not(.zip-code-crawler-result-row) {
+  display: none;
 }
 
 .zip-code-crawler-result-detail {
