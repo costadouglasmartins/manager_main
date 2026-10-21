@@ -545,6 +545,22 @@ class TenantDeletionService
 		}
 
 	/**
+	 * Check whether an optional manager_main table exists.
+	 *
+	 * @param string $table Table name.
+	 * @return bool
+	 */
+	private function tableExists(string $table): bool
+		{
+		$this->assertIdentifier($table);
+		$stmt = $this->db->prepare(
+			"SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table AND TABLE_TYPE = 'BASE TABLE'"
+		);
+		$stmt->execute(['table' => $table]);
+		return $stmt->fetchColumn() !== false;
+		}
+
+	/**
 	 * Build the manager_main portion of the row-by-row manifest.
 	 *
 	 * @param array<string, mixed> $plan Deletion plan.
@@ -1514,6 +1530,26 @@ class TenantDeletionService
 			return [];
 			}
 
+		// CRM is tenant-database functionality in the current schema. Keep the
+		// legacy central checks only when the complete legacy CRM schema exists.
+		$centralCrmTables = [
+			'crm_opportunities', 'crm_inactivity_reasons', 'crm_loss_reasons',
+			'crm_opportunity_types', 'crm_pipeline_stages', 'crm_sources',
+		];
+		$existingCentralCrmTables = array_values(array_filter(
+			$centralCrmTables,
+			fn (string $table): bool => $this->tableExists($table)
+		));
+		if ($existingCentralCrmTables === [])
+			{
+			return [];
+			}
+		if (count($existingCentralCrmTables) !== count($centralCrmTables))
+			{
+			// A partially migrated legacy schema is unknown; preserve candidates.
+			return $ids;
+			}
+
 		$placeholders = $this->placeholders($ids);
 		$sql = "SELECT UserRow.id
 		        FROM users AS UserRow
@@ -1555,12 +1591,20 @@ class TenantDeletionService
 				            OR EXISTS (SELECT 1 FROM crm_pipeline_stages AS StageRow WHERE StageRow.created_by_user_id = UserRow.id OR StageRow.updated_by_user_id = UserRow.id)
 				            OR EXISTS (SELECT 1 FROM crm_sources AS SourceRow WHERE SourceRow.created_by_user_id = UserRow.id OR SourceRow.updated_by_user_id = UserRow.id)
 			          )";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array_merge(
-			$ids,
-			[$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId]
-		));
-		return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+		try
+			{
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute(array_merge(
+				$ids,
+				[$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId]
+			));
+			return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+			}
+		catch (\Throwable $e)
+			{
+			// An incomplete legacy CRM schema must preserve candidates conservatively.
+			return $ids;
+			}
 		}
 
 	/**
@@ -1576,6 +1620,10 @@ class TenantDeletionService
 			{
 			return [];
 			}
+		if (!$this->tableExists('crm_opportunities'))
+			{
+			return [];
+			}
 
 		$sql = "SELECT DISTINCT Opportunity.person_id
 		        FROM crm_opportunities AS Opportunity
@@ -1586,9 +1634,16 @@ class TenantDeletionService
 		            OR TenantPerson.id IS NULL
 		            OR TenantPerson.tenant_id <> ?
 		          )";
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array_merge($ids, [$tenantId]));
-		return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+		try
+			{
+			$stmt = $this->db->prepare($sql);
+			$stmt->execute(array_merge($ids, [$tenantId]));
+			return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+			}
+		catch (\Throwable $e)
+			{
+			return $ids;
+			}
 		}
 
 	/**
