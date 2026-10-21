@@ -14,6 +14,11 @@ if [[ ! "$stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ || ! "$deployment_i
   exit 1
 fi
 
+destination=/var/www/izzidoro.com.br/public/manager_main
+backup_directory="/var/backups/manager_main/$deployment_id"
+# Refuse redirected paths and type conflicts before touching production or backups.
+python3 "$stage/.deploy-validate.py" validate manager_main "$stage" "$destination" "$backup_directory"
+
 # Serialize all three repositories while applying code and checking the application.
 exec 9>/var/lock/manager-deploy.lock
 flock -w 600 9
@@ -24,13 +29,14 @@ test -f "$stage/.deploy-excludes"
 find "$stage/app" "$stage/public" -type f -name '*.php' -print0 \
   | xargs -0 -r -n 1 php -l
 
-# Preserve replaced and deleted files in a backup outside the public web root.
-destination=/var/www/izzidoro.com.br/public/manager_main
-backup_directory="/var/backups/manager_main/$deployment_id"
-# Simulation uses the production filters and delete behavior without changing files.
+# Preserve overwritten files; server-only files are never pruned.
+# Revalidate after waiting for the lock and running the PHP checks.
+python3 "$stage/.deploy-validate.py" validate manager_main "$stage" "$destination" "$backup_directory"
+
+# Copy new/updated files only. Obsolete files require a separate reviewed operation.
 rsync_options=(
   --archive --no-owner --no-group --omit-dir-times
-  --chmod=D755,F644 --delay-updates --delete-delay
+  --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --delay-updates
   --checksum --itemize-changes --stats
   --exclude-from="$stage/.deploy-excludes"
 )

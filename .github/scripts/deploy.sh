@@ -26,6 +26,7 @@ if [[ "$DEPLOY_MODE" == 'apply' && "${GITHUB_REF:-}" != 'refs/heads/main' ]]; th
   echo 'Publication is allowed only from the main branch.' >&2
   exit 1
 fi
+command -v python3 >/dev/null
 echo "Deployment mode: $DEPLOY_MODE"
 
 # Keep credentials in a private temporary directory outside the checkout.
@@ -36,9 +37,23 @@ remote_stage=''
 cleanup() {
   # Remove only the temporary directory allocated for this deployment.
   if [[ "$remote_stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ ]]; then
-    ssh -F "$ssh_directory/config" manager-production "rm -rf -- '$remote_stage'" || true
+    ssh -F "$ssh_directory/config" manager-production "python3 '$remote_stage/.deploy-validate.py' cleanup manager_main '$remote_stage'" || true
   fi
-  rm -rf -- "$ssh_directory"
+  # Runner credentials are removed only within this run's private temp directory.
+  python3 - "$ssh_directory" "$RUNNER_TEMP" <<'LOCAL_CLEANUP'
+from pathlib import Path
+import re
+import shutil
+import sys
+directory, parent = map(Path, sys.argv[1:])
+if (not directory.is_symlink() and directory.is_dir()
+        and directory.resolve().parent == parent.resolve()
+        and re.fullmatch(r'manager-main-ssh\.[A-Za-z0-9]+', directory.name)
+        and shutil.rmtree.avoids_symlink_attacks):
+    shutil.rmtree(directory)
+else:
+    raise SystemExit('Runner credential directory failed cleanup validation.')
+LOCAL_CLEANUP
 }
 trap cleanup EXIT
 
@@ -67,11 +82,14 @@ command -v php >/dev/null
 command -v rsync >/dev/null
 command -v curl >/dev/null
 command -v flock >/dev/null
+command -v python3 >/dev/null
 test -d /var/www/izzidoro.com.br/public/manager_main
 test -f /var/www/izzidoro.com.br/public/manager_main/app/Core/Config.php
 test -f /var/www/izzidoro.com.br/public/manager_assets/vendor/autoload.php
 umask 077
-mktemp -d /tmp/manager-main-deploy.XXXXXXXXXX
+stage=$(mktemp -d /tmp/manager-main-deploy.XXXXXXXXXX)
+printf '%s\n' manager_main > "$stage/.deploy-repository"
+printf '%s\n' "$stage"
 REMOTE
 )
 if [[ ! "$remote_stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ ]]; then
@@ -81,6 +99,9 @@ fi
 
 # Stage code outside the web root while preserving production configuration and data.
 printf -v ssh_transport 'ssh -F %q' "$ssh_directory/config"
+# Transfer the validator first so cleanup is available even if staging fails.
+rsync --rsh="$ssh_transport" .github/scripts/validate-deploy.py \
+  "manager-production:$remote_stage/.deploy-validate.py"
 rsync --recursive --links --times --compress \
   --exclude-from=.github/deploy/rsync-excludes \
   --rsh="$ssh_transport" ./ "manager-production:$remote_stage/"
