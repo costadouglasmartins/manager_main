@@ -16,3 +16,6 @@
 /public/database/
 /public/zip_code_crawler_*
 /.deploy-excludes
+/.deploy-validate.py
+/.deploy-repository
+/tests/

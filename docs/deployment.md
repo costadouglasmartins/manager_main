@@ -23,7 +23,7 @@ a secret. Verify and update it if the server is rebuilt or its host key changes.
 ## Production prerequisites
 
 - The destination directory and `app/Core/Config.php` must already exist.
-- PHP, rsync, curl, and flock must be installed on the VPS.
+- PHP, Python 3, rsync, curl, and flock must be installed on the VPS.
 - The sibling `manager_assets/vendor/autoload.php` must exist and its Composer
   dependencies must support the production PHP runtime.
 - Production database and chat settings belong in the server's
@@ -36,7 +36,7 @@ a secret. Verify and update it if the server is rebuilt or its host key changes.
 
 After the workflow is merged into `main`, each push to `main` deploys that commit.
 You can also open **Actions > Deploy manager_main > Run workflow**, selecting
-`main`. Manual runs on the setup branch simulate; other branches do not run.
+`main`. Manual runs on either test branch simulate; other branches do not run.
 
 Code is staged outside the web root and checked with the VPS's PHP interpreter
 before production files are updated. All three repository deployments use the
@@ -47,11 +47,11 @@ does not verify every application feature.
 
 The server's `Config.php`, `.env` files, `storage`, uploads, crawler data,
 `public/database`, shared Composer dependencies, and Git metadata are preserved
-by `.github/deploy/rsync-excludes`. Obsolete code files outside those exclusions
-are removed. Replaced and deleted files are backed up under
+by `.github/deploy/rsync-excludes`. Server-only files are preserved. Removing obsolete code requires a separate
+reviewed operation. Overwritten files are backed up under
 `/var/backups/manager_main/<commit>-<run>-<attempt>`.
 
-These backups contain only replaced/deleted files, not a complete snapshot or a
+These backups contain only overwritten files, not a complete snapshot or a
 database backup. Recovery requires reviewing the affected files, restoring the
 needed backup files, and removing any newly introduced files if necessary.
 Deploying a previous commit on `main` is another option. The upload is not an
@@ -72,3 +72,37 @@ Pushes to `main` publish code. The runner script rejects publication from other
 branches and defaults to simulation when no mode is provided. Manual runs on
 `main` publish; runs on `codex/github-deploy` simulate. Dry-run HTTP checks examine
 the currently deployed applications, not the staged application behavior.
+
+## Destination and cleanup protection
+
+Before opening the shared lock, and again after waiting for it and checking PHP,
+the deployment validator checks the exact allowlisted destination for this
+repository. Destination path components must be real directories; aliases,
+symlinks, ancestor aliases, special entries, hard-linked target files, and
+file/directory type conflicts stop publication before production files change.
+New backup paths are also validated and existing backup directories are never
+reused. Missing application directories are not created automatically.
+
+Staging must be a private directory owned by the deploying user under the fixed
+temporary root, with the expected random name and repository marker. Cleanup
+uses Python's symlink-safe directory removal after checking that boundary; it
+does not accept arbitrary server paths. The marker and validator are excluded
+from publication. Python 3 with symlink-safe rmtree support is required.
+
+The synchronization has no delete option. It updates or adds files with backups
+of overwritten files and preserves files present only on the server. These
+checks reduce the impact of path mistakes; they do not establish the cause of
+the earlier incident or replace a complete backup. The SSH account still has
+root privileges; account isolation should be addressed separately.
+
+## Verifying this safety correction
+
+Run `python3 tests/test_deploy_safety.py` locally. The workflow also requires the
+`safety-checks` job to pass on Ubuntu before the deployment job starts. The tests
+use temporary directories only; they do not connect to the VPS.
+
+Push this correction to `codex/guard-deploy-paths` to run the guarded workflow
+against the VPS in dry-run mode. This branch can never select publication mode.
+Review that simulation and its protected paths before merging into `main`.
+Changes to `main` remain real deployments after the prerequisite tests pass.
+Do not treat local success as confirmation of the VPS Python/runtime checks.
