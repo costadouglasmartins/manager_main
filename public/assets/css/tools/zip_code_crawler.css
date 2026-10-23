@@ -119,7 +119,7 @@
 }
 
 .zip-code-crawler-results {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -192,6 +192,10 @@
 @media (min-width: 1400px) {
   .zip-code-crawler-monitor-card {
     height: var(--zip-code-crawler-monitor-height, calc(100dvh - 10.5rem)) !important;
+  }
+
+  .zip-code-crawler-results {
+    flex-basis: 0;
   }
 
   .zip-code-crawler-results-body {
