@@ -33,6 +33,25 @@ Em desenvolvimento, o banco usa o host `mysql` e a senha do Docker local; em pro
 
 Defina as variáveis no ambiente do PHP-FPM e dos processos CLI; este arquivo não carrega `.env` automaticamente. Se preferir editar os padrões no próprio `Config.php`, mantenha os dois arquivos sincronizados. O deploy atual preserva os `Config.php` da VPS, portanto esta atualização precisa ser copiada para eles separadamente.
 
+## Recuperação do processo de chat
+
+O WebSocket mantém uma conexão PDO durante toda a execução. Quando o MySQL/MariaDB
+fecha essa conexão (por exemplo, por inatividade ou reinício do banco), o processo
+encerra com erro ao detectar a desconexão em uma autorização ou operação. Execute
+`app/SupportChat/server.php` com um supervisor que reinicie processos com falha,
+como o serviço `support-chat` com `Restart=always` ou `Restart=on-failure` no
+systemd, ou o serviço Docker com `restart: always`. Os clientes reconectam e
+precisam passar novamente pela autenticação e pela autorização de acesso.
+
+As operações de escrita não são repetidas automaticamente: uma perda de conexão
+pode ocorrer depois de o banco ter confirmado a gravação. Erros SQL que não
+indicam desconexão continuam sendo tratados sem encerrar o processo.
+
+Depois de atualizar o código na VPS, execute `systemctl restart support-chat`.
+O deploy dos arquivos por si só não recarrega o daemon. Para verificar o tratamento
+de falhas sem acessar banco ou abrir portas, execute
+`php tests/support_chat_database_failure_test.php` na pasta `manager_main`.
+
 # Regras de programação do projeto
 
 Este documento registra as convenções de desenvolvimento que devem ser seguidas neste projeto.

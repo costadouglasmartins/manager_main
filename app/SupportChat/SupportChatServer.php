@@ -589,6 +589,7 @@ class SupportChatServer
 			$clientId,
 			$exception->getMessage()
 		));
+		$this->rethrowDatabaseDisconnect($exception);
 		$this->sendError($clientId, 'Unable to validate access right now.');
 		$this->disconnectClient($clientId);
 		}
@@ -604,7 +605,38 @@ class SupportChatServer
 			$clientId,
 			$exception->getMessage()
 		));
+		$this->rethrowDatabaseDisconnect($exception);
 		$this->sendError($clientId, 'Unable to process the support chat operation.');
+		}
+
+	/**
+	 * Let the process supervisor replace a dead connection without replaying writes.
+	 * @param \Throwable $exception Failure raised during authorization or an operation.
+	 * @return void
+	 **/
+	private function rethrowDatabaseDisconnect(\Throwable $exception): void
+		{
+		// Inspect wrapped PDO failures without treating ordinary SQL errors as disconnects.
+		$cause = $exception;
+		while ($cause !== null)
+			{
+			if ($cause instanceof \PDOException)
+				{
+				// Native driver codes cover lost connections and expired idle sessions.
+				$driverCode = (int) ($cause->errorInfo[1] ?? $cause->getCode());
+				// SQLSTATE class 08 identifies connection failures across drivers.
+				$sqlState = (string) ($cause->errorInfo[0] ?? $cause->getCode());
+				if (in_array($driverCode, [2006, 2013, 2055, 4031], true) || str_starts_with($sqlState, '08'))
+					{
+					$this->writeLog(sprintf(
+						"[%s] Support chat database connection lost; stopping for supervisor restart.\n",
+						date('Y-m-d H:i:s')
+					));
+					throw $exception;
+					}
+				}
+			$cause = $cause->getPrevious();
+			}
 		}
 
 	/**
