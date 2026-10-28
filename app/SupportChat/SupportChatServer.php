@@ -780,21 +780,18 @@ class SupportChatServer
 				continue;
 				}
 
-			if ($role === 'customer')
+			if ($role !== 'customer')
 				{
-				if ((int) ($claims['user_id'] ?? 0) !== (int) ($chat['customer_user_id'] ?? 0))
-					{
-					continue;
-					}
-
-				if ((int) ($claims['tenant_id'] ?? 0) !== (int) ($chat['tenant_id'] ?? 0))
-					{
-					continue;
-					}
+				continue;
 				}
-			elseif ($role === 'root')
+
+			if ((int) ($claims['user_id'] ?? 0) !== (int) ($chat['customer_user_id'] ?? 0))
 				{
-				// Roots can receive all chat events via broadcastToRoots as well.
+				continue;
+				}
+
+			if ((int) ($claims['tenant_id'] ?? 0) !== (int) ($chat['tenant_id'] ?? 0))
+				{
 				continue;
 				}
 
