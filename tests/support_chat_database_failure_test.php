@@ -66,6 +66,19 @@ $payload = rtrim(strtr(base64_encode(json_encode([
 // Match the HMAC contract used by the HTTP application.
 $signature = rtrim(strtr(base64_encode(hash_hmac('sha256', $payload, 'regression-test-secret', true)), '+/', '-_'), '=');
 
+if (($argv[1] ?? '') === '--disconnect-child')
+	{
+	// Leave the disconnect uncaught to verify the exit status seen by systemd.
+	$failure = new PDOException('Simulated database disconnect.');
+	$failure->errorInfo = ['HY000', 2006, 'Simulated database disconnect.'];
+	$database->failure = $failure;
+	// No network socket or database connection is needed for this process check.
+	$socket = fopen('php://temp', 'w+');
+	$clientsProperty->setValue($server, [1 => ['socket' => $socket, 'authenticated' => false]]);
+	$authenticate->invoke($server, 1, $payload . '.' . $signature);
+	exit(0);
+	}
+
 foreach ([2006, 2013, 2055, 4031, 1146, 1062] as $driverCode)
 	{
 	// Driver error information reproduces PDO's MySQL failure format.
@@ -127,4 +140,21 @@ foreach ([['HY000', 2006, true], ['08006', 0, true], ['23000', 1062, false]] as 
 	fclose($socket);
 	}
 
-echo "PASS: database disconnects escape for supervisor restart; SQL errors remain contained; authorization fails closed; no query retries.\n";
+// Run a real child process to check that the supervisor receives a failure exit.
+$pipes = [];
+// Array commands avoid shell interpretation and reuse the same PHP interpreter.
+$process = proc_open([PHP_BINARY, __FILE__, '--disconnect-child'], [
+	0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w'],
+], $pipes);
+expectChatResult(is_resource($process), 'Unable to start the daemon exit regression check.');
+fclose($pipes[0]);
+// Capture the expected uncaught PDO failure without leaking it into normal output.
+$processOutput = stream_get_contents($pipes[1]) . stream_get_contents($pipes[2]);
+fclose($pipes[1]);
+fclose($pipes[2]);
+// A nonzero exit triggers both Restart=always and Restart=on-failure.
+$exitCode = proc_close($process);
+expectChatResult($exitCode > 0, 'A lost database connection must stop the PHP process with failure.');
+expectChatResult(str_contains($processOutput, 'Simulated database disconnect.'), 'The process must stop because of the simulated database failure.');
+
+echo "PASS: database disconnects stop the PHP process; SQL errors remain contained; authorization fails closed; no query retries.\n";
