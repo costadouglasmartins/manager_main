@@ -18,7 +18,8 @@ VALUES
   ('0.0.4', 'Product variations and conditional product attributes', NOW(), NOW()),
   ('0.0.5', 'Advanced product catalog, generated variations, pricing, imports and variation inventory', NOW(), NOW()),
   ('0.0.6', 'CRM Module', NOW(), NOW()),
-  ('0.0.7', 'CRM Module - Contacts, Opportunities, Activities and Statuses', NOW(), NOW())
+  ('0.0.7', 'CRM Module - Contacts, Opportunities, Activities and Statuses', NOW(), NOW()),
+  ('0.0.8', 'Product import batches and errors tables', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
   `description` = VALUES(`description`),
   `modified` = NOW();
@@ -293,6 +294,38 @@ CREATE TABLE IF NOT EXISTS `product_category_templates` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_product_category_templates_name` (`name`),
   KEY `idx_product_category_templates_active` (`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `product_import_batches` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_category_id` INT NOT NULL,
+  `file_name` VARCHAR(180) NOT NULL,
+  `status` ENUM('PROCESSING','COMPLETED','PARTIAL','FAILED') NOT NULL DEFAULT 'PROCESSING',
+  `total_rows` INT UNSIGNED NOT NULL DEFAULT '0',
+  `imported_rows` INT UNSIGNED NOT NULL DEFAULT '0',
+  `failed_rows` INT UNSIGNED NOT NULL DEFAULT '0',
+  `created_by_user_id` INT DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_import_batches_category` (`product_category_id`),
+  KEY `idx_product_import_batches_status` (`status`),
+  KEY `idx_product_import_batches_created_by_user` (`created_by_user_id`),
+  CONSTRAINT `fk_product_import_batches_category` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_product_import_batches_manager_main_users` FOREIGN KEY (`created_by_user_id`) REFERENCES `manager_main`.`users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `product_import_errors` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `product_import_batch_id` INT NOT NULL,
+  `row_number` INT UNSIGNED NOT NULL,
+  `message` VARCHAR(500) NOT NULL,
+  `row_json` JSON DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_import_errors_batch` (`product_import_batch_id`),
+  KEY `idx_product_import_errors_row` (`product_import_batch_id`, `row_number`),
+  CONSTRAINT `fk_product_import_errors_batch` FOREIGN KEY (`product_import_batch_id`) REFERENCES `product_import_batches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `products` (
