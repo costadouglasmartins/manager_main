@@ -1,6 +1,6 @@
 SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `schema_versions` (
+CREATE TABLE IF NOT EXISTS `schema_versions` ( 
   `id` INT NOT NULL AUTO_INCREMENT,
   `version` VARCHAR(20) NOT NULL,
   `description` VARCHAR(255) DEFAULT NULL,
