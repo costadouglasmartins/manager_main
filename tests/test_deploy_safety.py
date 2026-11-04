@@ -3,6 +3,7 @@ import importlib.util
 import os
 from pathlib import Path
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -48,6 +49,31 @@ class DeploySafetyTests(unittest.TestCase):
 
     def validate(self, destination=None):
         guard.validate(self.project, self.stage, destination or self.destination, self.backup)
+
+    def run_staging_rsync(self, checkout):
+        """Run deploy.sh's checkout-to-staging rsync options locally, without SSH."""
+        script = (REPO / '.github/scripts/deploy.sh').read_text()
+        command = re.search(r'^rsync (--recursive\b.*?) \./ "manager-production:\$remote_stage/"$', script, re.M | re.S).group(1)
+        # Drop only the SSH transport; every filtering option comes from the real script.
+        options = [option for option in shlex.split(command.replace('\\\n', ' ')) if not option.startswith('--rsh=')]
+        self.assertIn('--exclude-from=.github/deploy/rsync-excludes', options)
+        result = subprocess.run(['rsync'] + options + ['./', str(self.stage) + '/'], cwd=checkout, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def run_apply_rsync(self):
+        """Run apply-deploy.sh's production rsync options locally, in publication mode."""
+        script = (REPO / '.github/scripts/apply-deploy.sh').read_text()
+        options = re.search(r'^rsync_options=\(\n.*?\n\)', script, re.M | re.S).group(0)
+        shell = '''set -Eeuo pipefail
+stage=$1
+destination=$2
+backup_directory=$3
+''' + options + '''
+rsync_options+=(--backup --backup-dir="$backup_directory")
+rsync "${rsync_options[@]}" "$stage/" "$destination/"
+'''
+        result = subprocess.run(['bash', '-c', shell, 'fixture', str(self.stage), str(self.destination), str(self.backup)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_valid_repository_destination(self):
         self.validate()
@@ -159,18 +185,7 @@ class DeploySafetyTests(unittest.TestCase):
             self.write(self.destination, relative, 'production value')
         self.validate()
         self.backup.mkdir(parents=True)
-        script = (REPO / '.github/scripts/apply-deploy.sh').read_text()
-        options = re.search(r'^rsync_options=\(\n.*?\n\)', script, re.M | re.S).group(0)
-        shell = '''set -Eeuo pipefail
-stage=$1
-destination=$2
-backup_directory=$3
-''' + options + '''
-rsync_options+=(--backup --backup-dir="$backup_directory")
-rsync "${rsync_options[@]}" "$stage/" "$destination/"
-'''
-        result = subprocess.run(['bash', '-c', shell, 'fixture', str(self.stage), str(self.destination), str(self.backup)], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.run_apply_rsync()
         self.assertEqual(server_only.read_text(), 'saved document')
         self.assertEqual((self.destination / 'public/index.php').read_text(), '<?php // staged entry point\n')
         self.assertEqual((self.backup / 'public/index.php').read_text(), '<?php // old code\n')
@@ -178,6 +193,59 @@ rsync "${rsync_options[@]}" "$stage/" "$destination/"
             self.assertEqual((self.destination / relative).read_text(), 'production value')
         self.assertFalse((self.destination / '.deploy-repository').exists())
         self.assertFalse((self.destination / '.deploy-excludes').exists())
+
+    def test_staging_uploads_only_tenant_template_from_database_directory(self):
+        checkout = self.base / 'checkout'
+        self.write(checkout, '.github/deploy/rsync-excludes', (REPO / '.github/deploy/rsync-excludes').read_text())
+        self.write(checkout, 'public/database/tenant_template.sql', 'repository template')
+        # Dumps, models, operational SQL and look-alike names must never leave the runner.
+        for name in ['manager_main.sql', 'manager_0001.sql', 'manager_main.mwb', 'manager_main.mwb.bak', 'tenant_upgrade_0.0.8_product_imports.sql', 'tenant_template.sql.bak', 'nested/tenant_template.sql']:
+            self.write(checkout, 'public/database/' + name, 'repository value')
+        self.run_staging_rsync(checkout)
+        self.assertEqual(sorted(os.listdir(self.stage / 'public/database')), ['tenant_template.sql'])
+        self.assertEqual((self.stage / 'public/database/tenant_template.sql').read_text(), 'repository template')
+        self.assertFalse((self.stage / '.github').exists())
+        self.validate()
+
+    def test_rsync_publishes_tenant_template_and_backs_up_previous_version(self):
+        database = self.destination / 'public/database'
+        self.write(self.stage, 'public/database/tenant_template.sql', 'repository template')
+        self.write(self.destination, 'public/database/tenant_template.sql', 'production template')
+        # The production hop filters again, so staged dumps still cannot replace server copies.
+        kept = ['manager_main.sql', 'manager_0001.sql', 'manager_main.mwb', 'nested/tenant_template.sql']
+        for name in kept:
+            self.write(self.stage, 'public/database/' + name, 'repository value')
+            self.write(self.destination, 'public/database/' + name, 'production value')
+        unpublished = ['manager_0002.sql', 'tenant_upgrade_0.0.8_product_imports.sql', 'tenant_template.sql.bak']
+        for name in unpublished:
+            self.write(self.stage, 'public/database/' + name, 'repository value')
+        server_only = self.write(self.destination, 'public/database/server-only.sql', 'saved operation')
+        times = {name: (database / name).stat().st_mtime_ns for name in kept}
+        self.validate()
+        self.backup.mkdir(parents=True)
+        self.run_apply_rsync()
+        self.assertEqual((database / 'tenant_template.sql').read_text(), 'repository template')
+        self.assertEqual((self.backup / 'public/database/tenant_template.sql').read_text(), 'production template')
+        for name in kept:
+            self.assertEqual((database / name).read_text(), 'production value')
+            self.assertEqual((database / name).stat().st_mtime_ns, times[name])
+        for name in unpublished:
+            self.assertFalse((database / name).exists())
+        self.assertEqual(server_only.read_text(), 'saved operation')
+        # Only the replaced template is backed up from public/database.
+        self.assertEqual(sorted(os.listdir(self.backup / 'public/database')), ['tenant_template.sql'])
+
+    def test_rsync_creates_missing_database_directory_with_only_the_template(self):
+        self.write(self.stage, 'public/database/tenant_template.sql', 'repository template')
+        self.write(self.stage, 'public/database/manager_main.sql', 'repository value')
+        self.validate()
+        self.backup.mkdir(parents=True)
+        self.run_apply_rsync()
+        database = self.destination / 'public/database'
+        self.assertEqual(sorted(os.listdir(database)), ['tenant_template.sql'])
+        self.assertEqual((database / 'tenant_template.sql').read_text(), 'repository template')
+        # Nothing existed to overwrite, so no backup entry is created.
+        self.assertEqual(list(self.backup.iterdir()), [])
 
     def test_no_pruning_or_unbounded_cleanup_options_in_scripts(self):
         apply = (REPO / '.github/scripts/apply-deploy.sh').read_text()

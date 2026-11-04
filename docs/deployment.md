@@ -46,10 +46,22 @@ error, even when the code transfer itself succeeded. A successful health check
 does not verify every application feature.
 
 The server's `Config.php`, `.env` files, `storage`, uploads, crawler data,
-`public/database`, shared Composer dependencies, and Git metadata are preserved
-by `.github/deploy/rsync-excludes`. Server-only files are preserved. Removing obsolete code requires a separate
+the contents of `public/database` (except the tenant template below), shared
+Composer dependencies, and Git metadata are preserved by
+`.github/deploy/rsync-excludes`. Server-only files are preserved. Removing obsolete code requires a separate
 reviewed operation. Overwritten files are backed up under
 `/var/backups/manager_main/<commit>-<run>-<attempt>`.
+
+`public/database/tenant_template.sql` is the only exception: `TenantProvisioner`
+runs it to create tenant databases, so every deployment publishes the committed
+template. The directory is created if it is missing, and the replaced template
+goes to the same backup directory. Dumps, MySQL Workbench models, and operational
+SQL scripts in `public/database`, tracked or not, are neither uploaded nor changed
+on the server. In `rsync-excludes`, the `+ /public/database/tenant_template.sql`
+line must stay before `- /public/database/*`, because rsync applies the first
+matching rule. Publishing the template affects only databases provisioned
+afterwards; existing tenant databases still need their schema upgrades run
+separately.
 
 These backups contain only overwritten files, not a complete snapshot or a
 database backup. Recovery requires reviewing the affected files, restoring the
