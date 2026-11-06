@@ -465,4 +465,4 @@
 	const PERSON_EMAIL_EXISTS_URL        = "<?= url('person/emailExists'); ?>";
 </script>
 <script src="<?= url('assets/js/people/create.js?v=19'); ?>"></script>
-<script src="/manager_assets/masks/masks.js?v=5"></script>
+<script src="/manager_assets/masks/masks.js?v=7"></script>

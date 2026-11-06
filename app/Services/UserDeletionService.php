@@ -87,6 +87,11 @@ class UserDeletionService
 					$databasePlan['detached_schedule_event_ids']
 				);
 				$this->deleteIds($schema, 'schedule_events_recurrences', $databasePlan['schedule_recurrence_ids']);
+
+				// HR: employees managed by a removed employee keep their record and lose only the manager reference.
+				// hr_employees.person_id is RESTRICT, so the HR row must go before the person. Catalogs (departments/positions) are never touched.
+				$this->updateIdsToNull($schema, 'hr_employees', 'manager_hr_employee_id', $databasePlan['detached_hr_employee_ids']);
+				$this->deleteIds($schema, 'hr_employees', $databasePlan['hr_employee_ids']);
 				}
 
 			$central = $plan['central'];
@@ -238,6 +243,12 @@ class UserDeletionService
 				{
 				$warnings[] = count($databasePlan['detached_task_ids']) . ' tarefa(s) em ' . $schema
 					. ' serão preservadas e terão a referência de terceiro removida.';
+				}
+
+			if ($databasePlan['detached_hr_employee_ids'] !== [])
+				{
+				$warnings[] = count($databasePlan['detached_hr_employee_ids']) . ' funcionário(s) em ' . $schema
+					. ' serão preservados e terão a referência de gestor removida.';
 				}
 			}
 
@@ -549,6 +560,30 @@ class UserDeletionService
 			}
 		$this->appendModule($modules, $schema, 'Tarefas', $taskRecords);
 
+		// HR employee record of the person (hr_employees.person_id is unique and references people with RESTRICT).
+		$hrEmployees = $this->rowsWhenAvailable($schema, $columns, 'hr_employees', ['id', 'person_id'], 'person_id = ?', [$personId]);
+		$hrEmployeeIds = $this->ids($hrEmployees);
+		$detachedHrEmployees = [];
+		if ($hrEmployeeIds !== [] && $this->hasColumns($columns, 'hr_employees', ['id', 'manager_hr_employee_id']))
+			{
+			$where = 'manager_hr_employee_id IN (' . $this->placeholders($hrEmployeeIds) . ')'
+				. ' AND id NOT IN (' . $this->placeholders($hrEmployeeIds) . ')';
+			$detachedHrEmployees = $this->schemaRows($schema, 'hr_employees', $where, array_merge($hrEmployeeIds, $hrEmployeeIds));
+			}
+		$hrRecords = [];
+		foreach ($hrEmployees as $row)
+			{
+			$hrRecords[] = $this->record(
+				'hr_employees',
+				$row['id'],
+				'Funcionário #' . $row['id']
+					. ' — pessoa #' . $row['person_id']
+					. (!empty($row['registration_number']) ? ' | matrícula: ' . $row['registration_number'] : '')
+					. ' | status: ' . ($row['status'] ?? '')
+			);
+			}
+		$this->appendModule($modules, $schema, 'RH', $hrRecords);
+
 		$recurrences = $this->rowsWhenAvailable($schema, $columns, 'schedule_events_recurrences', ['id', 'created_by_user_id'], 'created_by_user_id = ?', [$userId]);
 		$recurrenceIds = $this->ids($recurrences);
 		$events = $this->rowsWhenAvailable($schema, $columns, 'schedule_events', ['id', 'created_by_user_id'], 'created_by_user_id = ?', [$userId]);
@@ -598,6 +633,8 @@ class UserDeletionService
 			'schedule_event_ids' => $eventIds,
 			'schedule_participant_ids' => $this->ids($participants),
 			'detached_schedule_event_ids' => $this->ids($detachedEvents),
+			'hr_employee_ids' => $hrEmployeeIds,
+			'detached_hr_employee_ids' => $this->ids($detachedHrEmployees),
 		];
 		}
 

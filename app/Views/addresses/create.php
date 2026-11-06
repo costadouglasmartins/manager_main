@@ -65,7 +65,7 @@
   </div>
 </form>
 <!-- /Endereço -->
-<script src="/manager_assets/masks/masks.js?v=4"></script>
+<script src="/manager_assets/masks/masks.js?v=7"></script>
 <script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>
 <script src="/manager_assets/viacep/viacep.js?v=1"></script>
 <script src="<?= url('assets/js/addresses/create.js?v=1'); ?>"></script>
