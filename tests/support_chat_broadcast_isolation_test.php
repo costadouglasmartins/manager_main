@@ -81,11 +81,14 @@ $database = new AuthorizedBroadcastDatabase();
 $server = new SupportChatServer('127.0.0.1', 0, 'regression-test-secret', $database);
 $clientsProperty = new ReflectionProperty($server, 'clients');
 $broadcastToChat = new ReflectionMethod($server, 'broadcastToChat');
+$broadcastToAttendant = new ReflectionMethod($server, 'broadcastToAttendant');
+$sendSupportUnavailable = new ReflectionMethod($server, 'sendSupportUnavailable');
 $expiresAt = time() + 300;
 $internalSocket = fopen('php://temp', 'w+');
 $customerSocket = fopen('php://temp', 'w+');
 $otherCustomerSocket = fopen('php://temp', 'w+');
 $rootSocket = fopen('php://temp', 'w+');
+$otherRootSocket = fopen('php://temp', 'w+');
 
 $clientsProperty->setValue($server, [
 	1 => [
@@ -130,6 +133,15 @@ $clientsProperty->setValue($server, [
 			'exp' => $expiresAt,
 		],
 	],
+	5 => [
+		'socket' => $otherRootSocket,
+		'authenticated' => true,
+		'claims' => [
+			'role' => 'root',
+			'user_id' => 2,
+			'exp' => $expiresAt,
+		],
+	],
 ]);
 
 $broadcastToChat->invoke($server, [
@@ -155,12 +167,35 @@ expectBroadcastIsolation(
 );
 expectBroadcastIsolation(
 	broadcastSocketContents($rootSocket) === '',
-	'Root sockets must remain exclusive to broadcastToRoots.'
+	'Root sockets must not receive customer-only broadcastToChat payloads.'
 );
 
-foreach ([$internalSocket, $customerSocket, $otherCustomerSocket, $rootSocket] as $socket)
+$broadcastToAttendant->invoke($server, [
+	'id' => 10,
+	'attendant_user_id' => 1,
+], [
+	'type' => 'message_created',
+	'chat_id' => 10,
+]);
+
+expectBroadcastIsolation(
+	str_contains(broadcastSocketContents($rootSocket), 'message_created'),
+	'The assigned online root must receive the support message payload.'
+);
+expectBroadcastIsolation(
+	broadcastSocketContents($otherRootSocket) === '',
+	'Other online roots must not receive a message assigned to another attendant.'
+);
+
+$sendSupportUnavailable->invoke($server, 2, 10);
+expectBroadcastIsolation(
+	str_contains(broadcastSocketContents($customerSocket), 'support_unavailable'),
+	'A queued customer message must receive the support-unavailable protocol error.'
+);
+
+foreach ([$internalSocket, $customerSocket, $otherCustomerSocket, $rootSocket, $otherRootSocket] as $socket)
 	{
 	fclose($socket);
 	}
 
-echo "PASS: support broadcasts remain isolated from internal tenant chat sockets and unrelated customers.\n";
+echo "PASS: support broadcasts remain isolated and route messages only to the assigned attendant.\n";

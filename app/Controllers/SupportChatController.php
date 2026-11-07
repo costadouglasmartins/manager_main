@@ -447,7 +447,11 @@ class SupportChatController extends Controller
 			}
 
 		$messages = $model->getMessages($chatId);
-		$model->markAttendantMessagesSeen($chatId, $messages);
+		$currentUser = $_SESSION['manager_main']['user'] ?? [];
+		if ((int) ($chat['attendant_user_id'] ?? 0) === (int) ($currentUser['id'] ?? 0))
+			{
+			$model->markAttendantMessagesSeen($chatId, (int) ($currentUser['id'] ?? 0), $messages);
+			}
 		$chat = $model->findChatById($chatId) ?? $chat;
 
 		$this->json([
@@ -464,7 +468,8 @@ class SupportChatController extends Controller
 		$this->requireRoot();
 
 		$model = new SupportChat();
-		$this->json($model->getUnreadCustomerNotifications());
+		$currentUser = $_SESSION['manager_main']['user'] ?? [];
+		$this->json($model->getUnreadCustomerNotifications((int) ($currentUser['id'] ?? 0)));
 		}
 
 	/**

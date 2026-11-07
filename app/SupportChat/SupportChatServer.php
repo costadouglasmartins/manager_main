@@ -349,6 +349,8 @@ class SupportChatServer
 			$repository = $this->repository();
 			$chatId = (int) ($message['chat_id'] ?? 0);
 			$chat = null;
+			$createdChat = false;
+			$attendantChanged = false;
 
 			if ($role === 'customer')
 				{
@@ -363,9 +365,29 @@ class SupportChatServer
 				if (!$chat || (int) ($chat['customer_user_id'] ?? 0) !== $userId || (int) ($chat['tenant_id'] ?? 0) !== $tenantId || (string) ($chat['status'] ?? '') === 'closed')
 					{
 					$activeChat = $repository->findActiveCustomerChat($userId, $tenantId);
-					$chat = $activeChat ?: $repository->createCustomerChat($userId, $tenantId, $tenantDatabaseNumber);
+					if ($activeChat)
+						{
+						$chat = $activeChat;
+						}
+					else
+						{
+						$chat = $repository->createCustomerChat($userId, $tenantId, $tenantDatabaseNumber);
+						$createdChat = true;
+						}
 					$chatId = (int) ($chat['id'] ?? 0);
+					}
+
+				$previousAttendantUserId = (int) ($chat['attendant_user_id'] ?? 0);
+				$chat = $repository->assignAvailableAttendant($chatId, true) ?? $chat;
+				$attendantChanged = (int) ($chat['attendant_user_id'] ?? 0) !== $previousAttendantUserId;
+
+				if ($createdChat)
+					{
 					$this->broadcastChatCreated($chatId, $chat);
+					}
+				elseif ($attendantChanged)
+					{
+					$this->broadcastChatAssigned($chatId, $chat);
 					}
 				}
 			else
@@ -378,11 +400,32 @@ class SupportChatServer
 					}
 				}
 
+			$attendantBeforeMessageUserId = (int) ($chat['attendant_user_id'] ?? 0);
 			$messageRow = $repository->createMessage($chatId, $userId, $role === 'root' ? 'attendant' : 'customer', $userName, $text);
 			$chat = $repository->findChatById($chatId) ?? $chat;
 			SupportChatTypingService::setTyping($chatId, $userId, $role === 'root' ? 'attendant' : 'customer', $userName, false);
+			if ($role === 'customer')
+				{
+				$attendantAfterMessageUserId = (int) ($chat['attendant_user_id'] ?? 0);
+				$chat = $repository->assignAvailableAttendant($chatId, true) ?? $chat;
+				if ((int) ($chat['attendant_user_id'] ?? 0) !== $attendantAfterMessageUserId)
+					{
+					$this->broadcastChatAssigned($chatId, $chat);
+					}
+				}
+			elseif ((int) ($chat['attendant_user_id'] ?? 0) !== $attendantBeforeMessageUserId)
+				{
+				$this->broadcastChatAssigned($chatId, $chat, $userId);
+				}
 
 			$this->broadcastMessageCreated($chatId, $messageRow, $chat);
+
+			$attendantIsAvailable = !empty($chat['attendant_user_id'])
+				&& $repository->isOnlineRootUser((int) $chat['attendant_user_id']);
+			if ($role === 'customer' && !$attendantIsAvailable)
+				{
+				$this->sendSupportUnavailable($clientId, $chatId);
+				}
 			}
 		catch (\Throwable $exception)
 			{
@@ -438,7 +481,7 @@ class SupportChatServer
 			return;
 			}
 
-		$this->broadcastToRoots($payload);
+		$this->broadcastToAttendant($chat, $payload);
 		}
 
 	/**
@@ -473,7 +516,7 @@ class SupportChatServer
 				return;
 				}
 
-			$this->broadcastChatAssigned($chatId, $chat);
+			$this->broadcastChatAssigned($chatId, $chat, (int) ($claims['user_id'] ?? 0));
 			}
 		catch (\Throwable $exception)
 			{
@@ -511,7 +554,7 @@ class SupportChatServer
 				return;
 				}
 
-			$this->broadcastChatClosed($chatId, $chat);
+			$this->broadcastChatClosed($chatId, $chat, (int) ($claims['user_id'] ?? 0));
 			}
 		catch (\Throwable $exception)
 			{
@@ -703,7 +746,22 @@ class SupportChatServer
 		];
 
 		$this->broadcastToChat($chat ?? ['id' => $chatId], $payload, null);
-		$this->broadcastToRoots($payload);
+		if ($chat && (string) ($messageRow['sender_role'] ?? '') === 'attendant')
+			{
+			$senderUserId = (int) ($messageRow['sender_user_id'] ?? 0);
+			if ($senderUserId > 0 && $this->repository()->isOnlineRootUser($senderUserId))
+				{
+				$this->broadcastToAttendant($chat, $payload);
+				}
+			elseif ($senderUserId > 0)
+				{
+				$this->broadcastToRootUser($senderUserId, $payload);
+				}
+			}
+		elseif ($chat)
+			{
+			$this->broadcastToAttendant($chat, $payload);
+			}
 		}
 
 	/**
@@ -717,16 +775,28 @@ class SupportChatServer
 			'status' => $chat['status'] ?? null,
 		];
 
-		$this->broadcastToRoots($payload);
-		if ($chat) {
+		if ($chat)
+			{
 			$this->broadcastToChat($chat, $payload, null);
+			if (!empty($chat['attendant_user_id']))
+				{
+				$this->broadcastToAttendant($chat, $payload);
+				}
+			else
+				{
+				$this->broadcastToOnlineRoots($payload);
+				}
+			}
+		else
+			{
+			$this->broadcastToOnlineRoots($payload);
 		}
 		}
 
 	/**
 	 * @param array<string, mixed> $chat
 	 */
-	private function broadcastChatAssigned(int $chatId, array $chat): void
+	private function broadcastChatAssigned(int $chatId, array $chat, int $initiatingRootUserId = 0): void
 		{
 		$payload = [
 			'type' => 'chat_assigned',
@@ -735,14 +805,18 @@ class SupportChatServer
 			'attendant_name' => (string) ($chat['attendant_name'] ?? $chat['attendant_username'] ?? ''),
 		];
 
-		$this->broadcastToRoots($payload);
+		$this->broadcastToOnlineRoots($payload);
 		$this->broadcastToChat($chat, $payload, null);
+		if ($initiatingRootUserId > 0 && !$this->repository()->isOnlineRootUser($initiatingRootUserId))
+			{
+			$this->broadcastToRootUser($initiatingRootUserId, $payload);
+			}
 		}
 
 	/**
 	 * @param array<string, mixed> $chat
 	 */
-	private function broadcastChatClosed(int $chatId, array $chat): void
+	private function broadcastChatClosed(int $chatId, array $chat, int $initiatingRootUserId = 0): void
 		{
 		$payload = [
 			'type' => 'chat_closed',
@@ -750,8 +824,12 @@ class SupportChatServer
 			'status' => 'closed',
 		];
 
-		$this->broadcastToRoots($payload);
+		$this->broadcastToOnlineRoots($payload);
 		$this->broadcastToChat($chat, $payload, null);
+		if ($initiatingRootUserId > 0 && !$this->repository()->isOnlineRootUser($initiatingRootUserId))
+			{
+			$this->broadcastToRootUser($initiatingRootUserId, $payload);
+			}
 		}
 
 	/**
@@ -800,13 +878,28 @@ class SupportChatServer
 		}
 
 	/**
-	 * @param array<string, mixed> $payload
+	 * Delivers a support event only to the currently assigned and available root.
+	 *
+	 * @param array<string, mixed> $chat Support chat row.
+	 * @param array<string, mixed> $payload WebSocket event payload.
 	 */
-	private function broadcastToRoots(array $payload): void
+	private function broadcastToAttendant(array $chat, array $payload): void
 		{
+		$attendantUserId = (int) ($chat['attendant_user_id'] ?? 0);
+		if ($attendantUserId <= 0 || !$this->repository()->isOnlineRootUser($attendantUserId))
+			{
+			return;
+			}
+
 		foreach ($this->clients as $clientId => $client)
 			{
 			if (!$client['authenticated'])
+				{
+				continue;
+				}
+
+			$claims = $client['claims'];
+			if ((string) ($claims['role'] ?? '') !== 'root' || (int) ($claims['user_id'] ?? 0) !== $attendantUserId)
 				{
 				continue;
 				}
@@ -816,7 +909,67 @@ class SupportChatServer
 				continue;
 				}
 
-			if ((string) (($client['claims'] ?? [])['role'] ?? '') !== 'root')
+			$this->sendJson($clientId, $payload);
+			}
+		}
+
+	/**
+	 * Delivers a state update to all authenticated sockets for one root user.
+	 *
+	 * @param int $rootUserId Root user identifier.
+	 * @param array<string, mixed> $payload WebSocket event payload.
+	 */
+	private function broadcastToRootUser(int $rootUserId, array $payload): void
+		{
+		if ($rootUserId <= 0)
+			{
+			return;
+			}
+
+		foreach ($this->clients as $clientId => $client)
+			{
+			if (!$client['authenticated'])
+				{
+				continue;
+				}
+
+			$claims = $client['claims'];
+			if ((string) ($claims['role'] ?? '') !== 'root' || (int) ($claims['user_id'] ?? 0) !== $rootUserId)
+				{
+				continue;
+				}
+
+			if (!$this->clientStillAuthorized($clientId))
+				{
+				continue;
+				}
+
+			$this->sendJson($clientId, $payload);
+			}
+		}
+
+	/**
+	 * Delivers pending-queue and lifecycle events to roots currently marked online.
+	 *
+	 * @param array<string, mixed> $payload WebSocket event payload.
+	 */
+	private function broadcastToOnlineRoots(array $payload): void
+		{
+		foreach ($this->clients as $clientId => $client)
+			{
+			if (!$client['authenticated'])
+				{
+				continue;
+				}
+
+			$claims = $client['claims'];
+			if ((string) ($claims['role'] ?? '') !== 'root')
+				{
+				continue;
+				}
+
+			$userId = (int) ($claims['user_id'] ?? 0);
+			if ($userId <= 0 || !$this->repository()->isOnlineRootUser($userId) || !$this->clientStillAuthorized($clientId))
 				{
 				continue;
 				}
@@ -856,12 +1009,37 @@ class SupportChatServer
 	/**
 	 * Sends a protocol error back to the browser.
 	 */
-	private function sendError(int $clientId, string $message): void
+	private function sendError(int $clientId, string $message, ?string $code = null, ?int $chatId = null): void
 		{
-		$this->sendJson($clientId, [
+		$payload = [
 			'type' => 'error',
 			'message' => $message,
-		]);
+		];
+
+		if ($code !== null)
+			{
+			$payload['code'] = $code;
+			}
+
+		if ($chatId !== null && $chatId > 0)
+			{
+			$payload['chat_id'] = $chatId;
+			}
+
+		$this->sendJson($clientId, $payload);
+		}
+
+	/**
+	 * Informs the customer that the message was queued without an available attendant.
+	 */
+	private function sendSupportUnavailable(int $clientId, int $chatId): void
+		{
+		$this->sendError(
+			$clientId,
+			'Não há atendentes disponíveis no momento. Sua mensagem foi registrada e ficará na fila.',
+			'support_unavailable',
+			$chatId
+		);
 		}
 
 	/**
