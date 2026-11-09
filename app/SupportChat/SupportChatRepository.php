@@ -76,46 +76,192 @@ class SupportChatRepository
 	 */
 	public function createCustomerChat(int $customerUserId, int $tenantId, string $tenantDatabaseNumber): array
 		{
-		$attendant = $this->pickAttendant();
-		$now = $this->now();
-		$status = $attendant ? 'open' : 'pending';
+		$startedTransaction = !$this->db->inTransaction();
 
-		$stmt = $this->db->prepare("
-			INSERT INTO support_chats (
-				customer_user_id,
-				attendant_user_id,
-				tenant_id,
-				tenant_database_number,
-				status,
-				last_message_at,
-				customer_last_seen_at,
-				created,
-				modified
-			) VALUES (
-				:customer_user_id,
-				:attendant_user_id,
-				:tenant_id,
-				:tenant_database_number,
-				:status,
-				:last_message_at,
-				:customer_last_seen_at,
-				:created,
-				:modified
-			)
-		");
-		$stmt->execute([
-			'customer_user_id' => $customerUserId,
-			'attendant_user_id' => $attendant ? (int) $attendant['id'] : null,
-			'tenant_id' => $tenantId,
-			'tenant_database_number' => $tenantDatabaseNumber,
-			'status' => $status,
-			'last_message_at' => $now,
-			'customer_last_seen_at' => $now,
-			'created' => $now,
-			'modified' => $now,
-		]);
+		try
+			{
+			if ($startedTransaction)
+				{
+				$this->db->beginTransaction();
+				}
 
-		return $this->findChatById((int) $this->db->lastInsertId()) ?? [];
+			$activeChatId = $this->findActiveCustomerChatIdForUpdate($customerUserId, $tenantId);
+			if ($activeChatId > 0)
+				{
+				$activeChat = $this->findChatById($activeChatId) ?? [];
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return $activeChat;
+				}
+
+			$attendant = $this->pickAttendant(true);
+			$now = $this->now();
+			$status = $attendant ? 'open' : 'pending';
+
+			$stmt = $this->db->prepare("
+				INSERT INTO support_chats (
+					customer_user_id,
+					attendant_user_id,
+					tenant_id,
+					tenant_database_number,
+					status,
+					last_message_at,
+					customer_last_seen_at,
+					created,
+					modified
+				) VALUES (
+					:customer_user_id,
+					:attendant_user_id,
+					:tenant_id,
+					:tenant_database_number,
+					:status,
+					:last_message_at,
+					:customer_last_seen_at,
+					:created,
+					:modified
+				)
+			");
+			$stmt->execute([
+				'customer_user_id' => $customerUserId,
+				'attendant_user_id' => $attendant ? (int) $attendant['id'] : null,
+				'tenant_id' => $tenantId,
+				'tenant_database_number' => $tenantDatabaseNumber,
+				'status' => $status,
+				'last_message_at' => $now,
+				'customer_last_seen_at' => $now,
+				'created' => $now,
+				'modified' => $now,
+			]);
+
+			$chat = $this->findChatById((int) $this->db->lastInsertId()) ?? [];
+			if ($startedTransaction)
+				{
+				$this->db->commit();
+				}
+
+			return $chat;
+			}
+		catch (\Throwable $exception)
+			{
+			if ($startedTransaction && $this->db->inTransaction())
+				{
+				$this->db->rollBack();
+				}
+
+			throw $exception;
+			}
+		}
+
+	/**
+	 * Attempts to assign a pending or unavailable chat to an online root attendant.
+	 *
+	 * @param int $chatId Support chat identifier.
+	 * @param bool $replaceUnavailableAttendant Whether an offline assigned attendant can be replaced.
+	 * @return array<string, mixed>|null
+	 **/
+	public function assignAvailableAttendant(int $chatId, bool $replaceUnavailableAttendant = false): ?array
+		{
+		if ($chatId <= 0)
+			{
+			return null;
+			}
+
+		$startedTransaction = !$this->db->inTransaction();
+
+		try
+			{
+			if ($startedTransaction)
+				{
+				$this->db->beginTransaction();
+				}
+
+			$lockedChat = $this->findChatAssignmentForUpdate($chatId);
+			if (!$lockedChat)
+				{
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return null;
+				}
+
+			$currentAttendantUserId = (int) ($lockedChat['attendant_user_id'] ?? 0);
+			if ((string) ($lockedChat['status'] ?? '') === 'closed'
+				|| ($currentAttendantUserId > 0 && !$replaceUnavailableAttendant))
+				{
+				$chat = $this->findChatById($chatId);
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return $chat;
+				}
+
+			$attendant = $this->pickAttendant(true);
+			if ($currentAttendantUserId > 0 && $this->isOnlineRootUser($currentAttendantUserId))
+				{
+				$chat = $this->findChatById($chatId);
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return $chat;
+				}
+
+			if (!$attendant)
+				{
+				$this->markChatPending($chatId);
+				$chat = $this->findChatById($chatId);
+				if ($startedTransaction)
+					{
+					$this->db->commit();
+					}
+
+				return $chat;
+				}
+
+			$now = $this->now();
+			$assignmentCondition = $replaceUnavailableAttendant
+				? "AND status <> 'closed'"
+				: "AND attendant_user_id IS NULL AND status <> 'closed'";
+			$assignStmt = $this->db->prepare("
+				UPDATE support_chats
+				SET attendant_last_seen_at = NULL,
+				    attendant_user_id = :attendant_user_id,
+				    status = 'open',
+				    modified = :modified
+				WHERE id = :chat_id
+				  {$assignmentCondition}
+			");
+			$assignStmt->execute([
+				'attendant_user_id' => (int) $attendant['id'],
+				'modified' => $now,
+				'chat_id' => $chatId,
+			]);
+
+			$chat = $this->findChatById($chatId);
+			if ($startedTransaction)
+				{
+				$this->db->commit();
+				}
+
+			return $chat;
+			}
+		catch (\Throwable $exception)
+			{
+			if ($startedTransaction && $this->db->inTransaction())
+				{
+				$this->db->rollBack();
+				}
+
+			throw $exception;
+			}
 		}
 
 	/**
@@ -243,12 +389,17 @@ class SupportChatRepository
 		$now = $this->now();
 		$stmt = $this->db->prepare("
 			UPDATE support_chats
-			SET attendant_user_id = :attendant_user_id,
+			SET attendant_last_seen_at = CASE
+			      WHEN COALESCE(attendant_user_id, 0) <> :new_attendant_user_id THEN NULL
+			      ELSE attendant_last_seen_at
+			    END,
+			    attendant_user_id = :attendant_user_id,
 			    status = 'open',
 			    modified = :modified
 			WHERE id = :chat_id
 		");
 		$stmt->execute([
+			'new_attendant_user_id' => $attendantUserId,
 			'attendant_user_id' => $attendantUserId,
 			'modified' => $now,
 			'chat_id' => $chatId,
@@ -331,6 +482,31 @@ class SupportChatRepository
 		}
 
 	/**
+	 * Returns whether the provided user is an active root marked as online.
+	 **/
+	public function isOnlineRootUser(int $userId): bool
+		{
+		if ($userId <= 0)
+			{
+			return false;
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT 1
+			FROM users AS User
+			INNER JOIN user_presences AS UserPresence ON UserPresence.user_id = User.id
+			WHERE User.id = :user_id
+			  AND User.type = 'root'
+			  AND User.active = 1
+			  AND UserPresence.status = 'online'
+			LIMIT 1
+		");
+		$stmt->execute(['user_id' => $userId]);
+
+		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
 	 * Returns whether an active customer still has access to the active tenant
 	 * represented by the token database number.
 	 */
@@ -376,8 +552,13 @@ class SupportChatRepository
 	 *
 	 * @return array<string, mixed>|null
 	 */
-	private function pickAttendant(): ?array
+	private function pickAttendant(bool $lockOnlineAttendants = false): ?array
 		{
+		if ($lockOnlineAttendants)
+			{
+			$this->lockOnlineAttendants();
+			}
+
 		$sql = "SELECT User.id,
 		               Person.name,
 		               COALESCE(Stats.open_total, 0) AS open_total
@@ -402,6 +583,90 @@ class SupportChatRepository
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		return $row ?: null;
+		}
+
+	/**
+	 * Locks active chats for one customer/tenant before opening another one.
+	 **/
+	private function findActiveCustomerChatIdForUpdate(int $customerUserId, int $tenantId): int
+		{
+		$stmt = $this->db->prepare("
+			SELECT Chat.id
+			FROM support_chats AS Chat
+			WHERE Chat.customer_user_id = :customer_user_id
+			  AND Chat.tenant_id = :tenant_id
+			  AND Chat.status IN ('pending', 'open')
+			ORDER BY Chat.id DESC
+			LIMIT 1
+			FOR UPDATE
+		");
+		$stmt->execute([
+			'customer_user_id' => $customerUserId,
+			'tenant_id' => $tenantId,
+		]);
+
+		return (int) ($stmt->fetchColumn() ?: 0);
+		}
+
+	/**
+	 * Locks one chat while its availability assignment is evaluated.
+	 *
+	 * @return array<string, mixed>|null
+	 **/
+	private function findChatAssignmentForUpdate(int $chatId): ?array
+		{
+		$stmt = $this->db->prepare("
+			SELECT Chat.id,
+			       Chat.attendant_user_id,
+			       Chat.status
+			FROM support_chats AS Chat
+			WHERE Chat.id = :chat_id
+			LIMIT 1
+			FOR UPDATE
+		");
+		$stmt->execute(['chat_id' => $chatId]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		return $row ?: null;
+		}
+
+	/**
+	 * Locks all active online roots so concurrent selections observe prior assignments.
+	 **/
+	private function lockOnlineAttendants(): void
+		{
+		$stmt = $this->db->prepare("
+			SELECT User.id
+			FROM users AS User
+			INNER JOIN user_presences AS UserPresence ON UserPresence.user_id = User.id
+			WHERE User.active = 1
+			  AND User.type = 'root'
+			  AND UserPresence.status = 'online'
+			ORDER BY User.id ASC
+			FOR UPDATE
+		");
+		$stmt->execute();
+		$stmt->fetchAll(PDO::FETCH_COLUMN);
+		}
+
+	/**
+	 * Returns an unavailable chat to the pending support queue without an attendant.
+	 **/
+	private function markChatPending(int $chatId): void
+		{
+		$stmt = $this->db->prepare("
+			UPDATE support_chats
+			SET attendant_user_id = NULL,
+			    attendant_last_seen_at = NULL,
+			    status = 'pending',
+			    modified = :modified
+			WHERE id = :chat_id
+			  AND status <> 'closed'
+		");
+		$stmt->execute([
+			'modified' => $this->now(),
+			'chat_id' => $chatId,
+		]);
 		}
 
 	/**

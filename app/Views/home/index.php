@@ -148,8 +148,6 @@ $tenantSuspendedPercent = max(0, 100 - $tenantActivePercent - $tenantPendingPerc
 $emailsTotal = homeDashboardCount($contacts, 'emails');
 $phonesTotal = homeDashboardCount($contacts, 'phones');
 $addressesTotal = homeDashboardCount($contacts, 'addresses');
-$contactTotal = $emailsTotal + $phonesTotal + $addressesTotal;
-$contactAverage = $peopleTotal > 0 ? $contactTotal / $peopleTotal : 0;
 $citiesTotal = homeDashboardCount($locations, 'cities');
 
 $supportAvailable = !empty($support['available']);
@@ -162,43 +160,64 @@ $supportClosedPercent = homeDashboardPercent($supportClosed, $supportTotal);
 
 $activityAvailable = !empty($activity['available']);
 $activityLastSevenDays = homeDashboardCount($activity, 'last_seven_days');
+// Module permissions decide which cards, chart series and list items are rendered.
 $canViewTenants = homeDashboardCan('tenant.index');
 $canViewUsers = homeDashboardCan('user.index');
+$canViewPeople = homeDashboardCan('person.index');
+$canViewCities = homeDashboardCan('city.index');
+// Cards that combine modules stay visible while at least one of their sources is allowed.
+$canViewHealth = $canViewTenants || $canViewUsers || $canViewPeople;
+$canViewAttention = $canViewTenants || $canViewUsers || $supportAvailable;
 
+// The health score averages only the modules the user can see.
 $healthParts = [];
-if ($peopleTotal > 0)
+if ($canViewPeople && $peopleTotal > 0)
 	{
 	$healthParts[] = $peopleActivePercent;
 	}
-if ($usersTotal > 0)
+if ($canViewUsers && $usersTotal > 0)
 	{
 	$healthParts[] = $usersActivePercent;
 	}
-if ($tenantsTotal > 0)
+if ($canViewTenants && $tenantsTotal > 0)
 	{
 	$healthParts[] = $tenantActivePercent;
 	}
 $healthScore = !empty($healthParts) ? (int) round(array_sum($healthParts) / count($healthParts)) : 0;
 $healthTone = $healthScore >= 80 ? 'success' : ($healthScore >= 60 ? 'warning' : 'danger');
 
-$attentionCount = $tenantsPending + $tenantsSuspended + $usersInactive + ($supportAvailable ? $supportPending : 0);
-$attentionBase = $tenantsTotal + $usersTotal + ($supportAvailable ? $supportTotal : 0);
+// Attention indicators count only the sources the user can open.
+$attentionCount = ($canViewTenants ?$tenantsPending + $tenantsSuspended : 0) + ($canViewUsers ? $usersInactive : 0) + ($supportAvailable ? $supportPending : 0);
+$attentionBase = ($canViewTenants ? $tenantsTotal : 0) + ($canViewUsers ? $usersTotal : 0) + ($supportAvailable ? $supportTotal : 0);
 $attentionPercent = homeDashboardPercent($attentionCount, $attentionBase);
+$attentionMeta = [];
+if ($canViewTenants)
+	{
+	$attentionMeta[] = number_format($tenantsPending + $tenantsSuspended, 0, ',', '.') . ' tenants';
+	}
+if ($canViewUsers)
+	{
+	$attentionMeta[] = number_format($usersInactive, 0, ',', '.') . ' usuários';
+	}
+if ($supportAvailable)
+	{
+	$attentionMeta[] = number_format($supportPending, 0, ',', '.') . ' chats';
+	}
 
+// Chart series follow the module permissions; the scale uses only the visible series.
+$trendSeries = array_keys(array_filter(['people' => $canViewPeople, 'users' => $canViewUsers, 'tenants' => $canViewTenants]));
 $trendMaximum = 1;
 foreach ($monthlyRegistrations as $row)
 	{
-	$trendMaximum = max(
-		$trendMaximum,
-		(int) ($row['people'] ?? 0),
-		(int) ($row['users'] ?? 0),
-		(int) ($row['tenants'] ?? 0)
-	);
+	foreach ($trendSeries as $seriesKey)
+		{
+		$trendMaximum = max($trendMaximum, (int) ($row[$seriesKey] ?? 0));
+		}
 	}
 
 $trendCoordinates = [];
 $trendPoints = [];
-foreach (['people', 'users', 'tenants'] as $seriesKey)
+foreach ($trendSeries as $seriesKey)
 	{
 	$trendCoordinates[$seriesKey] = homeDashboardTrendCoordinates($monthlyRegistrations, $seriesKey, $trendMaximum);
 	$trendPoints[$seriesKey] = implode(' ', array_map(
@@ -241,12 +260,25 @@ if (homeDashboardCan('permission.manage'))
 	$quickActions[] = ['label' => 'Permissões', 'icon' => 'bi-shield-lock', 'url' => url('permission'), 'primary' => false];
 	}
 
-$contactRows = [
-	['label' => 'E-mails', 'value' => $emailsTotal, 'icon' => 'bi-envelope', 'tone' => 'primary'],
-	['label' => 'Telefones', 'value' => $phonesTotal, 'icon' => 'bi-telephone', 'tone' => 'success'],
-	['label' => 'Endereços', 'value' => $addressesTotal, 'icon' => 'bi-geo-alt', 'tone' => 'warning'],
-];
-$contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
+// Contact channels follow their module permissions; totals and percentages use only the visible channels.
+$contactRows = [];
+if (homeDashboardCan('email.index'))
+	{
+	$contactRows[] = ['label' => 'E-mails', 'value' => $emailsTotal, 'icon' => 'bi-envelope', 'tone' => 'primary'];
+	}
+if (homeDashboardCan('phone_number.index'))
+	{
+	$contactRows[] = ['label' => 'Telefones', 'value' => $phonesTotal, 'icon' => 'bi-telephone', 'tone' => 'success'];
+	}
+if (homeDashboardCan('address.index'))
+	{
+	$contactRows[] = ['label' => 'Endereços', 'value' => $addressesTotal, 'icon' => 'bi-geo-alt', 'tone' => 'warning'];
+	}
+$contactValues = array_column($contactRows, 'value');
+$contactTotal = array_sum($contactValues);
+$contactMaximum = max(array_merge([1], $contactValues));
+$contactAverage = $peopleTotal > 0 ? $contactTotal / $peopleTotal : 0;
+$canViewContacts = !empty($contactRows) || $canViewCities;
 ?>
 
 <link rel="stylesheet" href="<?= url('assets/css/home/index.css?v=5'); ?>">
@@ -267,16 +299,18 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
           Acompanhe a operação dos tenants, o crescimento dos cadastros e os pontos que precisam de atenção.
         </p>
       </div>
-      <div class="col-12 col-xl-5">
-        <div class="home-hero-summary">
-          <div>
-            <span>Saúde operacional</span>
-            <strong><?= $healthScore; ?>%</strong>
+      <?php if ($canViewHealth): ?>
+        <div class="col-12 col-xl-5">
+          <div class="home-hero-summary">
+            <div>
+              <span>Saúde operacional</span>
+              <strong><?= $healthScore; ?>%</strong>
+            </div>
+            <progress class="home-progress home-progress-<?= $healthTone; ?>" max="100" value="<?= $healthScore; ?>" aria-label="Saúde operacional em <?= $healthScore; ?>%"></progress>
+            <small><i class="bi bi-clock-history" aria-hidden="true"></i> Atualizado em <?= date('d/m/Y'); ?> às <?= date('H:i'); ?></small>
           </div>
-          <progress class="home-progress home-progress-<?= $healthTone; ?>" max="100" value="<?= $healthScore; ?>" aria-label="Saúde operacional em <?= $healthScore; ?>%"></progress>
-          <small><i class="bi bi-clock-history" aria-hidden="true"></i> Atualizado em <?= date('d/m/Y'); ?> às <?= date('H:i'); ?></small>
         </div>
-      </div>
+      <?php endif; ?>
     </div>
   </header>
 
@@ -294,8 +328,14 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
     </nav>
   <?php endif; ?>
 
+  <?php
+  // Each row renders only when one of its cards is allowed. Visible cards share a row equally,
+  // and flex-grow-1 lets a card left alone after a wrap fill the remaining space.
+  ?>
+  <?php if ($canViewHealth || $canViewAttention): ?>
   <div class="row g-3 g-xl-4 mb-4">
-    <div class="col-12 col-sm-6 col-xl-3">
+    <?php if ($canViewTenants): ?>
+    <div class="col-12 col-sm-6 col-xl flex-grow-1">
       <article class="home-kpi home-kpi-primary h-100">
         <div class="home-kpi-heading">
           <span class="home-kpi-icon"><i class="bi bi-database-check" aria-hidden="true"></i></span>
@@ -307,8 +347,10 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         <progress class="home-progress home-progress-primary" max="100" value="<?= $tenantActivePercent; ?>" aria-label="<?= $tenantActivePercent; ?>% dos tenants estão ativos"></progress>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-sm-6 col-xl-3">
+    <?php if ($canViewPeople): ?>
+    <div class="col-12 col-sm-6 col-xl flex-grow-1">
       <article class="home-kpi home-kpi-success h-100">
         <div class="home-kpi-heading">
           <span class="home-kpi-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
@@ -320,8 +362,10 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         <progress class="home-progress home-progress-success" max="100" value="<?= $peopleActivePercent; ?>" aria-label="<?= $peopleActivePercent; ?>% das pessoas estão ativas"></progress>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-sm-6 col-xl-3">
+    <?php if ($canViewUsers): ?>
+    <div class="col-12 col-sm-6 col-xl flex-grow-1">
       <article class="home-kpi home-kpi-info h-100">
         <div class="home-kpi-heading">
           <span class="home-kpi-icon"><i class="bi bi-person-gear" aria-hidden="true"></i></span>
@@ -333,8 +377,10 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         <progress class="home-progress home-progress-info" max="100" value="<?= $usersActivePercent; ?>" aria-label="<?= $usersActivePercent; ?>% dos usuários estão ativos"></progress>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-sm-6 col-xl-3">
+    <?php if ($canViewAttention): ?>
+    <div class="col-12 col-sm-6 col-xl flex-grow-1">
       <article class="home-kpi home-kpi-warning h-100">
         <div class="home-kpi-heading">
           <span class="home-kpi-icon"><i class="bi bi-exclamation-diamond" aria-hidden="true"></i></span>
@@ -342,42 +388,52 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         </div>
         <span class="home-kpi-label">Pontos de atenção</span>
         <strong class="home-kpi-value home-counter" data-target="<?= $attentionCount; ?>"><?= number_format($attentionCount, 0, ',', '.'); ?></strong>
-        <span class="home-kpi-meta"><?= number_format($tenantsPending + $tenantsSuspended, 0, ',', '.'); ?> tenants · <?= number_format($usersInactive, 0, ',', '.'); ?> usuários<?= $supportAvailable ? ' · ' . number_format($supportPending, 0, ',', '.') . ' chats' : ''; ?></span>
+        <span class="home-kpi-meta"><?= htmlspecialchars(implode(' · ', $attentionMeta), ENT_QUOTES, 'UTF-8'); ?></span>
         <progress class="home-progress home-progress-warning" max="100" value="<?= min(100, $attentionPercent); ?>" aria-label="<?= $attentionPercent; ?>% da base exige atenção"></progress>
       </article>
     </div>
+    <?php endif; ?>
   </div>
+  <?php endif; ?>
 
+  <?php if (!empty($trendSeries) || $canViewTenants): ?>
   <div class="row g-4 mb-4">
-    <div class="col-12 col-xl-8">
+    <?php if (!empty($trendSeries)): ?>
+    <div class="col-12 col-xl">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-eyebrow">Crescimento</span>
             <h2 class="home-panel-title">Novos cadastros nos últimos 6 meses</h2>
-            <p class="home-panel-subtitle mb-0">Comparativo mensal entre pessoas, usuários e tenants.</p>
+            <p class="home-panel-subtitle mb-0">Comparativo mensal dos cadastros.</p>
           </div>
           <span class="home-panel-chip"><i class="bi bi-calendar3" aria-hidden="true"></i> <?= htmlspecialchars($currentMonthLabel, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
 
         <div class="home-trend-totals" aria-label="Totais do mês atual">
-          <span><i class="home-dot home-dot-people"></i><strong><?= number_format((int) ($currentMonth['people'] ?? 0), 0, ',', '.'); ?></strong> pessoas</span>
-          <span><i class="home-dot home-dot-users"></i><strong><?= number_format((int) ($currentMonth['users'] ?? 0), 0, ',', '.'); ?></strong> usuários</span>
-          <span><i class="home-dot home-dot-tenants"></i><strong><?= number_format($currentTenantRegistrations, 0, ',', '.'); ?></strong> tenants</span>
-          <span class="home-trend-delta <?= $tenantRegistrationDelta >= 0 ? 'is-positive' : 'is-negative'; ?>">
-            <i class="bi <?= $tenantRegistrationDelta >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right'; ?>" aria-hidden="true"></i>
-            <?= $tenantRegistrationDelta >= 0 ? '+' : ''; ?><?= number_format($tenantRegistrationDelta, 0, ',', '.'); ?> tenants vs. mês anterior
-          </span>
+          <?php if ($canViewPeople): ?>
+            <span><i class="home-dot home-dot-people"></i><strong><?= number_format((int) ($currentMonth['people'] ?? 0), 0, ',', '.'); ?></strong> pessoas</span>
+          <?php endif; ?>
+          <?php if ($canViewUsers): ?>
+            <span><i class="home-dot home-dot-users"></i><strong><?= number_format((int) ($currentMonth['users'] ?? 0), 0, ',', '.'); ?></strong> usuários</span>
+          <?php endif; ?>
+          <?php if ($canViewTenants): ?>
+            <span><i class="home-dot home-dot-tenants"></i><strong><?= number_format($currentTenantRegistrations, 0, ',', '.'); ?></strong> tenants</span>
+            <span class="home-trend-delta <?= $tenantRegistrationDelta >= 0 ? 'is-positive' : 'is-negative'; ?>">
+              <i class="bi <?= $tenantRegistrationDelta >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right'; ?>" aria-hidden="true"></i>
+              <?= $tenantRegistrationDelta >= 0 ? '+' : ''; ?><?= number_format($tenantRegistrationDelta, 0, ',', '.'); ?> tenants vs. mês anterior
+            </span>
+          <?php endif; ?>
         </div>
 
         <div class="home-trend-chart-wrap">
           <svg class="home-trend-chart" viewBox="0 0 720 250" role="img" aria-labelledby="homeTrendTitle homeTrendDescription">
             <title id="homeTrendTitle">Evolução mensal de cadastros</title>
-            <desc id="homeTrendDescription">Linhas com o total de pessoas, usuários e tenants criados em cada um dos últimos seis meses.</desc>
+            <desc id="homeTrendDescription">Linhas com o total de cadastros criados em cada um dos últimos seis meses.</desc>
             <?php foreach ([24, 86, 148, 210] as $gridY): ?>
               <line class="home-chart-grid" x1="38" y1="<?= $gridY; ?>" x2="682" y2="<?= $gridY; ?>"></line>
             <?php endforeach; ?>
-            <?php foreach (['people', 'users', 'tenants'] as $seriesKey): ?>
+            <?php foreach ($trendSeries as $seriesKey): ?>
               <g class="home-trend-series home-series-<?= $seriesKey; ?>" data-chart-series="<?= $seriesKey; ?>">
                 <polyline class="home-trend-line" points="<?= htmlspecialchars($trendPoints[$seriesKey], ENT_QUOTES, 'UTF-8'); ?>"></polyline>
                 <?php foreach ($trendCoordinates[$seriesKey] as $point): ?>
@@ -396,14 +452,22 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         </div>
 
         <div class="home-chart-controls" aria-label="Séries exibidas no gráfico">
-          <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="people" aria-pressed="true"><i class="home-dot home-dot-people"></i>Pessoas</button>
-          <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="users" aria-pressed="true"><i class="home-dot home-dot-users"></i>Usuários</button>
-          <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="tenants" aria-pressed="true"><i class="home-dot home-dot-tenants"></i>Tenants</button>
+          <?php if ($canViewPeople): ?>
+            <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="people" aria-pressed="true"><i class="home-dot home-dot-people"></i>Pessoas</button>
+          <?php endif; ?>
+          <?php if ($canViewUsers): ?>
+            <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="users" aria-pressed="true"><i class="home-dot home-dot-users"></i>Usuários</button>
+          <?php endif; ?>
+          <?php if ($canViewTenants): ?>
+            <button class="home-chart-toggle js-home-series-toggle" type="button" data-series="tenants" aria-pressed="true"><i class="home-dot home-dot-tenants"></i>Tenants</button>
+          <?php endif; ?>
         </div>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-xl-4">
+    <?php if ($canViewTenants): ?>
+    <div class="col-12 col-xl">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div>
@@ -411,9 +475,7 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
             <h2 class="home-panel-title">Status da operação</h2>
             <p class="home-panel-subtitle mb-0">Distribuição atual da infraestrutura.</p>
           </div>
-          <?php if ($canViewTenants): ?>
-            <a class="btn btn-sm btn-outline-primary" href="<?= url('tenant'); ?>">Ver lista</a>
-          <?php endif; ?>
+          <a class="btn btn-sm btn-outline-primary" href="<?= url('tenant'); ?>">Ver lista</a>
         </div>
 
         <div class="home-donut-layout">
@@ -435,33 +497,47 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         </div>
       </article>
     </div>
+    <?php endif; ?>
   </div>
+  <?php endif; ?>
 
+  <?php if ($canViewHealth || $activityAvailable || $canViewAttention || $canViewContacts): ?>
   <div class="row g-4 mb-4">
-    <div class="col-12 col-lg-6 col-xxl-4">
+    <?php if ($canViewHealth || $activityAvailable): ?>
+    <div class="col-12 col-lg-6 col-xxl flex-grow-1">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-eyebrow">Pulso operacional</span>
             <h2 class="home-panel-title">Saúde dos cadastros</h2>
           </div>
-          <span class="home-health-score home-health-<?= $healthTone; ?>"><?= $healthScore; ?>%</span>
+          <?php if ($canViewHealth): ?>
+            <span class="home-health-score home-health-<?= $healthTone; ?>"><?= $healthScore; ?>%</span>
+          <?php endif; ?>
         </div>
 
-        <div class="home-health-list">
-          <div>
-            <span><i class="bi bi-database-check" aria-hidden="true"></i> Tenants ativos</span><strong><?= $tenantActivePercent; ?>%</strong>
-            <progress class="home-progress home-progress-primary" max="100" value="<?= $tenantActivePercent; ?>"></progress>
+        <?php if ($canViewHealth): ?>
+          <div class="home-health-list">
+            <?php if ($canViewTenants): ?>
+              <div>
+                <span><i class="bi bi-database-check" aria-hidden="true"></i> Tenants ativos</span><strong><?= $tenantActivePercent; ?>%</strong>
+                <progress class="home-progress home-progress-primary" max="100" value="<?= $tenantActivePercent; ?>"></progress>
+              </div>
+            <?php endif; ?>
+            <?php if ($canViewUsers): ?>
+              <div>
+                <span><i class="bi bi-person-check" aria-hidden="true"></i> Usuários ativos</span><strong><?= $usersActivePercent; ?>%</strong>
+                <progress class="home-progress home-progress-info" max="100" value="<?= $usersActivePercent; ?>"></progress>
+              </div>
+            <?php endif; ?>
+            <?php if ($canViewPeople): ?>
+              <div>
+                <span><i class="bi bi-people" aria-hidden="true"></i> Pessoas ativas</span><strong><?= $peopleActivePercent; ?>%</strong>
+                <progress class="home-progress home-progress-success" max="100" value="<?= $peopleActivePercent; ?>"></progress>
+              </div>
+            <?php endif; ?>
           </div>
-          <div>
-            <span><i class="bi bi-person-check" aria-hidden="true"></i> Usuários ativos</span><strong><?= $usersActivePercent; ?>%</strong>
-            <progress class="home-progress home-progress-info" max="100" value="<?= $usersActivePercent; ?>"></progress>
-          </div>
-          <div>
-            <span><i class="bi bi-people" aria-hidden="true"></i> Pessoas ativas</span><strong><?= $peopleActivePercent; ?>%</strong>
-            <progress class="home-progress home-progress-success" max="100" value="<?= $peopleActivePercent; ?>"></progress>
-          </div>
-        </div>
+        <?php endif; ?>
 
         <?php if ($activityAvailable): ?>
           <a class="home-inline-stat" href="<?= url('log'); ?>">
@@ -471,8 +547,10 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         <?php endif; ?>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-lg-6 col-xxl-4">
+    <?php if ($canViewAttention): ?>
+    <div class="col-12 col-lg-6 col-xxl flex-grow-1">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div>
@@ -489,20 +567,20 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
               <div><strong>Operação em dia</strong><span>Não há pendências nos indicadores monitorados.</span></div>
             </div>
           <?php else: ?>
-            <?php if ($tenantsPending > 0): ?>
-              <?php if ($canViewTenants): ?><a href="<?= url('tenant?status=pending'); ?>"><?php else: ?><div class="home-attention-item"><?php endif; ?>
+            <?php if ($canViewTenants && $tenantsPending > 0): ?>
+              <a href="<?= url('tenant?status=pending'); ?>">
                 <span class="home-attention-icon text-bg-warning"><i class="bi bi-hourglass-split"></i></span><span><strong>Tenants pendentes</strong><small>Aguardando ativação ou revisão</small></span><b><?= number_format($tenantsPending, 0, ',', '.'); ?></b>
-              <?php if ($canViewTenants): ?></a><?php else: ?></div><?php endif; ?>
+              </a>
             <?php endif; ?>
-            <?php if ($tenantsSuspended > 0): ?>
-              <?php if ($canViewTenants): ?><a href="<?= url('tenant?status=suspended'); ?>"><?php else: ?><div class="home-attention-item"><?php endif; ?>
+            <?php if ($canViewTenants && $tenantsSuspended > 0): ?>
+              <a href="<?= url('tenant?status=suspended'); ?>">
                 <span class="home-attention-icon text-bg-danger"><i class="bi bi-database-x"></i></span><span><strong>Tenants suspensos</strong><small>Requerem análise administrativa</small></span><b><?= number_format($tenantsSuspended, 0, ',', '.'); ?></b>
-              <?php if ($canViewTenants): ?></a><?php else: ?></div><?php endif; ?>
+              </a>
             <?php endif; ?>
-            <?php if ($usersInactive > 0): ?>
-              <?php if ($canViewUsers): ?><a href="<?= url('user?active=0'); ?>"><?php else: ?><div class="home-attention-item"><?php endif; ?>
+            <?php if ($canViewUsers && $usersInactive > 0): ?>
+              <a href="<?= url('user?active=0'); ?>">
                 <span class="home-attention-icon text-bg-secondary"><i class="bi bi-person-slash"></i></span><span><strong>Usuários inativos</strong><small>Contas fora da operação</small></span><b><?= number_format($usersInactive, 0, ',', '.'); ?></b>
-              <?php if ($canViewUsers): ?></a><?php else: ?></div><?php endif; ?>
+              </a>
             <?php endif; ?>
             <?php if ($supportAvailable && $supportPending > 0): ?>
               <a href="<?= url('support_chat?status=pending'); ?>"><span class="home-attention-icon text-bg-info"><i class="bi bi-chat-left-dots"></i></span><span><strong>Chats aguardando</strong><small>Solicitações ainda não atendidas</small></span><b><?= number_format($supportPending, 0, ',', '.'); ?></b></a>
@@ -519,41 +597,55 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         <?php endif; ?>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-xxl-4">
+    <?php if ($canViewContacts): ?>
+    <div class="col-12 col-lg-6 col-xxl flex-grow-1">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div>
             <span class="home-eyebrow">Cobertura</span>
             <h2 class="home-panel-title">Canais de contato</h2>
-            <p class="home-panel-subtitle mb-0"><?= number_format($contactAverage, 1, ',', '.'); ?> registros por pessoa.</p>
+            <?php if ($canViewPeople && !empty($contactRows)): ?>
+              <p class="home-panel-subtitle mb-0"><?= number_format($contactAverage, 1, ',', '.'); ?> registros por pessoa.</p>
+            <?php endif; ?>
           </div>
-          <span class="home-panel-chip"><?= number_format($contactTotal, 0, ',', '.'); ?> total</span>
+          <?php if (!empty($contactRows)): ?>
+            <span class="home-panel-chip"><?= number_format($contactTotal, 0, ',', '.'); ?> total</span>
+          <?php endif; ?>
         </div>
 
-        <div class="home-contact-list">
-          <?php foreach ($contactRows as $contactRow): ?>
-            <?php $contactPercent = homeDashboardPercent((int) $contactRow['value'], $contactMaximum); ?>
-            <div>
-              <span class="home-contact-icon bg-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>-subtle text-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>-emphasis"><i class="bi <?= htmlspecialchars($contactRow['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i></span>
-              <span><strong><?= htmlspecialchars($contactRow['label'], ENT_QUOTES, 'UTF-8'); ?></strong><small><?= $contactPercent; ?>% do maior canal</small></span>
-              <b><?= number_format((int) $contactRow['value'], 0, ',', '.'); ?></b>
-              <progress class="home-progress home-progress-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>" max="100" value="<?= $contactPercent; ?>"></progress>
-            </div>
-          <?php endforeach; ?>
-        </div>
+        <?php if (!empty($contactRows)): ?>
+          <div class="home-contact-list">
+            <?php foreach ($contactRows as $contactRow): ?>
+              <?php $contactPercent = homeDashboardPercent((int) $contactRow['value'], $contactMaximum); ?>
+              <div>
+                <span class="home-contact-icon bg-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>-subtle text-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>-emphasis"><i class="bi <?= htmlspecialchars($contactRow['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i></span>
+                <span><strong><?= htmlspecialchars($contactRow['label'], ENT_QUOTES, 'UTF-8'); ?></strong><small><?= $contactPercent; ?>% do maior canal</small></span>
+                <b><?= number_format((int) $contactRow['value'], 0, ',', '.'); ?></b>
+                <progress class="home-progress home-progress-<?= htmlspecialchars($contactRow['tone'], ENT_QUOTES, 'UTF-8'); ?>" max="100" value="<?= $contactPercent; ?>"></progress>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
 
-        <div class="home-location-note"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span><strong><?= number_format($citiesTotal, 0, ',', '.'); ?> cidades</strong> disponíveis para compor os endereços.</span></div>
+        <?php if ($canViewCities): ?>
+          <div class="home-location-note"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span><strong><?= number_format($citiesTotal, 0, ',', '.'); ?> cidades</strong> disponíveis para compor os endereços.</span></div>
+        <?php endif; ?>
       </article>
     </div>
+    <?php endif; ?>
   </div>
+  <?php endif; ?>
 
+  <?php if ($canViewPeople || $canViewTenants): ?>
   <div class="row g-4">
-    <div class="col-12 col-xl-6">
+    <?php if ($canViewPeople): ?>
+    <div class="col-12 col-xl">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div><span class="home-eyebrow">Cadastros recentes</span><h2 class="home-panel-title">Últimas pessoas</h2></div>
-          <?php if (homeDashboardCan('person.index')): ?><a href="<?= url('person'); ?>" class="btn btn-sm btn-outline-primary">Ver todas</a><?php endif; ?>
+          <a href="<?= url('person'); ?>" class="btn btn-sm btn-outline-primary">Ver todas</a>
         </div>
         <div class="home-record-list">
           <?php if (!empty($recentPeople)): ?>
@@ -571,12 +663,14 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         </div>
       </article>
     </div>
+    <?php endif; ?>
 
-    <div class="col-12 col-xl-6">
+    <?php if ($canViewTenants): ?>
+    <div class="col-12 col-xl">
       <article class="home-panel h-100">
         <div class="home-panel-header">
           <div><span class="home-eyebrow">Infraestrutura recente</span><h2 class="home-panel-title">Últimos tenants</h2></div>
-          <?php if ($canViewTenants): ?><a href="<?= url('tenant'); ?>" class="btn btn-sm btn-outline-primary">Ver todos</a><?php endif; ?>
+          <a href="<?= url('tenant'); ?>" class="btn btn-sm btn-outline-primary">Ver todos</a>
         </div>
         <div class="home-record-list">
           <?php if (!empty($recentTenants)): ?>
@@ -594,7 +688,9 @@ $contactMaximum = max(1, $emailsTotal, $phonesTotal, $addressesTotal);
         </div>
       </article>
     </div>
+    <?php endif; ?>
   </div>
+  <?php endif; ?>
 </section>
 
 <script src="<?= url('assets/js/home/index.js?v=5'); ?>"></script>

@@ -83,6 +83,12 @@ class TenantProvisioner
 			'schedule_events' => ['label' => 'Evento da agenda', 'fields' => ['title' => 'título', 'starts_at' => 'início', 'status' => 'status']],
 			'schedule_events_participants' => ['label' => 'Participante de evento', 'fields' => ['schedule_event_id' => 'evento', 'person_id' => 'pessoa']],
 		],
+		// Children first: hr_employees references both catalogs. The manifest only lists rows; nothing is removed table by table.
+		'RH' => [
+			'hr_employees' => ['label' => 'Funcionário', 'fields' => ['person_id' => 'pessoa', 'registration_number' => 'matrícula', 'status' => 'status']],
+			'hr_positions' => ['label' => 'Cargo', 'fields' => ['name' => 'nome']],
+			'hr_departments' => ['label' => 'Departamento', 'fields' => ['name' => 'nome']],
+		],
 	];
 
 	private $dbPrefix   = 'manager_';

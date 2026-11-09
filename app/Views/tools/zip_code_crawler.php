@@ -1,10 +1,10 @@
-<?php
+<?php 
 $zipCodeStateOptions = $zipCodeStateOptions ?? [];
 $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]', ENT_QUOTES, 'UTF-8');
 ?>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=12'); ?>">
+<link rel="stylesheet" href="<?= url('assets/css/tools/zip_code_crawler.css?v=16'); ?>">
 <!-- /CSS -->
 
 <!-- Breadcrumbs -->
@@ -104,30 +104,44 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
           </div>
 
           <div class="zip-code-crawler-stats mb-3">
-            <div class="zip-code-crawler-stat-card"><small>Processados</small><strong id="crawlerProcessedCount">0</strong></div>
-            <div class="zip-code-crawler-stat-card"><small>Novos salvos</small><strong id="crawlerFoundCount">0</strong></div>
-            <div class="zip-code-crawler-stat-card"><small>Falhas</small><strong id="crawlerFailedCount">0</strong></div>
+            <button class="zip-code-crawler-stat-card zip-code-crawler-stat-filter" type="button" data-results-filter="processed" aria-pressed="false" aria-controls="crawlerResultsBody" title="Listar somente os CEPs processados"><small>Processados</small><strong id="crawlerProcessedCount">0</strong><i class="bi bi-funnel" aria-hidden="true"></i></button>
+            <button class="zip-code-crawler-stat-card zip-code-crawler-stat-filter" type="button" data-results-filter="found" aria-pressed="false" aria-controls="crawlerResultsBody" title="Listar somente os novos registros salvos"><small>Novos salvos</small><strong id="crawlerFoundCount">0</strong><i class="bi bi-funnel" aria-hidden="true"></i></button>
+            <button class="zip-code-crawler-stat-card zip-code-crawler-stat-filter" type="button" data-results-filter="failed" aria-pressed="false" aria-controls="crawlerResultsBody" title="Listar somente as falhas de consulta"><small>Falhas</small><strong id="crawlerFailedCount">0</strong><i class="bi bi-funnel" aria-hidden="true"></i></button>
             <div class="zip-code-crawler-stat-card"><small>CEPs/seg</small><strong id="crawlerLookupRateCount">0,00</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Tempo restante</small><strong id="crawlerRemainingTimeText">-</strong></div>
             <div class="zip-code-crawler-stat-card"><small>Status</small><strong id="crawlerStatusText">Aguardando início</strong></div>
           </div>
 
           <div class="border rounded overflow-hidden zip-code-crawler-results d-flex flex-column">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-body-tertiary">
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom bg-body-tertiary">
               <i class="bi bi-list-check text-primary"></i>
               <span class="fw-semibold">Resultados</span>
-              <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Navegação dos resultados">
-                <button class="btn btn-outline-secondary" type="button" id="crawlerResultsTopButton" title="Ir para o início">
-                  <i class="bi bi-arrow-up" aria-hidden="true"></i>
-                  <span class="visually-hidden">Ir para o início</span>
+              <span class="badge rounded-pill d-none" id="crawlerResultsFilterBadge"></span>
+              <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-sm btn-outline-success d-none" type="button" id="crawlerResultsLiveButton" title="Voltar à listagem ao vivo">
+                  <i class="bi bi-broadcast me-1" aria-hidden="true"></i>Ao vivo
                 </button>
-                <button class="btn btn-outline-secondary" type="button" id="crawlerResultsBottomButton" title="Ir para o último consultado">
-                  <i class="bi bi-arrow-down" aria-hidden="true"></i>
-                  <span class="visually-hidden">Ir para o último consultado</span>
-                </button>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Navegação dos resultados">
+                  <button class="btn btn-outline-secondary" type="button" id="crawlerResultsTopButton" title="Ir para o início">
+                    <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                    <span class="visually-hidden">Ir para o início</span>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" id="crawlerResultsBottomButton" title="Ir para o último consultado">
+                    <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                    <span class="visually-hidden">Ir para o último consultado</span>
+                  </button>
+                </div>
               </div>
             </div>
             <div class="list-group list-group-flush zip-code-crawler-results-info d-none" id="crawlerResultsInfo" aria-live="polite"></div>
+            <div class="list-group list-group-flush d-none" id="crawlerResultsFilterNotice" aria-live="polite">
+              <div class="list-group-item text-secondary">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-info-circle" aria-hidden="true"></i>
+                  <span id="crawlerResultsFilterNoticeText"></span>
+                </div>
+              </div>
+            </div>
             <div class="list-group list-group-flush zip-code-crawler-results-body" id="crawlerResultsBody" role="log" aria-live="polite" aria-relevant="additions">
               <div class="list-group-item text-secondary zip-code-crawler-results-empty">
                 <div class="d-flex align-items-center gap-2">
@@ -136,6 +150,7 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
                 </div>
               </div>
             </div>
+            <div class="list-group list-group-flush zip-code-crawler-results-body d-none" id="crawlerFilteredResultsBody" role="log" aria-live="polite" aria-relevant="additions"></div>
           </div>
         </div>
       </div>
@@ -143,4 +158,4 @@ $zipCodeStateOptionsJson = htmlspecialchars(json_encode($zipCodeStateOptions, JS
   </div>
 </section>
 
-<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=32'); ?>"></script>
+<script src="<?= url('assets/js/tools/zip_code_crawler.js?v=34'); ?>"></script>

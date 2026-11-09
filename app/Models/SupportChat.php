@@ -507,15 +507,22 @@ class SupportChat extends Model
 		}
 
 	/**
-	 * Returns customer messages that have not been seen by an attendant yet.
+	 * Returns unseen customer messages available to one root attendant.
 	 *
+	 * @param int $attendantUserId Root attendant identifier.
 	 * @return array{count: int, notifications: array<int, array<string, mixed>>}
 	 */
-	public function getUnreadCustomerNotifications(int $limit = 8): array
+	public function getUnreadCustomerNotifications(int $attendantUserId, int $limit = 8): array
 		{
+		if ($attendantUserId <= 0)
+			{
+			return ['count' => 0, 'notifications' => []];
+			}
+
 		$limit = max(1, min(50, $limit));
 		$where = "Message.sender_role = 'customer'
 		          AND Chat.status IN ('pending', 'open')
+		          AND (Chat.attendant_user_id IS NULL OR Chat.attendant_user_id = :attendant_user_id)
 		          AND (
 		            Chat.attendant_last_seen_at IS NULL
 		            OR Message.created > Chat.attendant_last_seen_at
@@ -525,7 +532,8 @@ class SupportChat extends Model
 		             FROM support_chats_messages AS Message
 		             INNER JOIN support_chats AS Chat ON Chat.id = Message.support_chat_id
 		             WHERE {$where}";
-		$countStmt = $this->db->query($countSql);
+		$countStmt = $this->db->prepare($countSql);
+		$countStmt->execute(['attendant_user_id' => $attendantUserId]);
 		$count = (int) $countStmt->fetchColumn();
 
 		$sql = "SELECT Message.id AS message_id,
@@ -548,6 +556,7 @@ class SupportChat extends Model
 		        LIMIT :limit";
 
 		$stmt = $this->db->prepare($sql);
+		$stmt->bindValue(':attendant_user_id', $attendantUserId, PDO::PARAM_INT);
 		$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 		$stmt->execute();
 
@@ -560,10 +569,17 @@ class SupportChat extends Model
 	/**
 	 * Marks the messages displayed to an attendant as seen.
 	 *
+	 * @param int $chatId Support chat identifier.
+	 * @param int $attendantUserId Current root attendant identifier.
 	 * @param array<int, array<string, mixed>> $messages
 	 */
-	public function markAttendantMessagesSeen(int $chatId, array $messages = []): void
+	public function markAttendantMessagesSeen(int $chatId, int $attendantUserId, array $messages = []): void
 		{
+		if ($attendantUserId <= 0)
+			{
+			return;
+			}
+
 		$seenAt = null;
 		foreach ($messages as $message)
 			{
@@ -587,11 +603,13 @@ class SupportChat extends Model
 			    END,
 			    modified = :modified
 			WHERE id = :chat_id
+			  AND attendant_user_id = :attendant_user_id
 		");
 		$stmt->execute([
 			'seen_at' => $seenAt,
 			'modified' => $this->now(),
 			'chat_id' => $chatId,
+			'attendant_user_id' => $attendantUserId,
 		]);
 		}
 
