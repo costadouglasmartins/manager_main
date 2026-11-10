@@ -1,0 +1,25 @@
+/.git/
+/.github/
+/.mcp/
+/.vscode/
+.DS_Store
+/.env*
+/vendor/
+/app/Core/Config.php
+/storage/
+/tmp/
+/uploads/
+/logs/
+/cache/
+/public/tenant_files/
+/public/uploads/
+# TenantProvisioner reads public/database/tenant_template.sql, so it is the only file
+# published from that directory. The first matching rule wins: keep the include before
+# the exclude. Dumps, models and operational SQL there stay out and are preserved.
++ /public/database/tenant_template.sql
+- /public/database/*
+/public/zip_code_crawler_*
+/.deploy-excludes
+/.deploy-validate.py
+/.deploy-repository
+/tests/

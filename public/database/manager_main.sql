@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               8.0.46 - MySQL Community Server - GPL
--- Server OS:                    Linux
+-- Server version:               11.8.6-MariaDB-5ubuntu0.1 from Ubuntu - -- Please help get to 10k stars at https://github.com/MariaDB/Server
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             12.21.1.1
 -- --------------------------------------------------------
 
@@ -17,18 +17,18 @@
 
 -- Dumping database structure for manager_main
 DROP DATABASE IF EXISTS `manager_main`;
-CREATE DATABASE IF NOT EXISTS `manager_main` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `manager_main` /*!40100 DEFAULT CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci */;
 USE `manager_main`;
 
 -- Dumping structure for table manager_main.addresses
 CREATE TABLE IF NOT EXISTS `addresses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zip_code` varchar(45) NOT NULL,
-  `street` varchar(255) NOT NULL,
-  `number` varchar(10) NOT NULL,
-  `observations` varchar(255) DEFAULT NULL,
-  `person_id` int NOT NULL,
-  `neighborhood_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `zip_code` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `street` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `number` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `observations` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `person_id` int(11) NOT NULL,
+  `neighborhood_id` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -36,27 +36,28 @@ CREATE TABLE IF NOT EXISTS `addresses` (
   KEY `fk_addresses_neighborhoods1_idx` (`neighborhood_id`),
   CONSTRAINT `fk_addresses_neighborhoods1` FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`),
   CONSTRAINT `fk_addresses_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.addresses: ~3 rows (approximately)
 INSERT INTO `addresses` (`id`, `zip_code`, `street`, `number`, `observations`, `person_id`, `neighborhood_id`, `created`, `modified`) VALUES
 	(1, '88137-335', 'Rua do Amor-perfeito', '266', 'Apt 203', 4, 17792, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
 	(2, '88137-335', 'Rua do Amor-perfeito', '266', '', 9, 17792, '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(3, '88132-242', 'Rua Antonio José de Macedo', '100', 'observações', 11, 17802, '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+	(3, '88132-242', 'Rua Antonio José de Macedo', '100', 'observações', 11, 17802, '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(4, '88137-335', 'Rua do Amor-perfeito', '266', '', 12, 17792, '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.banks
 CREATE TABLE IF NOT EXISTS `banks` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `number` varchar(45) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `number` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `active` tinyint(1) NOT NULL,
-  `cnab` enum('240','400') NOT NULL,
+  `cnab` enum('240','400') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.banks: ~76 rows (approximately)
+-- Dumping data for table manager_main.banks: ~2 rows (approximately)
 INSERT INTO `banks` (`id`, `name`, `number`, `active`, `cnab`, `created`, `modified`) VALUES
 	(1, 'BANCO DO BRASIL', '001', 0, '240', '2026-05-20 21:56:47', '2026-05-20 21:56:47'),
 	(2, 'BANCO DA AMAZONIA S.A.', '003', 0, '240', '2026-05-20 22:03:02', '2026-05-20 22:03:02'),
@@ -137,16 +138,16 @@ INSERT INTO `banks` (`id`, `name`, `number`, `active`, `cnab`, `created`, `modif
 
 -- Dumping structure for table manager_main.cities
 CREATE TABLE IF NOT EXISTS `cities` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `state_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `state_id` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_cities_states1_idx` (`state_id`),
   CONSTRAINT `fk_cities_states1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5823 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5823 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.cities: ~5 551 rows (approximately)
 INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modified`) VALUES
@@ -5724,13 +5725,13 @@ INSERT INTO `cities` (`id`, `name`, `description`, `state_id`, `created`, `modif
 
 -- Dumping structure for table manager_main.countries
 CREATE TABLE IF NOT EXISTS `countries` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `acronym` varchar(5) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `acronym` varchar(5) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.countries: ~2 rows (approximately)
 INSERT INTO `countries` (`id`, `name`, `acronym`, `created`, `modified`) VALUES
@@ -5739,32 +5740,33 @@ INSERT INTO `countries` (`id`, `name`, `acronym`, `created`, `modified`) VALUES
 
 -- Dumping structure for table manager_main.emails
 CREATE TABLE IF NOT EXISTS `emails` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
-  `is_login` tinyint(1) NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `observations` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `person_id` int(11) DEFAULT NULL,
+  `is_login` tinyint(1) NOT NULL DEFAULT 0,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_emails_people1_idx` (`person_id`),
   CONSTRAINT `fk_emails_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.emails: ~4 rows (approximately)
 INSERT INTO `emails` (`id`, `email`, `observations`, `person_id`, `is_login`, `created`, `modified`) VALUES
 	(1, 'admin@admin.com', 'root', 3, 1, '2026-01-06 18:00:02', NULL),
 	(2, 'emma@watson.com', 'Login', 4, 1, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
 	(7, 'kristen@stewart.com', 'login', 9, 1, '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(8, 'nikole@kidmann.com', 'login', 11, 1, '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+	(8, 'nikole@kidmann.com', 'login', 11, 1, '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(9, 'jessica@chastain.com', 'login', 12, 1, '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.financial_operations
 CREATE TABLE IF NOT EXISTS `financial_operations` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `financial_operation_category_id` int NOT NULL,
-  `type` enum('CREDIT','DEBIT') NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `financial_operation_category_id` int(11) NOT NULL,
+  `type` enum('CREDIT','DEBIT') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `total_value` float(10,2) NOT NULL,
-  `user_id` int NOT NULL,
+  `user_id` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -5772,27 +5774,27 @@ CREATE TABLE IF NOT EXISTS `financial_operations` (
   KEY `fk_financial_operations_financial_operations_categories1_idx` (`financial_operation_category_id`),
   CONSTRAINT `fk_financial_operations_financial_operations_categories1` FOREIGN KEY (`financial_operation_category_id`) REFERENCES `financial_operations_categories` (`id`),
   CONSTRAINT `fk_financial_operations_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.financial_operations: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.financial_operations_categories
 CREATE TABLE IF NOT EXISTS `financial_operations_categories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.financial_operations_categories: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.financial_operations_payments
 CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `financial_operation_id` int NOT NULL,
-  `type` enum('CASH','CHECK','PIX','CARD','BANK_SLIP') NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `financial_operation_id` int(11) NOT NULL,
+  `type` enum('CASH','CHECK','PIX','CARD','BANK_SLIP') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `value` float(10,2) NOT NULL,
   `payment_date` datetime DEFAULT NULL,
   `due_date` date NOT NULL,
@@ -5801,23 +5803,23 @@ CREATE TABLE IF NOT EXISTS `financial_operations_payments` (
   PRIMARY KEY (`id`),
   KEY `fk_financial_operations_payments_financial_operations1_idx` (`financial_operation_id`),
   CONSTRAINT `fk_financial_operations_payments_financial_operations1` FOREIGN KEY (`financial_operation_id`) REFERENCES `financial_operations` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.financial_operations_payments: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.internal_chats
 CREATE TABLE IF NOT EXISTS `internal_chats` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
   `tenant_database_number` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `chat_type` enum('direct','group') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'direct',
   `title` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `conversation_key` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_by_user_id` int NOT NULL,
+  `created_by_user_id` int(11) NOT NULL,
   `status` enum('active','archived') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `last_message_at` datetime DEFAULT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
+  `modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_internal_chats_conversation_key` (`conversation_key`),
   KEY `idx_internal_chats_tenant_status` (`tenant_id`,`status`),
@@ -5825,70 +5827,80 @@ CREATE TABLE IF NOT EXISTS `internal_chats` (
   KEY `fk_internal_chats_created_by_user` (`created_by_user_id`),
   CONSTRAINT `fk_internal_chats_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_internal_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.internal_chats: ~0 rows (approximately)
+-- Dumping data for table manager_main.internal_chats: ~1 rows (approximately)
+INSERT INTO `internal_chats` (`id`, `tenant_id`, `tenant_database_number`, `chat_type`, `title`, `conversation_key`, `created_by_user_id`, `status`, `last_message_at`, `created`, `modified`) VALUES
+	(1, 2, '0002', 'direct', NULL, 'tenant:2:direct:5:6', 5, 'active', '2026-10-28 17:00:33', '2026-10-14 21:09:55', '2026-10-28 17:00:33');
 
 -- Dumping structure for table manager_main.internal_chat_messages
 CREATE TABLE IF NOT EXISTS `internal_chat_messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `internal_chat_id` int NOT NULL,
-  `sender_user_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `internal_chat_id` int(11) NOT NULL,
+  `sender_user_id` int(11) NOT NULL,
   `sender_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `message_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_internal_chat_messages_chat_id` (`internal_chat_id`,`id`),
   KEY `idx_internal_chat_messages_sender` (`sender_user_id`),
   CONSTRAINT `fk_internal_chat_messages_chat` FOREIGN KEY (`internal_chat_id`) REFERENCES `internal_chats` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_internal_chat_messages_sender` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.internal_chat_messages: ~0 rows (approximately)
+-- Dumping data for table manager_main.internal_chat_messages: ~4 rows (approximately)
+INSERT INTO `internal_chat_messages` (`id`, `internal_chat_id`, `sender_user_id`, `sender_name`, `message_text`, `created`) VALUES
+	(1, 1, 6, 'Nikole Kidmann', 'hi', '2026-10-28 16:51:59'),
+	(2, 1, 6, 'Nikole Kidmann', 'asdasdasdas', '2026-10-28 16:52:13'),
+	(3, 1, 6, 'Nikole Kidmann', 'teste', '2026-10-28 16:59:27'),
+	(4, 1, 5, 'Kristen Stewart', 'lanka lanka', '2026-10-28 17:00:33');
 
 -- Dumping structure for table manager_main.internal_chat_participants
 CREATE TABLE IF NOT EXISTS `internal_chat_participants` (
-  `internal_chat_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `joined_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `internal_chat_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `joined_at` datetime NOT NULL DEFAULT current_timestamp(),
   `last_seen_at` datetime DEFAULT NULL,
   `typing_until_at` datetime DEFAULT NULL,
   `archived_at` datetime DEFAULT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
+  `modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`internal_chat_id`,`user_id`),
   KEY `idx_internal_chat_participants_user` (`user_id`),
   CONSTRAINT `fk_internal_chat_participants_chat` FOREIGN KEY (`internal_chat_id`) REFERENCES `internal_chats` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_internal_chat_participants_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.internal_chat_participants: ~0 rows (approximately)
+-- Dumping data for table manager_main.internal_chat_participants: ~2 rows (approximately)
+INSERT INTO `internal_chat_participants` (`internal_chat_id`, `user_id`, `joined_at`, `last_seen_at`, `typing_until_at`, `archived_at`, `created`, `modified`) VALUES
+	(1, 5, '2026-10-14 21:09:55', '2026-10-28 17:56:31', NULL, NULL, '2026-10-14 21:09:55', '2026-10-28 17:56:31'),
+	(1, 6, '2026-10-14 21:09:55', '2026-10-28 17:57:19', NULL, NULL, '2026-10-14 21:09:55', '2026-10-28 17:57:19');
 
 -- Dumping structure for table manager_main.logs
 CREATE TABLE IF NOT EXISTS `logs` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tenant_id` int DEFAULT NULL,
+  `tenant_id` int(11) DEFAULT NULL,
   `tenant_database` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tenant_name_snapshot` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `module` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `action` enum('create','update','delete','login','logout','list') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `entity_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `entity_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `performed_by_user_id` int DEFAULT NULL,
+  `performed_by_user_id` int(11) DEFAULT NULL,
   `performed_by_username` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `performed_by_name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `route` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `occurred_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `before_data` json DEFAULT NULL,
-  `after_data` json DEFAULT NULL,
-  `changed_fields` json DEFAULT NULL,
-  `context_json` json DEFAULT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `occurred_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `before_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`before_data`)),
+  `after_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`after_data`)),
+  `changed_fields` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`changed_fields`)),
+  `context_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`context_json`)),
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
+  `modified` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_logs_event_uuid` (`event_uuid`),
   KEY `idx_logs_tenant_occurred_at` (`tenant_id`,`occurred_at`),
@@ -5898,9 +5910,9 @@ CREATE TABLE IF NOT EXISTS `logs` (
   KEY `idx_logs_entity_occurred_at` (`entity_name`,`entity_id`,`occurred_at`),
   CONSTRAINT `fk_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_logs_user` FOREIGN KEY (`performed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=893 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=936 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.logs: ~644 rows (approximately)
+-- Dumping data for table manager_main.logs: ~733 rows (approximately)
 INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_name_snapshot`, `module`, `action`, `entity_name`, `entity_id`, `performed_by_user_id`, `performed_by_username`, `performed_by_name`, `request_method`, `route`, `ip_address`, `user_agent`, `occurred_at`, `before_data`, `after_data`, `changed_fields`, `context_json`, `created`, `modified`) VALUES
 	(4, '9f44f17d-f453-4bfd-b416-0181bae55efa', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '10', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/10', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:12:07', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tal", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-24 00:45:29", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 8, "type": "user", "email": "lorem@ipsum.com", "active": 1, "username": "fulano.tal", "person_id": 10}, "emails": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "person": {"id": 10, "name": "Fulano de Tals", "type": "individual", "active": 1, "created": "2026-06-24 00:45:29", "fantasy": "Fulano de Tal", "document": "85116330222", "modified": "2026-06-25 20:12:07", "birthdate": "1990-02-01"}, "phones": [], "addresses": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-25 20:12:07.000000", "person_id": 10, "observations": "login"}], "from": [{"id": 8, "email": "lorem@ipsum.com", "created": "2026-06-24 00:45:29.000000", "is_login": 1, "modified": "2026-06-24 00:45:29.000000", "person_id": 10, "observations": "login"}]}, "person": {"name": {"to": "Fulano de Tals", "from": "Fulano de Tal"}, "modified": {"to": "2026-06-25 20:12:07", "from": "2026-06-24 00:45:29"}}, "addresses": {"to": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-25 20:12:07.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 6, "number": "", "street": "Rua do Amor-perfeito", "created": "2026-06-24 00:45:29.000000", "modified": "2026-06-24 00:45:29.000000", "zip_code": "88137-335", "person_id": 10, "observations": null, "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/10"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:12:07', '2026-06-25 20:12:07'),
 	(5, '6b0c687a-87cf-43f8-9b83-ab970b2aeef4', 1, 'manager_0001', 'Tenant 0001', 'person', 'update', 'people', '4', 2, 'emma.watson', 'Emma Watson', 'POST', 'person/update/4', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0', '2026-06-25 20:17:03', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-01 22:34:47", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}', '{"user": {"id": 2, "type": "admin", "email": "emma@watson.com", "active": 1, "username": "emma.watson", "person_id": 4}, "emails": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "person": {"id": 4, "name": "Emma Watson", "type": "company", "active": 1, "created": "2026-06-01 22:34:47", "fantasy": "Emma Watson", "document": "4DCEFWJWQNJI22", "modified": "2026-06-25 20:17:03", "birthdate": null}, "phones": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "addresses": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}]}', '{"emails": {"to": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Login"}], "from": [{"id": 2, "email": "emma@watson.com", "created": "2026-06-01 22:34:47.000000", "is_login": 1, "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Login"}]}, "person": {"modified": {"to": "2026-06-25 20:17:03", "from": "2026-06-01 22:34:47"}}, "phones": {"to": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}], "from": [{"id": 1, "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "person_id": 4, "observations": "Comercial", "phone_number": "554930331033"}]}, "addresses": {"to": [{"id": 1, "number": "266", "street": "Rua do Amor-perfeito", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-25 20:17:03.000000", "zip_code": "88137-335", "person_id": 4, "observations": "Apt 203", "neighborhood_id": 17792, "neighborhood_name": "Pedra Branca", "neighborhood_city_name": "Palhoça"}], "from": [{"id": 1, "number": "141", "street": "Rua Maria Soares", "created": "2026-06-01 22:34:47.000000", "modified": "2026-06-01 22:34:47.000000", "zip_code": "88130-743", "person_id": 4, "observations": "Prédio da ECG", "neighborhood_id": 4, "neighborhood_name": "Ponte do Imaruim", "neighborhood_city_name": "Palhoça"}]}}', '{"request_query": {"url": "person/update/4"}, "affected_tables": ["people", "phone_numbers", "addresses", "emails"]}', '2026-06-25 20:17:03', '2026-06-25 20:17:03'),
@@ -6638,21 +6650,64 @@ INSERT INTO `logs` (`id`, `event_uuid`, `tenant_id`, `tenant_database`, `tenant_
 	(889, 'b1344b2d-0c96-45f6-a256-70d18a90b452', 2, 'manager_0002', 'Tenant 0002', 'product_category', 'list', 'product_categories', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'product_category', '192.168.65.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', '2026-09-05 02:30:13', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 1, "request_query": {"url": "product_category"}, "filters_applied": false, "response_format": "html"}', '2026-09-05 02:30:13', '2026-09-05 02:30:13'),
 	(890, '03611706-e480-4f50-9c90-2aea115da761', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', '2026-09-22 18:54:30', NULL, '{"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}', '{"to": {"id": 5, "name": "Kristen Stewart", "type": "admin", "email": "kristen@stewart.com", "username": "kristen.stewart", "tenant_id": 2}, "from": null}', '{"source": "authentication", "request_query": {"url": "user/login"}, "tenant_selection": "primary_user_tenant"}', '2026-09-22 18:54:30', '2026-09-22 18:54:30'),
 	(891, '38b4f7fa-1592-4078-ad60-b01ab771b5d0', 2, 'manager_0002', 'Tenant 0002', 'task', 'list', 'tasks', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'task', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', '2026-09-22 19:06:10', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 0, "request_query": {"url": "task"}, "filters_applied": false, "response_format": "html"}', '2026-09-22 19:06:10', '2026-09-22 19:06:10'),
-	(892, '5e74af1e-9b6d-46c8-9cff-695d32c85a31', 2, 'manager_0002', 'Tenant 0002', 'person', 'list', 'people', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'person', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', '2026-09-22 19:13:59', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 2, "request_query": {"url": "person"}, "filters_applied": false, "response_format": "html"}', '2026-09-22 19:13:59', '2026-09-22 19:13:59');
+	(892, '5e74af1e-9b6d-46c8-9cff-695d32c85a31', 2, 'manager_0002', 'Tenant 0002', 'person', 'list', 'people', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'person', '172.18.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', '2026-09-22 19:13:59', NULL, NULL, NULL, '{"page": 1, "source": "listing", "filters": [], "per_page": null, "result_total": 2, "request_query": {"url": "person"}, "filters_applied": false, "response_format": "html"}', '2026-09-22 19:13:59', '2026-09-22 19:13:59'),
+	(893, '36f32683-3535-4ac8-a9d5-3aa007e0d103', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', '2026-10-09 01:31:39', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-09 01:31:39', '2026-10-09 01:31:39'),
+	(894, 'a2b5cc63-67ec-4a9d-a66e-66e9cd39da38', 2, 'manager_0002', 'Tenant 0002', 'person', 'list', 'people', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'person', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', '2026-10-09 01:31:56', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":2,"page":1,"per_page":null,"source":"listing","request_query":{"url":"person"}}', '2026-10-09 01:31:56', '2026-10-09 01:31:56'),
+	(895, '95948b83-f1a6-4f0c-8ee4-ac3267a34835', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-12 11:02:37', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-12 11:02:37', '2026-10-12 11:02:37'),
+	(896, 'bff0913a-d5bb-4295-ad73-c90baca8a0c0', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 02:26:35', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 02:26:35', '2026-10-14 02:26:35'),
+	(897, 'ac38db5f-d184-4a47-b71c-8b397a4f1b43', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 02:29:49', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 02:29:49', '2026-10-14 02:29:49'),
+	(898, '508c6d9b-05c3-4651-adf6-475ea2a41ec9', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0', '2026-10-14 02:45:18', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 02:45:18', '2026-10-14 02:45:18'),
+	(899, '5b0171f9-3ab7-4385-bc1a-3e228417b6cd', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:08:32', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 21:08:32', '2026-10-14 21:08:32'),
+	(900, '89867e5a-3102-4b95-a536-d99fdb8f286c', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:09:17', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 21:09:17', '2026-10-14 21:09:17'),
+	(901, '9f3a6d26-625c-4915-9dd3-0c45f7b37ac2', 2, 'manager_0002', 'Tenant 0002', 'auth', 'logout', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'user/logout', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:14:14', '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', NULL, '{"from":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2},"to":null}', '{"tenant_selection":"selected","source":"authentication","request_query":{"url":"user/logout"}}', '2026-10-14 21:14:14', '2026-10-14 21:14:14'),
+	(902, 'fcdc5408-c065-4dfe-9ba4-4bc90aa5b9d9', 3, 'manager_0003', 'Tenant 0003', 'auth', 'login', 'users', '7', 7, 'jessica.chastain', 'Jessica Chastain', 'POST', 'user/login', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:14:24', NULL, '{"id":7,"username":"jessica.chastain","email":"jessica@chastain.com","type":"admin","name":"Jessica Chastain","tenant_id":3}', '{"from":null,"to":{"id":7,"username":"jessica.chastain","email":"jessica@chastain.com","type":"admin","name":"Jessica Chastain","tenant_id":3}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-14 21:14:24', '2026-10-14 21:14:24'),
+	(903, '535126b3-4de4-4506-8355-cb78d3f30a44', 3, 'manager_0003', 'Tenant 0003', 'permission', 'list', 'permissions', NULL, 7, 'jessica.chastain', 'Jessica Chastain', 'GET', 'permission', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:14:45', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":null,"page":1,"per_page":null,"source":"listing","request_query":{"url":"permission"}}', '2026-10-14 21:14:45', '2026-10-14 21:14:45'),
+	(904, 'd29acac7-2686-4176-b139-c7e558821dae', 3, 'manager_0003', 'Tenant 0003', 'permission', 'list', 'permissions', NULL, 7, 'jessica.chastain', 'Jessica Chastain', 'GET', 'permission', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:14:51', NULL, NULL, NULL, '{"response_format":"html","filters_applied":true,"filters":{"user_id":"7"},"result_total":null,"page":1,"per_page":null,"source":"listing","request_query":{"url":"permission","user_id":"7"}}', '2026-10-14 21:14:51', '2026-10-14 21:14:51'),
+	(905, '2f21854b-3911-4d6d-b3f4-6abd363adcd2', 3, 'manager_0003', 'Tenant 0003', 'person', 'list', 'people', NULL, 7, 'jessica.chastain', 'Jessica Chastain', 'GET', 'person', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:44:26', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":1,"page":1,"per_page":null,"source":"listing","request_query":{"url":"person"}}', '2026-10-14 21:44:26', '2026-10-14 21:44:26'),
+	(906, '4eef6bb9-e2ec-498e-bb5a-041b3af1199f', 3, 'manager_0003', 'Tenant 0003', 'person', 'list', 'people', NULL, 7, 'jessica.chastain', 'Jessica Chastain', 'GET', 'person', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:47:36', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":1,"page":1,"per_page":null,"source":"listing","request_query":{"url":"person"}}', '2026-10-14 21:47:36', '2026-10-14 21:47:36'),
+	(907, '5e45b11e-ad06-417d-b643-2a30f7a52505', 3, 'manager_0003', 'Tenant 0003', 'person', 'list', 'people', NULL, 7, 'jessica.chastain', 'Jessica Chastain', 'GET', 'person', '189.110.116.251', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-14 21:47:37', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":1,"page":1,"per_page":null,"source":"listing","request_query":{"url":"person"}}', '2026-10-14 21:47:37', '2026-10-14 21:47:37'),
+	(908, '4c0038c9-c4dc-4ec8-a6a0-45275ad146e6', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-21 20:04:22', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-21 20:04:22', '2026-10-21 20:04:22'),
+	(909, '3902dfda-b377-416d-8c1b-2dd66de6ff32', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:21:07', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-22 00:21:07', '2026-10-22 00:21:07'),
+	(910, '7538bc7e-6cb6-41a3-8bcf-fdc8d6649269', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'create', 'schedule_events', '2', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'schedule/store', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:24:09', NULL, '{"schedule_event":{"id":2,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":1,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-10-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":1,"schedule_event_id":2,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":2,"schedule_event_id":2,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}}', '{"from":null,"to":{"schedule_event":{"id":2,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":1,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-10-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":1,"schedule_event_id":2,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":2,"schedule_event_id":2,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}}}', '{"affected_tables":["schedule_events","schedule_events_participants","schedule_events_recurrences"],"schedule_events_recurrence_id":1,"generated_event_ids":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],"generated_events_count":18,"request_query":{"url":"schedule/store"}}', '2026-10-22 00:24:09', '2026-10-22 00:24:09'),
+	(911, '20c2f417-0f0d-42a9-bca2-3ea5e52527f4', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:24:10', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":18,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule"}}', '2026-10-22 00:24:10', '2026-10-22 00:24:10'),
+	(912, 'b3c17d69-0ddf-4e81-9053-f136bcb3138f', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:24:28', NULL, NULL, NULL, '{"response_format":"html","filters_applied":true,"filters":{"starts_from":"2026-10-22","starts_to":"2026-10-22"},"result_total":1,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule","starts_from":"2026-10-22","starts_to":"2026-10-22"}}', '2026-10-22 00:24:28', '2026-10-22 00:24:28'),
+	(913, '48f74107-1054-494a-86ff-d548717855e7', 2, 'manager_0002', 'Tenant 0002', 'task', 'list', 'tasks', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'task', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:24:36', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"task"}}', '2026-10-22 00:24:36', '2026-10-22 00:24:36'),
+	(914, '435dd9dd-c68d-4b8b-96f9-80704b90fd18', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:24:40', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":18,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule"}}', '2026-10-22 00:24:40', '2026-10-22 00:24:40'),
+	(915, 'd5a9c000-2b34-4ec9-9699-800799a99e0d', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:25:06', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":18,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule"}}', '2026-10-22 00:25:06', '2026-10-22 00:25:06'),
+	(916, 'b4236eae-665e-4b3e-90ff-596f0d916710', 2, 'manager_0002', 'Tenant 0002', 'financial_operation', 'list', 'financial_operations', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'financial_operation', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-22 00:28:33', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"financial_operation"}}', '2026-10-22 00:28:33', '2026-10-22 00:28:33'),
+	(917, '2794dd22-1abd-42fa-a8b2-ea7702e40eb9', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:46:42', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-22 00:46:42', '2026-10-22 00:46:42'),
+	(918, '992705cc-9006-4edc-aec0-141fc3b6be5f', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:46:47', NULL, NULL, NULL, '{"response_format":"html","filters_applied":true,"filters":{"starts_from":"2026-10-22","starts_to":"2026-10-22"},"result_total":1,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule","starts_from":"2026-10-22","starts_to":"2026-10-22"}}', '2026-10-22 00:46:47', '2026-10-22 00:46:47'),
+	(919, '295df81f-69a7-40d0-8c26-b6cead4a5575', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'delete', 'schedule_events', '2', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'schedule/delete/2', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:47:09', '{"schedule_event":{"id":2,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":1,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-10-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":1,"schedule_event_id":2,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":2,"schedule_event_id":2,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}}', NULL, '{"from":{"schedule_event":{"id":2,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":1,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-10-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":1,"schedule_event_id":2,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":2,"schedule_event_id":2,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}},"to":null}', '{"affected_tables":["schedule_events","schedule_events_participants"],"request_query":{"url":"schedule/delete/2"}}', '2026-10-22 00:47:09', '2026-10-22 00:47:09'),
+	(920, '6e97b99a-0df0-4d42-baec-f37a5749fa55', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:47:09', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":17,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule"}}', '2026-10-22 00:47:09', '2026-10-22 00:47:09'),
+	(921, 'b3a47ac3-4edd-4eed-8652-605b338b588c', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'delete', 'schedule_events', '3', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'schedule/delete/3', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:47:20', '{"schedule_event":{"id":3,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":2,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-12-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":3,"schedule_event_id":3,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":4,"schedule_event_id":3,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}}', NULL, '{"from":{"schedule_event":{"id":3,"schedule_category_id":null,"schedule_events_recurrence_id":1,"recurrence_sequence":2,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"starts_at":"2026-12-22 00:00:00","ends_at":null,"status":"scheduled","created_by_user_id":5,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","schedule_category_name":null,"schedule_category_background_color":null,"schedule_category_description_color":null,"created_by_username":"kristen.stewart","created_by_name":"Kristen Stewart","participant_names":"Kristen Stewart, Nikole Kidmann","participant_count":2},"participants":[{"id":3,"schedule_event_id":3,"person_id":9,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Kristen Stewart"},{"id":4,"schedule_event_id":3,"person_id":11,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09","person_name":"Nikole Kidmann"}],"recurrence":{"id":1,"schedule_category_id":null,"title":"Evento teste","description":"Lorem ipsum","location":"Auditório","all_day":1,"start_time":null,"end_time":null,"frequency":"monthly","interval_value":1,"period_start":"2026-10-22","period_end":"2028-10-22","allow_weekends":0,"created_by_user_id":5,"active":1,"created":"2026-10-22 00:24:09","modified":"2026-10-22 00:24:09"}},"to":null}', '{"affected_tables":["schedule_events","schedule_events_participants"],"request_query":{"url":"schedule/delete/3"}}', '2026-10-22 00:47:20', '2026-10-22 00:47:20'),
+	(922, 'e7379137-9bc2-425c-8b05-08829fde2b74', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-22 00:47:20', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":16,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule"}}', '2026-10-22 00:47:20', '2026-10-22 00:47:20'),
+	(923, '5450e1f3-a06d-4aca-a25a-da2477428550', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '2026-10-23 21:47:57', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-23 21:47:57', '2026-10-23 21:47:57'),
+	(924, '0176e450-6e67-4115-84ec-f32f7da32c3c', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-23 23:38:19', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-23 23:38:19', '2026-10-23 23:38:19'),
+	(925, '50de2ef5-ff7b-4b92-9c20-e9b6f894481a', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-23 23:40:33', NULL, NULL, NULL, '{"response_format":"html","filters_applied":true,"filters":{"starts_from":"2026-10-23","starts_to":"2026-10-23"},"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule","starts_from":"2026-10-23","starts_to":"2026-10-23"}}', '2026-10-23 23:40:33', '2026-10-23 23:40:33'),
+	(926, 'b025293e-d610-47aa-bbe7-72b7d72e5545', 2, 'manager_0002', 'Tenant 0002', 'schedule', 'list', 'schedule_events', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'schedule', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '2026-10-23 23:40:51', NULL, NULL, NULL, '{"response_format":"html","filters_applied":true,"filters":{"starts_from":"2026-10-23","starts_to":"2026-10-23"},"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"schedule","starts_from":"2026-10-23","starts_to":"2026-10-23"}}', '2026-10-23 23:40:51', '2026-10-23 23:40:51'),
+	(927, 'ab90215c-ec1a-4950-9948-7655e82f7d25', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Mobile/15E148 Safari/604.1', '2026-10-27 22:45:04', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-27 22:45:04', '2026-10-27 22:45:04'),
+	(928, '1cd9e68b-d231-40b9-89ca-2d221f33576b', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Mobile/15E148 Safari/604.1', '2026-10-27 22:52:47', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-27 22:52:47', '2026-10-27 22:52:47'),
+	(929, '57d76c57-9dfc-4f5f-908f-91cbfd9905a0', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '2026-10-27 23:53:53', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-27 23:53:53', '2026-10-27 23:53:53'),
+	(930, 'f00a3729-9f68-42c6-acaa-bd7c6e85ee0a', 2, 'manager_0002', 'Tenant 0002', 'task', 'list', 'tasks', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'task', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '2026-10-27 23:59:19', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"task"}}', '2026-10-27 23:59:19', '2026-10-27 23:59:19'),
+	(931, '52a6ed07-5760-40ea-a3d1-dcb5810b74c4', 2, 'manager_0002', 'Tenant 0002', 'product', 'list', 'products', NULL, 5, 'kristen.stewart', 'Kristen Stewart', 'GET', 'product', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '2026-10-27 23:59:28', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"product"}}', '2026-10-27 23:59:28', '2026-10-27 23:59:28'),
+	(932, '5e7c87b7-a4ca-4f8f-9922-97b184e0c188', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 OPR/137.0.0.0', '2026-10-28 16:09:16', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-28 16:09:16', '2026-10-28 16:09:16'),
+	(933, '2c150d85-34b3-4d95-a175-8a2f5bae1fb2', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '5', 5, 'kristen.stewart', 'Kristen Stewart', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '2026-10-28 16:49:14', NULL, '{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}', '{"from":null,"to":{"id":5,"username":"kristen.stewart","email":"kristen@stewart.com","type":"admin","name":"Kristen Stewart","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-28 16:49:14', '2026-10-28 16:49:14'),
+	(934, '93019d2b-37a8-430c-985f-a6530a35ef97', 2, 'manager_0002', 'Tenant 0002', 'auth', 'login', 'users', '6', 6, 'nikole.kidmann', 'Nikole Kidmann', 'POST', 'user/login', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0', '2026-10-28 16:51:39', NULL, '{"id":6,"username":"nikole.kidmann","email":"nikole@kidmann.com","type":"user","name":"Nikole Kidmann","tenant_id":2}', '{"from":null,"to":{"id":6,"username":"nikole.kidmann","email":"nikole@kidmann.com","type":"user","name":"Nikole Kidmann","tenant_id":2}}', '{"tenant_selection":"primary_user_tenant","source":"authentication","request_query":{"url":"user/login"}}', '2026-10-28 16:51:39', '2026-10-28 16:51:39'),
+	(935, '835ca35a-ba9b-449a-8504-1ded00bc8250', 2, 'manager_0002', 'Tenant 0002', 'product', 'list', 'products', NULL, 6, 'nikole.kidmann', 'Nikole Kidmann', 'GET', 'product', '200.161.157.201', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:159.0) Gecko/20100101 Firefox/159.0', '2026-10-28 17:09:05', NULL, NULL, NULL, '{"response_format":"html","filters_applied":false,"filters":[],"result_total":0,"page":1,"per_page":null,"source":"listing","request_query":{"url":"product"}}', '2026-10-28 17:09:05', '2026-10-28 17:09:05');
 
 -- Dumping structure for table manager_main.neighborhoods
 CREATE TABLE IF NOT EXISTS `neighborhoods` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `city_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `city_id` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_neighborhoods_cities1_idx` (`city_id`),
   CONSTRAINT `fk_neighborhoods_cities1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18325 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=18548 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.neighborhoods: ~18 464 rows (approximately)
+-- Dumping data for table manager_main.neighborhoods: ~18 043 rows (approximately)
 INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VALUES
 	(1, 'Centro', 4441, '2026-03-07 00:49:56', '2026-03-07 00:49:56'),
 	(2, 'Bairo das Nações', 4441, '2026-03-26 22:48:14', '2026-03-26 22:48:14'),
@@ -24975,33 +25030,258 @@ INSERT INTO `neighborhoods` (`id`, `name`, `city_id`, `created`, `modified`) VAL
 	(18321, 'Machados', 4584, '2026-09-22 18:44:19', '2026-09-22 18:44:19'),
 	(18322, 'Escalvados', 4584, '2026-09-22 18:52:40', '2026-09-22 18:52:40'),
 	(18323, 'Pedreiras', 4584, '2026-09-22 18:55:10', '2026-09-22 18:55:10'),
-	(18324, 'Gravatá', 4584, '2026-09-22 18:57:45', '2026-09-22 18:57:45');
+	(18324, 'Gravatá', 4584, '2026-09-22 18:57:45', '2026-09-22 18:57:45'),
+	(18325, 'Centro', 4515, '2026-10-12 10:56:11', '2026-10-12 10:56:11'),
+	(18326, 'Área Rural de Brusque', 4463, '2026-10-12 10:57:26', '2026-10-12 10:57:26'),
+	(18327, 'São João', 4463, '2026-10-12 10:57:33', '2026-10-12 10:57:33'),
+	(18328, 'Cedro Grande', 4463, '2026-10-12 10:57:59', '2026-10-12 10:57:59'),
+	(18329, 'Cedrinho', 4463, '2026-10-12 10:58:02', '2026-10-12 10:58:02'),
+	(18330, 'Primeiro de Maio', 4463, '2026-10-12 11:00:48', '2026-10-12 11:00:48'),
+	(18331, 'Limoeiro', 4463, '2026-10-12 11:01:30', '2026-10-12 11:01:30'),
+	(18332, 'Planalto', 4463, '2026-10-12 11:01:30', '2026-10-12 11:01:30'),
+	(18333, 'Limeira Baixa', 4463, '2026-10-12 11:01:40', '2026-10-12 11:01:40'),
+	(18334, 'Limeira Alta', 4463, '2026-10-12 11:01:52', '2026-10-12 11:01:52'),
+	(18335, 'Volta Grande', 4463, '2026-10-12 11:02:15', '2026-10-12 11:02:15'),
+	(18336, 'Cerâmica Reis', 4463, '2026-10-12 11:02:32', '2026-10-12 11:02:32'),
+	(18337, 'Centro II', 4463, '2026-10-12 11:02:56', '2026-10-12 11:02:56'),
+	(18338, 'Centro I', 4463, '2026-10-12 11:03:55', '2026-10-12 11:03:55'),
+	(18339, 'São Luiz', 4463, '2026-10-16 11:57:08', '2026-10-16 11:57:08'),
+	(18340, 'Área Rural de Camboriú', 4466, '2026-10-16 11:59:09', '2026-10-16 11:59:09'),
+	(18341, 'Várzea do Ranchinho (Monte Alegre)', 4466, '2026-10-16 12:00:03', '2026-10-16 12:00:03'),
+	(18342, 'Monte Alegre (Monte Alegre)', 4466, '2026-10-16 12:00:28', '2026-10-16 12:00:28'),
+	(18343, 'Tabuleiro (Monte Alegre)', 4466, '2026-10-16 12:00:49', '2026-10-16 12:00:49'),
+	(18344, 'Estados', 4441, '2026-10-16 12:11:38', '2026-10-16 12:11:38'),
+	(18345, 'Área Rural de Balneário Camboriú', 4441, '2026-10-16 12:11:38', '2026-10-16 12:11:38'),
+	(18346, 'Nações', 4441, '2026-10-16 12:12:57', '2026-10-16 12:12:57'),
+	(18347, 'Municípios', 4441, '2026-10-16 12:14:39', '2026-10-16 12:14:39'),
+	(18348, 'Praia do Estaleirinho', 4441, '2026-10-16 12:18:02', '2026-10-16 12:18:02'),
+	(18349, 'Praia do Estaleiro', 4441, '2026-10-16 12:18:47', '2026-10-16 12:18:47'),
+	(18350, 'Praia das Laranjeiras', 4441, '2026-10-16 12:19:43', '2026-10-16 12:19:43'),
+	(18351, 'Praia das Taquaras', 4441, '2026-10-16 12:20:05', '2026-10-16 12:20:05'),
+	(18352, 'Barra', 4441, '2026-10-16 12:21:13', '2026-10-16 12:21:13'),
+	(18353, 'Pioneiros', 4441, '2026-10-16 12:21:37', '2026-10-16 12:21:37'),
+	(18354, 'Praia dos Amores', 4441, '2026-10-16 12:22:02', '2026-10-16 12:22:02'),
+	(18355, 'Área Rural de Ilhota', 4524, '2026-10-16 12:26:25', '2026-10-16 12:26:25'),
+	(18356, 'Baú Seco', 4524, '2026-10-16 12:26:34', '2026-10-16 12:26:34'),
+	(18357, 'Braço do Baú', 4524, '2026-10-16 12:26:42', '2026-10-16 12:26:42'),
+	(18358, 'Alto Baú', 4524, '2026-10-16 12:27:15', '2026-10-16 12:27:15'),
+	(18359, 'Baú Central', 4524, '2026-10-16 12:27:54', '2026-10-16 12:27:54'),
+	(18360, 'Baú Baixo', 4524, '2026-10-16 12:28:16', '2026-10-16 12:28:16'),
+	(18361, 'Pocinho', 4524, '2026-10-16 12:29:12', '2026-10-16 12:29:12'),
+	(18362, 'Barranco Alto', 4524, '2026-10-16 12:30:17', '2026-10-16 12:30:17'),
+	(18363, 'Pedra de Amolar', 4524, '2026-10-16 12:30:50', '2026-10-16 12:30:50'),
+	(18364, 'Barra de Luiz Alves', 4524, '2026-10-16 12:32:22', '2026-10-16 12:32:22'),
+	(18365, 'Ilhotinha', 4524, '2026-10-16 12:33:06', '2026-10-16 12:33:06'),
+	(18366, 'Boa Vista', 4524, '2026-10-16 12:33:47', '2026-10-16 12:33:47'),
+	(18367, 'São João', 4524, '2026-10-16 12:34:33', '2026-10-16 12:34:33'),
+	(18368, 'Minas', 4524, '2026-10-16 12:34:40', '2026-10-16 12:34:40'),
+	(18369, 'Missões', 4524, '2026-10-16 12:35:00', '2026-10-16 12:35:00'),
+	(18370, 'Centro', 4524, '2026-10-16 12:35:37', '2026-10-16 12:35:37'),
+	(18371, 'Área Rural de Itajaí', 4539, '2026-10-16 12:36:56', '2026-10-16 12:36:56'),
+	(18372, 'Arraial dos Cunhas', 4539, '2026-10-16 12:38:08', '2026-10-16 12:38:08'),
+	(18373, 'Limoeiro', 4539, '2026-10-16 12:38:31', '2026-10-16 12:38:31'),
+	(18374, 'Campeche', 4539, '2026-10-16 12:38:48', '2026-10-16 12:38:48'),
+	(18375, 'Brilhante II', 4539, '2026-10-16 12:38:53', '2026-10-16 12:38:53'),
+	(18376, 'Brilhante I', 4539, '2026-10-16 12:39:00', '2026-10-16 12:39:00'),
+	(18377, 'Paciência', 4539, '2026-10-16 12:39:08', '2026-10-16 12:39:08'),
+	(18378, 'Baia', 4539, '2026-10-16 12:39:17', '2026-10-16 12:39:17'),
+	(18379, 'Quilometro 12', 4539, '2026-10-16 12:39:22', '2026-10-16 12:39:22'),
+	(18380, 'São Roque', 4539, '2026-10-16 12:39:48', '2026-10-16 12:39:48'),
+	(18381, 'Santa Regina', 4539, '2026-10-16 12:40:00', '2026-10-16 12:40:00'),
+	(18382, 'Rio do Meio', 4539, '2026-10-16 12:41:59', '2026-10-16 12:41:59'),
+	(18383, 'Murta', 4539, '2026-10-16 12:48:18', '2026-10-16 12:48:18'),
+	(18384, 'Carvalho', 4539, '2026-10-16 12:52:59', '2026-10-16 12:52:59'),
+	(18385, 'Praia Brava de Itajaí', 4539, '2026-10-16 12:54:03', '2026-10-16 12:54:03'),
+	(18386, 'Fazendinha', 4539, '2026-10-16 12:54:32', '2026-10-16 12:54:32'),
+	(18387, 'Marui', 4539, '2026-10-16 12:55:31', '2026-10-16 12:55:31'),
+	(18388, 'Centro', 4459, '2026-10-16 13:07:58', '2026-10-16 13:07:58'),
+	(18389, 'Aguti', 4587, '2026-10-16 13:25:54', '2026-10-16 13:25:54'),
+	(18390, 'Claraíba', 4587, '2026-10-16 13:32:12', '2026-10-16 13:32:12'),
+	(18391, 'Centro', 4587, '2026-10-16 13:38:07', '2026-10-16 13:38:07'),
+	(18392, 'Pinheiral', 4569, '2026-10-16 13:40:33', '2026-10-16 13:40:33'),
+	(18393, 'Boiteuxburgo', 4569, '2026-10-16 13:44:31', '2026-10-16 13:44:31'),
+	(18394, 'Centro', 4569, '2026-10-16 13:51:20', '2026-10-16 13:51:20'),
+	(18395, 'Tigipió', 4669, '2026-10-16 14:11:23', '2026-10-16 14:11:23'),
+	(18396, 'Centro', 4669, '2026-10-16 14:18:09', '2026-10-16 14:18:09'),
+	(18397, 'Centro', 4471, '2026-10-16 14:34:27', '2026-10-16 14:34:27'),
+	(18398, 'Distrito de Canto Grande', 4458, '2026-10-16 15:00:39', '2026-10-16 15:00:39'),
+	(18399, 'Valongo', 4618, '2026-10-16 15:06:27', '2026-10-16 15:06:27'),
+	(18400, 'Sertão de Santa Luzia', 4618, '2026-10-16 15:06:29', '2026-10-16 15:06:29'),
+	(18401, 'Santa Luzia', 4618, '2026-10-16 15:07:33', '2026-10-16 15:07:33'),
+	(18402, 'Alto Perequê', 4618, '2026-10-16 15:07:44', '2026-10-16 15:07:44'),
+	(18403, 'Jardim Dourado', 4618, '2026-10-16 15:08:50', '2026-10-16 15:08:50'),
+	(18404, 'Balneário Perequê', 4618, '2026-10-16 15:09:07', '2026-10-16 15:09:07'),
+	(18405, 'Centro', 4618, '2026-10-16 15:09:51', '2026-10-16 15:09:51'),
+	(18406, 'Vila Nova', 4618, '2026-10-16 15:10:05', '2026-10-16 15:10:05'),
+	(18407, 'Enseada Encantada', 4618, '2026-10-16 15:11:02', '2026-10-16 15:11:02'),
+	(18408, 'Araçá', 4618, '2026-10-16 15:11:09', '2026-10-16 15:11:09'),
+	(18409, 'Área Rural de Tijucas', 4682, '2026-10-16 15:14:08', '2026-10-16 15:14:08'),
+	(18410, 'Sul do Rio', 4682, '2026-10-16 15:17:33', '2026-10-16 15:17:33'),
+	(18411, 'Pernambuco', 4682, '2026-10-16 15:17:54', '2026-10-16 15:17:54'),
+	(18412, 'Nova Descoberta', 4682, '2026-10-16 15:19:03', '2026-10-16 15:19:03'),
+	(18413, 'Joáia', 4682, '2026-10-16 15:20:02', '2026-10-16 15:20:02'),
+	(18414, 'XV de Novembro', 4682, '2026-10-16 15:20:36', '2026-10-16 15:20:36'),
+	(18415, 'Universitário', 4682, '2026-10-16 15:22:40', '2026-10-16 15:22:40'),
+	(18416, 'Areias', 4682, '2026-10-16 15:23:06', '2026-10-16 15:23:06'),
+	(18417, 'Centro', 4682, '2026-10-16 15:23:34', '2026-10-16 15:23:34'),
+	(18418, 'Santa Luzia', 4682, '2026-10-16 15:23:36', '2026-10-16 15:23:36'),
+	(18419, 'Praça', 4682, '2026-10-16 15:24:07', '2026-10-16 15:24:07'),
+	(18420, 'Área Rural de Governador Celso Ramos', 4512, '2026-10-16 15:27:47', '2026-10-16 15:27:47'),
+	(18421, 'Conjunto Central de Montanhas', 4512, '2026-10-16 15:28:29', '2026-10-16 15:28:29'),
+	(18422, 'Dona Lucinda', 4512, '2026-10-16 15:28:42', '2026-10-16 15:28:42'),
+	(18423, 'Parque Industrial Norte', 4512, '2026-10-16 15:29:04', '2026-10-16 15:29:04'),
+	(18424, 'Jordão', 4512, '2026-10-16 15:29:09', '2026-10-16 15:29:09'),
+	(18425, 'Areias do Meio', 4512, '2026-10-16 15:29:51', '2026-10-16 15:29:51'),
+	(18426, 'Parque Industrial Sul', 4512, '2026-10-16 15:30:47', '2026-10-16 15:30:47'),
+	(18427, 'Areias de Cima', 4512, '2026-10-16 15:31:17', '2026-10-16 15:31:17'),
+	(18428, 'Areias de Baixo', 4512, '2026-10-16 15:32:12', '2026-10-16 15:32:12'),
+	(18429, 'Caieira do Norte', 4512, '2026-10-16 15:33:22', '2026-10-16 15:33:22'),
+	(18430, 'Praia do Antenor', 4512, '2026-10-16 15:34:28', '2026-10-16 15:34:28'),
+	(18431, 'Costeira da Armação', 4512, '2026-10-16 15:34:38', '2026-10-16 15:34:38'),
+	(18432, 'Fazenda da Armação', 4512, '2026-10-16 15:34:54', '2026-10-16 15:34:54'),
+	(18433, 'Camboa', 4512, '2026-10-16 15:35:50', '2026-10-16 15:35:50'),
+	(18434, 'Praia Grande', 4512, '2026-10-16 15:36:11', '2026-10-16 15:36:11'),
+	(18435, 'Armação da Piedade', 4512, '2026-10-16 15:36:29', '2026-10-16 15:36:29'),
+	(18436, 'Palmas', 4512, '2026-10-16 15:37:07', '2026-10-16 15:37:07'),
+	(18437, 'Ganchos de Fora', 4512, '2026-10-16 15:37:52', '2026-10-16 15:37:52'),
+	(18438, 'Centro', 4512, '2026-10-16 15:37:59', '2026-10-16 15:37:59'),
+	(18439, 'Ganchos do Meio', 4512, '2026-10-16 15:38:13', '2026-10-16 15:38:13'),
+	(18440, 'Calheiros', 4512, '2026-10-16 15:38:35', '2026-10-16 15:38:35'),
+	(18441, 'Canto dos Ganchos', 4512, '2026-10-16 15:38:49', '2026-10-16 15:38:49'),
+	(18442, 'Área Rural de Antônio Carlos', 4428, '2026-10-16 15:39:26', '2026-10-16 15:39:26'),
+	(18443, 'Egito', 4428, '2026-10-16 15:43:40', '2026-10-16 15:43:40'),
+	(18444, 'Santa Maria', 4428, '2026-10-16 15:45:34', '2026-10-16 15:45:34'),
+	(18445, 'Vila Doze de Outubro', 4428, '2026-10-16 15:47:14', '2026-10-16 15:47:14'),
+	(18446, 'Rachadel', 4428, '2026-10-16 15:47:48', '2026-10-16 15:47:48'),
+	(18447, 'Guiomar de Baixo', 4428, '2026-10-16 15:48:43', '2026-10-16 15:48:43'),
+	(18448, 'Guiomar', 4428, '2026-10-16 15:49:56', '2026-10-16 15:49:56'),
+	(18449, 'Santa Barbara', 4428, '2026-10-16 15:50:37', '2026-10-16 15:50:37'),
+	(18450, 'Louro', 4428, '2026-10-16 15:51:24', '2026-10-16 15:51:24'),
+	(18451, 'Usina', 4428, '2026-10-16 15:52:23', '2026-10-16 15:52:23'),
+	(18452, 'Canudos', 4428, '2026-10-16 15:52:41', '2026-10-16 15:52:41'),
+	(18453, 'Centro', 4428, '2026-10-16 15:54:21', '2026-10-16 15:54:21'),
+	(18454, 'Terra Indígena M\'Biguaçu', 4451, '2026-10-16 15:58:55', '2026-10-16 15:58:55'),
+	(18455, 'Sorocaba do Sul', 4451, '2026-10-16 16:15:22', '2026-10-16 16:15:22'),
+	(18456, 'Área Rural de Biguaçu', 4451, '2026-10-16 16:17:14', '2026-10-16 16:17:14'),
+	(18457, 'Estiva (Guaporanga)', 4451, '2026-10-16 16:19:03', '2026-10-16 16:19:03'),
+	(18458, 'Areias de Cima (Guaporanga)', 4451, '2026-10-16 16:19:06', '2026-10-16 16:19:06'),
+	(18459, 'Cachoeiras (Guaporanga)', 4451, '2026-10-16 16:19:16', '2026-10-16 16:19:16'),
+	(18460, 'Tijuquinhas (Guaporanga)', 4451, '2026-10-16 16:19:30', '2026-10-16 16:19:30'),
+	(18461, 'São Miguel (Guaporanga)', 4451, '2026-10-16 16:19:57', '2026-10-16 16:19:57'),
+	(18462, 'Encruzilhada', 4451, '2026-10-16 16:24:35', '2026-10-16 16:24:35'),
+	(18463, 'Saudade', 4451, '2026-10-16 16:24:47', '2026-10-16 16:24:47'),
+	(18464, 'Prado', 4451, '2026-10-16 16:24:54', '2026-10-16 16:24:54'),
+	(18465, 'Beira Rio', 4451, '2026-10-16 16:26:13', '2026-10-16 16:26:13'),
+	(18466, 'Vendaval', 4451, '2026-10-16 16:26:25', '2026-10-16 16:26:25'),
+	(18467, 'Jardim Janaína', 4451, '2026-10-16 16:29:14', '2026-10-16 16:29:14'),
+	(18468, 'Rio Caveiras', 4451, '2026-10-16 16:29:47', '2026-10-16 16:29:47'),
+	(18469, 'Fundos', 4451, '2026-10-16 16:30:12', '2026-10-16 16:30:12'),
+	(18470, 'Boa Vista', 4451, '2026-10-16 16:30:35', '2026-10-16 16:30:35'),
+	(18471, 'Universitário', 4451, '2026-10-16 16:30:49', '2026-10-16 16:30:49'),
+	(18472, 'Centro', 4451, '2026-10-16 16:30:58', '2026-10-16 16:30:58'),
+	(18473, 'Bom Viver', 4451, '2026-10-16 16:31:13', '2026-10-16 16:31:13'),
+	(18474, 'Mar das Pedras', 4451, '2026-10-16 16:31:31', '2026-10-16 16:31:31'),
+	(18475, 'Morro da Bina', 4451, '2026-10-16 16:31:36', '2026-10-16 16:31:36'),
+	(18476, 'Saveiro', 4451, '2026-10-16 16:31:43', '2026-10-16 16:31:43'),
+	(18477, 'Praia João Rosa', 4451, '2026-10-16 16:31:45', '2026-10-16 16:31:45'),
+	(18478, 'Prado de Baixo', 4451, '2026-10-16 16:32:10', '2026-10-16 16:32:10'),
+	(18479, 'Área Rural', 4711, '2026-10-16 16:38:01', '2026-10-16 16:38:01'),
+	(18480, 'Santa Cruz da Figueira', 4711, '2026-10-16 16:39:20', '2026-10-16 16:39:20'),
+	(18481, 'Vargem Grande', 4711, '2026-10-16 16:41:27', '2026-10-16 16:41:27'),
+	(18482, 'Fazenda da Ressurreição', 4711, '2026-10-16 16:43:10', '2026-10-16 16:43:10'),
+	(18483, 'Fazenda do Sacramento', 4711, '2026-10-16 16:43:26', '2026-10-16 16:43:26'),
+	(18484, 'Centro', 4711, '2026-10-16 16:45:04', '2026-10-16 16:45:04'),
+	(18485, 'Vila Nova', 4711, '2026-10-16 16:45:28', '2026-10-16 16:45:28'),
+	(18486, 'Área Rural', 4650, '2026-10-16 16:51:06', '2026-10-16 16:51:06'),
+	(18487, 'Pagará (Colônia Santa Luzia)', 4650, '2026-10-16 16:51:29', '2026-10-16 16:51:29'),
+	(18488, 'Alto da Varginha', 4650, '2026-10-16 16:51:41', '2026-10-16 16:51:41'),
+	(18489, 'Fazenda Bom Jesus', 4650, '2026-10-16 16:51:46', '2026-10-16 16:51:46'),
+	(18490, 'Fazenda do Sacramento', 4650, '2026-10-16 16:51:50', '2026-10-16 16:51:50'),
+	(18491, 'Varginha', 4650, '2026-10-16 16:51:57', '2026-10-16 16:51:57'),
+	(18492, 'Taquara', 4650, '2026-10-16 16:52:05', '2026-10-16 16:52:05'),
+	(18493, 'Canto da Amizade', 4650, '2026-10-16 16:52:12', '2026-10-16 16:52:12'),
+	(18494, 'Vargem Grande', 4650, '2026-10-16 16:53:07', '2026-10-16 16:53:07'),
+	(18495, 'Vargem do Braço', 4650, '2026-10-16 16:53:14', '2026-10-16 16:53:14'),
+	(18496, 'Caldas da Imperatriz', 4650, '2026-10-16 16:53:16', '2026-10-16 16:53:16'),
+	(18497, 'Poço Fundo', 4650, '2026-10-16 16:53:33', '2026-10-16 16:53:33'),
+	(18498, 'Braço São João', 4650, '2026-10-16 16:54:53', '2026-10-16 16:54:53'),
+	(18499, 'Vila Santana', 4650, '2026-10-16 16:55:34', '2026-10-16 16:55:34'),
+	(18500, 'Morro Queimado', 4650, '2026-10-16 16:56:07', '2026-10-16 16:56:07'),
+	(18501, 'Morro dos Ventura', 4650, '2026-10-16 16:56:09', '2026-10-16 16:56:09'),
+	(18502, 'Fabrício', 4650, '2026-10-16 16:56:19', '2026-10-16 16:56:19'),
+	(18503, 'Sul do Rio', 4650, '2026-10-16 16:56:33', '2026-10-16 16:56:33'),
+	(18504, 'Vargem dos Pinheiros', 4650, '2026-10-16 16:58:04', '2026-10-16 16:58:04'),
+	(18505, 'Nossa Senhora de Lourdes', 4650, '2026-10-16 16:58:42', '2026-10-16 16:58:42'),
+	(18506, 'Santo Anjo', 4650, '2026-10-16 16:58:55', '2026-10-16 16:58:55'),
+	(18507, 'Calemba', 4650, '2026-10-16 16:58:59', '2026-10-16 16:58:59'),
+	(18508, 'Pagará', 4650, '2026-10-16 16:59:12', '2026-10-16 16:59:12'),
+	(18509, 'Sítio de Dentro', 4650, '2026-10-16 16:59:21', '2026-10-16 16:59:21'),
+	(18510, 'Vila Becker', 4650, '2026-10-16 16:59:33', '2026-10-16 16:59:33'),
+	(18511, 'Centro', 4650, '2026-10-16 16:59:44', '2026-10-16 16:59:44'),
+	(18512, 'São Francisco de Assis', 4650, '2026-10-16 17:00:08', '2026-10-16 17:00:08'),
+	(18513, 'São João', 4650, '2026-10-16 17:00:25', '2026-10-16 17:00:25'),
+	(18514, 'Santana', 4650, '2026-10-16 17:00:43', '2026-10-16 17:00:43'),
+	(18515, 'Pinheira (Ens Brito)', 4596, '2026-10-16 17:01:18', '2026-10-16 17:01:18'),
+	(18516, 'Área Rural de Palhoça', 4596, '2026-10-16 17:01:23', '2026-10-16 17:01:23'),
+	(18517, 'Albardão', 4596, '2026-10-16 17:01:31', '2026-10-16 17:01:31'),
+	(18518, 'Três Barras', 4596, '2026-10-16 17:01:35', '2026-10-16 17:01:35'),
+	(18519, 'Morretes', 4596, '2026-10-16 17:02:05', '2026-10-16 17:02:05'),
+	(18520, 'Guarda do Embaú (Ens Brito)', 4596, '2026-10-16 17:02:10', '2026-10-16 17:02:10'),
+	(18521, 'Balneário Ponta do Papagaio (Ens Brito)', 4596, '2026-10-16 17:02:23', '2026-10-16 17:02:23'),
+	(18522, 'Praia do Meio (Ens Brito)', 4596, '2026-10-16 17:02:28', '2026-10-16 17:02:28'),
+	(18523, 'Praia do Sonho (Ens Brito)', 4596, '2026-10-16 17:02:40', '2026-10-16 17:02:40'),
+	(18524, 'Passagem do Massiambú', 4596, '2026-10-16 17:02:50', '2026-10-16 17:02:50'),
+	(18525, 'Passagem de Maciambú (Ens Brito)', 4596, '2026-10-16 17:02:50', '2026-10-16 17:02:50'),
+	(18526, 'Praia do Pontal', 4596, '2026-10-16 17:02:59', '2026-10-16 17:02:59'),
+	(18527, 'Enseada do Brito (Ens Brito)', 4596, '2026-10-16 17:03:08', '2026-10-16 17:03:08'),
+	(18528, 'Furadinho', 4596, '2026-10-16 17:04:19', '2026-10-16 17:04:19'),
+	(18529, 'Massiambu Pequeno', 4596, '2026-10-16 17:04:48', '2026-10-16 17:04:48'),
+	(18530, 'Madri', 4596, '2026-10-16 17:07:23', '2026-10-16 17:07:23'),
+	(18531, 'Pachecos', 4596, '2026-10-16 17:08:39', '2026-10-16 17:08:39'),
+	(18532, 'Nova Palhoça', 4596, '2026-10-16 17:13:58', '2026-10-16 17:13:58'),
+	(18533, 'Centro', 4678, '2026-10-16 17:22:03', '2026-10-16 17:22:03'),
+	(18534, 'Santa Teresa', 4678, '2026-10-16 17:22:07', '2026-10-16 17:22:07'),
+	(18535, 'Área Rural de São José', 4666, '2026-10-22 17:07:19', '2026-10-22 17:07:19'),
+	(18536, 'Jardim Cidade de Florianópolis', 4666, '2026-10-22 17:29:05', '2026-10-22 17:29:05'),
+	(18537, 'Forquilhas Leste', 4666, '2026-10-22 17:34:02', '2026-10-22 17:34:02'),
+	(18538, 'Forquilhas Oeste', 4666, '2026-10-22 17:34:12', '2026-10-22 17:34:12'),
+	(18539, 'Forquilhinha', 4666, '2026-10-22 17:35:27', '2026-10-22 17:35:27'),
+	(18540, 'Área Rural de Florianópolis', 4503, '2026-10-22 17:41:15', '2026-10-22 17:41:15'),
+	(18541, 'Armação do Pântano do Sul', 4503, '2026-10-27 21:46:48', '2026-10-27 21:46:48'),
+	(18542, 'Campeche', 4503, '2026-10-27 21:47:35', '2026-10-27 21:47:35'),
+	(18543, 'Rio Tavares', 4503, '2026-10-27 21:53:54', '2026-10-27 21:53:54'),
+	(18544, 'São João do Rio Vermelho', 4503, '2026-10-27 22:00:09', '2026-10-27 22:00:09'),
+	(18545, 'Ingleses do Rio Vermelho', 4503, '2026-10-27 22:03:58', '2026-10-27 22:03:58'),
+	(18546, 'Ingleses', 4503, '2026-10-27 22:04:31', '2026-10-27 22:04:31'),
+	(18547, 'Santo Antônio de Lisboa', 4503, '2026-10-28 17:38:32', '2026-10-28 17:38:32');
 
 -- Dumping structure for table manager_main.people
 CREATE TABLE IF NOT EXISTS `people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `fantasy` varchar(255) NOT NULL,
-  `type` enum('individual','company') NOT NULL,
-  `document` varchar(14) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `fantasy` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `type` enum('individual','company') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `role` set('employee','customer','user') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `document` varchar(14) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `active` tinyint(1) NOT NULL,
   `birthdate` date DEFAULT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `document_UNIQUE` (`document`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.people: ~4 rows (approximately)
-INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
-	(3, 'Douglas M. Costa', '', 'individual', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
-	(4, 'Emma Watson', 'Emma Watson', 'company', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
-	(9, 'Kristen Stewart', 'Kristen Stewart', 'individual', '48053194370', 1, '1990-02-01', '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(11, 'Nikole Kidmann', 'Nicole Kidmann', 'individual', '53295606080', 1, '1970-01-01', '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+-- Dumping data for table manager_main.people: ~5 rows (approximately)
+INSERT INTO `people` (`id`, `name`, `fantasy`, `type`, `role`, `document`, `active`, `birthdate`, `created`, `modified`) VALUES
+	(3, 'Douglas M. Costa', '', 'individual', '', '03599033986', 1, '1983-11-20', '2025-12-04 23:36:11', '2026-03-05 01:10:22'),
+	(4, 'Emma Watson', 'Emma Watson', 'company', '', '4DCEFWJWQNJI22', 1, NULL, '2026-06-01 22:34:47', '2026-06-25 20:17:03'),
+	(9, 'Kristen Stewart', 'Kristen Stewart', 'individual', '', '48053194370', 1, '1990-02-01', '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
+	(11, 'Nikole Kidmann', 'Nicole Kidmann', 'individual', '', '53295606080', 1, '1970-01-01', '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(12, 'Jessica Chastain', 'Jessica Chastain', 'individual', '', '55555164017', 1, '1972-09-01', '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ability` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `system` enum('manager_main','manager') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manager_main',
   `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -25009,7 +25289,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_permissions_system_ability` (`system`,`ability`)
-) ENGINE=InnoDB AUTO_INCREMENT=14659 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14659 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.permissions: ~456 rows (approximately)
 INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, `modified`) VALUES
@@ -25472,34 +25752,35 @@ INSERT INTO `permissions` (`id`, `ability`, `system`, `description`, `created`, 
 
 -- Dumping structure for table manager_main.phone_numbers
 CREATE TABLE IF NOT EXISTS `phone_numbers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `phone_number` varchar(255) NOT NULL,
-  `observations` varchar(500) DEFAULT NULL,
-  `person_id` int DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `phone_number` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `observations` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `person_id` int(11) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_phone_numbers_people1_idx` (`person_id`),
   CONSTRAINT `fk_phone_numbers_people1` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.phone_numbers: ~2 rows (approximately)
 INSERT INTO `phone_numbers` (`id`, `phone_number`, `observations`, `person_id`, `created`, `modified`) VALUES
 	(5, '34523452345', 'celular', 9, '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(6, '48888776654', 'odiassoajd', 11, '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+	(6, '48888776654', 'odiassoajd', 11, '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(7, '5548991908908', 'cel', 12, '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.states
 CREATE TABLE IF NOT EXISTS `states` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `acronym` varchar(2) NOT NULL,
-  `country_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `acronym` varchar(2) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `country_id` int(11) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_states_countries1_idx` (`country_id`),
   CONSTRAINT `fk_states_countries1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.states: ~77 rows (approximately)
 INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modified`) VALUES
@@ -25583,19 +25864,19 @@ INSERT INTO `states` (`id`, `name`, `acronym`, `country_id`, `created`, `modifie
 
 -- Dumping structure for table manager_main.support_chats
 CREATE TABLE IF NOT EXISTS `support_chats` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `customer_user_id` int NOT NULL,
-  `attendant_user_id` int DEFAULT NULL,
-  `tenant_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `customer_user_id` int(11) NOT NULL,
+  `attendant_user_id` int(11) DEFAULT NULL,
+  `tenant_id` int(11) NOT NULL,
   `tenant_database_number` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` enum('pending','open','closed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `last_message_at` datetime DEFAULT NULL,
   `customer_last_seen_at` datetime DEFAULT NULL,
   `attendant_last_seen_at` datetime DEFAULT NULL,
   `closed_at` datetime DEFAULT NULL,
-  `closed_by_user_id` int DEFAULT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `closed_by_user_id` int(11) DEFAULT NULL,
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
+  `modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_support_chats_customer_status` (`customer_user_id`,`tenant_id`,`status`),
   KEY `idx_support_chats_attendant_status` (`attendant_user_id`,`status`),
@@ -25606,47 +25887,52 @@ CREATE TABLE IF NOT EXISTS `support_chats` (
   CONSTRAINT `fk_support_chats_closed_by_user` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_customer_user` FOREIGN KEY (`customer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chats_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.support_chats: ~0 rows (approximately)
+-- Dumping data for table manager_main.support_chats: ~1 rows (approximately)
+INSERT INTO `support_chats` (`id`, `customer_user_id`, `attendant_user_id`, `tenant_id`, `tenant_database_number`, `status`, `last_message_at`, `customer_last_seen_at`, `attendant_last_seen_at`, `closed_at`, `closed_by_user_id`, `created`, `modified`) VALUES
+	(17, 5, 1, 2, '0002', 'closed', '2026-10-14 00:11:14', '2026-10-14 00:10:10', '2026-10-14 00:11:14', '2026-10-14 00:11:34', 1, '2026-10-14 00:10:10', '2026-10-14 00:11:35');
 
 -- Dumping structure for table manager_main.support_chats_messages
 CREATE TABLE IF NOT EXISTS `support_chats_messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `support_chat_id` int NOT NULL,
-  `sender_user_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `support_chat_id` int(11) NOT NULL,
+  `sender_user_id` int(11) NOT NULL,
   `sender_role` enum('customer','attendant','system') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `sender_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `message_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_support_chat_messages_chat_id` (`support_chat_id`,`id`),
   KEY `idx_support_chat_messages_sender` (`sender_user_id`),
   CONSTRAINT `fk_support_chat_messages_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_support_chat_messages_sender_user` FOREIGN KEY (`sender_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.support_chats_messages: ~0 rows (approximately)
+-- Dumping data for table manager_main.support_chats_messages: ~2 rows (approximately)
+INSERT INTO `support_chats_messages` (`id`, `support_chat_id`, `sender_user_id`, `sender_role`, `sender_name`, `message_text`, `created`) VALUES
+	(37, 17, 5, 'customer', 'Kristen Stewart', 'teste', '2026-10-14 00:10:10'),
+	(38, 17, 1, 'attendant', 'Douglas M. Costa', 'teste ok', '2026-10-14 00:11:14');
 
 -- Dumping structure for table manager_main.system_setting_definitions
 CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `module_id` int NOT NULL,
-  `key_name` varchar(120) NOT NULL,
-  `label` varchar(160) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `value_type` enum('string','integer','decimal','boolean','json') NOT NULL DEFAULT 'string',
-  `default_value` text,
-  `validation_rules` json DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `sort_order` int NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `module_id` int(11) NOT NULL,
+  `key_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `label` varchar(160) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `value_type` enum('string','integer','decimal','boolean','json') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL DEFAULT 'string',
+  `default_value` text CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `validation_rules` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`validation_rules`)),
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_system_setting_definitions_key` (`key_name`),
   KEY `idx_system_setting_definitions_module_id` (`module_id`),
   CONSTRAINT `fk_system_setting_definitions_module` FOREIGN KEY (`module_id`) REFERENCES `system_setting_modules` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.system_setting_definitions: ~0 rows (approximately)
 INSERT INTO `system_setting_definitions` (`id`, `module_id`, `key_name`, `label`, `description`, `value_type`, `default_value`, `validation_rules`, `active`, `sort_order`, `created`, `modified`) VALUES
@@ -25654,17 +25940,17 @@ INSERT INTO `system_setting_definitions` (`id`, `module_id`, `key_name`, `label`
 
 -- Dumping structure for table manager_main.system_setting_modules
 CREATE TABLE IF NOT EXISTS `system_setting_modules` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `slug` varchar(80) NOT NULL,
-  `name` varchar(120) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `sort_order` int NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `slug` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_system_setting_modules_slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.system_setting_modules: ~0 rows (approximately)
 INSERT INTO `system_setting_modules` (`id`, `slug`, `name`, `description`, `active`, `sort_order`, `created`, `modified`) VALUES
@@ -25672,35 +25958,36 @@ INSERT INTO `system_setting_modules` (`id`, `slug`, `name`, `description`, `acti
 
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `database_number` varchar(10) NOT NULL COMMENT 'Formatted database number (0001, 0002...)',
-  `status` enum('active','suspended','pending') NOT NULL DEFAULT 'pending' COMMENT 'Tenant status',
-  `observations` text COMMENT 'General observations',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `database_number` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL COMMENT 'Formatted database number (0001, 0002...)',
+  `status` enum('active','suspended','pending') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL DEFAULT 'pending' COMMENT 'Tenant status',
+  `observations` text CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL COMMENT 'General observations',
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenants_database_number` (`database_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.tenants: ~2 rows (approximately)
 INSERT INTO `tenants` (`id`, `database_number`, `status`, `observations`, `created`, `modified`) VALUES
 	(1, '0001', 'active', 'Banco da Emma Watson', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
-	(2, '0002', 'active', '', '2026-07-28 22:17:31', '2026-07-28 22:17:32');
+	(2, '0002', 'active', '', '2026-07-28 22:17:31', '2026-07-28 22:17:32'),
+	(3, '0003', 'active', 'Banco da Jissica', '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.tenant_people
 CREATE TABLE IF NOT EXISTS `tenant_people` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `person_id` int NOT NULL,
-  `crm_status_id` int NOT NULL,
-  `crm_source_id` int DEFAULT NULL,
-  `crm_inactivity_reason_id` int DEFAULT NULL,
-  `owner_user_id` int DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `person_id` int(11) NOT NULL,
+  `crm_status_id` int(11) NOT NULL,
+  `crm_source_id` int(11) DEFAULT NULL,
+  `crm_inactivity_reason_id` int(11) DEFAULT NULL,
+  `owner_user_id` int(11) DEFAULT NULL,
   `source` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created_by_user_id` int DEFAULT NULL,
-  `updated_by_user_id` int DEFAULT NULL,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by_user_id` int(11) DEFAULT NULL,
+  `updated_by_user_id` int(11) DEFAULT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -25718,16 +26005,16 @@ CREATE TABLE IF NOT EXISTS `tenant_people` (
   CONSTRAINT `fk_tenant_people_person` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_tenant_people_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_tenant_people_updated_by_user` FOREIGN KEY (`updated_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.tenant_people: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.tenant_setting_values
 CREATE TABLE IF NOT EXISTS `tenant_setting_values` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `tenant_id` int NOT NULL,
-  `setting_definition_id` int NOT NULL,
-  `value` text,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `setting_definition_id` int(11) NOT NULL,
+  `value` text CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -25735,14 +26022,14 @@ CREATE TABLE IF NOT EXISTS `tenant_setting_values` (
   KEY `idx_tenant_setting_values_setting_definition_id` (`setting_definition_id`),
   CONSTRAINT `fk_tenant_setting_values_definition` FOREIGN KEY (`setting_definition_id`) REFERENCES `system_setting_definitions` (`id`),
   CONSTRAINT `fk_tenant_setting_values_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- Dumping data for table manager_main.tenant_setting_values: ~0 rows (approximately)
 
 -- Dumping structure for table manager_main.tenant_users
 CREATE TABLE IF NOT EXISTS `tenant_users` (
-  `tenant_id` int NOT NULL,
-  `user_id` int NOT NULL,
+  `tenant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `role` enum('owner','admin','user') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
@@ -25750,22 +26037,23 @@ CREATE TABLE IF NOT EXISTS `tenant_users` (
   KEY `idx_tenant_users_user` (`user_id`),
   CONSTRAINT `fk_tenant_users_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_tenant_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.tenant_users: ~3 rows (approximately)
+-- Dumping data for table manager_main.tenant_users: ~2 rows (approximately)
 INSERT INTO `tenant_users` (`tenant_id`, `user_id`, `role`, `created`, `modified`) VALUES
 	(1, 2, 'owner', '2026-06-01 22:34:47', '2026-06-19 22:42:37'),
 	(2, 5, 'owner', '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(2, 6, 'user', '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+	(2, 6, 'user', '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(3, 7, 'owner', '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.users
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `person_id` int NOT NULL,
-  `tenant_id` int DEFAULT NULL COMMENT 'Associated tenant',
-  `username` varchar(45) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `type` enum('root','admin','user') NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `person_id` int(11) NOT NULL,
+  `tenant_id` int(11) DEFAULT NULL COMMENT 'Associated tenant',
+  `username` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+  `type` enum('root','admin','user') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
   `active` tinyint(1) NOT NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
@@ -25775,28 +26063,29 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `fk_users_tenants1_idx` (`tenant_id`),
   CONSTRAINT `fk_users_people` FOREIGN KEY (`person_id`) REFERENCES `people` (`id`),
   CONSTRAINT `fk_users_tenants1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.users: ~4 rows (approximately)
+-- Dumping data for table manager_main.users: ~5 rows (approximately)
 INSERT INTO `users` (`id`, `person_id`, `tenant_id`, `username`, `password`, `type`, `active`, `created`, `modified`) VALUES
 	(1, 3, NULL, 'douglas.costa', '$2y$12$l/qPtkZTlH5gdEUUgq7XHe0NQpJfu2OUWuwJ.xvyHnrHRt2PUsKH6', 'root', 1, '2025-12-04 23:36:11', '2025-12-04 23:36:11'),
 	(2, 4, 1, 'emma.watson', '$2y$12$Khyya83myBcKkftWu4AMIu6.uGdt5BoBcBIq/tRK8wn3aGPPWM2pe', 'admin', 1, '2026-06-01 22:34:47', '2026-06-01 22:34:47'),
 	(5, 9, 2, 'kristen.stewart', '$2y$12$Hrellg3V1wUwHpmJtMt/ceTYYjLo5.J/cw3TLA.FBfFpq.Uamo6fy', 'admin', 1, '2026-07-28 22:17:31', '2026-07-28 22:17:31'),
-	(6, 11, 2, 'nikole.kidmann', '$2y$12$h5LEHxLfGN0MC8uhSMKf6eGsNEoXlAhBiJKKMUiT0P34uDMurBLnG', 'user', 1, '2026-08-28 16:57:42', '2026-08-28 16:57:42');
+	(6, 11, 2, 'nikole.kidmann', '$2y$12$h5LEHxLfGN0MC8uhSMKf6eGsNEoXlAhBiJKKMUiT0P34uDMurBLnG', 'user', 1, '2026-08-28 16:57:42', '2026-08-28 16:57:42'),
+	(7, 12, 3, 'jessica.chastain', '$2y$12$5edIRnZ4FuKQ0lLd2MGsAOObAPoaNr4vlxVHTTplxEriQkgyk530m', 'admin', 1, '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.user_permissions
 CREATE TABLE IF NOT EXISTS `user_permissions` (
-  `user_id` int NOT NULL,
-  `permission_id` int unsigned NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `permission_id` int(10) unsigned NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`,`permission_id`),
   KEY `fk_up_permission` (`permission_id`),
   CONSTRAINT `fk_up_permission` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_up_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.user_permissions: ~1 017 rows (approximately)
+-- Dumping data for table manager_main.user_permissions: ~1 132 rows (approximately)
 INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified`) VALUES
 	(1, 7, '2026-06-25 20:08:34', '2026-06-25 20:08:34'),
 	(1, 8, '2026-06-25 20:08:34', '2026-06-25 20:08:34'),
@@ -26814,14 +27103,290 @@ INSERT INTO `user_permissions` (`user_id`, `permission_id`, `created`, `modified
 	(6, 13975, '2026-08-28 17:07:25', '2026-08-28 17:07:25'),
 	(6, 13976, '2026-08-28 17:07:25', '2026-08-28 17:07:25'),
 	(6, 13977, '2026-08-28 17:07:25', '2026-08-28 17:07:25'),
-	(6, 13978, '2026-08-28 17:07:25', '2026-08-28 17:07:25');
+	(6, 13978, '2026-08-28 17:07:25', '2026-08-28 17:07:25'),
+	(7, 1223, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 1225, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3193, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3194, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3195, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3196, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3197, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3198, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3199, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3202, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3203, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3206, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3207, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3209, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3210, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3211, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3213, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3214, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3215, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3216, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3217, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3218, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3219, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3220, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3221, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3223, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3224, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3227, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3228, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3229, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3230, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3231, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3232, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3233, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3234, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3235, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3236, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3237, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3238, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3239, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3240, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3241, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3242, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3243, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3246, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3247, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3251, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3253, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3254, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3255, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3256, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3257, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3258, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 3701, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 5209, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6121, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6122, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6124, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6125, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6126, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6127, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6130, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6131, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6699, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6700, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6701, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6702, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6703, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6704, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6705, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6706, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6707, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6708, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6709, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6710, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6711, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6712, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6713, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6714, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6715, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6716, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6717, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6718, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6719, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6720, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6721, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6722, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6930, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6931, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6932, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6933, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 6934, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 7360, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8644, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8645, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8646, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8647, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8648, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8649, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8650, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8651, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8652, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8653, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8654, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8655, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8656, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8657, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8658, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8659, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8809, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8810, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8811, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8813, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8814, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8815, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8821, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8822, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8883, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8896, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8897, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8901, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8915, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8916, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 8917, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 9918, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 9919, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 9920, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 10100, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 10103, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 11562, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12082, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12083, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12084, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12085, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12086, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12087, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12088, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12433, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12434, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12435, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12436, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12437, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12438, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12439, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12440, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12441, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12442, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12443, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12444, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12445, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12446, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12447, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12448, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12449, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12450, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12451, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12452, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12463, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12464, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12465, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12466, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12467, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12468, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12475, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12476, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12477, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12480, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12481, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12482, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12483, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12484, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12485, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12486, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12487, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12488, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12489, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12490, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12491, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12492, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12493, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12494, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12495, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12496, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12497, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12498, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12499, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12500, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12502, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12503, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12723, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12724, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12725, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12726, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12727, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12728, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12729, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12730, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12731, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12799, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12801, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12882, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12883, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12884, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12885, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12886, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12887, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 12888, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13511, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13512, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13513, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13514, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13515, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13516, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13517, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13518, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13519, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13520, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13521, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13522, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13523, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13524, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13902, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13911, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13912, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13913, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13914, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13915, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13916, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13917, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13918, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13919, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13934, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13935, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13936, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13937, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13938, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13939, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13940, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13941, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13942, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13943, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13944, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13945, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13946, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13947, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13948, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13949, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13950, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13951, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13952, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13953, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13954, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13955, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13956, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13957, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13958, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13959, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13960, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13961, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13962, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13963, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13964, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13965, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13966, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13967, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13968, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13969, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13970, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13971, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13972, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13973, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13974, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13975, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13976, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13977, '2026-10-14 21:13:36', '2026-10-14 21:13:36'),
+	(7, 13978, '2026-10-14 21:13:36', '2026-10-14 21:13:36');
 
 -- Dumping structure for table manager_main.user_presences
 CREATE TABLE IF NOT EXISTS `user_presences` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `tenant_id` int DEFAULT NULL,
-  `status` enum('online','away','busy','offline') NOT NULL DEFAULT 'offline',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `tenant_id` int(11) DEFAULT NULL,
+  `status` enum('online','away','busy','offline') CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL DEFAULT 'offline',
   `last_seen_at` datetime DEFAULT NULL,
   `status_changed_at` datetime DEFAULT NULL,
   `created` datetime DEFAULT NULL,
@@ -26832,18 +27397,20 @@ CREATE TABLE IF NOT EXISTS `user_presences` (
   KEY `idx_user_presences_last_seen_at` (`last_seen_at`),
   CONSTRAINT `fk_user_presences_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_user_presences_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.user_presences: ~3 rows (approximately)
+-- Dumping data for table manager_main.user_presences: ~4 rows (approximately)
 INSERT INTO `user_presences` (`id`, `user_id`, `tenant_id`, `status`, `last_seen_at`, `status_changed_at`, `created`, `modified`) VALUES
-	(1, 1, NULL, 'online', '2026-08-12 22:18:17', '2026-08-12 22:18:17', '2026-07-18 00:31:59', '2026-08-12 22:18:17'),
+	(1, 1, NULL, 'online', '2026-10-27 22:36:34', '2026-10-27 22:36:34', '2026-07-18 00:31:59', '2026-10-27 22:36:34'),
 	(6, 2, 1, 'away', '2026-08-03 23:13:22', '2026-08-03 23:13:22', '2026-07-18 00:32:47', '2026-08-03 23:13:22'),
-	(68, 5, 2, 'online', '2026-09-22 18:54:30', '2026-09-22 18:54:30', '2026-07-28 22:18:17', '2026-09-22 18:54:30');
+	(68, 5, 2, 'online', '2026-10-28 16:49:14', '2026-10-28 16:49:14', '2026-07-28 22:18:17', '2026-10-28 16:49:14'),
+	(108, 7, 3, 'away', '2026-10-14 21:16:56', '2026-10-14 21:16:56', '2026-10-14 21:14:24', '2026-10-14 21:16:56'),
+	(130, 6, 2, 'offline', '2026-10-28 16:51:39', '2026-10-28 16:51:39', '2026-10-28 16:51:39', '2026-10-28 16:51:39');
 
 -- Dumping structure for table manager_main.user_remember_tokens
 CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
   `selector` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `token_hash` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -26856,12 +27423,16 @@ CREATE TABLE IF NOT EXISTS `user_remember_tokens` (
   KEY `idx_user_remember_tokens_user` (`user_id`),
   KEY `idx_user_remember_tokens_expires` (`expires_at`),
   CONSTRAINT `fk_user_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
--- Dumping data for table manager_main.user_remember_tokens: ~2 rows (approximately)
+-- Dumping data for table manager_main.user_remember_tokens: ~6 rows (approximately)
 INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `user_agent`, `ip_address`, `expires_at`, `created`, `last_used`) VALUES
-	(16, 1, 'be26f8e91cb48f91a1b91c053641d7b0', '38a5a4fecba1369922e36112dc372e2c32ca37e795f71174dbf6c6ea3e5fff57', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:155.0) Gecko/20100101 Firefox/155.0', '172.18.0.1', '2026-10-08 23:29:48', '2026-07-28 21:54:25', '2026-09-08 23:29:48'),
-	(17, 1, '8ab6f64cb615b750593d28f90f1fb8e4', 'ffb4b7eabdbfbc7c87ced51b82894bc100bfa860edca2ca974128b7e916eeae4', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', '192.168.65.1', '2026-10-22 18:23:50', '2026-08-12 22:18:17', '2026-09-22 18:23:50');
+	(18, 1, 'b8d74819ce0b28bf2dae64cb529a1d12', '0dce26004972a014d8131e9d659f3c7b75025bd2d5e740a45d15b67c30739377', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '189.110.115.109', '2026-11-18 23:26:47', '2026-10-09 01:09:37', '2026-10-19 23:26:47'),
+	(19, 1, '46f78d31921c58258dbe0cc1a33580bb', '5e5399ddff5d0b01c7c021393ea419bfaac5910013bdc4338112a738b812e666', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0', '189.110.115.109', '2026-11-15 17:31:35', '2026-10-14 03:10:57', '2026-10-16 17:31:35'),
+	(20, 1, '23977a68dbc60cb768619578c0796a45', 'bc7ab4eb7c3eb9a699d9a5852ffbc13803528d716552244bd87ec06bb46bf075', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1 OPT/6.7.3', '200.161.157.201', '2026-11-26 22:56:38', '2026-10-20 00:45:55', '2026-10-27 22:56:38'),
+	(21, 1, '806a4e2a82b75595f9affd0cbea2e800', '2f9a86c526927a2996b75f0712ce0edd4fadb509e68d4bfc6298efc5092fd738', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '200.161.157.201', '2026-11-20 20:09:39', '2026-10-21 20:09:39', NULL),
+	(22, 1, '2e144c64efb8261bb4f09c0dd0e042aa', 'd7592269fc7c2131a544757fa8559c2ba793dedafdabbd5af5d924796d46795d', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '200.161.157.201', '2026-11-27 17:13:00', '2026-10-21 20:09:40', '2026-10-28 17:13:00'),
+	(23, 1, '8781956ceea865b5b1fc486052a2ec9e', '0fc11dfac48f4919f1876dfc2d49a9222938471902665eb3bf07b69c2ecddc65', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Mobile/15E148 Safari/604.1', '200.161.157.201', '2026-11-26 22:43:51', '2026-10-27 22:36:34', '2026-10-27 22:43:51');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

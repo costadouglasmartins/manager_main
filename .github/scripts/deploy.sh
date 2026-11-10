@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Validate the connection before inserting values into the SSH configuration.
+: "${SSH_HOST:?Create the SSH_HOST repository secret.}"
+: "${SSH_USER:?Create the SSH_USER repository secret.}"
+: "${SSH_PORT:?Create the SSH_PORT repository secret.}"
+: "${SSH_PRIVATE_KEY:?Create the SSH_PRIVATE_KEY repository secret.}"
+: "${RUNNER_TEMP:?This script runs in GitHub Actions.}"
+: "${GITHUB_SHA:?Missing the deployment commit.}"
+: "${GITHUB_RUN_ID:?Missing the workflow run identifier.}"
+: "${GITHUB_RUN_ATTEMPT:?Missing the workflow run attempt.}"
+
+if [[ "$SSH_HOST" != '179.236.252.5' || "$SSH_USER" != 'root' || "$SSH_PORT" != '22' ]]; then
+  echo 'The SSH secrets must match the configured server: root@179.236.252.5, port 22.' >&2
+  exit 1
+fi
+
+# Default to simulation; publication is allowed only from the main branch.
+DEPLOY_MODE=${DEPLOY_MODE:-dry-run}
+if [[ "$DEPLOY_MODE" != 'dry-run' && "$DEPLOY_MODE" != 'apply' ]]; then
+  echo 'Invalid deployment mode.' >&2
+  exit 1
+fi
+if [[ "$DEPLOY_MODE" == 'apply' && "${GITHUB_REF:-}" != 'refs/heads/main' ]]; then
+  echo 'Publication is allowed only from the main branch.' >&2
+  exit 1
+fi
+command -v python3 >/dev/null
+echo "Deployment mode: $DEPLOY_MODE"
+
+# Keep credentials in a private temporary directory outside the checkout.
+umask 077
+ssh_directory=$(mktemp -d "$RUNNER_TEMP/manager-main-ssh.XXXXXXXXXX")
+remote_stage=''
+
+cleanup() {
+  # Remove only the temporary directory allocated for this deployment.
+  if [[ "$remote_stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ ]]; then
+    ssh -F "$ssh_directory/config" manager-production "python3 '$remote_stage/.deploy-validate.py' cleanup manager_main '$remote_stage'" || true
+  fi
+  # Runner credentials are removed only within this run's private temp directory.
+  python3 - "$ssh_directory" "$RUNNER_TEMP" <<'LOCAL_CLEANUP'
+from pathlib import Path
+import re
+import shutil
+import sys
+directory, parent = map(Path, sys.argv[1:])
+if (not directory.is_symlink() and directory.is_dir()
+        and directory.resolve().parent == parent.resolve()
+        and re.fullmatch(r'manager-main-ssh\.[A-Za-z0-9]+', directory.name)
+        and shutil.rmtree.avoids_symlink_attacks):
+    shutil.rmtree(directory)
+else:
+    raise SystemExit('Runner credential directory failed cleanup validation.')
+LOCAL_CLEANUP
+}
+trap cleanup EXIT
+
+printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > "$ssh_directory/key"
+unset SSH_PRIVATE_KEY
+cp .github/deploy/known_hosts "$ssh_directory/known_hosts"
+cat > "$ssh_directory/config" <<EOF
+Host manager-production
+    HostName $SSH_HOST
+    User $SSH_USER
+    Port $SSH_PORT
+    IdentityFile "$ssh_directory/key"
+    UserKnownHostsFile "$ssh_directory/known_hosts"
+    IdentitiesOnly yes
+    BatchMode yes
+    StrictHostKeyChecking yes
+    ConnectTimeout 15
+    ServerAliveInterval 15
+    ServerAliveCountMax 3
+EOF
+
+# Check production dependencies before uploading application files.
+remote_stage=$(ssh -F "$ssh_directory/config" manager-production 'bash -s' <<'REMOTE'
+set -Eeuo pipefail
+command -v php >/dev/null
+command -v rsync >/dev/null
+command -v curl >/dev/null
+command -v flock >/dev/null
+command -v python3 >/dev/null
+test -d /var/www/izzidoro.com.br/public/manager_main
+test -f /var/www/izzidoro.com.br/public/manager_main/app/Core/Config.php
+test -f /var/www/izzidoro.com.br/public/manager_assets/vendor/autoload.php
+umask 077
+stage=$(mktemp -d /tmp/manager-main-deploy.XXXXXXXXXX)
+printf '%s\n' manager_main > "$stage/.deploy-repository"
+printf '%s\n' "$stage"
+REMOTE
+)
+if [[ ! "$remote_stage" =~ ^/tmp/manager-main-deploy\.[[:alnum:]]+$ ]]; then
+  echo 'The server returned an invalid staging directory.' >&2
+  exit 1
+fi
+
+# Stage code outside the web root while preserving production configuration and data.
+printf -v ssh_transport 'ssh -F %q' "$ssh_directory/config"
+# Transfer the validator first so cleanup is available even if staging fails.
+rsync --rsh="$ssh_transport" .github/scripts/validate-deploy.py \
+  "manager-production:$remote_stage/.deploy-validate.py"
+rsync --recursive --links --times --compress \
+  --exclude-from=.github/deploy/rsync-excludes \
+  --rsh="$ssh_transport" ./ "manager-production:$remote_stage/"
+rsync --rsh="$ssh_transport" .github/deploy/rsync-excludes \
+  "manager-production:$remote_stage/.deploy-excludes"
+
+# Use the commit and workflow run to identify the deployment backup.
+deployment_id="${GITHUB_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+if [[ ! "$deployment_id" =~ ^[a-f0-9]{12}-[0-9]+-[0-9]+$ ]]; then
+  echo 'The deployment identifier is invalid.' >&2
+  exit 1
+fi
+ssh -F "$ssh_directory/config" manager-production \
+  "bash -s -- '$remote_stage' '$deployment_id' '$DEPLOY_MODE'" < .github/scripts/apply-deploy.sh
