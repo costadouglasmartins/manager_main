@@ -13,30 +13,35 @@
         return $value === false ? $default : $value;
     };
 
-    /** Prefer an explicit environment; otherwise treat Docker as development. **/
+    /** Prefer APP_ENV; otherwise detect Docker without relying on the request domain. **/
     $environment = strtolower(trim($readEnvironment('APP_ENV', '')));
     if ($environment === '') {
-        $environment = is_file('/.dockerenv') ? 'development' : 'production';
+        $environment = is_file('/.dockerenv') ? 'docker' : 'production';
     }
 
-    if (!in_array($environment, ['development', 'production'], true)) {
-        throw new RuntimeException('APP_ENV must be development or production.');
+    /** Keep compatibility with the existing Docker Compose environment. **/
+    if ($environment === 'development') {
+        $environment = 'docker';
+    }
+
+    if (!in_array($environment, ['production', 'docker'], true)) {
+        throw new RuntimeException('APP_ENV must be production or docker (development is an alias for docker).');
     }
 
     define('APP_ENV', $environment);
 
-    /** Database and WebSocket defaults for local CLI access and the production VPS. **/
+    /** Keep production and Docker database credentials and WebSocket settings separate. **/
     $environmentDefaults = [
-        'development' => [
-            'DB_HOST' => '127.0.0.1',
-            'DB_USERNAME' => 'manager_app',
-            'DB_PASSWORD' => 'a655cfd8889990aabaabbcda9a58afb581a9318c0524b72c0e5e8c8fdf4613b4',
-            'SUPPORT_CHAT_WS_HOST' => '0.0.0.0',
-        ],
         'production' => [
             'DB_HOST' => '127.0.0.1',
             'DB_USERNAME' => 'root',
             'DB_PASSWORD' => 'IzzI695500.-',
+            'SUPPORT_CHAT_WS_HOST' => '127.0.0.1',
+        ],
+        'docker' => [
+            'DB_HOST' => 'mariadb',
+            'DB_USERNAME' => 'manager_app',
+            'DB_PASSWORD' => 'a655cfd8889990aabaabbcda9a58afb581a9318c0524b72c0e5e8c8fdf4613b4',
             'SUPPORT_CHAT_WS_HOST' => '127.0.0.1',
         ],
     ];
