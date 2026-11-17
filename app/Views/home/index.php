@@ -139,6 +139,10 @@ $usersActivePercent = homeDashboardPercent($usersActive, $usersTotal);
 
 $tenantsTotal = homeDashboardCount($tenants, 'total');
 $tenantsActive = homeDashboardCount($tenants, 'active');
+// Connected presences are aggregated by tenant rather than by user.
+$tenantsLoggedIn = homeDashboardCount($tenants, 'logged_in');
+// Compare connected tenants with the full tenant registry.
+$tenantLoggedInPercent = homeDashboardPercent($tenantsLoggedIn, $tenantsTotal);
 $tenantsPending = homeDashboardCount($tenants, 'pending');
 $tenantsSuspended = homeDashboardCount($tenants, 'suspended');
 $tenantActivePercent = homeDashboardPercent($tenantsActive, $tenantsTotal);
@@ -335,6 +339,19 @@ $canViewContacts = !empty($contactRows) || $canViewCities;
   <?php if ($canViewHealth || $canViewAttention): ?>
   <div class="row g-3 g-xl-4 mb-4">
     <?php if ($canViewTenants): ?>
+    <div class="col-12 col-sm-6 col-xl flex-grow-1">
+      <article class="home-kpi home-kpi-success h-100">
+        <div class="home-kpi-heading">
+          <span class="home-kpi-icon"><i class="bi bi-broadcast" aria-hidden="true"></i></span>
+          <span class="badge rounded-pill bg-success-subtle text-success-emphasis"><?= $tenantLoggedInPercent; ?>% do total</span>
+        </div>
+        <span class="home-kpi-label">Tenants logados</span>
+        <strong class="home-kpi-value home-counter" data-target="<?= $tenantsLoggedIn; ?>"><?= number_format($tenantsLoggedIn, 0, ',', '.'); ?></strong>
+        <span class="home-kpi-meta">Com usuários online, ausentes ou ocupados, conforme a presença registrada.</span>
+        <progress class="home-progress home-progress-success" max="100" value="<?= $tenantLoggedInPercent; ?>" aria-label="<?= $tenantLoggedInPercent; ?>% dos tenants possuem usuários logados"></progress>
+      </article>
+    </div>
+
     <div class="col-12 col-sm-6 col-xl flex-grow-1">
       <article class="home-kpi home-kpi-primary h-100">
         <div class="home-kpi-heading">

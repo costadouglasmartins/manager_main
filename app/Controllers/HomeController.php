@@ -112,6 +112,7 @@ class HomeController extends Controller
 			'tenants' => [
 				'total'     => $tenantsTotal,
 				'active'    => $tenantsActive,
+				'logged_in' => Authorization::can('tenant.index') ? $dashboardModel->getLoggedInTenantCount() : 0,
 				'pending'   => $tenantsPending,
 				'suspended' => $tenantsSuspended,
 			],

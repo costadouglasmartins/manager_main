@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Services\UserPresenceService;
 use DateTimeImmutable;
 use PDO;
 
@@ -11,6 +12,35 @@ use PDO;
  */
 class Dashboard extends Model
 	{
+	/**
+	 * Counts distinct active tenants with an active user marked as connected.
+	 * Away and busy users remain logged in; offline users are excluded.
+	 * @return int Number of tenants with a recorded connected presence.
+	 **/
+	public function getLoggedInTenantCount(): int
+		{
+		// Count the selected tenant once, regardless of how many users are connected.
+		$stmt = $this->db->prepare("SELECT COUNT(DISTINCT Tenant.id) AS total
+		                            FROM tenants AS Tenant
+		                            INNER JOIN user_presences AS UserPresence ON UserPresence.tenant_id = Tenant.id
+		                            INNER JOIN users AS User ON User.id = UserPresence.user_id
+		                            WHERE Tenant.status = :tenant_status
+		                              AND User.active = :user_active
+		                              AND User.type IN (:admin_type, :user_type)
+		                              AND UserPresence.status IN (:online_status, :away_status, :busy_status)");
+		$stmt->execute([
+			'tenant_status' => 'active',
+			'user_active' => 1,
+			'admin_type' => 'admin',
+			'user_type' => 'user',
+			'online_status' => UserPresenceService::STATUS_ONLINE,
+			'away_status' => UserPresenceService::STATUS_AWAY,
+			'busy_status' => UserPresenceService::STATUS_BUSY,
+		]);
+
+		return (int) $stmt->fetchColumn();
+		}
+
 	/**
 	 * Returns monthly registration totals for the main administrative entities.
 	 *
