@@ -22,6 +22,7 @@ class DatabaseManagerService
 		$prefixStart = strlen($this->dbPrefix) + 1;
 		$managerDatabase = $this->quoteIdentifier(Database::getManagerDatabaseName());
 
+		/** Compare database identifiers as bytes because metadata and tenant collations can differ. **/
 		$sql = "SELECT s.SCHEMA_NAME AS database_name,
 		               SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS database_number,
 		               CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS UNSIGNED) AS database_order,
@@ -47,7 +48,7 @@ class DatabaseManagerService
 		               t.status AS tenant_status
 		        FROM information_schema.SCHEMATA AS s
 		        LEFT JOIN {$managerDatabase}.tenants AS t
-		          ON t.database_number = SUBSTRING(s.SCHEMA_NAME, {$prefixStart})
+		          ON CAST(t.database_number AS BINARY) = CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS BINARY)
 		        WHERE s.SCHEMA_NAME REGEXP '^manager_[0-9]+$'
 		        ORDER BY CAST(SUBSTRING(s.SCHEMA_NAME, {$prefixStart}) AS UNSIGNED) ASC";
 

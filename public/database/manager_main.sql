@@ -25936,7 +25936,7 @@ CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
 
 -- Dumping data for table manager_main.system_setting_definitions: ~0 rows (approximately)
 INSERT INTO `system_setting_definitions` (`id`, `module_id`, `key_name`, `label`, `description`, `value_type`, `default_value`, `validation_rules`, `active`, `sort_order`, `created`, `modified`) VALUES
-	(1, 1, 'max_online_users', '1', 'Maximum number of users allowed online at the same time.', 'integer', '1', '{"max": 1, "min": 1}', 1, 0, '2026-07-23 00:28:30', '2026-07-23 00:28:30');
+	(1, 1, 'max_online_users', '1', 'Maximum number of users allowed online at the same time.', 'integer', '1', '{"min": 1}', 1, 0, '2026-07-23 00:28:30', '2026-07-23 00:28:30');
 
 -- Dumping structure for table manager_main.system_setting_modules
 CREATE TABLE IF NOT EXISTS `system_setting_modules` (

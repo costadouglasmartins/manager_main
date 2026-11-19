@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
+use InvalidArgumentException;
 use PDO;
 use RuntimeException;
 
@@ -168,14 +169,19 @@ class SystemSetting extends Model
 
 		if ($type === 'integer')
 			{
-			$value = (int) $rawValue;
-			if (isset($rules['min']))
+			// Validate the submitted number without silently changing the tenant override.
+			$value = is_scalar($rawValue) ? filter_var($rawValue, FILTER_VALIDATE_INT) : false;
+			if ($value === false)
 				{
-				$value = max((int) $rules['min'], $value);
+				throw new InvalidArgumentException(sprintf('O valor de "%s" deve ser um número inteiro.', $definition['key_name']));
 				}
-			if (isset($rules['max']))
+			if (isset($rules['min']) && $value < (int) $rules['min'])
 				{
-				$value = min((int) $rules['max'], $value);
+				throw new InvalidArgumentException(sprintf('O valor de "%s" deve ser maior ou igual a %d.', $definition['key_name'], (int) $rules['min']));
+				}
+			if (isset($rules['max']) && $value > (int) $rules['max'])
+				{
+				throw new InvalidArgumentException(sprintf('O valor de "%s" deve ser menor ou igual a %d.', $definition['key_name'], (int) $rules['max']));
 				}
 			return (string) $value;
 			}

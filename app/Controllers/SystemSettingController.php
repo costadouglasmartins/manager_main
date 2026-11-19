@@ -56,6 +56,10 @@ class SystemSettingController extends Controller
 			(new SystemSetting())->saveTenantValues($tenantId, $values);
 			setFlashMessage('success', 'Settings saved.');
 			}
+		catch (\InvalidArgumentException $e)
+			{
+			setFlashMessage('danger', $e->getMessage());
+			}
 		catch (\Throwable $e)
 			{
 			error_log('SystemSettingController::update error: ' . $e->getMessage());

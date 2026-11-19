@@ -79,7 +79,15 @@ $settingValue = static function (array $definition, array $values): string {
                 <tr>
                   <td><label class="fw-semibold" for="<?= $e($inputId); ?>"><?= $e($definition['label'] ?? $definition['key_name'] ?? 'Setting'); ?></label><?php if (!empty($definition['description'])): ?><div class="small text-body-secondary"><?= $e($definition['description']); ?></div><?php endif; ?><div class="small text-muted font-monospace"><?= $e($definition['key_name'] ?? ''); ?></div></td>
                   <td><span class="badge text-bg-light border text-body"><?= $e($definition['default_value'] ?? ''); ?></span></td>
-                  <td><?php if ($type === 'integer'): ?><input class="form-control" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]" type="number" min="<?= isset($rules['min']) ? (int) $rules['min'] : 0; ?>" value="<?= $e($value); ?>"><?php elseif ($type === 'boolean'): ?><select class="form-select" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]"><option value="0" <?= $value === '0' ? 'selected' : ''; ?>>Disabled</option><option value="1" <?= $value === '1' ? 'selected' : ''; ?>>Enabled</option></select><?php else: ?><input class="form-control" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]" type="text" value="<?= $e($value); ?>"><?php endif; ?></td>
+                  <td>
+                    <?php if ($type === 'integer'): ?>
+                      <input class="form-control" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]" type="number" step="1" <?php if (isset($rules['min'])): ?>min="<?= (int) $rules['min']; ?>" <?php endif; ?><?php if (isset($rules['max'])): ?>max="<?= (int) $rules['max']; ?>" <?php endif; ?>value="<?= $e($value); ?>">
+                    <?php elseif ($type === 'boolean'): ?>
+                      <select class="form-select" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]"><option value="0" <?= $value === '0' ? 'selected' : ''; ?>>Disabled</option><option value="1" <?= $value === '1' ? 'selected' : ''; ?>>Enabled</option></select>
+                    <?php else: ?>
+                      <input class="form-control" id="<?= $e($inputId); ?>" name="settings[<?= $definitionId; ?>]" type="text" value="<?= $e($value); ?>">
+                    <?php endif; ?>
+                  </td>
                 </tr>
               <?php endforeach; ?>
             </tbody>

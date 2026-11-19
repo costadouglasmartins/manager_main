@@ -33,6 +33,18 @@ No bloco `docker`, o banco usa o host `mariadb`, o usuário `manager_app` e as c
 
 Defina as variáveis no ambiente do PHP-FPM e dos processos CLI; este arquivo não carrega `.env` automaticamente. Se preferir editar os padrões no próprio `Config.php`, mantenha os dois arquivos sincronizados. O deploy atual preserva os `Config.php` da VPS, portanto esta atualização precisa ser copiada para eles separadamente.
 
+## Valores de configuração por tenant
+
+`max_online_users` mantém o padrão `1` e a regra `{"min":1}`, permitindo limites maiores por tenant. Em bases centrais existentes, aplique `public/database/migrations/manager_main_max_online_users_validation.sql` na base `manager_main`. A migração remove somente o antigo teto `1`, preservando outras regras e limites superiores personalizados. Ela não altera os valores já salvos dos tenants e pode ser reaplicada.
+
+Números fora dos limites configurados são rejeitados com uma mensagem de validação; o salvamento não os reduz silenciosamente. O formulário aplica os mesmos limites `min` e `max` do cadastro.
+
+Para testar gravação, atualização, isolamento entre tenants e rollback com tabelas temporárias no MariaDB local:
+
+```sh
+docker exec manager-local-php-1 php /var/www/html/manager_main/tests/system_setting_values_test.php
+```
+
 ## Recuperação do processo de chat
 
 O WebSocket mantém uma conexão PDO durante toda a execução. Quando o MySQL/MariaDB
