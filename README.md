@@ -35,7 +35,9 @@ Defina as variáveis no ambiente do PHP-FPM e dos processos CLI; este arquivo n�
 
 ## Valores de configuração por tenant
 
-`max_online_users` mantém o padrão `1` e a regra `{"min":1}`, permitindo limites maiores por tenant. Em bases centrais existentes, aplique `public/database/migrations/manager_main_max_online_users_validation.sql` na base `manager_main`. A migração remove somente o antigo teto `1`, preservando outras regras e limites superiores personalizados. Ela não altera os valores já salvos dos tenants e pode ser reaplicada.
+`max_online_users` mantém o padrão `1` e a regra `{"min":1}`, permitindo limites maiores por tenant. O model trata a antiga regra `{"min":1,"max":1}` como `{"min":1}` tanto no formulário quanto no salvamento, sem alterar o catálogo. Outras regras e limites superiores personalizados são preservados. Assim, a atualização do código também corrige bases existentes que ainda não receberam a migração.
+
+Para remover permanentemente o antigo teto do catálogo, aplique `public/database/migrations/manager_main_max_online_users_validation.sql` na base central `manager_main`. A migração preserva outras regras e limites superiores personalizados, não altera os valores já salvos dos tenants e pode ser reaplicada. O deploy não publica nem executa essa migração automaticamente.
 
 Números fora dos limites configurados são rejeitados com uma mensagem de validação; o salvamento não os reduz silenciosamente. O formulário aplica os mesmos limites `min` e `max` do cadastro.
 

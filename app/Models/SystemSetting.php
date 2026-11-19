@@ -57,7 +57,7 @@ class SystemSetting extends Model
 				'description' => (string) ($row['description'] ?? ''),
 				'value_type' => (string) $row['value_type'],
 				'default_value' => (string) ($row['default_value'] ?? ''),
-				'validation_rules' => $this->decodeRules($row['validation_rules'] ?? null),
+				'validation_rules' => $this->definitionRules($row),
 			];
 			}
 
@@ -149,7 +149,7 @@ class SystemSetting extends Model
 		$definitions = [];
 		foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
 			{
-			$row['validation_rules'] = $this->decodeRules($row['validation_rules'] ?? null);
+			$row['validation_rules'] = $this->definitionRules($row);
 			$definitions[(int) $row['id']] = $row;
 			}
 
@@ -205,19 +205,36 @@ class SystemSetting extends Model
 		}
 
 	/**
-	 * Decodes validation rules.
-	 * @param mixed $rules Encoded rule payload.
-	 * @return array<string, mixed> Decoded rules.
+	 * Returns effective rules for current and legacy setting definitions.
+	 * @param array<string, mixed> $definition Setting definition with encoded rules.
+	 * @return array<string, mixed> Effective validation rules.
 	 **/
-	private function decodeRules($rules): array
+	private function definitionRules(array $definition): array
 		{
+		/** Read the stored rules without changing the catalog metadata. **/
+		$rules = $definition['validation_rules'] ?? null;
 		if (!is_string($rules) || trim($rules) === '')
 			{
 			return [];
 			}
 
+		/** Decode validation bounds shared by the form and save operation. **/
 		$decoded = json_decode($rules, true);
-		return is_array($decoded) ? $decoded : [];
+		if (!is_array($decoded))
+			{
+			return [];
+			}
+
+		if (($definition['key_name'] ?? null) === 'max_online_users'
+			&& ($definition['value_type'] ?? null) === 'integer'
+			&& in_array($decoded['min'] ?? null, [1, '1'], true)
+			&& in_array($decoded['max'] ?? null, [1, '1'], true))
+			{
+			/** Ignore only the legacy cap that prevented tenant-specific user limits. **/
+			unset($decoded['max']);
+			}
+
+		return $decoded;
 		}
 	}
 ?>

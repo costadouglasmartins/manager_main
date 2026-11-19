@@ -4,11 +4,15 @@ $selectedTenantId = (int) ($tenantId ?? 0);
 $tenantLabel = static function (array $tenant): string {
 	$name = trim((string) ($tenant['associated_person_name'] ?? ''));
 	$database = trim((string) ($tenant['database_number'] ?? ''));
+	/** Display the representative user's type when a user is linked to the tenant. **/
+	$userType = trim((string) ($tenant['associated_user_type'] ?? ''));
 	if ($name === '')
 		{
 		$name = 'Tenant #' . (int) ($tenant['id'] ?? 0);
 		}
-	return $database !== '' ? $name . ' - ' . $database : $name;
+	/** Preserve the tenant name and database number before appending the user type. **/
+	$label = $database !== '' ? $name . ' - ' . $database : $name;
+	return $userType !== '' ? $label . ' - ' . $userType : $label;
 };
 $settingValue = static function (array $definition, array $values): string {
 	$definitionId = (int) ($definition['id'] ?? 0);

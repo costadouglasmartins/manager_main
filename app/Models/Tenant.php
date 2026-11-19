@@ -71,12 +71,15 @@ class Tenant extends Model
 		$personName = $this->associatedPersonSql('PersonAssoc.name');
 		$personFantasy = $this->associatedPersonSql('PersonAssoc.fantasy');
 		$personDocument = $this->associatedPersonSql('PersonAssoc.document');
+		/** Read the type of the same representative user used for the person details. **/
+		$userType = $this->associatedPersonSql('UserAssoc.type');
 
 		return "Tenant.id,
 		        {$personId} AS associated_person_id,
 		        {$personName} AS associated_person_name,
 		        {$personFantasy} AS associated_person_fantasy,
 		        {$personDocument} AS associated_person_document,
+		        {$userType} AS associated_user_type,
 		        Tenant.database_number,
 		        Tenant.status,
 		        Tenant.observations,
