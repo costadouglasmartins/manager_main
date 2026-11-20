@@ -47,6 +47,7 @@ $currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
   <link rel="stylesheet" href="<?= url('assets/css/menu.css?v=6'); ?>">
   <?php if ($supportChatNotificationsEnabled): ?>
     <link rel="stylesheet" href="<?= url('assets/css/support_chats/notifications.css?v=1'); ?>">
+    <link rel="stylesheet" href="/manager_assets/voice_call/voice_call.css?v=1">
   <?php endif; ?>
   <link rel="apple-touch-icon" sizes="180x180" href="/manager_assets/bootstrap/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/manager_assets/bootstrap/images/favicon-32x32.png">
@@ -437,6 +438,8 @@ $currentPresenceStatus = (string) ($userPresence['status'] ?? 'offline');
   <?php endif; ?>
   <?php if ($supportChatNotificationsEnabled): ?>
     <script src="<?= url('assets/js/support_chats/notifications.js?v=3'); ?>"></script>
+    <div id="voiceCallConfig" hidden data-ws-auth-url="<?= url('voice_call/wsAuth'); ?>" data-ice-url="<?= url('voice_call/iceServers'); ?>" data-slot="#voiceCallSlot"></div>
+    <script src="/manager_assets/voice_call/voice_call.js?v=1"></script>
   <?php endif; ?>
 </body>
 </html>

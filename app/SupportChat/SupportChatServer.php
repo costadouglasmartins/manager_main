@@ -5,6 +5,8 @@ namespace App\SupportChat;
 use App\Services\SupportChatTypingService;
 use PDO;
 
+require_once __DIR__ . '/VoiceCallRelay.php';
+
 class SupportChatServer
 	{
 	private string $host;
@@ -19,6 +21,7 @@ class SupportChatServer
 	private int $lastPingAt = 0;
 	/** @var resource|null */
 	private $stdout = null;
+	private ?VoiceCallRelay $voiceRelay = null;
 
 	public function __construct(string $host, int $port, string $secret, PDO $db)
 		{
@@ -112,6 +115,7 @@ class SupportChatServer
 
 			$this->sendHeartbeat();
 			$this->cleanupIdleClients();
+			$this->expireVoiceCalls();
 			}
 		}
 
@@ -249,7 +253,15 @@ class SupportChatServer
 			return;
 			}
 
-		if ((string) (($this->clients[$clientId]['claims'] ?? [])['role'] ?? '') === 'internal')
+		$role = (string) (($this->clients[$clientId]['claims'] ?? [])['role'] ?? '');
+
+		if ($role === 'voice')
+			{
+			$this->handleVoiceMessage($clientId, $type, $message);
+			return;
+			}
+
+		if ($role === 'internal')
 			{
 			$this->sendError($clientId, 'Unsupported message type.');
 			return;
@@ -323,6 +335,15 @@ class SupportChatServer
 			'role' => $role,
 			'user_id' => $userId,
 		]);
+
+		try
+			{
+			$this->announcePendingVoiceCalls($clientId);
+			}
+		catch (\Throwable $exception)
+			{
+			$this->handleOperationFailure($clientId, $exception);
+			}
 		}
 
 	/**
@@ -563,6 +584,152 @@ class SupportChatServer
 		}
 
 	/**
+	 * Dispatches one voice call message from an authenticated voice socket.
+	 *
+	 * @param array<string, mixed> $message
+	 */
+	private function handleVoiceMessage(int $clientId, string $type, array $message): void
+		{
+		$claims = (array) ($this->clients[$clientId]['claims'] ?? []);
+
+		try
+			{
+			$deliveries = $this->voiceRelay()->handle($clientId, $claims, $type, $message, $this->voiceClients());
+			}
+		catch (\Throwable $exception)
+			{
+			$this->handleOperationFailure($clientId, $exception);
+			return;
+			}
+
+		$this->deliverVoice($deliveries);
+		}
+
+	/**
+	 * Sends ringing calls to a voice socket that connected while they were pending.
+	 */
+	private function announcePendingVoiceCalls(int $clientId): void
+		{
+		$claims = (array) ($this->clients[$clientId]['claims'] ?? []);
+		if ((string) ($claims['role'] ?? '') !== 'voice')
+			{
+			return;
+			}
+
+		$this->deliverVoice($this->voiceRelay()->pendingRingsFor($clientId, $claims));
+		}
+
+	/**
+	 * Ends calls that lost a participant socket.
+	 */
+	private function releaseVoiceClient(int $clientId): void
+		{
+		if ($this->voiceRelay === null || (string) (($this->clients[$clientId]['claims'] ?? [])['role'] ?? '') !== 'voice')
+			{
+			return;
+			}
+
+		$voiceClients = $this->voiceClients();
+		unset($voiceClients[$clientId]);
+
+		try
+			{
+			$deliveries = $this->voiceRelay->clientDisconnected($clientId, $voiceClients);
+			}
+		catch (\Throwable $exception)
+			{
+			$this->writeLog(sprintf("[%s] Voice call release failure for client %d: %s\n", date('Y-m-d H:i:s'), $clientId, $exception->getMessage()));
+			$this->rethrowDatabaseDisconnect($exception);
+			return;
+			}
+
+		$this->deliverVoice($deliveries, $clientId);
+		}
+
+	/**
+	 * Ends calls that rang without an answer.
+	 */
+	private function expireVoiceCalls(): void
+		{
+		if ($this->voiceRelay === null)
+			{
+			return;
+			}
+
+		try
+			{
+			$deliveries = $this->voiceRelay->expire(time(), $this->voiceClients());
+			}
+		catch (\Throwable $exception)
+			{
+			$this->writeLog(sprintf("[%s] Voice call expiry failure: %s\n", date('Y-m-d H:i:s'), $exception->getMessage()));
+			$this->rethrowDatabaseDisconnect($exception);
+			return;
+			}
+
+		$this->deliverVoice($deliveries);
+		}
+
+	/**
+	 * Returns the claims of every authenticated voice socket.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function voiceClients(): array
+		{
+		$voiceClients = [];
+		foreach ($this->clients as $clientId => $client)
+			{
+			if (!empty($client['authenticated']) && (string) (($client['claims'] ?? [])['role'] ?? '') === 'voice')
+				{
+				$voiceClients[$clientId] = (array) $client['claims'];
+				}
+			}
+
+		return $voiceClients;
+		}
+
+	/**
+	 * Writes relay deliveries to their sockets.
+	 *
+	 * @param array<int, array{client: int, payload: array<string, mixed>}> $deliveries
+	 */
+	private function deliverVoice(array $deliveries, ?int $skipClientId = null): void
+		{
+		foreach ($deliveries as $delivery)
+			{
+			$targetClientId = (int) $delivery['client'];
+			if ($targetClientId === $skipClientId || !isset($this->clients[$targetClientId]))
+				{
+				continue;
+				}
+
+			$this->sendJson($targetClientId, $delivery['payload']);
+			}
+
+		$storeError = $this->voiceRelay !== null ? $this->voiceRelay->takeStoreError() : null;
+		if ($storeError !== null)
+			{
+			// The call goes on; only its log row failed. A dead connection still restarts the process.
+			$this->writeLog(sprintf("[%s] Voice call log failure: %s\n", date('Y-m-d H:i:s'), $storeError->getMessage()));
+			$this->rethrowDatabaseDisconnect($storeError);
+			}
+		}
+
+	/**
+	 * Returns the voice call relay bound to the central database.
+	 */
+	private function voiceRelay(): VoiceCallRelay
+		{
+		if ($this->voiceRelay === null)
+			{
+			$this->voiceRelay = new VoiceCallRelay($this->repository());
+			}
+
+		return $this->voiceRelay;
+		}
+
+	/**
 	 * Revalidates the persisted account and tenant association behind a client.
 	 */
 	private function clientStillAuthorized(int $clientId): bool
@@ -609,7 +776,21 @@ class SupportChatServer
 			return $userId > 0 && $this->repository()->isRootUser($userId);
 			}
 
-		if ($role !== 'customer' && $role !== 'internal')
+		if ($role === 'voice')
+			{
+			$system = (string) ($claims['system'] ?? '');
+			if ($system === 'manager_main')
+				{
+				return $userId > 0 && $this->repository()->isRootUser($userId);
+				}
+
+			if ($system !== 'manager')
+				{
+				return false;
+				}
+			}
+
+		if ($role !== 'customer' && $role !== 'internal' && $role !== 'voice')
 			{
 			return false;
 			}
@@ -1151,6 +1332,8 @@ class SupportChatServer
 			{
 			return;
 			}
+
+		$this->releaseVoiceClient($clientId);
 
 		@fclose($this->clients[$clientId]['socket']);
 		unset($this->clients[$clientId]);

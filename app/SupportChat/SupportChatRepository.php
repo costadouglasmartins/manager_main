@@ -4,7 +4,9 @@ namespace App\SupportChat;
 
 use PDO;
 
-class SupportChatRepository
+require_once __DIR__ . '/VoiceCallStore.php';
+
+class SupportChatRepository implements VoiceCallStore
 	{
 	private const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
@@ -666,6 +668,148 @@ class SupportChatRepository
 		$stmt->execute([
 			'modified' => $this->now(),
 			'chat_id' => $chatId,
+		]);
+		}
+
+	/**
+	 * Returns whether an active user belongs to an active tenant, using the
+	 * same membership rules as the internal chat team list.
+	 */
+	public function userBelongsToTenant(int $userId, int $tenantId): bool
+		{
+		if ($userId <= 0 || $tenantId <= 0)
+			{
+			return false;
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT 1
+			FROM users AS User
+			INNER JOIN tenants AS Tenant
+			        ON Tenant.id = :tenant_id
+			       AND Tenant.status = 'active'
+			WHERE User.id = :user_id
+			  AND User.active = 1
+			  AND (
+			    User.tenant_id = Tenant.id
+			    OR EXISTS (
+			      SELECT 1
+			      FROM tenant_users AS TenantUser
+			      WHERE TenantUser.tenant_id = Tenant.id
+			        AND TenantUser.user_id = User.id
+			    )
+			  )
+			LIMIT 1
+		");
+		$stmt->execute([
+			'user_id' => $userId,
+			'tenant_id' => $tenantId,
+		]);
+
+		return (bool) $stmt->fetchColumn();
+		}
+
+	/**
+	 * Returns whether voice calls are enabled for a tenant. A missing setting
+	 * definition (migration not applied) keeps the feature off.
+	 */
+	public function voiceCallsEnabled(int $tenantId): bool
+		{
+		if ($tenantId <= 0)
+			{
+			return false;
+			}
+
+		$stmt = $this->db->prepare("
+			SELECT COALESCE(TenantSettingValue.value, SystemSettingDefinition.default_value) AS resolved_value
+			FROM system_setting_definitions AS SystemSettingDefinition
+			LEFT JOIN tenant_setting_values AS TenantSettingValue
+			       ON TenantSettingValue.setting_definition_id = SystemSettingDefinition.id
+			      AND TenantSettingValue.tenant_id = :tenant_id
+			WHERE SystemSettingDefinition.key_name = 'voice_calls_enabled'
+			  AND SystemSettingDefinition.active = 1
+			LIMIT 1
+		");
+		$stmt->execute(['tenant_id' => $tenantId]);
+		$value = $stmt->fetchColumn();
+
+		return $value !== false && (string) $value === '1';
+		}
+
+	/**
+	 * Returns the display name of an active user.
+	 */
+	public function userDisplayName(int $userId): string
+		{
+		$stmt = $this->db->prepare("
+			SELECT COALESCE(NULLIF(Person.name, ''), User.username) AS display_name
+			FROM users AS User
+			LEFT JOIN people AS Person ON Person.id = User.person_id
+			WHERE User.id = :user_id
+			LIMIT 1
+		");
+		$stmt->execute(['user_id' => $userId]);
+		$name = $stmt->fetchColumn();
+
+		return $name === false ? ('Usuário #' . $userId) : (string) $name;
+		}
+
+	/**
+	 * Records a new voice call attempt.
+	 *
+	 * @param array<string, mixed> $call
+	 */
+	public function createVoiceCallLog(array $call): void
+		{
+		$stmt = $this->db->prepare("
+			INSERT INTO voice_calls
+				(call_uid, kind, tenant_id, support_chat_id, caller_user_id, caller_system, callee_user_id, callee_system, status, started_at, created, modified)
+			VALUES
+				(:call_uid, :kind, :tenant_id, :support_chat_id, :caller_user_id, :caller_system, :callee_user_id, :callee_system, :status, :started_at, :created, :modified)
+		");
+		$now = $this->now();
+		$stmt->execute([
+			'call_uid' => (string) $call['id'],
+			'kind' => (string) $call['kind'],
+			'tenant_id' => (int) ($call['tenant_id'] ?? 0) > 0 ? (int) $call['tenant_id'] : null,
+			'support_chat_id' => (int) ($call['chat_id'] ?? 0) > 0 ? (int) $call['chat_id'] : null,
+			'caller_user_id' => (int) $call['caller']['user_id'],
+			'caller_system' => (string) $call['caller']['system'],
+			'callee_user_id' => (int) $call['callee']['user_id'],
+			'callee_system' => (string) $call['callee']['system'],
+			'status' => (string) $call['status'],
+			'started_at' => $now,
+			'created' => $now,
+			'modified' => $now,
+		]);
+		}
+
+	/**
+	 * Updates a voice call record after a state change.
+	 */
+	public function updateVoiceCallLog(string $callUid, string $status, ?string $endReason, bool $answered, bool $ended, int $durationSeconds): void
+		{
+		$now = $this->now();
+		$stmt = $this->db->prepare("
+			UPDATE voice_calls
+			SET status = :status,
+			    end_reason = COALESCE(:end_reason, end_reason),
+			    answered_at = CASE WHEN :answered = 1 AND answered_at IS NULL THEN :answered_at ELSE answered_at END,
+			    ended_at = CASE WHEN :ended = 1 THEN :ended_at ELSE ended_at END,
+			    duration_seconds = :duration_seconds,
+			    modified = :modified
+			WHERE call_uid = :call_uid
+		");
+		$stmt->execute([
+			'status' => $status,
+			'end_reason' => $endReason,
+			'answered' => $answered ? 1 : 0,
+			'answered_at' => $now,
+			'ended' => $ended ? 1 : 0,
+			'ended_at' => $now,
+			'duration_seconds' => max(0, $durationSeconds),
+			'modified' => $now,
+			'call_uid' => $callUid,
 		]);
 		}
 

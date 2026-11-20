@@ -2,3 +2,4 @@
 .mcp
 /vendor/
 .DS_Store
+/tests/
