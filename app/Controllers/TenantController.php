@@ -381,6 +381,10 @@ class TenantController extends Controller
 		catch (\RuntimeException $e)
 			{
 			$status = $e->getMessage() === 'Tenant não encontrado.' ? 404 : 500;
+			if ($status === 500)
+				{
+				error_log('TenantController::deletionImpact error for tenant ' . $tenantId . ': ' . $e->getMessage());
+				}
 			$this->json([
 				'error' => $status === 404 ? 'tenant_not_found' : 'impact_unavailable',
 				'message' => $status === 404 ? 'Tenant não encontrado.' : 'Não foi possível consultar os registros associados ao tenant.',

@@ -2,4 +2,6 @@
 .mcp
 /vendor/
 .DS_Store
-/tests/
+/tests/*
+!/tests/tenant_voice_call_deletion_test.php
+!/tests/user_voice_call_deletion_test.php

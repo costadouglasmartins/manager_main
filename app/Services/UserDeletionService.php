@@ -95,6 +95,7 @@ class UserDeletionService
 				}
 
 			$central = $plan['central'];
+			$this->deleteIds('manager_main', 'voice_calls', $central['voice_call_ids']);
 			$this->deleteIds('manager_main', 'tenant_people', $central['tenant_person_ids']);
 
 			$this->deleteIds('manager_main', 'internal_chat_messages', $central['internal_message_ids']);
@@ -328,6 +329,21 @@ class UserDeletionService
 			{
 			$supportRecords[] = $this->record('support_chats', $row['id'], 'Atendimento #' . $row['id'] . ' — tenant #' . $row['tenant_id'] . ' | status: ' . $row['status']);
 			}
+		// Calls are removed before their user and support-chat parents, including legacy schemas without cascades.
+		$voiceCalls = $this->voiceCallRows($userId, $supportChatIds);
+		// Each call shown here is deleted using the same planned identifier.
+		$voiceRecords = [];
+		foreach ($voiceCalls as $row)
+			{
+			$voiceRecords[] = $this->record(
+				'voice_calls',
+				$row['id'],
+				'Chamada de voz #' . $row['id'] . ' — ' . $row['kind']
+					. ' | usuário #' . $row['caller_user_id'] . ' → usuário #' . $row['callee_user_id']
+					. ' | status: ' . $row['status'] . ' | início: ' . $row['started_at']
+			);
+			}
+		$this->appendModule($modules, 'manager_main', 'Chamadas de voz', $voiceRecords);
 		$this->appendModule($modules, 'manager_main', 'Atendimento de suporte', $supportRecords);
 
 		$operations = $this->queryRows('SELECT * FROM financial_operations WHERE user_id = ? ORDER BY id', [$userId]);
@@ -437,6 +453,7 @@ class UserDeletionService
 
 		return [
 			'modules' => $modules,
+			'voice_call_ids' => $this->ids($voiceCalls),
 			'internal_chat_ids' => $internalChatIds,
 			'internal_message_ids' => $deletedInternalMessageIds,
 			'preserved_internal_chat_ids' => $preservedInternalChatIds,
@@ -454,6 +471,56 @@ class UserDeletionService
 			'phone_number_ids' => $this->ids($phoneNumbers),
 			'tenant_person_ids' => $this->ids($tenantPeople),
 		];
+		}
+
+	/**
+	 * List calls involving the removed user or a support chat selected for removal.
+	 * @param int $userId User selected for deletion.
+	 * @param array<int, int> $supportChatIds Support chats selected for deletion.
+	 * @return array<int, array<string, mixed>>
+	 **/
+	private function voiceCallRows(int $userId, array $supportChatIds): array
+		{
+		// Older installations may not have applied the optional voice-call migration.
+		$tableStmt = $this->db->prepare("SELECT 1
+		                                   FROM information_schema.TABLES
+		                                   WHERE TABLE_SCHEMA = DATABASE()
+		                                     AND TABLE_NAME = :table
+		                                     AND TABLE_TYPE = 'BASE TABLE'");
+		$tableStmt->execute(['table' => 'voice_calls']);
+		if ($tableStmt->fetchColumn() === false)
+			{
+			return [];
+			}
+
+		// Distinct placeholders keep native prepared statements compatible with PDO MySQL.
+		$params = ['caller_user_id' => $userId, 'callee_user_id' => $userId];
+		// Support-chat links must be removed explicitly instead of relying on ON DELETE SET NULL.
+		$supportPlaceholders = [];
+		foreach ($supportChatIds as $index => $supportChatId)
+			{
+			// Every planned support chat receives its own bound parameter.
+			$parameter = 'support_chat_' . $index;
+			$supportPlaceholders[] = ':' . $parameter;
+			$params[$parameter] = $supportChatId;
+			}
+
+		// A single ordered query avoids duplicate rows when both participants match.
+		$sql = "SELECT VoiceCall.id,
+		               VoiceCall.kind,
+		               VoiceCall.caller_user_id,
+		               VoiceCall.callee_user_id,
+		               VoiceCall.status,
+		               VoiceCall.started_at
+		        FROM voice_calls AS VoiceCall
+		        WHERE VoiceCall.caller_user_id = :caller_user_id
+		           OR VoiceCall.callee_user_id = :callee_user_id";
+		if ($supportPlaceholders !== [])
+			{
+			$sql .= ' OR VoiceCall.support_chat_id IN (' . implode(', ', $supportPlaceholders) . ')';
+			}
+		$sql .= ' ORDER BY VoiceCall.id';
+		return $this->queryRows($sql, $params);
 		}
 
 	/** @return array<string, mixed> */
