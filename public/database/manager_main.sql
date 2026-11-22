@@ -25936,8 +25936,7 @@ CREATE TABLE IF NOT EXISTS `system_setting_definitions` (
 
 -- Dumping data for table manager_main.system_setting_definitions: ~0 rows (approximately)
 INSERT INTO `system_setting_definitions` (`id`, `module_id`, `key_name`, `label`, `description`, `value_type`, `default_value`, `validation_rules`, `active`, `sort_order`, `created`, `modified`) VALUES
-	(1, 1, 'max_online_users', '1', 'Maximum number of users allowed online at the same time.', 'integer', '1', '{"min": 1}', 1, 0, '2026-07-23 00:28:30', '2026-07-23 00:28:30'),
-	(2, 2, 'voice_calls_enabled', 'Chamadas de voz', 'Allows voice calls between tenant users and with support.', 'boolean', '1', NULL, 1, 0, '2026-11-19 21:00:00', '2026-11-19 21:00:00');
+	(1, 1, 'max_online_users', '1', 'Maximum number of users allowed online at the same time.', 'integer', '1', '{"min": 1}', 1, 0, '2026-07-23 00:28:30', '2026-07-23 00:28:30');
 
 -- Dumping structure for table manager_main.system_setting_modules
 CREATE TABLE IF NOT EXISTS `system_setting_modules` (
@@ -25955,8 +25954,7 @@ CREATE TABLE IF NOT EXISTS `system_setting_modules` (
 
 -- Dumping data for table manager_main.system_setting_modules: ~0 rows (approximately)
 INSERT INTO `system_setting_modules` (`id`, `slug`, `name`, `description`, `active`, `sort_order`, `created`, `modified`) VALUES
-	(1, 'presence', 'Presence', 'User presence and oline limits.', 1, 0, '2026-07-23 00:25:40', '2026-07-23 00:25:40'),
-	(2, 'communication', 'Communication', 'Chat and voice call features.', 1, 1, '2026-11-19 21:00:00', '2026-11-19 21:00:00');
+	(1, 'presence', 'Presence', 'User presence and oline limits.', 1, 0, '2026-07-23 00:25:40', '2026-07-23 00:25:40');
 
 -- Dumping structure for table manager_main.tenants
 CREATE TABLE IF NOT EXISTS `tenants` (
@@ -27435,39 +27433,6 @@ INSERT INTO `user_remember_tokens` (`id`, `user_id`, `selector`, `token_hash`, `
 	(21, 1, '806a4e2a82b75595f9affd0cbea2e800', '2f9a86c526927a2996b75f0712ce0edd4fadb509e68d4bfc6298efc5092fd738', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', '200.161.157.201', '2026-11-20 20:09:39', '2026-10-21 20:09:39', NULL),
 	(22, 1, '2e144c64efb8261bb4f09c0dd0e042aa', 'd7592269fc7c2131a544757fa8559c2ba793dedafdabbd5af5d924796d46795d', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', '200.161.157.201', '2026-11-27 17:13:00', '2026-10-21 20:09:40', '2026-10-28 17:13:00'),
 	(23, 1, '8781956ceea865b5b1fc486052a2ec9e', '0fc11dfac48f4919f1876dfc2d49a9222938471902665eb3bf07b69c2ecddc65', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Mobile/15E148 Safari/604.1', '200.161.157.201', '2026-11-26 22:43:51', '2026-10-27 22:36:34', '2026-10-27 22:43:51');
-
--- Dumping structure for table manager_main.voice_calls
-CREATE TABLE IF NOT EXISTS `voice_calls` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `call_uid` char(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  `kind` enum('internal','support') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tenant_id` int(11) DEFAULT NULL,
-  `support_chat_id` int(11) DEFAULT NULL,
-  `caller_user_id` int(11) NOT NULL,
-  `caller_system` enum('manager','manager_main') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `callee_user_id` int(11) NOT NULL,
-  `callee_system` enum('manager','manager_main') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` enum('ringing','active','completed','rejected','missed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ringing',
-  `end_reason` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `started_at` datetime NOT NULL,
-  `answered_at` datetime DEFAULT NULL,
-  `ended_at` datetime DEFAULT NULL,
-  `duration_seconds` int(11) NOT NULL DEFAULT 0,
-  `created` datetime NOT NULL DEFAULT current_timestamp(),
-  `modified` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_voice_calls_call_uid` (`call_uid`),
-  KEY `idx_voice_calls_tenant_started` (`tenant_id`,`started_at`),
-  KEY `idx_voice_calls_caller_started` (`caller_user_id`,`started_at`),
-  KEY `idx_voice_calls_callee_started` (`callee_user_id`,`started_at`),
-  KEY `idx_voice_calls_support_chat` (`support_chat_id`),
-  CONSTRAINT `fk_voice_calls_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_voice_calls_support_chat` FOREIGN KEY (`support_chat_id`) REFERENCES `support_chats` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_voice_calls_caller_user` FOREIGN KEY (`caller_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_voice_calls_callee_user` FOREIGN KEY (`callee_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for table manager_main.voice_calls: ~0 rows (approximately)
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

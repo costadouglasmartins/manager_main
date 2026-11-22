@@ -53,10 +53,6 @@
             <option value="">Selecionar atendente</option>
           </select>
           <button class="btn btn-outline-secondary btn-sm" id="supportAdminAssignButton" type="button" disabled>Atribuir</button>
-          <button class="btn btn-outline-success btn-sm voice-call-start" id="supportAdminCallButton" type="button" hidden>
-            <i class="bi bi-telephone-fill" aria-hidden="true"></i>
-            Ligar
-          </button>
           <button class="btn btn-success btn-sm" id="supportAdminReopenButton" type="button" hidden>
             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
             Reabrir
@@ -64,9 +60,6 @@
           <button class="btn btn-danger btn-sm" id="supportAdminCloseButton" type="button" disabled>Finalizar</button>
         </div>
       </header>
-
-      <!-- Voice call card: ringing, answer/decline, mute and hang up. -->
-      <div class="voice-call-slot" id="voiceCallSlot" aria-live="polite"></div>
 
       <div id="supportAdminMessages" class="support-admin-messages">
         <div class="support-admin-empty">
@@ -113,4 +106,4 @@
 </div>
 
 <script src="/manager_assets/autocomplete/autocomplete.js?v=4"></script>
-<script src="<?= url('assets/js/support_chats/attend.js?v=7'); ?>"></script>
+<script src="<?= url('assets/js/support_chats/attend.js?v=6'); ?>"></script>

@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     input: document.getElementById("supportAdminMessageInput"),
     sendButton: document.getElementById("supportAdminSendButton"),
     closeButton: document.getElementById("supportAdminCloseButton"),
-    callButton: document.getElementById("supportAdminCallButton"),
     reopenButton: document.getElementById("supportAdminReopenButton"),
     assignButton: document.getElementById("supportAdminAssignButton"),
     attendantSelect: document.getElementById("supportAdminAttendantSelect"),
@@ -145,29 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.assignButton.disabled = !hasChat || isClosed || !state.socketAuthenticated;
     elements.attendantSelect.disabled = !hasChat || isClosed;
     setComposerState(hasChat && !isClosed && state.socketAuthenticated);
-    renderCallButton();
-  }
-
-  // Voice call button: only the attendant of an open chat calls the customer.
-  function renderCallButton() {
-    if (!elements.callButton) {
-      return;
-    }
-
-    const chat = state.currentChat && state.currentChat.chat;
-    const currentUserId = Number((state.bootstrap && state.bootstrap.currentUser && state.bootstrap.currentUser.id) || 0);
-    const canCall = Boolean(chat) && chat.status !== "closed"
-      && currentUserId > 0 && Number(chat.attendant_user_id || 0) === currentUserId
-      && Boolean(window.VoiceCall && window.VoiceCall.enabled);
-
-    elements.callButton.hidden = !canCall;
-    elements.callButton.disabled = canCall && window.VoiceCall.isBusy();
-    if (canCall) {
-      const name = chat.customer_name || chat.customer_username || ("Usuário #" + chat.customer_user_id);
-      elements.callButton.dataset.chatId = String(chat.id);
-      elements.callButton.dataset.peerName = name;
-      elements.callButton.title = `Ligar para ${name}`;
-    }
   }
 
   function fillAttendants() {
@@ -630,20 +606,6 @@ document.addEventListener("DOMContentLoaded", () => {
       attendant_user_id: attendantId,
     });
   });
-
-  if (elements.callButton) {
-    elements.callButton.addEventListener("click", () => {
-      if (!window.VoiceCall || !elements.callButton.dataset.chatId) {
-        return;
-      }
-      window.VoiceCall.start({
-        kind: "support",
-        chatId: Number(elements.callButton.dataset.chatId),
-        peerName: elements.callButton.dataset.peerName || "",
-      });
-    });
-    document.addEventListener("voicecall:change", renderCallButton);
-  }
 
   elements.closeButton.addEventListener("click", () => {
     if (!selectedChatIsOpen()) {

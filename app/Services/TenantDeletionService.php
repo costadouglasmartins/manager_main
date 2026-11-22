@@ -39,7 +39,6 @@ class TenantDeletionService
 		'tenant_users.tenant_id',
 		'user_presences.tenant_id',
 		'users.tenant_id',
-		'voice_calls.tenant_id',
 	];
 
 	/**
@@ -179,9 +178,6 @@ class TenantDeletionService
 			$beforeData = $tenantModel->findAllByTenantId($tenantId);
 			$deletableUserIds = $plan['deletable_user_ids'];
 
-			// Remove the exact call rows in the plan before chats can detach them or users can cascade them.
-			$this->deleteWhereIn('voice_calls', 'id', $plan['voice_call_ids']);
-
 			// Tenant-owned conversations and their cascading children.
 			$stmt = $this->db->prepare('DELETE FROM internal_chats WHERE tenant_id = :tenant_id');
 			$stmt->execute(['tenant_id' => $tenantId]);
@@ -222,7 +218,6 @@ class TenantDeletionService
 					'tenant_people', 'crm_activities', 'crm_opportunities',
 					'tenant_setting_values', 'user_presences', 'tenant_files',
 					'tenant_temporary_files', 'support_chat_typing',
-					'voice_calls',
 				],
 				'preserved_tables' => ['cities', 'neighborhoods', 'banks', 'states', 'countries'],
 				'source' => 'tenant_full_deletion',
@@ -398,8 +393,6 @@ class TenantDeletionService
 		$stmt->execute(['tenant_id' => $tenantId]);
 		$supportChatIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 		$supportChatTypingRecords = $this->supportChatTypingRecords($supportChatIds);
-		// Calls belong to the tenant directly or through one of its support chats.
-		$voiceCalls = $this->tenantVoiceCalls($tenantId);
 
 		// CRM links are central tenant associations and may point to people without user accounts.
 		$stmt = $this->db->prepare("SELECT TenantPerson.id,
@@ -471,8 +464,7 @@ class TenantDeletionService
 
 		$externalUserIds = array_values(array_unique(array_merge(
 			$this->externalReferenceIds('users', $exclusiveCandidateIds, $databaseName, $tenantPersonReferences),
-			$this->centralUserReferenceIds($exclusiveCandidateIds, $tenantId),
-			$this->voiceCallUserReferenceIds($exclusiveCandidateIds, $tenantId)
+			$this->centralUserReferenceIds($exclusiveCandidateIds, $tenantId)
 		)));
 		$deletableUserIds = array_values(array_diff($exclusiveCandidateIds, $externalUserIds));
 		$retainedExclusiveUserIds = array_values(array_intersect($exclusiveCandidateIds, $externalUserIds));
@@ -541,8 +533,6 @@ class TenantDeletionService
 			'tenant_temporary_files' => $tenantTemporaryFiles,
 			'support_chat_ids' => $supportChatIds,
 			'support_chat_typing_records' => $supportChatTypingRecords,
-			'voice_calls' => $voiceCalls,
-			'voice_call_ids' => array_map(static fn (array $call): int => (int) $call['id'], $voiceCalls),
 			'person_ids' => $personIds,
 			'associated_user_ids' => array_values(array_unique($associatedUserIds)),
 			'protected_user_ids' => $protectedUserIds,
@@ -571,71 +561,6 @@ class TenantDeletionService
 		}
 
 	/**
-	 * List calls owned directly by the tenant or by a support chat being removed.
-	 * @param int $tenantId Tenant being deleted.
-	 * @return array<int, array<string, mixed>> Calls included in the deletion plan.
-	 **/
-	private function tenantVoiceCalls(int $tenantId): array
-		{
-		if (!$this->tableExists('voice_calls'))
-			{
-			return [];
-			}
-
-		// Include indirect support ownership even when legacy call tenant IDs are missing.
-		$stmt = $this->db->prepare("SELECT VoiceCall.id,
-		                                   VoiceCall.kind,
-		                                   VoiceCall.status,
-		                                   VoiceCall.caller_user_id,
-		                                   VoiceCall.callee_user_id,
-		                                   VoiceCall.started_at
-		                            FROM voice_calls AS VoiceCall
-		                            LEFT JOIN support_chats AS SupportChat ON SupportChat.id = VoiceCall.support_chat_id
-		                            WHERE VoiceCall.tenant_id = :tenant_id
-		                               OR SupportChat.tenant_id = :support_tenant_id
-		                            ORDER BY VoiceCall.id");
-		$stmt->execute(['tenant_id' => $tenantId, 'support_tenant_id' => $tenantId]);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}
-
-	/**
-	 * Preserve users whose calls survive the tenant deletion.
-	 * @param array<int, int> $ids Candidate user IDs.
-	 * @param int $tenantId Tenant being deleted.
-	 * @return array<int, int> Users referenced by calls outside this plan.
-	 **/
-	private function voiceCallUserReferenceIds(array $ids, int $tenantId): array
-		{
-		if ($ids === [] || !$this->tableExists('voice_calls'))
-			{
-			return [];
-			}
-
-		// Bind candidate IDs once while checking both caller and callee references.
-		$params = ['tenant_id' => $tenantId, 'support_tenant_id' => $tenantId];
-		// Named placeholders keep candidate values separate from the SQL structure.
-		$userPlaceholders = [];
-		foreach (array_values($ids) as $index => $userId)
-			{
-			$userPlaceholders[] = ':user_' . $index;
-			$params['user_' . $index] = (int) $userId;
-			}
-
-		// Null tenant IDs also identify calls that must survive unless their support chat is removed.
-		$stmt = $this->db->prepare("SELECT DISTINCT UserRow.id
-		                            FROM users AS UserRow
-		                            INNER JOIN voice_calls AS VoiceCall ON VoiceCall.caller_user_id = UserRow.id
-		                                                                  OR VoiceCall.callee_user_id = UserRow.id
-		                            LEFT JOIN support_chats AS SupportChat ON SupportChat.id = VoiceCall.support_chat_id
-		                            WHERE UserRow.id IN (" . implode(', ', $userPlaceholders) . ")
-		                              AND (VoiceCall.tenant_id IS NULL OR VoiceCall.tenant_id <> :tenant_id)
-		                              AND (SupportChat.tenant_id IS NULL OR SupportChat.tenant_id <> :support_tenant_id)
-		                            ORDER BY UserRow.id");
-		$stmt->execute($params);
-		return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
-		}
-
-	/**
 	 * Build the manager_main portion of the row-by-row manifest.
 	 *
 	 * @param array<string, mixed> $plan Deletion plan.
@@ -647,20 +572,6 @@ class TenantDeletionService
 		$databaseName = 'manager_' . (string) $plan['tenant']['database_number'];
 		$deletableUserIds = $plan['deletable_user_ids'];
 		$modules = [];
-
-		// Use the same planned call rows that the transaction removes before their parent records.
-		$voiceCallRecords = [];
-		foreach ($plan['voice_calls'] as $call)
-			{
-			$voiceCallRecords[] = $this->record(
-				'voice_calls',
-				$call['id'],
-				'Chamada #' . $call['id'] . ' — ' . $call['kind'] . ' | status: ' . $call['status']
-					. ' | usuário #' . $call['caller_user_id'] . ' → usuário #' . $call['callee_user_id']
-					. ' | início: ' . $call['started_at']
-			);
-			}
-		$this->appendModule($modules, 'manager_main', 'Chamadas de voz', $voiceCallRecords);
 
 		$internalRecords = [];
 		$stmt = $this->db->prepare('SELECT id, title, conversation_key FROM internal_chats WHERE tenant_id = :tenant ORDER BY id');

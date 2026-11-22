@@ -66,24 +66,6 @@ O deploy dos arquivos por si só não recarrega o daemon. Para verificar o trata
 de falhas sem acessar banco ou abrir portas, execute
 `php tests/support_chat_database_failure_test.php` na pasta `manager_main`.
 
-## Voice calls in deletion manifests
-
-Tenant deletion includes `voice_calls` owned directly by the tenant or linked to
-its support chats. Calls outside this deletion plan preserve their referenced
-users. User deletion includes calls involving that user or a
-support chat selected for removal. Both flows list each call before deleting it
-explicitly, without relying on foreign-key cascades. Installations without the
-optional voice-call table remain supported.
-
-Run the focused manifest, protection, isolation and central rollback checks with
-PHP CLI and `pdo_sqlite`; they use only in-memory fixtures and never access the
-configured application database or drop a real tenant database:
-
-```sh
-php tests/tenant_voice_call_deletion_test.php
-php tests/user_voice_call_deletion_test.php
-```
-
 # Regras de programação do projeto
 
 Este documento registra as convenções de desenvolvimento que devem ser seguidas neste projeto.
