@@ -35,13 +35,13 @@
         'production' => [
             'DB_HOST' => '127.0.0.1',
             'DB_USERNAME' => 'root',
-            'DB_PASSWORD' => 'IzzI695500.-',
+            'DB_PASSWORD' => 'SUA_SENHA',
             'SUPPORT_CHAT_WS_HOST' => '127.0.0.1',
         ],
         'docker' => [
             'DB_HOST' => 'mariadb',
             'DB_USERNAME' => 'manager_app',
-            'DB_PASSWORD' => 'a655cfd8889990aabaabbcda9a58afb581a9318c0524b72c0e5e8c8fdf4613b4',
+            'DB_PASSWORD' => 'SUA_SENHA_EM_FORMA_DE_HASH',
             'SUPPORT_CHAT_WS_HOST' => '127.0.0.1',
         ],
     ];
@@ -51,7 +51,7 @@
         'DB_PORT' => '3306',
         'DB_DATABASE_MANAGER' => 'manager_main',
         'DB_CHARSET' => 'utf8mb4',
-        'SUPPORT_CHAT_SECRET' => '9323d5e71fe951602b452cc683ff7c49f8d5cec8',
+        'SUPPORT_CHAT_SECRET' => 'SEU_CHAT_SECRET',
         'SUPPORT_CHAT_WS_PORT' => '8081',
     ], $environmentDefaults[$environment]);
 
